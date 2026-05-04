@@ -311,7 +311,7 @@ private fun OnboardingShell(
 
 @Composable
 private fun MatchCard() {
-    // --- Cartão com snapshot de jogo ao vivo
+    // --- Cartão com snapshot de jogo ao vivo s
     Box(
         Modifier
             .fillMaxWidth()
