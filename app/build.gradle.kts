@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.trabalhocm"
+    namespace = "pt.ipvc.matchpoint"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.trabalhocm"
+        applicationId = "pt.ipvc.matchpoint"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -55,4 +55,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 }
