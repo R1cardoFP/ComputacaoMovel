@@ -1,4 +1,4 @@
-﻿package com.example.trabalhocm
+﻿package pt.ipvc.matchpoint
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
