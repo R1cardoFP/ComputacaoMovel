@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
-import pt.ipvc.matchpoint.R
+import com.example.trabalhocm.R
 import androidx.compose.foundation.Image
 
 private val BrandBlue = Color(0xFF0B1F3A)

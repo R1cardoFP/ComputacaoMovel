@@ -1,4 +1,4 @@
-﻿package pt.ipvc.matchpoint
+﻿package com.example.trabalhocm
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,10 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
+import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
 import com.example.trabalhocm.ui.screens.SplashScreen
-import com.example.trabalhocm.ui.screens.LoginScreen
+import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,29 +29,30 @@ class MainActivity : ComponentActivity() {
 fun MatchPointApp() {
     val navController = rememberNavController()
 
-    // NavHost é o contentor que gere os ecrãs
-    NavHost(navController = navController, startDestination = "splash") {
-
-        // Ecrã 1: Splash
+    NavHost(
+        navController = navController,
+        startDestination = "splash"
+    ) {
         composable("splash") {
-            SplashScreen(onEnd = {
-                // Navega para o onboarding e apaga o splash do histórico (para o botão "Voltar" não vir para o Splash)
-                navController.navigate("onboarding") {
-                    popUpTo("splash") { inclusive = true }
+            SplashScreen(
+                onEnd = {
+                    navController.navigate("onboarding") {
+                        popUpTo("splash") { inclusive = true }
+                    }
                 }
-            })
+            )
         }
 
-        // Ecrã 2: Onboarding (gere as 3 páginas internamente)
         composable("onboarding") {
-            OnboardingFlow(onFinish = {
-                navController.navigate("login") {
-                    popUpTo("onboarding") { inclusive = true }
+            OnboardingFlow(
+                onFinish = {
+                    navController.navigate("login") {
+                        popUpTo("onboarding") { inclusive = true }
+                    }
                 }
-            })
+            )
         }
 
-        // Ecrã 3: Login
         composable("login") {
             LoginScreen()
         }
