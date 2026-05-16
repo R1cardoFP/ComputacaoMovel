@@ -19,7 +19,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import pt.ipvc.matchpoint.R
+import com.example.trabalhocm.R
 import kotlinx.coroutines.delay
 
 private val BrandBlue = Color(0xFF0B1F3A)
