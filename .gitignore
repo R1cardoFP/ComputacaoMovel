@@ -30,3 +30,12 @@ captures/
 
 # Kotlin / Java compiled files
 *.class
+
+# Secrets / env-like local files
+.env
+.env.*
+
+# Android generated
+app/release/
+*.apk
+*.aab
