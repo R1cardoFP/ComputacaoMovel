@@ -12,6 +12,9 @@ import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
 import com.example.trabalhocm.ui.screens.SplashScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
+import com.example.trabalhocm.ui.screens.HomeScreen
+import com.example.trabalhocm.ui.screens.HomeScreen
+import com.example.trabalhocm.ui.screens.TorneiosScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +57,25 @@ fun MatchPointApp() {
         }
 
         composable("login") {
-            LoginScreen()
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable("home") {
+            HomeScreen(
+                onVerTorneios = {
+                    navController.navigate("torneios")
+                }
+            )
+        }
+
+        composable("torneios") {
+            TorneiosScreen()
         }
     }
 }

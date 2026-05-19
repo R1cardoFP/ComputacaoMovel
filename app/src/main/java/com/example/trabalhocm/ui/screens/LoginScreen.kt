@@ -29,7 +29,7 @@ import com.example.trabalhocm.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
@@ -98,6 +98,7 @@ fun LoginScreen() {
                     resultado
                         .onSuccess { utilizador ->
                             mensagem = "Login feito com sucesso. Bem-vindo, ${utilizador.nome}!"
+                            onLoginSuccess()
                         }
                         .onFailure { erro ->
                             mensagem = "Erro no login: ${erro.message}"
