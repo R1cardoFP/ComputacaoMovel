@@ -13,6 +13,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +30,10 @@ import com.example.trabalhocm.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
+fun LoginScreen(
+    onLoginSuccess: () -> Unit = {},
+    onCreateAccount: () -> Unit = {}
+) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
@@ -125,6 +129,15 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
                 text = mensagem,
                 style = MaterialTheme.typography.bodyMedium
             )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextButton(
+            onClick = onCreateAccount,
+            enabled = !isLoading
+        ) {
+            Text("Criar conta")
         }
     }
 }

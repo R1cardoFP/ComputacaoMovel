@@ -8,13 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.trabalhocm.ui.screens.HomeScreen
 import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
+import com.example.trabalhocm.ui.screens.RegisterScreen
 import com.example.trabalhocm.ui.screens.SplashScreen
-import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
-import com.example.trabalhocm.ui.screens.HomeScreen
-import com.example.trabalhocm.ui.screens.HomeScreen
 import com.example.trabalhocm.ui.screens.TorneiosScreen
+import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +62,22 @@ fun MatchPointApp() {
                     navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
                     }
+                },
+                onCreateAccount = {
+                    navController.navigate("register")
+                }
+            )
+        }
+
+        composable("register") {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                },
+                onGoToLogin = {
+                    navController.popBackStack()
                 }
             )
         }
