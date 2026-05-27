@@ -14,6 +14,7 @@ import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
 import com.example.trabalhocm.ui.screens.PlayerHomeScreen
+import com.example.trabalhocm.ui.screens.PlayerTournamentHistoryScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentManagementScreen
 import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
@@ -40,7 +41,7 @@ fun MatchPointApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "player_tournaments"
     ) {
         composable("splash") {
             SplashScreen(
@@ -158,7 +159,26 @@ fun MatchPointApp() {
                 onDetailsClick = {},
                 onRegisterClick = {},
                 onAskOrganizerClick = {},
-                onHistoryClick = {}
+                onHistoryClick = {
+                    navController.navigate("player_tournament_history")
+                }
+            )
+        }
+
+        composable("player_tournament_history") {
+            PlayerTournamentHistoryScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {}
             )
         }
 
