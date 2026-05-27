@@ -13,6 +13,7 @@ import com.example.trabalhocm.ui.screens.HomeScreen
 import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
+import com.example.trabalhocm.ui.screens.PlayerBecomeOrganizerScreen
 import com.example.trabalhocm.ui.screens.PlayerHomeScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentDetailsScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentFiltersScreen
@@ -165,7 +166,9 @@ fun MatchPointApp() {
                 onRegisterClick = {
                     navController.navigate("player_tournament_registration")
                 },
-                onAskOrganizerClick = {},
+                onAskOrganizerClick = {
+                    navController.navigate("player_become_organizer")
+                },
                 onHistoryClick = {
                     navController.navigate("player_tournament_history")
                 },
@@ -226,6 +229,29 @@ fun MatchPointApp() {
                     navController.popBackStack()
                 },
                 onSubmitClick = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {}
+            )
+        }
+
+        composable("player_become_organizer") {
+            PlayerBecomeOrganizerScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSubmitClick = {
+                    navController.popBackStack()
+                },
+                onCancelClick = {
                     navController.popBackStack()
                 },
                 onHomeClick = {
