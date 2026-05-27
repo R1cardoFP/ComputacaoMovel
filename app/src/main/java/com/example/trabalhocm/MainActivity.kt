@@ -18,6 +18,7 @@ import com.example.trabalhocm.ui.screens.PlayerTournamentDetailsScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentFiltersScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentHistoryScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentManagementScreen
+import com.example.trabalhocm.ui.screens.PlayerTournamentRegistrationScreen
 import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
 import com.example.trabalhocm.ui.screens.SplashScreen
@@ -161,7 +162,9 @@ fun MatchPointApp() {
                 onDetailsClick = {
                     navController.navigate("player_tournament_details")
                 },
-                onRegisterClick = {},
+                onRegisterClick = {
+                    navController.navigate("player_tournament_registration")
+                },
                 onAskOrganizerClick = {},
                 onHistoryClick = {
                     navController.navigate("player_tournament_history")
@@ -214,6 +217,26 @@ fun MatchPointApp() {
                 onApplyClick = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable("player_tournament_registration") {
+            PlayerTournamentRegistrationScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSubmitClick = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {}
             )
         }
 
