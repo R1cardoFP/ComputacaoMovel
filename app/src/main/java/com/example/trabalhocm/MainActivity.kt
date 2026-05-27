@@ -16,6 +16,7 @@ import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
 import com.example.trabalhocm.ui.screens.SplashScreen
 import com.example.trabalhocm.ui.screens.TorneiosScreen
+import com.example.trabalhocm.ui.screens.UserTypeScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 
 class MainActivity : ComponentActivity() {
@@ -61,7 +62,7 @@ fun MatchPointApp() {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate("home") {
+                    navController.navigate("user_type") {
                         popUpTo("login") { inclusive = true }
                     }
                 },
@@ -77,7 +78,7 @@ fun MatchPointApp() {
         composable("register") {
             RegisterScreen(
                 onRegisterSuccess = {
-                    navController.navigate("home") {
+                    navController.navigate("user_type") {
                         popUpTo("register") { inclusive = true }
                     }
                 },
@@ -95,6 +96,20 @@ fun MatchPointApp() {
             ChangePasswordScreen(
                 onPasswordChanged = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable("user_type") {
+            UserTypeScreen(
+                onAdminClick = {
+                    navController.navigate("home")
+                },
+                onOrganizerClick = {
+                    navController.navigate("home")
+                },
+                onPlayerClick = {
+                    navController.navigate("home")
                 }
             )
         }
