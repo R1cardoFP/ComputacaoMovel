@@ -56,7 +56,8 @@ fun PlayerTournamentManagementScreen(
     onDetailsClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {},
     onAskOrganizerClick: () -> Unit = {},
-    onHistoryClick: () -> Unit = {}
+    onHistoryClick: () -> Unit = {},
+    onFiltersClick: () -> Unit = {}
 ) {
     var search by remember { mutableStateOf("") }
 
@@ -122,7 +123,8 @@ fun PlayerTournamentManagementScreen(
 
             TournamentSearchAndFilters(
                 search = search,
-                onSearchChange = { search = it }
+                onSearchChange = { search = it },
+                onFiltersClick = onFiltersClick
             )
 
             Spacer(modifier = Modifier.height(22.dp))
@@ -296,7 +298,8 @@ fun TournamentMainActionButton(
 @Composable
 fun TournamentSearchAndFilters(
     search: String,
-    onSearchChange: (String) -> Unit
+    onSearchChange: (String) -> Unit,
+    onFiltersClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -363,7 +366,7 @@ fun TournamentSearchAndFilters(
             Spacer(modifier = Modifier.height(10.dp))
 
             OutlinedButton(
-                onClick = {},
+                onClick = onFiltersClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(42.dp),
