@@ -13,6 +13,7 @@ import com.example.trabalhocm.ui.screens.HomeScreen
 import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
+import com.example.trabalhocm.ui.screens.PlayerHomeScreen
 import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
 import com.example.trabalhocm.ui.screens.SplashScreen
@@ -110,7 +111,7 @@ fun MatchPointApp() {
                     navController.navigate("home")
                 },
                 onPlayerClick = {
-                    navController.navigate("home")
+                    navController.navigate("player_home")
                 }
             )
         }
@@ -127,6 +128,18 @@ fun MatchPointApp() {
                     navController.navigate("torneios")
                 },
                 onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {}
+            )
+        }
+
+        composable("player_home") {
+            PlayerHomeScreen(
+                onTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onCasualMatchesClick = {},
+                onLiveMatchesClick = {},
                 onTeamsClick = {},
                 onProfileClick = {}
             )
