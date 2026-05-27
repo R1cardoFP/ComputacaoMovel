@@ -45,7 +45,7 @@ fun MatchPointApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "player_tournaments"
+        startDestination = "splash"
     ) {
         composable("splash") {
             SplashScreen(
