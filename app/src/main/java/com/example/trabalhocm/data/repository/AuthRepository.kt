@@ -68,6 +68,22 @@ class AuthRepository {
         }
     }
 
+    suspend fun alterarPassword(passwordAtual: String, novaPassword: String): Result<Unit> {
+        return runCatching {
+            val emailAtual = client.auth.currentUserOrNull()?.email
+                ?: throw Exception("Não foi possível obter o email do utilizador atual.")
+
+            client.auth.signInWith(Email) {
+                this.email = emailAtual
+                this.password = passwordAtual
+            }
+
+            client.auth.updateUser {
+                password = novaPassword
+            }
+        }
+    }
+
     suspend fun logout(): Result<Unit> {
         return runCatching {
             client.auth.signOut()

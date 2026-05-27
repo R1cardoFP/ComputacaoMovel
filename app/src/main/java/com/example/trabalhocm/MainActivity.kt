@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.trabalhocm.ui.screens.ChangePasswordScreen
 import com.example.trabalhocm.ui.screens.HomeScreen
 import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
@@ -88,6 +89,14 @@ fun MatchPointApp() {
 
         composable("recover_password") {
             RecoverPasswordScreen()
+        }
+
+        composable("change_password") {
+            ChangePasswordScreen(
+                onPasswordChanged = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable("home") {
