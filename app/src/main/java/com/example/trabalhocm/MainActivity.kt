@@ -14,6 +14,7 @@ import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
 import com.example.trabalhocm.ui.screens.PlayerHomeScreen
+import com.example.trabalhocm.ui.screens.PlayerTournamentManagementScreen
 import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
 import com.example.trabalhocm.ui.screens.SplashScreen
@@ -136,12 +137,28 @@ fun MatchPointApp() {
         composable("player_home") {
             PlayerHomeScreen(
                 onTournamentsClick = {
-                    navController.navigate("torneios")
+                    navController.navigate("player_tournaments")
                 },
                 onCasualMatchesClick = {},
                 onLiveMatchesClick = {},
                 onTeamsClick = {},
                 onProfileClick = {}
+            )
+        }
+
+        composable("player_tournaments") {
+            PlayerTournamentManagementScreen(
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {},
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {},
+                onDetailsClick = {},
+                onRegisterClick = {},
+                onAskOrganizerClick = {},
+                onHistoryClick = {}
             )
         }
 
