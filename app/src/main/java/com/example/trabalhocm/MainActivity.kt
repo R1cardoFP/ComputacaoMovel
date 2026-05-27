@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.trabalhocm.ui.screens.ChangePasswordScreen
 import com.example.trabalhocm.ui.screens.HomeScreen
 import com.example.trabalhocm.ui.screens.LoginScreen
+import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
 import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
@@ -111,6 +112,23 @@ fun MatchPointApp() {
                 onPlayerClick = {
                     navController.navigate("home")
                 }
+            )
+        }
+
+        composable("offline") {
+            OfflineScreen(
+                onRetrySync = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    navController.navigate("home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {}
             )
         }
 
