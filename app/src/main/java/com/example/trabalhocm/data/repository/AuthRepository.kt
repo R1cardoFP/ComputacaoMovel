@@ -62,6 +62,12 @@ class AuthRepository {
         }
     }
 
+    suspend fun recuperarPassword(email: String): Result<Unit> {
+        return runCatching {
+            client.auth.resetPasswordForEmail(email = email)
+        }
+    }
+
     suspend fun logout(): Result<Unit> {
         return runCatching {
             client.auth.signOut()

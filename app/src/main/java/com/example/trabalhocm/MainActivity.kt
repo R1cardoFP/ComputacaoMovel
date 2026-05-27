@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.trabalhocm.ui.screens.HomeScreen
 import com.example.trabalhocm.ui.screens.LoginScreen
 import com.example.trabalhocm.ui.screens.OnboardingFlow
+import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
 import com.example.trabalhocm.ui.screens.SplashScreen
 import com.example.trabalhocm.ui.screens.TorneiosScreen
@@ -65,6 +66,9 @@ fun MatchPointApp() {
                 },
                 onCreateAccount = {
                     navController.navigate("register")
+                },
+                onForgotPassword = {
+                    navController.navigate("recover_password")
                 }
             )
         }
@@ -80,6 +84,10 @@ fun MatchPointApp() {
                     navController.popBackStack()
                 }
             )
+        }
+
+        composable("recover_password") {
+            RecoverPasswordScreen()
         }
 
         composable("home") {
