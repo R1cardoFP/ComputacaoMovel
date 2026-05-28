@@ -1,4 +1,4 @@
-package com.example.trabalhocm.ui.screens
+package com.example.trabalhocm.ui.screens.player
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -1,6 +1,8 @@
-package com.example.trabalhocm.ui.screens
+package com.example.trabalhocm.ui.screens.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,10 +23,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +42,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,11 +55,16 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
 
 @Composable
-fun RecoverPasswordScreen() {
+fun LoginScreen(
+    onLoginSuccess: () -> Unit = {},
+    onCreateAccount: () -> Unit = {},
+    onForgotPassword: () -> Unit = {}
+) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
     var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var mensagem by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
@@ -68,11 +78,11 @@ fun RecoverPasswordScreen() {
             .padding(horizontal = 28.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(165.dp))
+        Spacer(modifier = Modifier.height(38.dp))
 
-        RecoverLogo()
+        LoginLogo()
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(26.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -81,53 +91,78 @@ fun RecoverPasswordScreen() {
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 32.dp, vertical = 36.dp),
+                modifier = Modifier.padding(horizontal = 28.dp, vertical = 34.dp),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Recover\nPassword",
-                    color = BrandBlue,
-                    fontSize = 34.sp,
-                    lineHeight = 38.sp,
-                    fontWeight = FontWeight.Normal
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "ENTER YOUR EMAIL TO RECEIVE A\nREPLACEMENT LINK.",
-                    color = Color(0xFF8B92A5),
+                    text = "ACCESS ARENA",
+                    color = Color(0xFF7D8497),
                     fontSize = 12.sp,
-                    lineHeight = 18.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 3.sp
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
-
-                Text(
-                    text = "EMAIL",
-                    color = Color(0xFF7D8497),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
-
                 Spacer(modifier = Modifier.height(8.dp))
 
-                RecoverInputField(
+                Text(
+                    text = "Welcome Back",
+                    color = BrandBlue,
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Normal
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                LoginInput(
+                    label = "EMAIL ADDRESS",
                     value = email,
                     onValueChange = { email = it },
                     placeholder = "name@example.com",
                     keyboardType = KeyboardType.Email
                 )
 
-                Spacer(modifier = Modifier.height(26.dp))
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "PASSWORD",
+                        color = Color(0xFF7D8497),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    )
+
+                    Text(
+                        text = "FORGOT PASSWORD?",
+                        color = Color(0xFF3566C9),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable {
+                            onForgotPassword()
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LoginInputField(
+                    value = password,
+                    onValueChange = { password = it },
+                    placeholder = "••••••••",
+                    keyboardType = KeyboardType.Password,
+                    isPassword = true
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
                     onClick = {
-                        if (email.isBlank()) {
-                            mensagem = "Preenche o email."
+                        if (email.isBlank() || password.isBlank()) {
+                            mensagem = "Preenche o email e a password."
                             return@Button
                         }
 
@@ -135,14 +170,18 @@ fun RecoverPasswordScreen() {
                             isLoading = true
                             mensagem = ""
 
-                            val resultado = authRepository.recuperarPassword(email)
+                            val resultado = authRepository.login(
+                                email = email,
+                                password = password
+                            )
 
                             resultado
-                                .onSuccess {
-                                    mensagem = "Foi enviado um email de recuperação."
+                                .onSuccess { utilizador ->
+                                    mensagem = "Login feito com sucesso. Bem-vindo, ${utilizador.nome}!"
+                                    onLoginSuccess()
                                 }
                                 .onFailure { erro ->
-                                    mensagem = "Erro ao recuperar password: ${erro.message}"
+                                    mensagem = "Erro no login: ${erro.message}"
                                 }
 
                             isLoading = false
@@ -165,16 +204,16 @@ fun RecoverPasswordScreen() {
                         )
                     } else {
                         Text(
-                            text = "RECOVER ACCOUNT →",
+                            text = "LOGIN →",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
+                            letterSpacing = 3.sp
                         )
                     }
                 }
 
                 if (mensagem.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     Text(
                         text = mensagem,
                         color = if (mensagem.startsWith("Erro")) {
@@ -185,18 +224,86 @@ fun RecoverPasswordScreen() {
                         fontSize = 13.sp
                     )
                 }
+
+                Spacer(modifier = Modifier.height(34.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier.weight(1f),
+                        color = Color(0xFFE4E5EB)
+                    )
+
+                    Text(
+                        text = "OR CONTINUE WITH",
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        color = Color(0xFF9AA0AF),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.8.sp
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.weight(1f),
+                        color = Color(0xFFE4E5EB)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    LoginSocialButton(
+                        modifier = Modifier.weight(1f),
+                        icon = "G",
+                        text = "GOOGLE"
+                    )
+
+                    LoginSocialButton(
+                        modifier = Modifier.weight(1f),
+                        icon = "●",
+                        text = "APPLE"
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Don't have an account?",
+                color = Color(0xFF7D8497),
+                fontSize = 14.sp
+            )
+
+            TextButton(onClick = onCreateAccount) {
+                Text(
+                    text = "Create Account",
+                    color = BrandGreen,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
 }
 
 @Composable
-fun RecoverLogo() {
+fun LoginLogo() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "ML",
@@ -233,11 +340,42 @@ fun RecoverLogo() {
 }
 
 @Composable
-fun RecoverInputField(
+fun LoginInput(
+    label: String,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
     keyboardType: KeyboardType = KeyboardType.Text
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = label,
+            color = Color(0xFF7D8497),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.2.sp
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoginInputField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = placeholder,
+            keyboardType = keyboardType
+        )
+    }
+}
+
+@Composable
+fun LoginInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isPassword: Boolean = false
 ) {
     OutlinedTextField(
         value = value,
@@ -256,7 +394,11 @@ fun RecoverInputField(
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType
         ),
-        visualTransformation = VisualTransformation.None,
+        visualTransformation = if (isPassword) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        },
         shape = RoundedCornerShape(4.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = Color(0xFFF1F2FB),
@@ -270,8 +412,42 @@ fun RecoverInputField(
     )
 }
 
-@Preview(showBackground = true, name = "Recover Password Screen")
 @Composable
-fun RecoverPasswordScreenPreview() {
-    RecoverPasswordScreen()
+fun LoginSocialButton(
+    modifier: Modifier = Modifier,
+    icon: String,
+    text: String
+) {
+    Button(
+        onClick = {},
+        modifier = modifier.height(50.dp),
+        shape = RoundedCornerShape(3.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = BrandWhite,
+            contentColor = BrandBlue
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = icon,
+            color = BrandGreen,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Text(
+            text = text,
+            color = Color(0xFF333842),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Login Screen")
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen()
 }

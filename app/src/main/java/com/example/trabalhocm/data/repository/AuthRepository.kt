@@ -5,8 +5,8 @@ import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.from
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class AuthRepository {
 
@@ -37,20 +37,15 @@ class AuthRepository {
             client.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
+
+                data = buildJsonObject {
+                    put("nome", nome)
+                    put("username", email.substringBefore("@"))
+                }
             }
 
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Conta criada, mas o utilizador autenticado não foi encontrado.")
-
-            val novoUtilizador = NovoUtilizador(
-                id = userId,
-                username = email.substringBefore("@"),
-                nome = nome,
-                email = email
-            )
-
-            client.from("utilizador")
-                .insert(novoUtilizador)
+                ?: throw Exception("Conta criada, mas o utilizador autenticado não foi encontrado. Verifica se a confirmação por email está ativa na Supabase.")
 
             client.from("utilizador")
                 .select {
@@ -90,14 +85,3 @@ class AuthRepository {
         }
     }
 }
-
-@Serializable
-private data class NovoUtilizador(
-    val id: String,
-    val username: String,
-    val nome: String,
-    val email: String,
-
-    @SerialName("raio_km")
-    val raioKm: Int = 25
-)

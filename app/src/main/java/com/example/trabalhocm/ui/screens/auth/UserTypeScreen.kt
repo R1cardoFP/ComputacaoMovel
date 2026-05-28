@@ -1,4 +1,4 @@
-package com.example.trabalhocm.ui.screens
+package com.example.trabalhocm.ui.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

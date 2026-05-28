@@ -1,4 +1,4 @@
-package com.example.trabalhocm.ui.screens
+package com.example.trabalhocm.ui.screens.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

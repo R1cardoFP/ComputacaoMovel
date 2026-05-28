@@ -1,7 +1,6 @@
-package com.example.trabalhocm.ui.screens
+package com.example.trabalhocm.ui.screens.auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,13 +33,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,20 +50,13 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
 
 @Composable
-fun ChangePasswordScreen(
-    onPasswordChanged: () -> Unit = {}
-) {
+fun RecoverPasswordScreen() {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
-    var currentPassword by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var showCurrentPassword by remember { mutableStateOf(false) }
-    var showNewPassword by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf("") }
     var mensagem by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
-
-    val strength = getPasswordStrength(newPassword)
 
     Column(
         modifier = Modifier
@@ -79,9 +68,9 @@ fun ChangePasswordScreen(
             .padding(horizontal = 28.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(120.dp))
+        Spacer(modifier = Modifier.height(165.dp))
 
-        ChangePasswordLogo()
+        RecoverLogo()
 
         Spacer(modifier = Modifier.height(28.dp))
 
@@ -96,7 +85,7 @@ fun ChangePasswordScreen(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Change\nPassword",
+                    text = "Recover\nPassword",
                     color = BrandBlue,
                     fontSize = 34.sp,
                     lineHeight = 38.sp,
@@ -106,7 +95,7 @@ fun ChangePasswordScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "ENTER YOUR CURRENT PASSWORD\nAND THEN YOUR NEW ONE.",
+                    text = "ENTER YOUR EMAIL TO RECEIVE A\nREPLACEMENT LINK.",
                     color = Color(0xFF8B92A5),
                     fontSize = 12.sp,
                     lineHeight = 18.sp,
@@ -116,44 +105,29 @@ fun ChangePasswordScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                PasswordFieldBlock(
-                    label = "CURRENT PASSWORD",
-                    value = currentPassword,
-                    onValueChange = { currentPassword = it },
-                    visible = showCurrentPassword,
-                    onToggleVisible = { showCurrentPassword = !showCurrentPassword }
+                Text(
+                    text = "EMAIL",
+                    color = Color(0xFF7D8497),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.2.sp
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                PasswordFieldBlock(
-                    label = "NEW PASSWORD",
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
-                    visible = showNewPassword,
-                    onToggleVisible = { showNewPassword = !showNewPassword }
+                RecoverInputField(
+                    value = email,
+                    onValueChange = { email = it },
+                    placeholder = "name@example.com",
+                    keyboardType = KeyboardType.Email
                 )
 
-                Spacer(modifier = Modifier.height(22.dp))
-
-                PasswordStrengthBar(strength = strength)
-
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(26.dp))
 
                 Button(
                     onClick = {
-                        if (currentPassword.isBlank() || newPassword.isBlank()) {
-                            mensagem = "Preenche todos os campos."
-                            return@Button
-                        }
-
-                        if (newPassword.length < 6) {
-                            mensagem = "A nova password deve ter pelo menos 6 caracteres."
-                            return@Button
-                        }
-
-                        if (currentPassword == newPassword) {
-                            mensagem = "A nova password deve ser diferente da atual."
+                        if (email.isBlank()) {
+                            mensagem = "Preenche o email."
                             return@Button
                         }
 
@@ -161,18 +135,14 @@ fun ChangePasswordScreen(
                             isLoading = true
                             mensagem = ""
 
-                            val resultado = authRepository.alterarPassword(
-                                passwordAtual = currentPassword,
-                                novaPassword = newPassword
-                            )
+                            val resultado = authRepository.recuperarPassword(email)
 
                             resultado
                                 .onSuccess {
-                                    mensagem = "Password alterada com sucesso."
-                                    onPasswordChanged()
+                                    mensagem = "Foi enviado um email de recuperação."
                                 }
                                 .onFailure { erro ->
-                                    mensagem = "Erro ao alterar password: ${erro.message}"
+                                    mensagem = "Erro ao recuperar password: ${erro.message}"
                                 }
 
                             isLoading = false
@@ -195,7 +165,7 @@ fun ChangePasswordScreen(
                         )
                     } else {
                         Text(
-                            text = "CHANGE PASSWORD →",
+                            text = "RECOVER ACCOUNT →",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 2.sp
@@ -221,7 +191,7 @@ fun ChangePasswordScreen(
 }
 
 @Composable
-fun ChangePasswordLogo() {
+fun RecoverLogo() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -263,130 +233,45 @@ fun ChangePasswordLogo() {
 }
 
 @Composable
-fun PasswordFieldBlock(
-    label: String,
+fun RecoverInputField(
     value: String,
     onValueChange: (String) -> Unit,
-    visible: Boolean,
-    onToggleVisible: () -> Unit
+    placeholder: String,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = label,
-            color = Color(0xFF7D8497),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.2.sp
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(58.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password
-            ),
-            visualTransformation = if (visible) {
-                VisualTransformation.None
-            } else {
-                PasswordVisualTransformation()
-            },
-            trailingIcon = {
-                TextButton(onClick = onToggleVisible) {
-                    Text(
-                        text = if (visible) "HIDE" else "SHOW",
-                        color = Color(0xFF7D8497),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            },
-            shape = RoundedCornerShape(4.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF1F2FB),
-                unfocusedContainerColor = Color(0xFFF1F2FB),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                cursorColor = BrandGreen,
-                focusedTextColor = BrandBlue,
-                unfocusedTextColor = BrandBlue
-            )
-        )
-    }
-}
-
-@Composable
-fun PasswordStrengthBar(strength: Int) {
-    val label = when (strength) {
-        0 -> ""
-        1 -> "Weak"
-        2 -> "Reasonable"
-        else -> "Strong"
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            repeat(4) { index ->
-                val active = index < strength
-                val color = when {
-                    !active -> Color(0xFFE3E5EB)
-                    index == 0 -> Color(0xFF3566C9)
-                    index == 1 -> BrandGreen
-                    index == 2 -> Color(0xFF28A745)
-                    else -> Color(0xFF1E7E34)
-                }
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(color)
-                )
-            }
-        }
-
-        if (label.isNotBlank()) {
-            Spacer(modifier = Modifier.height(6.dp))
-
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(58.dp),
+        singleLine = true,
+        placeholder = {
             Text(
-                text = label,
-                color = BrandGreen,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.End)
+                text = placeholder,
+                color = Color(0xFFA7ACBA),
+                fontSize = 15.sp
             )
-        }
-    }
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType
+        ),
+        visualTransformation = VisualTransformation.None,
+        shape = RoundedCornerShape(4.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color(0xFFF1F2FB),
+            unfocusedContainerColor = Color(0xFFF1F2FB),
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            cursorColor = BrandGreen,
+            focusedTextColor = BrandBlue,
+            unfocusedTextColor = BrandBlue
+        )
+    )
 }
 
-fun getPasswordStrength(password: String): Int {
-    if (password.isBlank()) return 0
-
-    var score = 0
-
-    if (password.length >= 6) score++
-    if (password.length >= 8) score++
-    if (password.any { it.isDigit() }) score++
-    if (password.any { it.isUpperCase() } || password.any { !it.isLetterOrDigit() }) score++
-
-    return score.coerceIn(1, 4)
-}
-
-@Preview(showBackground = true, name = "Change Password Screen")
+@Preview(showBackground = true, name = "Recover Password Screen")
 @Composable
-fun ChangePasswordScreenPreview() {
-    ChangePasswordScreen()
+fun RecoverPasswordScreenPreview() {
+    RecoverPasswordScreen()
 }
