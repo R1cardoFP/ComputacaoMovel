@@ -1,4 +1,4 @@
-package com.example.trabalhocm.ui.screens
+package com.example.trabalhocm.ui.screens.player
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
