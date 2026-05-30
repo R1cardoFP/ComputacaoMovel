@@ -5,6 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,15 +26,17 @@ import com.example.trabalhocm.ui.screens.PlayerTournamentFiltersScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentHistoryScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentManagementScreen
 import com.example.trabalhocm.ui.screens.PlayerTournamentRegistrationScreen
+import com.example.trabalhocm.ui.screens.ProfileScreen
 import com.example.trabalhocm.ui.screens.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.RegisterScreen
 import com.example.trabalhocm.ui.screens.SplashScreen
 import com.example.trabalhocm.ui.screens.TorneiosScreen
 import com.example.trabalhocm.ui.screens.UserTypeScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?): Unit {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -97,7 +105,11 @@ fun MatchPointApp() {
         }
 
         composable("recover_password") {
-            RecoverPasswordScreen()
+            RecoverPasswordScreen(
+                onGoToLogin = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable("change_password") {
@@ -135,7 +147,9 @@ fun MatchPointApp() {
                 },
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {}
+                onProfileClick = {
+                    navController.navigate("profile")
+                }
             )
         }
 
@@ -147,7 +161,9 @@ fun MatchPointApp() {
                 onCasualMatchesClick = {},
                 onLiveMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {}
+                onProfileClick = {
+                    navController.navigate("profile")
+                }
             )
         }
 
@@ -159,7 +175,9 @@ fun MatchPointApp() {
                 onTournamentsClick = {},
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {},
+                onProfileClick = {
+                    navController.navigate("profile")
+                },
                 onDetailsClick = {
                     navController.navigate("player_tournament_details")
                 },
@@ -191,7 +209,9 @@ fun MatchPointApp() {
                 },
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {}
+                onProfileClick = {
+                    navController.navigate("profile")
+                }
             )
         }
 
@@ -208,7 +228,9 @@ fun MatchPointApp() {
                 },
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {}
+                onProfileClick = {
+                    navController.navigate("profile")
+                }
             )
         }
 
@@ -239,7 +261,9 @@ fun MatchPointApp() {
                 },
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {}
+                onProfileClick = {
+                    navController.navigate("profile")
+                }
             )
         }
 
@@ -262,7 +286,9 @@ fun MatchPointApp() {
                 },
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {}
+                onProfileClick = {
+                    navController.navigate("profile")
+                }
             )
         }
 
@@ -276,6 +302,48 @@ fun MatchPointApp() {
 
         composable("torneios") {
             TorneiosScreen()
+        }
+
+        composable("profile") {
+            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            val scope = rememberCoroutineScope()
+
+            // Variáveis de estado que guardam os dados do utilizador
+            var nomeUtilizador by remember { mutableStateOf("A carregar...") }
+            var emailUtilizador by remember { mutableStateOf("A carregar...") }
+
+            // O LaunchedEffect corre automaticamente quando o ecrã abre para ir buscar os dados reais
+            LaunchedEffect(Unit) {
+                authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+                    nomeUtilizador = utilizador.nome
+                    emailUtilizador = utilizador.email
+                }.onFailure {
+                    nomeUtilizador = "Erro ao carregar"
+                    emailUtilizador = "Erro ao carregar"
+                }
+            }
+
+            ProfileScreen(
+                initialName = nomeUtilizador,
+                initialEmail = emailUtilizador,
+                onLogoutClick = {
+                    scope.launch {
+                        authRepository.logout()
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                },
+                onSaveChanges = { novoNome, novoEmail, bio ->
+                    // Lógica futura para guardar as alterações na base de dados
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                }
+            )
         }
     }
 }

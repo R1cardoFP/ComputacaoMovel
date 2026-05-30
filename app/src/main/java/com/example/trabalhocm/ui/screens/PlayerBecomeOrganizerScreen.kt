@@ -26,6 +26,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -50,6 +55,7 @@ import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerBecomeOrganizerScreen(
     onBackClick: () -> Unit = {},
@@ -63,10 +69,8 @@ fun PlayerBecomeOrganizerScreen(
 ) {
     var sport by remember { mutableStateOf("Volleyball") }
     var experience by remember { mutableStateOf("Intermediate") }
-    var tournamentsPerYear by remember { mutableStateOf("1–3 tournaments") }
-    var motivation by remember {
-        mutableStateOf("I've been part of FC Mancos for 3 seasons and I want to start organizing the local summer league. I have experience coordinating small 5-a-side events at my city's pavilion.")
-    }
+    var tournamentsPerYear by remember { mutableStateOf("1-3 tournaments") }
+    var motivation by remember { mutableStateOf("") }
     var reference by remember { mutableStateOf("") }
     var acceptedTerms by remember { mutableStateOf(true) }
 
@@ -195,11 +199,49 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            OrganizerSimpleInputBox(
-                value = tournamentsPerYear,
-                onValueChange = { tournamentsPerYear = it },
-                minHeight = 54
-            )
+            var expanded by remember { mutableStateOf(false) }
+            val options = listOf("1-3 tournaments", "4-6 tournaments", "7-10 tournaments", "More than 10")
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it }
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                    readOnly = true,
+                    value = tournamentsPerYear,
+                    onValueChange = {},
+                    shape = RoundedCornerShape(7.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFEFF1F6),
+                        unfocusedContainerColor = Color(0xFFEFF1F6),
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        cursorColor = BrandGreen,
+                        focusedTextColor = BrandBlue,
+                        unfocusedTextColor = BrandBlue
+                    ),
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(BrandWhite)
+                ) {
+                    options.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption, color = BrandBlue) },
+                            onClick = {
+                                tournamentsPerYear = selectionOption
+                                expanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(22.dp))
 

@@ -51,6 +51,10 @@ import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 
 @Composable
 fun RegisterScreen(
@@ -79,7 +83,23 @@ fun RegisterScreen(
     ) {
         Spacer(modifier = Modifier.height(18.dp))
 
-        AppLogoRegister()
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            IconButton(
+                onClick = onGoToLogin,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color(0xFF2F3138)
+                )
+            }
+
+            AppLogoRegister()
+        }
 
         Spacer(modifier = Modifier.height(22.dp))
 

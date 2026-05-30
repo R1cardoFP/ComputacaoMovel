@@ -48,9 +48,15 @@ import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 
 @Composable
-fun RecoverPasswordScreen() {
+fun RecoverPasswordScreen(
+    onGoToLogin: () -> Unit = {}
+) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
@@ -68,9 +74,25 @@ fun RecoverPasswordScreen() {
             .padding(horizontal = 28.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(165.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        RecoverLogo()
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            IconButton(
+                onClick = onGoToLogin,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color(0xFF2F3138)
+                )
+            }
+
+            RecoverLogo()
+        }
 
         Spacer(modifier = Modifier.height(28.dp))
 

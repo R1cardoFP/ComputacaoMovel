@@ -89,6 +89,22 @@ class AuthRepository {
             client.auth.signOut()
         }
     }
+
+    // Função necessária para carregar os dados reais no ProfileScreen
+    suspend fun obterUtilizadorAtual(): Result<Utilizador> {
+        return runCatching {
+            val userId = client.auth.currentUserOrNull()?.id
+                ?: throw Exception("Nenhum utilizador logado.")
+
+            client.from("utilizador")
+                .select {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
+                .decodeSingle<Utilizador>()
+        }
+    }
 }
 
 @Serializable

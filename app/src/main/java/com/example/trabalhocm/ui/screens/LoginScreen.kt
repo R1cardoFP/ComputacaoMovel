@@ -181,7 +181,7 @@ fun LoginScreen(
                                     onLoginSuccess()
                                 }
                                 .onFailure { erro ->
-                                    mensagem = "Erro no login: ${erro.message}"
+                                    mensagem = "Error: ${erro.message}"
                                 }
 
                             isLoading = false
