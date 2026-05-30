@@ -1,5 +1,8 @@
 package com.example.trabalhocm.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -52,12 +56,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.R
+import coil.compose.AsyncImage
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
@@ -69,27 +72,27 @@ private val TextDark = Color(0xFF303646)
 
 @Composable
 fun ProfileScreen(
-    // Estes parâmetros recebem os dados dinâmicos do MainActivity
     initialName: String = "A carregar...",
     initialEmail: String = "A carregar...",
-    initialBio: String = "Sem biografia definida.",
+    initialBio: String = "",
     memberSinceYear: String = "2024",
     roles: List<String> = listOf("PLAYER"),
     tier: String = "BRONZE TIER",
-
-    // Acções dos botões
     onLogoutClick: () -> Unit = {},
     onSaveChanges: (String, String, String) -> Unit = { _, _, _ -> },
-    onHomeClick: () -> Unit = {},
-    onTournamentsClick: () -> Unit = {},
-    onMatchesClick: () -> Unit = {},
-    onTeamsClick: () -> Unit = {}
+    onDashboardClick: () -> Unit = {}
 ) {
-    // Variáveis que o utilizador pode editar no ecrã
     var name by remember(initialName) { mutableStateOf(initialName) }
     var email by remember(initialEmail) { mutableStateOf(initialEmail) }
     var bio by remember(initialBio) { mutableStateOf(initialBio) }
     var twoFactorEnabled by remember { mutableStateOf(true) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
 
     Column(
         modifier = Modifier
@@ -98,7 +101,6 @@ fun ProfileScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        // --- Top Bar ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -121,41 +123,40 @@ fun ProfileScreen(
             )
         }
 
-        // --- Conteúdo Scrollable (Ocupa o espaço restante) ---
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
-            // Cartão de Perfil (Atualiza com o nome do utilizador real)
             ProfileHeaderCard(
                 name = name.ifBlank { "Sem Nome" },
                 memberSince = memberSinceYear,
                 roles = roles,
-                tier = tier
+                tier = tier,
+                selectedImageUri = selectedImageUri,
+                onChangePhotoClick = { photoPickerLauncher.launch("image/*") }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Definições de Conta
             SectionHeader(icon = Icons.Outlined.Person, title = "Account Settings")
             Spacer(modifier = Modifier.height(16.dp))
             CustomTextField(label = "FULL NAME", value = name, onValueChange = { name = it })
             Spacer(modifier = Modifier.height(12.dp))
-            CustomTextField(label = "EMAIL ADDRESS", value = email, onValueChange = { email = it })
+            CustomTextField(label = "EMAIL ADDRESS", value = email, onValueChange = {}, readOnly = true)
             Spacer(modifier = Modifier.height(12.dp))
             CustomTextField(
                 label = "BIO",
                 value = bio,
                 onValueChange = { bio = it },
                 singleLine = false,
+                placeholder = "Sem biografia definida.",
                 modifier = Modifier.height(100.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Preferências
             SectionHeader(icon = Icons.Outlined.Settings, title = "Preferences")
             Spacer(modifier = Modifier.height(16.dp))
             Text("LANGUAGE", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
@@ -165,14 +166,12 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Dashboards
             SectionHeader(icon = Icons.Outlined.List, title = "Active Dashboards")
             Spacer(modifier = Modifier.height(16.dp))
-            DashboardOption()
+            DashboardOption(onClick = onDashboardClick)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Segurança
             SectionHeader(icon = Icons.Outlined.Lock, title = "Security")
             Spacer(modifier = Modifier.height(16.dp))
             SecurityToggle(
@@ -181,7 +180,7 @@ fun ProfileScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(
-                onClick = { /* TODO: Change Password */ },
+                onClick = { },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text("CHANGE PASSWORD", color = Color(0xFF3566C9), fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -189,7 +188,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botões Finais
             Button(
                 onClick = { onSaveChanges(name, email, bio) },
                 modifier = Modifier
@@ -217,20 +215,18 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
         }
-
-        // --- Bottom Bar ---
-        ProfileBottomBar(
-            onHomeClick = onHomeClick,
-            onTournamentsClick = onTournamentsClick,
-            onMatchesClick = onMatchesClick,
-            onTeamsClick = onTeamsClick,
-            onProfileClick = {} // O Profile não faz nada porque já estamos nele
-        )
     }
 }
 
 @Composable
-fun ProfileHeaderCard(name: String, memberSince: String, roles: List<String>, tier: String) {
+fun ProfileHeaderCard(
+    name: String,
+    memberSince: String,
+    roles: List<String>,
+    tier: String,
+    selectedImageUri: Uri?,
+    onChangePhotoClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -242,16 +238,36 @@ fun ProfileHeaderCard(name: String, memberSince: String, roles: List<String>, ti
                 .padding(vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.avatar_player),
-                contentDescription = "Avatar",
-                contentScale = ContentScale.Crop,
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .border(2.dp, BrandWhite, RoundedCornerShape(12.dp))
                     .background(Color.LightGray)
-            )
+                    .clickable { onChangePhotoClick() }
+            ) {
+                if (selectedImageUri != null) {
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = "User Photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFE2E6F2)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "👤",
+                            fontSize = 40.sp
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -314,7 +330,9 @@ fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    readOnly: Boolean = false,
+    placeholder: String = ""
 ) {
     Column {
         Text(text = label, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
@@ -323,6 +341,12 @@ fun CustomTextField(
             value = value,
             onValueChange = onValueChange,
             singleLine = singleLine,
+            readOnly = readOnly,
+            placeholder = {
+                if (placeholder.isNotEmpty()) {
+                    Text(text = placeholder, color = TextGray)
+                }
+            },
             modifier = modifier.fillMaxWidth(),
             shape = RoundedCornerShape(6.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -331,8 +355,8 @@ fun CustomTextField(
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
                 cursorColor = BrandGreen,
-                focusedTextColor = TextDark,
-                unfocusedTextColor = TextDark
+                focusedTextColor = if (readOnly) TextGray else TextDark,
+                unfocusedTextColor = if (readOnly) TextGray else TextDark
             )
         )
     }
@@ -361,11 +385,12 @@ fun LanguageOption(text: String, isSelected: Boolean) {
 }
 
 @Composable
-fun DashboardOption() {
+fun DashboardOption(onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(InputBg, RoundedCornerShape(6.dp))
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -407,60 +432,6 @@ fun SecurityToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
                 uncheckedThumbColor = BrandWhite,
                 uncheckedTrackColor = Color.LightGray
             )
-        )
-    }
-}
-
-@Composable
-fun ProfileBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        ProfileBottomItem("⌂", "HOME", false, onHomeClick)
-        ProfileBottomItem("🏆", "TOURNAMENTS", false, onTournamentsClick)
-        ProfileBottomItem("⚽", "MATCHES", false, onMatchesClick)
-        ProfileBottomItem("👥", "TEAMS", false, onTeamsClick)
-        ProfileBottomItem("👤", "PROFILE", true, onProfileClick) // true para destacar a aba Profile
-    }
-}
-
-@Composable
-fun ProfileBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF3566C9) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(3.dp))
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
         )
     }
 }

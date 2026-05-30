@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,12 +42,7 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 
 @Composable
 fun PlayerTournamentDetailsScreen(
-    onBackClick: () -> Unit = {},
-    onHomeClick: () -> Unit = {},
-    onTournamentsClick: () -> Unit = {},
-    onMatchesClick: () -> Unit = {},
-    onTeamsClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onBackClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -88,14 +82,6 @@ fun PlayerTournamentDetailsScreen(
                 Spacer(modifier = Modifier.height(22.dp))
             }
         }
-
-        TournamentDetailsBottomBar(
-            onHomeClick = onHomeClick,
-            onTournamentsClick = onTournamentsClick,
-            onMatchesClick = onMatchesClick,
-            onTeamsClick = onTeamsClick,
-            onProfileClick = onProfileClick
-        )
     }
 }
 
@@ -592,62 +578,6 @@ fun StandingLogo(
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-@Composable
-fun TournamentDetailsBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        TournamentDetailsBottomItem("⌂", "HOME", false, onHomeClick)
-        TournamentDetailsBottomItem("♕", "TOURNAMENTS", true, onTournamentsClick)
-        TournamentDetailsBottomItem("◎", "MATCHES", false, onMatchesClick)
-        TournamentDetailsBottomItem("♟", "TEAMS", false, onTeamsClick)
-        TournamentDetailsBottomItem("♙", "PROFILE", false, onProfileClick)
-    }
-}
-
-@Composable
-fun TournamentDetailsBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0757C8) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

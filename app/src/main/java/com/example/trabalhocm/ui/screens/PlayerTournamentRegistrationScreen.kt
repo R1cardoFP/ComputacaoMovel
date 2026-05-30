@@ -49,12 +49,7 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 @Composable
 fun PlayerTournamentRegistrationScreen(
     onBackClick: () -> Unit = {},
-    onSubmitClick: () -> Unit = {},
-    onHomeClick: () -> Unit = {},
-    onTournamentsClick: () -> Unit = {},
-    onMatchesClick: () -> Unit = {},
-    onTeamsClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onSubmitClick: () -> Unit = {}
 ) {
     var selectedPayment by remember { mutableStateOf("Revolut") }
 
@@ -142,14 +137,6 @@ fun PlayerTournamentRegistrationScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
         }
-
-        RegistrationBottomBar(
-            onHomeClick = onHomeClick,
-            onTournamentsClick = onTournamentsClick,
-            onMatchesClick = onMatchesClick,
-            onTeamsClick = onTeamsClick,
-            onProfileClick = onProfileClick
-        )
     }
 }
 
@@ -698,62 +685,6 @@ fun SummaryRow(
             .height(1.dp)
             .background(Color(0xFFE8EAF2))
     )
-}
-
-@Composable
-fun RegistrationBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        RegistrationBottomItem("⌂", "HOME", false, onHomeClick)
-        RegistrationBottomItem("♕", "TOURNAMENTS", true, onTournamentsClick)
-        RegistrationBottomItem("◎", "MATCHES", false, onMatchesClick)
-        RegistrationBottomItem("♟", "TEAMS", false, onTeamsClick)
-        RegistrationBottomItem("♙", "PROFILE", false, onProfileClick)
-    }
-}
-
-@Composable
-fun RegistrationBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0757C8) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
 }
 
 @Preview(showBackground = true, name = "Player Tournament Registration Screen")

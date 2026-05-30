@@ -60,12 +60,7 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 fun PlayerBecomeOrganizerScreen(
     onBackClick: () -> Unit = {},
     onSubmitClick: () -> Unit = {},
-    onCancelClick: () -> Unit = {},
-    onHomeClick: () -> Unit = {},
-    onTournamentsClick: () -> Unit = {},
-    onMatchesClick: () -> Unit = {},
-    onTeamsClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onCancelClick: () -> Unit = {}
 ) {
     var sport by remember { mutableStateOf("Volleyball") }
     var experience by remember { mutableStateOf("Intermediate") }
@@ -356,14 +351,6 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
         }
-
-        BecomeOrganizerBottomBar(
-            onHomeClick = onHomeClick,
-            onTournamentsClick = onTournamentsClick,
-            onMatchesClick = onMatchesClick,
-            onTeamsClick = onTeamsClick,
-            onProfileClick = onProfileClick
-        )
     }
 }
 
@@ -725,62 +712,6 @@ fun OrganizerTermsBox(
             fontSize = 12.sp,
             lineHeight = 17.sp,
             fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-fun BecomeOrganizerBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        BecomeOrganizerBottomItem("⌂", "HOME", false, onHomeClick)
-        BecomeOrganizerBottomItem("♕", "TOURNAMENTS", true, onTournamentsClick)
-        BecomeOrganizerBottomItem("◎", "MATCHES", false, onMatchesClick)
-        BecomeOrganizerBottomItem("♟", "TEAMS", false, onTeamsClick)
-        BecomeOrganizerBottomItem("♙", "PROFILE", false, onProfileClick)
-    }
-}
-
-@Composable
-fun BecomeOrganizerBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0757C8) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
         )
     }
 }

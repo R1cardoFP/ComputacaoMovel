@@ -90,7 +90,6 @@ class AuthRepository {
         }
     }
 
-    // Função necessária para carregar os dados reais no ProfileScreen
     suspend fun obterUtilizadorAtual(): Result<Utilizador> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
@@ -105,6 +104,22 @@ class AuthRepository {
                 .decodeSingle<Utilizador>()
         }
     }
+
+    suspend fun atualizarNomeUtilizador(novoNome: String): Result<Unit> {
+        return runCatching {
+            val userId = client.auth.currentUserOrNull()?.id
+                ?: throw Exception("Nenhum utilizador logado.")
+
+            val updateData = UpdateNome(nome = novoNome)
+
+            client.from("utilizador")
+                .update(updateData) {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
+        }
+    }
 }
 
 @Serializable
@@ -116,4 +131,9 @@ private data class NovoUtilizador(
 
     @SerialName("raio_km")
     val raioKm: Int = 25
+)
+
+@Serializable
+private data class UpdateNome(
+    val nome: String
 )
