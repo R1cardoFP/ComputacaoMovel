@@ -25,6 +25,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.model.AdminStats
+import com.example.trabalhocm.data.repository.AdminRepository
 
 private val AdminBlue = Color(0xFF0B1F3A)
 private val AdminGreen = Color(0xFF008D7D)
@@ -42,6 +49,55 @@ private val CardWhite = Color.White
 
 @Composable
 fun AdminHomeScreen(
+    onManageUsersClick: () -> Unit = {},
+    onManageTeamsClick: () -> Unit = {},
+    onManageTournamentsClick: () -> Unit = {},
+    onReviewRequestsClick: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
+    onTournamentsClick: () -> Unit = {},
+    onMatchesClick: () -> Unit = {},
+    onTeamsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
+) {
+    val adminRepository = remember { AdminRepository() }
+
+    var adminStats by remember { mutableStateOf(AdminStats()) }
+    var isLoadingStats by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        adminRepository.carregarEstatisticasAdmin()
+            .onSuccess { stats ->
+                adminStats = stats
+            }
+
+        isLoadingStats = false
+    }
+
+    val usersText = if (isLoadingStats) "..." else adminStats.totalUsers.toString()
+    val teamsText = if (isLoadingStats) "..." else adminStats.totalTeams.toString()
+    val tournamentsText = if (isLoadingStats) "..." else adminStats.totalTournaments.toString()
+
+    AdminHomeContent(
+        usersText = usersText,
+        teamsText = teamsText,
+        tournamentsText = tournamentsText,
+        onManageUsersClick = onManageUsersClick,
+        onManageTeamsClick = onManageTeamsClick,
+        onManageTournamentsClick = onManageTournamentsClick,
+        onReviewRequestsClick = onReviewRequestsClick,
+        onHomeClick = onHomeClick,
+        onTournamentsClick = onTournamentsClick,
+        onMatchesClick = onMatchesClick,
+        onTeamsClick = onTeamsClick,
+        onProfileClick = onProfileClick
+    )
+}
+
+@Composable
+private fun AdminHomeContent(
+    usersText: String,
+    teamsText: String,
+    tournamentsText: String,
     onManageUsersClick: () -> Unit = {},
     onManageTeamsClick: () -> Unit = {},
     onManageTournamentsClick: () -> Unit = {},
@@ -112,7 +168,11 @@ fun AdminHomeScreen(
             }
 
             item {
-                QuickOverviewCard()
+                QuickOverviewCard(
+                    users = usersText,
+                    teams = teamsText,
+                    tournaments = tournamentsText
+                )
             }
 
             item {
@@ -120,7 +180,7 @@ fun AdminHomeScreen(
                     icon = "∞",
                     title = "User Management",
                     description = "Oversee all accounts and roles.",
-                    badge = "142",
+                    badge = usersText,
                     iconColor = Color(0xFF0057C8),
                     iconBackground = Color(0xFFF0F5FF),
                     buttonText = "MANAGE USERS",
@@ -135,7 +195,7 @@ fun AdminHomeScreen(
                     icon = "⌂",
                     title = "Teams Management",
                     description = "View teams, rosters, and status.",
-                    badge = "4",
+                    badge = teamsText,
                     iconColor = AdminGreen,
                     iconBackground = Color(0xFFEAF8F5),
                     buttonText = "MANAGE TEAMS",
@@ -150,7 +210,7 @@ fun AdminHomeScreen(
                     icon = "♜",
                     title = "Tournaments Management",
                     description = "Create, edit, and monitor leagues.",
-                    badge = "8",
+                    badge = tournamentsText,
                     iconColor = Color(0xFF0057C8),
                     iconBackground = Color(0xFFF0F5FF),
                     buttonText = "MANAGE TOURNAMENTS",
@@ -216,7 +276,11 @@ private fun AdminTopBar(title: String) {
 }
 
 @Composable
-private fun QuickOverviewCard() {
+private fun QuickOverviewCard(
+    users: String,
+    teams: String,
+    tournaments: String
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -267,9 +331,9 @@ private fun QuickOverviewCard() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(28.dp)
             ) {
-                OverviewNumber(number = "142", label = "USERS")
-                OverviewNumber(number = "3", label = "TEAMS")
-                OverviewNumber(number = "4", label = "TOURNAMENTS")
+                OverviewNumber(number = users, label = "USERS")
+                OverviewNumber(number = teams, label = "TEAMS")
+                OverviewNumber(number = tournaments, label = "TOURNAMENTS")
             }
         }
     }
@@ -454,5 +518,9 @@ private fun BottomItem(
 @Preview(showBackground = true)
 @Composable
 fun AdminHomeScreenPreview() {
-    AdminHomeScreen()
+    AdminHomeContent(
+        usersText = "142",
+        teamsText = "3",
+        tournamentsText = "4"
+    )
 }
