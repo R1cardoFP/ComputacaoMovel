@@ -8,11 +8,18 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
 import com.example.trabalhocm.ui.screens.HomeScreen
-import com.example.trabalhocm.ui.screens.auth.LoginScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
+import com.example.trabalhocm.ui.screens.TorneiosScreen
+import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
+import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
+import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
+import com.example.trabalhocm.ui.screens.auth.LoginScreen
+import com.example.trabalhocm.ui.screens.auth.RecoverPasswordScreen
+import com.example.trabalhocm.ui.screens.auth.RegisterScreen
+import com.example.trabalhocm.ui.screens.auth.UserTypeScreen
 import com.example.trabalhocm.ui.screens.onboarding.OnboardingFlow
+import com.example.trabalhocm.ui.screens.onboarding.SplashScreen
 import com.example.trabalhocm.ui.screens.player.PlayerBecomeOrganizerScreen
 import com.example.trabalhocm.ui.screens.player.PlayerHomeScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentDetailsScreen
@@ -20,13 +27,7 @@ import com.example.trabalhocm.ui.screens.player.PlayerTournamentFiltersScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentHistoryScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentManagementScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentRegistrationScreen
-import com.example.trabalhocm.ui.screens.auth.RecoverPasswordScreen
-import com.example.trabalhocm.ui.screens.auth.RegisterScreen
-import com.example.trabalhocm.ui.screens.onboarding.SplashScreen
-import com.example.trabalhocm.ui.screens.TorneiosScreen
-import com.example.trabalhocm.ui.screens.auth.UserTypeScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
-import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,6 +121,48 @@ fun MatchPointApp() {
                 onPlayerClick = {
                     navController.navigate("player_home")
                 }
+            )
+        }
+
+        composable("admin_home") {
+            AdminHomeScreen(
+                onManageUsersClick = {},
+                onManageTeamsClick = {},
+                onManageTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onReviewRequestsClick = {},
+                onHomeClick = {},
+                onTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable("admin_profile") {
+            AdminProfileScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onLogoutSuccess = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {}
             )
         }
 
@@ -272,24 +315,6 @@ fun MatchPointApp() {
                 onVerTorneios = {
                     navController.navigate("torneios")
                 }
-            )
-        }
-
-        composable("admin_home") {
-            AdminHomeScreen(
-                onManageUsersClick = {},
-                onManageTeamsClick = {},
-                onManageTournamentsClick = {
-                    navController.navigate("torneios")
-                },
-                onReviewRequestsClick = {},
-                onHomeClick = {},
-                onTournamentsClick = {
-                    navController.navigate("torneios")
-                },
-                onMatchesClick = {},
-                onTeamsClick = {},
-                onProfileClick = {}
             )
         }
 
