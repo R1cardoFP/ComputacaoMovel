@@ -5,11 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
-import com.example.trabalhocm.ui.screens.HomeScreen
+import com.example.trabalhocm.ui.screens.organizador.HomeScreen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentScreen
 import com.example.trabalhocm.ui.screens.auth.LoginScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.onboarding.OnboardingFlow
@@ -32,6 +35,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
+        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
         setContent {
             TrabalhoCMTheme {
                 MatchPointApp()
@@ -271,6 +279,27 @@ fun MatchPointApp() {
             HomeScreen(
                 onVerTorneios = {
                     navController.navigate("torneios")
+                },
+                onCreateTournamentClick = {
+                    navController.navigate("create_tournament")
+                },
+                onHomeClick = {
+                }
+            )
+        }
+
+        composable("create_tournament") {
+            CreateTournamentScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onProceedClick = {
+                    // Aqui depois vai ser pra meter a rota para o schedule
+                },
+                onHomeClick = {
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = true }
+                    }
                 }
             )
         }
