@@ -12,6 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.trabalhocm.ui.screens.BrowseTeamsScreen
+import com.example.trabalhocm.ui.screens.CreateTeamScreen
 import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
 import com.example.trabalhocm.ui.screens.organizador.HomeScreen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentScreen
@@ -42,6 +44,9 @@ import com.example.trabalhocm.ui.screens.auth.UserTypeScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
 import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -566,7 +571,6 @@ fun MatchPointApp() {
             )
         }
 
-        /*
         composable("create_tournament") {
             CreateTournamentScreen(
                 onBackClick = { navController.popBackStack() },
@@ -595,7 +599,22 @@ fun MatchPointApp() {
             CreateTournamentStep3Screen(
                 onBackClick = { navController.popBackStack() },
                 onProceedClick = {
-                    // Quando tiver o Step 4 vou por a navegaçao aqui
+                    navController.navigate("create_tournament_step_4")            },
+                onHomeClick = {
+                    navController.navigate("home") { popUpTo("home") { inclusive = true } }
+                }
+            )
+        }
+
+        composable("create_tournament_step_4") {
+            CreateTournamentStep4Screen(
+                onBackClick = { navController.popBackStack() },
+                onPublishClick = {
+                    // Aqui vamos enviar os dados para a Base de Dados
+                    // Por agora, ao publicar, manda o utilizador de volta para a Home.
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = true }
+                    }
                 },
                 onHomeClick = {
                     navController.navigate("home") { popUpTo("home") { inclusive = true } }
@@ -603,8 +622,25 @@ fun MatchPointApp() {
             )
         }
 
+        composable("teams") {
+            BrowseTeamsScreen(
+                onCreateTeamClick = { navController.navigate("create_team") },
+                onManageTeamClick = { navController.navigate("manage_team") },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
+            )
+        }
 
-         */
+        composable("create_team") {
+            CreateTeamScreen(
+                onBackClick = { navController.popBackStack() },
+                onCreateClick = {
+                    navController.popBackStack()
+                },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
+            )
+        }
+
+
         composable("admin_home") {
             AdminHomeScreen(
                 onManageUsersClick = {},
