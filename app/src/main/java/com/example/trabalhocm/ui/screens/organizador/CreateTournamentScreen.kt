@@ -26,11 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchPointBottomBar
 
-// Como estas cores só existem neste ficheiro, declaramos como private para não chocar com outras
-private val TealGreen = Color(0xFF0CA789)
-private val CardBg = Color(0xFFFFFFFF)
-private val InputBg = Color(0xFFF1F5F9)
-private val PrimaryBlue = Color(0xFF0346B8)
+val TealGreen = Color(0xFF0CA789)
+val CardBg = Color(0xFFFFFFFF)
+val InputBg = Color(0xFFF1F5F9)
+val PrimaryBlue = Color(0xFF0346B8)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
