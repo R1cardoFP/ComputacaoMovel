@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.repository.AdminProfileRepository
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.text.TextStyle
 
 private val AdminBlue = Color(0xFF0B1F3A)
 private val AdminGreen = Color(0xFF008D7D)
@@ -59,6 +61,8 @@ private val CardWhite = Color.White
 fun AdminProfileScreen(
     onBackClick: () -> Unit = {},
     onLogoutSuccess: () -> Unit = {},
+    onChangePasswordClick: () -> Unit = {},
+    onDashboardClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -156,7 +160,7 @@ fun AdminProfileScreen(
                             label = "EMAIL ADDRESS",
                             value = email,
                             onValueChange = {},
-                            enabled = false,
+                            enabled = true,
                             keyboardType = KeyboardType.Email
                         )
 
@@ -205,7 +209,9 @@ fun AdminProfileScreen(
                         title = "Active Dashboards",
                         icon = "♜"
                     ) {
-                        DashboardOption()
+                        DashboardOption(
+                            onClick = onDashboardClick
+                        )
                     }
                 }
 
@@ -256,7 +262,11 @@ fun AdminProfileScreen(
                             color = Color(0xFF0057C8),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .clickable {
+                                    onChangePasswordClick()
+                                }
                         )
                     }
                 }
@@ -268,8 +278,15 @@ fun AdminProfileScreen(
                                 isSaving = true
                                 mensagem = ""
 
+                                if (nome.isBlank() || email.isBlank()) {
+                                    mensagem = "O nome e o email não podem estar vazios."
+                                    isSaving = false
+                                    return@launch
+                                }
+
                                 repository.atualizarPerfil(
-                                    nome = nome,
+                                    nome = nome.trim(),
+                                    email = email.trim(),
                                     bio = bio,
                                     language = language
                                 )
@@ -523,9 +540,13 @@ private fun ProfileInput(
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType
             ),
+            textStyle = TextStyle(
+                fontSize = if (singleLine) 13.sp else 14.sp,
+                color = AdminBlue
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(if (singleLine) 46.dp else 78.dp),
+                .height(if (singleLine) 56.dp else 96.dp),
             shape = RoundedCornerShape(4.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFFF1F2FB),
@@ -549,42 +570,68 @@ private fun LanguageOption(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(46.dp)
-            .background(
-                if (selected) Color.White else Color(0xFFF4F6FB),
-                RoundedCornerShape(2.dp)
-            )
-            .clickable { onClick() }
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .height(50.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(3.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) Color.White else Color(0xFFF4F6FB)
+        ),
+        border = if (selected) {
+            BorderStroke(1.5.dp, Color(0xFF3566C9))
+        } else {
+            null
+        },
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = text,
-            color = AdminBlue,
-            fontSize = 12.sp
-        )
-
-        if (selected) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
-                text = "●",
-                color = Color(0xFF0057C8),
-                fontSize = 12.sp
+                text = text,
+                color = if (selected) Color(0xFF0B1F3A) else TextMuted,
+                fontSize = 12.sp,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
             )
+
+            if (selected) {
+                Box(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color(0xFF3566C9)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "✓",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun DashboardOption() {
+private fun DashboardOption(
+    onClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
             .background(Color(0xFFEAF3FF), RoundedCornerShape(3.dp))
+            .clickable {
+                onClick()
+            }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

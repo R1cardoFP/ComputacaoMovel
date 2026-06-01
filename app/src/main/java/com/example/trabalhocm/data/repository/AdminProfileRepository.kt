@@ -42,6 +42,7 @@ class AdminProfileRepository {
 
     suspend fun atualizarPerfil(
         nome: String,
+        email: String,
         bio: String,
         language: String
     ): Result<Unit> {
@@ -56,6 +57,7 @@ class AdminProfileRepository {
 
             val update = AdminProfileUpdate(
                 nome = nome,
+                email = email,
                 dadosPessoais = dadosPessoais
             )
 
@@ -100,6 +102,7 @@ private data class AdminProfileDto(
 @Serializable
 private data class AdminProfileUpdate(
     val nome: String,
+    val email: String,
 
     @SerialName("dados_pessoais")
     val dadosPessoais: JsonObject

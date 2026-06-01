@@ -41,6 +41,7 @@ import com.example.trabalhocm.ui.screens.TorneiosScreen
 import com.example.trabalhocm.ui.screens.auth.UserTypeScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
+import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +66,7 @@ fun MatchPointApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "player_teams"
+        startDestination = "splash"
     ) {
         composable("splash") {
             SplashScreen(
@@ -613,6 +614,40 @@ fun MatchPointApp() {
                 },
                 onReviewRequestsClick = {},
                 onHomeClick = {},
+                onTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable("admin_profile") {
+            AdminProfileScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onLogoutSuccess = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onChangePasswordClick = {
+                    navController.navigate("change_password")
+                },
+                onDashboardClick = {
+                    navController.navigate("admin_home") {
+                        popUpTo("admin_home") { inclusive = false }
+                    }
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home") {
+                        popUpTo("admin_home") { inclusive = false }
+                    }
+                },
                 onTournamentsClick = {
                     navController.navigate("torneios")
                 },
