@@ -39,3 +39,6 @@ captures/
 app/release/
 *.apk
 *.aab
+
+
+.kotlin/
