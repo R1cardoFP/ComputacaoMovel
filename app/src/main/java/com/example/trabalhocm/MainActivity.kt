@@ -43,6 +43,7 @@ import com.example.trabalhocm.ui.screens.TorneiosScreen
 import com.example.trabalhocm.ui.screens.auth.UserTypeScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
+import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
@@ -633,7 +634,6 @@ fun MatchPointApp() {
             CreateTeamScreen(
                 onBackClick = { navController.popBackStack() },
                 onCreateClick = {
-                    // No futuro isto grava na BD. Por agora, volta às equipas.
                     navController.popBackStack()
                 },
                 onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
@@ -661,7 +661,7 @@ fun MatchPointApp() {
             )
         }
 
-    /*    composable("admin_profile") {
+        composable("admin_profile") {
             AdminProfileScreen(
                 onBackClick = {
                     navController.popBackStack()
@@ -691,7 +691,7 @@ fun MatchPointApp() {
                 onTeamsClick = {},
                 onProfileClick = {}
             )
-        } */
+        }
 
         composable("torneios") {
             TorneiosScreen()
