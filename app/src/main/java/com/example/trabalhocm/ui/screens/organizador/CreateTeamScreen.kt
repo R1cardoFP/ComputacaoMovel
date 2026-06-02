@@ -28,14 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Cores locais (usamos private para não chocar com os outros ecrãs)
-private val DarkBlue = Color(0xFF111827)
-private val PrimaryBlue = Color(0xFF0346B8)
-private val TealGreen = Color(0xFF0CA789)
-private val TextGray = Color(0xFF64748B)
-private val BgLight = Color(0xFFF8FAFC)
-private val CardBg = Color(0xFFFFFFFF)
-private val InputBg = Color(0xFFF1F5F9)
+// Import das cores centralizadas e da barra de navegação
+import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

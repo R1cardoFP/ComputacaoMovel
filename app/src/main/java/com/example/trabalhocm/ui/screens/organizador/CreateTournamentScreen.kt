@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
@@ -26,10 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-val TealGreen = Color(0xFF0CA789)
-val CardBg = Color(0xFFFFFFFF)
-val InputBg = Color(0xFFF1F5F9)
-val PrimaryBlue = Color(0xFF0346B8)
+import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +47,7 @@ fun CreateTournamentScreen(
                 title = { Text("Create", color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -114,7 +112,7 @@ fun CreateTournamentScreen(
                         isSelected = selectedSport == "Football",
                         onClick = {
                             selectedSport = "Football"
-                            selectedFormat = "League System" // Reset
+                            selectedFormat = "League System"
                         }
                     )
                     SportCard(
@@ -124,7 +122,7 @@ fun CreateTournamentScreen(
                         isSelected = selectedSport == "Volleyball",
                         onClick = {
                             selectedSport = "Volleyball"
-                            selectedFormat = "Pool Play + Playoffs" // Reset
+                            selectedFormat = "Pool Play + Playoffs"
                         }
                     )
                     SportCard(
@@ -134,7 +132,7 @@ fun CreateTournamentScreen(
                         isSelected = selectedSport == "Basketball",
                         onClick = {
                             selectedSport = "Basketball"
-                            selectedFormat = "Regular Season + Playoffs" // Reset para a 1ª opção do Basket
+                            selectedFormat = "Regular Season + Playoffs"
                         }
                     )
                 }
@@ -202,7 +200,7 @@ fun CreateTournamentScreen(
                         FormatCard(
                             title = "Regular Season + Playoffs",
                             description = "A full regular season followed by a playoff bracket to determine the champion.",
-                            icon = Icons.Default.DateRange, // Ícone de calendário
+                            icon = Icons.Default.DateRange,
                             isSelected = selectedFormat == "Regular Season + Playoffs",
                             onClick = { selectedFormat = "Regular Season + Playoffs" }
                         )
@@ -210,7 +208,7 @@ fun CreateTournamentScreen(
                         FormatCard(
                             title = "Single Elimination Bracket",
                             description = "Standard knockout tournament. Win to advance, lose and you're out.",
-                            icon = Icons.Default.Share, // Ícone que parece um bracket
+                            icon = Icons.Default.Share,
                             isSelected = selectedFormat == "Single Elimination Bracket",
                             onClick = { selectedFormat = "Single Elimination Bracket" }
                         )
@@ -283,10 +281,26 @@ fun HeaderSection() {
             Text("Tournament\nBasics", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
-                Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFFE2E8F0)))
-                Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFFE2E8F0)))
-                Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFFE2E8F0)))
+                Box(modifier = Modifier
+                    .width(24.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(TealGreen))
+                Box(modifier = Modifier
+                    .width(24.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color(0xFFE2E8F0)))
+                Box(modifier = Modifier
+                    .width(24.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color(0xFFE2E8F0)))
+                Box(modifier = Modifier
+                    .width(24.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color(0xFFE2E8F0)))
             }
         }
         Spacer(modifier = Modifier.height(12.dp))

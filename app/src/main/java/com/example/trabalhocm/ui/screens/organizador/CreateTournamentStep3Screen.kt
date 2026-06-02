@@ -28,6 +28,9 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import java.text.NumberFormat
 import java.util.Locale
 
+// IMPORT DAS CORES CENTRALIZADAS!
+import com.example.trabalhocm.ui.theme.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTournamentStep3Screen(
@@ -87,7 +90,7 @@ fun CreateTournamentStep3Screen(
             Step3HeaderSection()
 
             Column {
-                SectionLabel("VENUE / LOCATION")
+                Step3SectionLabel("VENUE / LOCATION")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = venue,
@@ -128,7 +131,7 @@ fun CreateTournamentStep3Screen(
             }
 
             Column {
-                SectionLabel("ENTRY FEE PER TEAM")
+                Step3SectionLabel("ENTRY FEE PER TEAM")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = entryFee,
@@ -151,7 +154,7 @@ fun CreateTournamentStep3Screen(
             }
 
             Column {
-                SectionLabel("PRIZE POOL DISTRIBUTION")
+                Step3SectionLabel("PRIZE POOL DISTRIBUTION")
                 Spacer(modifier = Modifier.height(12.dp))
 
                 PrizeInputRow(
@@ -186,7 +189,7 @@ fun CreateTournamentStep3Screen(
             }
 
             Column {
-                SectionLabel("VENUE NOTES (OPTIONAL)")
+                Step3SectionLabel("VENUE NOTES (OPTIONAL)")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = notes,
@@ -325,6 +328,18 @@ fun PrizeInputRow(
             )
         }
     }
+}
+
+// ESTA É A FUNÇÃO SUBSTITUTA, PRIVADA E COM NOME ÚNICO PARA O STEP 3
+private @Composable
+fun Step3SectionLabel(text: String) {
+    Text(
+        text = text,
+        color = TextGray,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp
+    )
 }
 
 @Preview(showBackground = true)

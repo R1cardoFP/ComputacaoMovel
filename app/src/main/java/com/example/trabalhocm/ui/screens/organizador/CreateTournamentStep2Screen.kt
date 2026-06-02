@@ -31,6 +31,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+// IMPORT DAS CORES CENTRALIZADAS!
+import com.example.trabalhocm.ui.theme.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTournamentStep2Screen(
@@ -38,7 +41,7 @@ fun CreateTournamentStep2Screen(
     onProceedClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    // CORRIGIDO: Gerar datas sugeridas dinamicamente (Começa em 2 dias, acaba em 4 dias)
+    // Gerar datas sugeridas dinamicamente (Começa em 2 dias, acaba em 4 dias)
     val (defaultStart, defaultEnd, defaultDeadline) = remember {
         val sdf = SimpleDateFormat("dd/MM/yy", Locale.getDefault()).apply {
             timeZone = TimeZone.getTimeZone("UTC")
@@ -111,11 +114,11 @@ fun CreateTournamentStep2Screen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    SectionLabel("START DATE")
+                    Step2SectionLabel("START DATE")
                     Spacer(modifier = Modifier.height(8.dp))
                     DatePickerField(
                         value = startDate,
-                        maxDate = null, // CORRIGIDO: Retirámos o bloqueio! O utilizador pode escolher qualquer data futura
+                        maxDate = null,
                         onValueChange = { newDate ->
                             startDate = newDate
 
@@ -126,19 +129,17 @@ fun CreateTournamentStep2Screen(
                                 val parsedStart = sdf.parse(newDate)
 
                                 if (parsedStart != null) {
-                                    // 1. Atualizar automaticamente o Deadline para 1 dia antes da nova Start Date
                                     val deadlineCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
                                         time = parsedStart
                                         add(Calendar.DAY_OF_YEAR, -1)
                                     }
                                     registrationDeadline = sdf.format(deadlineCal.time)
 
-                                    // 2. CORRIGIDO: Se a nova Start Date for maior ou igual à End Date atual, empurra a End Date para a frente
                                     val parsedEnd = sdf.parse(endDate)
                                     if (parsedEnd != null && parsedStart.time >= parsedEnd.time) {
                                         val endCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
                                             time = parsedStart
-                                            add(Calendar.DAY_OF_YEAR, 2) // Ajusta para terminar 2 dias depois da nova data de início
+                                            add(Calendar.DAY_OF_YEAR, 2)
                                         }
                                         endDate = sdf.format(endCal.time)
                                     }
@@ -149,11 +150,11 @@ fun CreateTournamentStep2Screen(
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    SectionLabel("END DATE")
+                    Step2SectionLabel("END DATE")
                     Spacer(modifier = Modifier.height(8.dp))
                     DatePickerField(
                         value = endDate,
-                        minDate = startDate, // Mantemos o bloqueio para a End Date não ser escolhida antes da Start Date manualmente
+                        minDate = startDate,
                         onValueChange = { endDate = it },
                         icon = Icons.Default.DateRange
                     )
@@ -162,11 +163,11 @@ fun CreateTournamentStep2Screen(
 
             // REGISTRATION DEADLINE (Com Calendário)
             Column {
-                SectionLabel("REGISTRATION DEADLINE")
+                Step2SectionLabel("REGISTRATION DEADLINE")
                 Spacer(modifier = Modifier.height(8.dp))
                 DatePickerField(
                     value = registrationDeadline,
-                    maxDate = startDate, // Permite escolher até ao próprio dia de início (Start Date) inclusive
+                    maxDate = startDate,
                     onValueChange = { registrationDeadline = it },
                     icon = Icons.Default.DateRange
                 )
@@ -174,7 +175,7 @@ fun CreateTournamentStep2Screen(
 
             // MAX PARTICIPANTS
             Column {
-                SectionLabel("MAX PARTICIPANTS")
+                Step2SectionLabel("MAX PARTICIPANTS")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = maxParticipants,
@@ -199,7 +200,7 @@ fun CreateTournamentStep2Screen(
 
             // REGISTRATION FORMAT
             Column {
-                SectionLabel("REGISTRATION FORMAT")
+                Step2SectionLabel("REGISTRATION FORMAT")
                 Spacer(modifier = Modifier.height(8.dp))
 
                 RegistrationFormatCard(
@@ -447,6 +448,18 @@ fun RegistrationFormatCard(
             }
         }
     }
+}
+
+// ESTA É A FUNÇÃO SUBSTITUTA, PRIVADA E COM NOME ÚNICO
+private @Composable
+fun Step2SectionLabel(text: String) {
+    Text(
+        text = text,
+        color = TextGray,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp
+    )
 }
 
 @Preview(showBackground = true)

@@ -2,7 +2,6 @@ package com.example.trabalhocm.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,15 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val DarkBlue = Color(0xFF111827)
-private val PrimaryBlue = Color(0xFF0346B8)
-private val TealGreen = Color(0xFF0CA789)
-private val TextGray = Color(0xFF64748B)
-private val BgLight = Color(0xFFF8FAFC)
-private val CardBg = Color(0xFFFFFFFF)
-private val InputBg = Color(0xFFF1F5F9)
-private val ErrorRed = Color(0xFFDC2626)
+import com.example.trabalhocm.ui.theme.*
 
 data class Team(
     val name: String,
@@ -48,6 +39,7 @@ data class Team(
 fun BrowseTeamsScreen(
     onCreateTeamClick: () -> Unit = {},
     onManageTeamClick: () -> Unit = {},
+    onViewDetailsClick: (Boolean) -> Unit = {}, // <-- O PARÂMETRO QUE FALTAVA!
     onHomeClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -179,13 +171,16 @@ fun BrowseTeamsScreen(
 
             items(filteredTeams) { team ->
                 if (team.isMyTeam) {
-                    // AQUI: Passamos a ação do ecrã principal para dentro do cartão!
                     MyTeamCard(
                         team = team,
-                        onManageTeamClick = onManageTeamClick
+                        onManageTeamClick = onManageTeamClick,
+                        onViewDetailsClick = { onViewDetailsClick(true) } // Passa que é a tua equipa
                     )
                 } else {
-                    RegularTeamCard(team)
+                    RegularTeamCard(
+                        team = team,
+                        onViewDetailsClick = { onViewDetailsClick(false) } // Passa que é equipa dos outros
+                    )
                 }
             }
 
@@ -196,11 +191,11 @@ fun BrowseTeamsScreen(
     }
 }
 
-// AQUI: Adicionamos o parâmetro onManageTeamClick à assinatura da função
 @Composable
 fun MyTeamCard(
     team: Team,
-    onManageTeamClick: () -> Unit = {}
+    onManageTeamClick: () -> Unit = {},
+    onViewDetailsClick: () -> Unit = {}
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
@@ -244,7 +239,7 @@ fun MyTeamCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { },
+                    onClick = onViewDetailsClick,
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, PrimaryBlue),
                     modifier = Modifier.weight(1f).height(40.dp)
@@ -252,7 +247,7 @@ fun MyTeamCard(
                     Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
                 Button(
-                    onClick = onManageTeamClick, // Agora já sabe o que é isto!
+                    onClick = onManageTeamClick,
                     colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f).height(40.dp)
@@ -265,7 +260,10 @@ fun MyTeamCard(
 }
 
 @Composable
-fun RegularTeamCard(team: Team) {
+fun RegularTeamCard(
+    team: Team,
+    onViewDetailsClick: () -> Unit = {}
+) {
     val streakColor = if (team.streak.startsWith("W")) TealGreen else ErrorRed
 
     Card(
@@ -306,7 +304,7 @@ fun RegularTeamCard(team: Team) {
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { },
+                onClick = onViewDetailsClick,
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, PrimaryBlue),
                 modifier = Modifier.fillMaxWidth().height(40.dp)

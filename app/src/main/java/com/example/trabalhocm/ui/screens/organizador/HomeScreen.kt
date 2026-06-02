@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-val DarkBlue = Color(0xFF152238)
-val EmeraldGreen = Color(0xFF0E8A6F)
-val BgLight = Color(0xFFF7F7F9)
-val TextGray = Color(0xFF6B7280)
+private val DarkBlue = Color(0xFF152238)
+private val EmeraldGreen = Color(0xFF0E8A6F)
+private val BgLight = Color(0xFFF7F7F9)
+private val TextGray = Color(0xFF6B7280)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

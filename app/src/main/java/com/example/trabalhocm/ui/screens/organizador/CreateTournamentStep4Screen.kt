@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
+// IMPORT DAS CORES CENTRALIZADAS!
+import com.example.trabalhocm.ui.theme.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTournamentStep4Screen(
@@ -74,7 +77,7 @@ fun CreateTournamentStep4Screen(
 
             // MY ROLE IN THIS TOURNAMENT
             Column {
-                SectionLabel("MY ROLE IN THIS TOURNAMENT")
+                Step4SectionLabel("MY ROLE IN THIS TOURNAMENT")
                 Spacer(modifier = Modifier.height(8.dp))
 
                 RoleCard(
@@ -96,7 +99,7 @@ fun CreateTournamentStep4Screen(
 
             // MY SEED / TEAM NAME
             Column {
-                SectionLabel("MY SEED / TEAM NAME")
+                Step4SectionLabel("MY SEED / TEAM NAME")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = "FC Mancos",
@@ -122,7 +125,7 @@ fun CreateTournamentStep4Screen(
 
             // EVENT STATUS
             Column {
-                SectionLabel("EVENT STATUS")
+                Step4SectionLabel("EVENT STATUS")
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Card(
@@ -365,6 +368,18 @@ fun ReviewRow(label: String, value: String) {
         Text(label, color = TextGray, fontSize = 14.sp)
         Text(value, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
     }
+}
+
+// ESTA É A FUNÇÃO SUBSTITUTA, PRIVADA E COM NOME ÚNICO PARA O STEP 4
+private @Composable
+fun Step4SectionLabel(text: String) {
+    Text(
+        text = text,
+        color = TextGray,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp
+    )
 }
 
 @Preview(showBackground = true)
