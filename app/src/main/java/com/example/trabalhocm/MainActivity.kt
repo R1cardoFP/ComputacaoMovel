@@ -34,12 +34,10 @@ import com.example.trabalhocm.ui.screens.onboarding.OnboardingFlow
 import com.example.trabalhocm.ui.screens.player.PlayerBecomeOrganizerScreen
 import com.example.trabalhocm.ui.screens.player.PlayerCreateTeamScreen
 import com.example.trabalhocm.ui.screens.player.PlayerHomeScreen
-import com.example.trabalhocm.ui.screens.player.PlayerInvitePlayerScreen
 import com.example.trabalhocm.ui.screens.player.PlayerManageTeamScreen
 import com.example.trabalhocm.ui.screens.player.PlayerNotificationsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerProfileScreen
 import com.example.trabalhocm.ui.screens.player.PlayerStatsScreen
-import com.example.trabalhocm.ui.screens.player.PlayerTeamDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamPlayerDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentDetailsScreen
@@ -58,6 +56,11 @@ import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
+
+// NOVOS IMPORTS CORRIGIDOS
+import com.example.trabalhocm.ui.screens.organizador.TeamDetailsScreen
+import com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen
+
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -218,9 +221,7 @@ fun MatchLeagueApp() {
             var nomeUtilizador by remember { mutableStateOf("A carregar...") }
             var emailUtilizador by remember { mutableStateOf("A carregar...") }
 
-            // INICIALIZA VAZIO "" EM VEZ DE "Sem biografia..." PARA O PLACEHOLDER FUNCIONAR
             var bioUtilizador by remember { mutableStateOf("") }
-
             var photoUri by remember { mutableStateOf<Uri?>(null) }
             var userId by remember { mutableStateOf("") }
 
@@ -329,13 +330,14 @@ fun MatchLeagueApp() {
             )
         }
 
+        // ROTA ANTIGA DO PLAYER COM O NOVO NOME
         composable(
             route = "player_team_details/{isUserTeam}",
             arguments = listOf(navArgument("isUserTeam") { type = NavType.BoolType })
         ) { backStackEntry ->
             val isUserTeam = backStackEntry.arguments?.getBoolean("isUserTeam") ?: false
 
-            PlayerTeamDetailsScreen(
+            TeamDetailsScreen(
                 isUserTeam = isUserTeam,
                 onBackClick = { navController.popBackStack() },
                 onInvitePlayerClick = { navController.navigate("player_invite_player") },
@@ -360,7 +362,7 @@ fun MatchLeagueApp() {
         }
 
         composable("player_invite_player") {
-            PlayerInvitePlayerScreen(
+            com.example.trabalhocm.ui.screens.player.PlayerInvitePlayerScreen(
                 onBackClick = { navController.popBackStack() },
                 onSendInviteClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
@@ -397,6 +399,8 @@ fun MatchLeagueApp() {
                 onProfileClick = { navController.navigate("player_profile") }
             )
         }
+
+        // --- ZONA DO ORGANIZADOR ---
 
         composable("home") {
             HomeScreen(
@@ -437,11 +441,45 @@ fun MatchLeagueApp() {
             )
         }
 
+        // ROTA ATUALIZADA: Agora navega para os teus novos ecrãs!
         composable("teams") {
             BrowseTeamsScreen(
                 onCreateTeamClick = { navController.navigate("create_team") },
                 onManageTeamClick = { navController.navigate("manage_team") },
+                onViewDetailsClick = { isUserTeam -> navController.navigate("organizador_team_details/$isUserTeam") },
                 onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
+            )
+        }
+
+        // NOVA ROTA: Detalhes da equipa (Versão Organizador)
+        composable(
+            route = "organizador_team_details/{isUserTeam}",
+            arguments = listOf(navArgument("isUserTeam") { type = NavType.BoolType })
+        ) { backStackEntry ->
+            val isUserTeam = backStackEntry.arguments?.getBoolean("isUserTeam") ?: false
+
+            TeamDetailsScreen(
+                isUserTeam = isUserTeam,
+                onBackClick = { navController.popBackStack() },
+                onInvitePlayerClick = { navController.navigate("organizador_invite_player") },
+                onViewPlayerProfileClick = { /* A FAZER SE NECESSÁRIO NO FUTURO */ },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = {},
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = {}
+            )
+        }
+
+        composable("organizador_invite_player") {
+            com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen(
+                onBackClick = { navController.popBackStack() },
+                onSendInviteClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = {},
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = {}
             )
         }
 
@@ -452,6 +490,8 @@ fun MatchLeagueApp() {
                 onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
             )
         }
+
+        // --- ZONA DO ADMIN ---
 
         composable("admin_home") {
             AdminHomeScreen(
