@@ -37,14 +37,14 @@ fun SplashScreen(onEnd: () -> Unit) {
 
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
-                painter = painterResource(R.drawable.logo), contentDescription = "MatchPoint logo",
+                painter = painterResource(R.drawable.logo), contentDescription = "MatchLeague logo",
                 modifier = Modifier.size(400.dp), contentScale = ContentScale.Fit
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 buildAnnotatedString {
                     withStyle(SpanStyle(color = BrandBlue, fontWeight = FontWeight.Bold)) { append("MATCH") }
-                    withStyle(SpanStyle(color = AccentGreen, fontWeight = FontWeight.Bold)) { append("POINT") }
+                    withStyle(SpanStyle(color = AccentGreen, fontWeight = FontWeight.Bold)) { append("LEAGUE") }
                 }, fontSize = 34.sp
             )
             Spacer(Modifier.height(20.dp))

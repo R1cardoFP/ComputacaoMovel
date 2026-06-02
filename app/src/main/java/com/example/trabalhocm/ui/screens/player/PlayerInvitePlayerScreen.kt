@@ -46,7 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
@@ -337,7 +337,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        MatchPointBottomBar(
+        MatchLeagueBottomBar(
             selectedTab = "TEAMS",
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,

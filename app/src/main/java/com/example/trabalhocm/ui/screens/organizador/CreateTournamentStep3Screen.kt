@@ -24,7 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -69,7 +69,7 @@ fun CreateTournamentStep3Screen(
             )
         },
         bottomBar = {
-            MatchPointBottomBar(
+            MatchLeagueBottomBar(
                 selectedTab = "TOURNAMENTS",
                 onHomeClick = onHomeClick
             )

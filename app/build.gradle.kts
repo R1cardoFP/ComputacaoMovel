@@ -15,8 +15,7 @@ val localProperties = Properties().apply {
     }
 }
 
-val supabaseUrl = localProperties.getProperty("SUPABASE_URL")
-    ?: throw GradleException("Falta SUPABASE_URL no ficheiro local.properties")
+val supabaseUrl = localProperties.getProperty("SUPABASE_URL")    ?: throw GradleException("Falta SUPABASE_URL no ficheiro local.properties")
 
 val supabaseKey = localProperties.getProperty("SUPABASE_KEY")
     ?: throw GradleException("Falta SUPABASE_KEY no ficheiro local.properties")
@@ -72,6 +71,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     implementation("androidx.navigation:navigation-compose:2.7.7")
 

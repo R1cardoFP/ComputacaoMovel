@@ -104,7 +104,7 @@ fun BrowseTeamsScreen(
                         Text("CREATE TEAM", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                     }
                 }
-                MatchPointBottomBar(selectedTab = "TEAMS", onHomeClick = onHomeClick)
+                MatchLeagueBottomBar(selectedTab = "TEAMS", onHomeClick = onHomeClick)
             }
         },
         containerColor = BgLight

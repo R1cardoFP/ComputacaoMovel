@@ -94,7 +94,7 @@ fun Onboarding3(onFinish: () -> Unit) {
                 Text(
                     buildAnnotatedString {
                         append("Join the ")
-                        withStyle(SpanStyle(color = AccentGreen)) { append("Point.") }
+                        withStyle(SpanStyle(color = AccentGreen)) { append("League.") }
                     },
                     color = BrandBlue, fontSize = 42.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold
                 )
@@ -121,7 +121,7 @@ fun OnboardingShell(page: Int, buttonText: String, onNext: () -> Unit, centeredH
             Text(
                 buildAnnotatedString {
                     withStyle(SpanStyle(color = BrandBlue)) { append("MATCH") }
-                    withStyle(SpanStyle(color = AccentGreen)) { append("POINT") }
+                    withStyle(SpanStyle(color = AccentGreen)) { append("LEAGUE") }
                 },
                 fontSize = 15.sp, fontWeight = FontWeight.Medium
             )

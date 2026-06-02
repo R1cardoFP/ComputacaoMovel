@@ -1,7 +1,12 @@
 package com.example.trabalhocm.ui.screens.player
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,116 +22,209 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.R
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import coil.compose.AsyncImage
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 
+private val BgGray = Color(0xFFF4F5FA)
+private val InputBg = Color(0xFFF1F2FB)
+private val TextGray = Color(0xFF7D8497)
+private val TextDark = Color(0xFF303646)
+
 @Composable
 fun PlayerProfileScreen(
-    onBackClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {},
+    initialName: String = "A carregar...",
+    initialEmail: String = "A carregar...",
+    initialBio: String = "",
+    initialPhotoUri: Uri? = null,
+    memberSinceYear: String = "2024",
+    roles: List<String> = listOf("PLAYER"),
+    tier: String = "BRONZE TIER",
+    onLogoutClick: () -> Unit = {},
+    onSaveChanges: (String, Uri?) -> Unit = { _, _ -> },
+    onDashboardClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    var bio by remember(initialBio) { mutableStateOf(initialBio) }
+    var twoFactorEnabled by remember { mutableStateOf(true) }
+    var selectedImageUri by remember(initialPhotoUri) { mutableStateOf(initialPhotoUri) }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) selectedImageUri = uri
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(BgGray)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        PlayerProfileTopBar(
-            onBackClick = onBackClick,
-            onNotificationsClick = onNotificationsClick
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .background(BrandBlue)
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Profile",
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Notificações",
+                tint = BrandWhite
+            )
+        }
 
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 22.dp, vertical = 18.dp)
+                .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
-            PlayerProfileHeroCard()
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            ProfileActionButtons(
-                onSettingsClick = onSettingsClick,
-                onNotificationsClick = onNotificationsClick
+            ProfileHeaderCard(
+                name = initialName.ifBlank { "Sem Nome" },
+                memberSince = memberSinceYear,
+                roles = roles,
+                tier = tier,
+                selectedImageUri = selectedImageUri,
+                onChangePhotoClick = { photoPickerLauncher.launch("image/*") }
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            SportStatsCard(
-                sport = "Football",
-                tag = "FORWARD",
-                icon = "⚽",
-                statOneLabel = "GOALS",
-                statOneValue = "24",
-                statTwoLabel = "ASSISTS",
-                statTwoValue = "18",
-                progress = null
+            SectionHeader(icon = Icons.Outlined.Person, title = "Account Settings")
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // NOME E EMAIL SÃO READ ONLY
+            CustomTextField(label = "FULL NAME", value = initialName, onValueChange = {}, readOnly = true)
+            Spacer(modifier = Modifier.height(12.dp))
+            CustomTextField(label = "EMAIL ADDRESS", value = initialEmail, onValueChange = {}, readOnly = true)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // BIO É EDITÁVEL (O placeholder aparece quando "bio" é vazio "")
+            CustomTextField(
+                label = "BIO",
+                value = bio,
+                onValueChange = { bio = it },
+                singleLine = false,
+                placeholder = "Sem biografia definida.",
+                modifier = Modifier.height(100.dp)
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            SportStatsCard(
-                sport = "Basketball",
-                tag = "",
-                icon = "🏀",
-                statOneLabel = "POINTS",
-                statOneValue = "412",
-                statTwoLabel = "WIN %",
-                statTwoValue = "65%",
-                progress = 0.65f
+            SectionHeader(icon = Icons.Outlined.Settings, title = "Preferences")
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("LANGUAGE", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            LanguageOption(text = "English (US)", isSelected = true)
+            LanguageOption(text = "Portuguese (PT)", isSelected = false)
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            SectionHeader(icon = Icons.AutoMirrored.Outlined.List, title = "Active Dashboards")
+            Spacer(modifier = Modifier.height(16.dp))
+            DashboardOption(onClick = onDashboardClick)
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            SectionHeader(icon = Icons.Outlined.Lock, title = "Security")
+            Spacer(modifier = Modifier.height(16.dp))
+            SecurityToggle(
+                checked = twoFactorEnabled,
+                onCheckedChange = { twoFactorEnabled = it }
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(
+                onClick = { },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("CHANGE PASSWORD", color = Color(0xFF3566C9), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            SportStatsCard(
-                sport = "Volleyball",
-                tag = "",
-                icon = "🏐",
-                statOneLabel = "SPIKES",
-                statOneValue = "84",
-                statTwoLabel = "WIN %",
-                statTwoValue = "82%",
-                progress = 0.82f
-            )
+            Button(
+                onClick = { onSaveChanges(bio, selectedImageUri) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(6.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BrandGreen)
+            ) {
+                Text("SAVE CHANGES", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            MatchHistoryCard()
+            OutlinedButton(
+                onClick = onLogoutClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(6.dp),
+                border = BorderStroke(1.dp, Color(0xFFC62828)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC62828))
+            ) {
+                Text("LOG OUT", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        MatchPointBottomBar(
+        MatchLeagueBottomBar(
             selectedTab = "PROFILE",
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,
@@ -138,539 +236,223 @@ fun PlayerProfileScreen(
 }
 
 @Composable
-fun PlayerProfileTopBar(
-    onBackClick: () -> Unit,
-    onNotificationsClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .background(BrandBlue)
-            .padding(horizontal = 24.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "←",
-            color = BrandWhite,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        )
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Text(
-            text = "Profile",
-            color = BrandWhite,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
-                onNotificationsClick()
-            }
-        )
-    }
-}
-
-@Composable
-fun PlayerProfileHeroCard() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(245.dp),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF102845),
-                            BrandBlue
-                        )
-                    )
-                )
-                .padding(22.dp)
-        ) {
-            Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.avatar_player),
-                    contentDescription = "Cristiano Ronaldo",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(92.dp)
-                        .clip(RoundedCornerShape(7.dp))
-                        .background(Color(0xFFF0F2FA))
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ProfileBadge(
-                        text = "RANK #1 GLOBAL",
-                        backgroundColor = BrandGreen.copy(alpha = 0.20f),
-                        textColor = BrandGreen
-                    )
-
-                    ProfileBadge(
-                        text = "MIDFIELDER",
-                        backgroundColor = Color(0xFF2B3F60),
-                        textColor = Color(0xFFB6C0D0)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "Cristiano Ronaldo",
-                    color = BrandWhite,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "●",
-                        color = BrandGreen,
-                        fontSize = 10.sp
-                    )
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    Text(
-                        text = "FC Mancos",
-                        color = Color(0xFF9EA8BA),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Spacer(modifier = Modifier.width(18.dp))
-
-                    Text(
-                        text = "⚑",
-                        color = BrandGreen,
-                        fontSize = 11.sp
-                    )
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    Text(
-                        text = "Portugal",
-                        color = Color(0xFF9EA8BA),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ProfileActionButtons(
-    onSettingsClick: () -> Unit,
-    onNotificationsClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Card(
-            modifier = Modifier
-                .weight(1f)
-                .height(54.dp)
-                .clickable {
-                    onSettingsClick()
-                },
-            shape = RoundedCornerShape(7.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "⚙",
-                    color = BrandGreen,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "DEFINIÇÕES",
-                    color = BrandBlue,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
-
-        Card(
-            modifier = Modifier
-                .weight(1f)
-                .height(54.dp)
-                .clickable {
-                    onNotificationsClick()
-                },
-            shape = RoundedCornerShape(7.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "🔔",
-                    color = BrandGreen,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "NOTIFICAÇÕES",
-                    color = BrandBlue,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ProfileBadge(
-    text: String,
-    backgroundColor: Color,
-    textColor: Color
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(18.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 11.dp, vertical = 5.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.8.sp
-        )
-    }
-}
-
-@Composable
-fun SportStatsCard(
-    sport: String,
-    tag: String,
-    icon: String,
-    statOneLabel: String,
-    statOneValue: String,
-    statTwoLabel: String,
-    statTwoValue: String,
-    progress: Float?
+fun ProfileHeaderCard(
+    name: String,
+    memberSince: String,
+    roles: List<String>,
+    tier: String,
+    selectedImageUri: Uri?,
+    onChangePhotoClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(2.dp, BrandWhite, RoundedCornerShape(12.dp))
+                    .background(Color.LightGray)
+                    .clickable { onChangePhotoClick() }
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFFF0F2FA)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = icon,
-                        fontSize = 15.sp
+                if (selectedImageUri != null) {
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = "User Photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    text = sport,
-                    color = BrandBlue,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                if (tag.isNotBlank()) {
-                    ProfileBadge(
-                        text = tag,
-                        backgroundColor = Color(0xFFF0F2FA),
-                        textColor = Color(0xFF7D8497)
-                    )
+                } else {
+                    // SUBSTITUÍDO: Agora mostra o boneco cinzento em vez do Ronaldo
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFE2E6F2)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("👤", fontSize = 40.sp)
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatBox(
-                    modifier = Modifier.weight(1f),
-                    label = statOneLabel,
-                    value = statOneValue
-                )
-
-                StatBox(
-                    modifier = Modifier.weight(1f),
-                    label = statTwoLabel,
-                    value = statTwoValue,
-                    progress = progress
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun StatBox(
-    modifier: Modifier = Modifier,
-    label: String,
-    value: String,
-    progress: Float? = null
-) {
-    Box(
-        modifier = modifier
-            .height(70.dp)
-            .background(Color(0xFFF9FAFD))
-            .padding(horizontal = 14.dp, vertical = 12.dp)
-    ) {
-        Column {
             Text(
-                text = label,
-                color = Color(0xFF7D8497),
+                text = "MEMBER SINCE $memberSince",
+                color = BrandGreen,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
+                letterSpacing = 1.5.sp
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = value,
-                color = Color(0xFF0757C8),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                text = name,
+                color = BrandWhite,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Medium
             )
 
-            if (progress != null) {
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    color = BrandGreen,
-                    trackColor = Color(0xFFECEEF7)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MatchHistoryCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "MATCH HISTORY",
-                        color = BrandBlue,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = "LAST 5 MATCHES",
-                        color = Color(0xFF9EA4B3),
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.4.sp
-                    )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (roles.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(BrandGreen)
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text(roles.first(), color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
-
-                Text(
-                    text = "VIEW ALL",
-                    color = Color(0xFF4167C8),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF3566C9))
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(tier, color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            MatchHistoryRow(
-                home = "Sporting",
-                away = "Vianense",
-                result = "3-1",
-                date = "Tournament Finals · Oct 4th, 2023",
-                won = true
-            )
-
-            MatchHistoryRow(
-                home = "Benfica",
-                away = "Porto",
-                result = "0-0",
-                date = "League Match · Oct 1st, 2023",
-                won = false
-            )
-
-            MatchHistoryRow(
-                home = "Vianense",
-                away = "Benfica",
-                result = "1-4",
-                date = "Quarter Finals · Oct 3rd, 2023",
-                won = false
-            )
-
-            MatchHistoryRow(
-                home = "Porto",
-                away = "Sporting",
-                result = "2-0",
-                date = "Round League · Sep 28, 2023",
-                won = true
-            )
         }
     }
 }
 
 @Composable
-fun MatchHistoryRow(
-    home: String,
-    away: String,
-    result: String,
-    date: String,
-    won: Boolean
+fun SectionHeader(icon: ImageVector, title: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(imageVector = icon, contentDescription = null, tint = TextDark, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = title, color = TextDark, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+fun CustomTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = true,
+    readOnly: Boolean = false,
+    placeholder: String = ""
 ) {
+    Column {
+        Text(text = label, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Spacer(modifier = Modifier.height(6.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = singleLine,
+            readOnly = readOnly,
+            placeholder = {
+                if (placeholder.isNotEmpty()) {
+                    Text(text = placeholder, color = TextGray)
+                }
+            },
+            modifier = modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(6.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = InputBg,
+                unfocusedContainerColor = InputBg,
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                cursorColor = BrandGreen,
+                focusedTextColor = if (readOnly) TextGray else TextDark,
+                unfocusedTextColor = if (readOnly) TextGray else TextDark
+            )
+        )
+    }
+}
+
+@Composable
+fun LanguageOption(text: String, isSelected: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(54.dp),
+            .background(if (isSelected) BrandWhite else InputBg, RoundedCornerShape(6.dp))
+            .border(
+                width = if (isSelected) 1.dp else 0.dp,
+                color = if (isSelected) Color(0xFF3566C9) else Color.Transparent,
+                shape = RoundedCornerShape(6.dp)
+            )
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = text, color = TextDark, fontSize = 14.sp)
+        if (isSelected) {
+            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = "Selected", tint = Color(0xFF3566C9))
+        }
+    }
+}
+
+@Composable
+fun DashboardOption(onClick: () -> Unit = {}) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(InputBg, RoundedCornerShape(6.dp))
+            .clickable { onClick() }
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(30.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFF0F2FA)),
+                .size(40.dp)
+                .background(Color(0xFFE2E6F2), RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "⚽",
-                fontSize = 14.sp
-            )
+            Icon(imageVector = Icons.Outlined.Person, contentDescription = null, tint = Color(0xFF3566C9))
         }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = "$home vs\n$away",
-                color = BrandBlue,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = date,
-                color = Color(0xFF9EA4B3),
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Medium
-            )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Player", color = TextDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text("Personal career stats", color = TextGray, fontSize = 12.sp)
         }
-
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(
-                text = result,
-                color = BrandBlue,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = if (won) "WIN" else "FINAL",
-                color = if (won) BrandGreen else Color(0xFF9EA4B3),
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = BrandGreen)
     }
 }
 
-@Preview(showBackground = true, name = "Player Profile Screen")
 @Composable
-fun PlayerProfileScreenPreview() {
+fun SecurityToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(InputBg, RoundedCornerShape(6.dp))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(imageVector = Icons.Outlined.Phone, contentDescription = null, tint = TextGray, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(12.dp))
+        Text("Two-Factor Auth", color = TextDark, fontSize = 14.sp, modifier = Modifier.weight(1f))
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = BrandWhite,
+                checkedTrackColor = BrandGreen,
+                uncheckedThumbColor = BrandWhite,
+                uncheckedTrackColor = Color.LightGray
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Profile Screen")
+@Composable
+fun ProfileScreenPreview() {
     PlayerProfileScreen()
 }

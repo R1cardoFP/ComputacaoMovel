@@ -1,4 +1,4 @@
-package com.example.trabalhocm.ui.screens.player
+/* package com.example.trabalhocm.ui.screens.player
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,7 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
@@ -154,7 +154,7 @@ fun PlayerProfileSettingsScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        MatchPointBottomBar(
+        MatchLeagueBottomBar(
             selectedTab = "PROFILE",
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,
@@ -619,4 +619,4 @@ fun LanguageOption(
 @Composable
 fun PlayerProfileSettingsScreenPreview() {
     PlayerProfileSettingsScreen()
-}
+ */

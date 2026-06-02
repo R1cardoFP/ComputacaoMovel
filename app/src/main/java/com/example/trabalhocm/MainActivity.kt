@@ -1,10 +1,21 @@
 ﻿package com.example.trabalhocm
 
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavType
@@ -27,7 +38,7 @@ import com.example.trabalhocm.ui.screens.player.PlayerInvitePlayerScreen
 import com.example.trabalhocm.ui.screens.player.PlayerManageTeamScreen
 import com.example.trabalhocm.ui.screens.player.PlayerNotificationsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerProfileScreen
-import com.example.trabalhocm.ui.screens.player.PlayerProfileSettingsScreen
+import com.example.trabalhocm.ui.screens.player.PlayerStatsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamPlayerDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamsScreen
@@ -47,6 +58,7 @@ import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,14 +71,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TrabalhoCMTheme {
-                MatchPointApp()
+                MatchLeagueApp()
             }
         }
     }
 }
 
 @Composable
-fun MatchPointApp() {
+fun MatchLeagueApp() {
     val navController = rememberNavController()
 
     NavHost(
@@ -74,551 +86,354 @@ fun MatchPointApp() {
         startDestination = "splash"
     ) {
         composable("splash") {
-            SplashScreen(
-                onEnd = {
-                    navController.navigate("onboarding") {
-                        popUpTo("splash") { inclusive = true }
-                    }
-                }
-            )
+            SplashScreen(onEnd = { navController.navigate("onboarding") { popUpTo("splash") { inclusive = true } } })
         }
 
         composable("onboarding") {
-            OnboardingFlow(
-                onFinish = {
-                    navController.navigate("login") {
-                        popUpTo("onboarding") { inclusive = true }
-                    }
-                }
-            )
+            OnboardingFlow(onFinish = { navController.navigate("login") { popUpTo("onboarding") { inclusive = true } } })
         }
 
         composable("login") {
             LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate("user_type") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onCreateAccount = {
-                    navController.navigate("register")
-                },
-                onForgotPassword = {
-                    navController.navigate("recover_password")
-                }
+                onLoginSuccess = { navController.navigate("user_type") { popUpTo("login") { inclusive = true } } },
+                onCreateAccount = { navController.navigate("register") },
+                onForgotPassword = { navController.navigate("recover_password") }
             )
         }
 
         composable("register") {
             RegisterScreen(
-                onRegisterSuccess = {
-                    navController.navigate("user_type") {
-                        popUpTo("register") { inclusive = true }
-                    }
-                },
-                onGoToLogin = {
-                    navController.popBackStack()
-                }
+                onRegisterSuccess = { navController.navigate("user_type") { popUpTo("register") { inclusive = true } } },
+                onGoToLogin = { navController.popBackStack() }
             )
         }
 
-        composable("recover_password") {
-            RecoverPasswordScreen()
-        }
+        composable("recover_password") { RecoverPasswordScreen() }
 
-        composable("change_password") {
-            ChangePasswordScreen(
-                onPasswordChanged = {
-                    navController.popBackStack()
-                }
-            )
-        }
+        composable("change_password") { ChangePasswordScreen(onPasswordChanged = { navController.popBackStack() }) }
 
         composable("user_type") {
             UserTypeScreen(
-                onAdminClick = {
-                    navController.navigate("admin_home")
-                },
-                onOrganizerClick = {
-                    navController.navigate("home")
-                },
-                onPlayerClick = {
-                    navController.navigate("player_home")
-                }
+                onAdminClick = { navController.navigate("admin_home") },
+                onOrganizerClick = { navController.navigate("home") },
+                onPlayerClick = { navController.navigate("player_home") }
             )
         }
 
         composable("offline") {
             OfflineScreen(
-                onRetrySync = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("torneios")
-                },
+                onRetrySync = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_home") {
             PlayerHomeScreen(
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onCasualMatchesClick = {},
                 onLiveMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_tournaments") {
             PlayerTournamentManagementScreen(
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
+                onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = {},
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                },
-                onDetailsClick = {
-                    navController.navigate("player_tournament_details")
-                },
-                onRegisterClick = {
-                    navController.navigate("player_tournament_registration")
-                },
-                onAskOrganizerClick = {
-                    navController.navigate("player_become_organizer")
-                },
-                onHistoryClick = {
-                    navController.navigate("player_tournament_history")
-                },
-                onFiltersClick = {
-                    navController.navigate("player_tournament_filters")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") },
+                onDetailsClick = { navController.navigate("player_tournament_details") },
+                onRegisterClick = { navController.navigate("player_tournament_registration") },
+                onAskOrganizerClick = { navController.navigate("player_become_organizer") },
+                onHistoryClick = { navController.navigate("player_tournament_history") },
+                onFiltersClick = { navController.navigate("player_tournament_filters") }
             )
         }
 
         composable("player_tournament_history") {
             PlayerTournamentHistoryScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_tournament_details") {
             PlayerTournamentDetailsScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_tournament_filters") {
             PlayerTournamentFiltersScreen(
-                onCloseClick = {
-                    navController.popBackStack()
-                },
-                onApplyClick = {
-                    navController.popBackStack()
-                }
+                onCloseClick = { navController.popBackStack() },
+                onApplyClick = { navController.popBackStack() }
             )
         }
 
         composable("player_tournament_registration") {
             PlayerTournamentRegistrationScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onSubmitClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onSubmitClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_become_organizer") {
             PlayerBecomeOrganizerScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onSubmitClick = {
-                    navController.popBackStack()
-                },
-                onCancelClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onSubmitClick = { navController.popBackStack() },
+                onCancelClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_profile") {
+            val context = LocalContext.current
+            val scope = rememberCoroutineScope()
+            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+
+            var nomeUtilizador by remember { mutableStateOf("A carregar...") }
+            var emailUtilizador by remember { mutableStateOf("A carregar...") }
+
+            // INICIALIZA VAZIO "" EM VEZ DE "Sem biografia..." PARA O PLACEHOLDER FUNCIONAR
+            var bioUtilizador by remember { mutableStateOf("") }
+
+            var photoUri by remember { mutableStateOf<Uri?>(null) }
+            var userId by remember { mutableStateOf("") }
+
+            val sharedPrefs = remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
+
+            LaunchedEffect(Unit) {
+                authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+                    nomeUtilizador = utilizador.nome
+                    emailUtilizador = utilizador.email
+                    userId = utilizador.id
+
+                    if (!utilizador.fotoUrl.isNullOrEmpty()) {
+                        photoUri = utilizador.fotoUrl.toUri()
+                    }
+
+                    val savedUriStr = sharedPrefs.getString("avatar_$userId", null)
+                    if (savedUriStr != null) photoUri = savedUriStr.toUri()
+
+                    val savedBio = sharedPrefs.getString("bio_$userId", null)
+                    if (savedBio != null) bioUtilizador = savedBio
+                }.onFailure {
+                    nomeUtilizador = "Erro ao carregar"
+                    emailUtilizador = "Erro ao carregar"
+                }
+            }
+
             PlayerProfileScreen(
-                onBackClick = {
-                    navController.popBackStack()
+                initialName = nomeUtilizador,
+                initialEmail = emailUtilizador,
+                initialBio = bioUtilizador,
+                initialPhotoUri = photoUri,
+                onLogoutClick = {
+                    scope.launch {
+                        authRepository.logout()
+                        navController.navigate("login") { popUpTo(0) { inclusive = true } }
+                    }
                 },
-                onSettingsClick = {
-                    navController.navigate("player_profile_settings")
+                onSaveChanges = { novaBio, novaPhotoUri ->
+                    scope.launch {
+                        sharedPrefs.edit {
+                            if (novaPhotoUri != null) {
+                                putString("avatar_$userId", novaPhotoUri.toString())
+                            } else {
+                                remove("avatar_$userId")
+                            }
+                            putString("bio_$userId", novaBio)
+                        }
+                    }
                 },
-                onNotificationsClick = {
-                    navController.navigate("player_notifications")
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onDashboardClick = { navController.navigate("player_stats") },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
+                onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = {}
             )
         }
 
-        composable("player_profile_settings") {
-            PlayerProfileSettingsScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onChangePasswordClick = {
-                    navController.navigate("change_password")
-                },
-                onSaveClick = {
-                    navController.popBackStack()
-                },
-                onLogoutClick = {
-                    navController.navigate("login") {
-                        popUpTo("player_profile_settings") { inclusive = true }
-                    }
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
-                onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
+        composable("player_stats") {
+            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            var nomeUtilizador by remember { mutableStateOf("A carregar...") }
+
+            LaunchedEffect(Unit) {
+                authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+                    nomeUtilizador = utilizador.nome
                 }
+            }
+
+            PlayerStatsScreen(
+                playerName = nomeUtilizador,
+                footballGoals = 24,
+                footballAssists = 18,
+                basketballPoints = 412,
+                basketballWinRate = 65,
+                volleyballSpikes = 84,
+                volleyballWinRate = 82,
+                onBackClick = { navController.popBackStack() }
             )
+        }
+
+        composable("player_profile_settings") {
+            navController.popBackStack()
         }
 
         composable("player_notifications") {
             PlayerNotificationsScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_teams") {
             PlayerTeamsScreen(
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                },
-                onTeamDetailsClick = { isUserTeam ->
-                    navController.navigate("player_team_details/$isUserTeam")
-                },
-                onManageTeamClick = {
-                    navController.navigate("player_manage_team")
-                },
-                onCreateTeamClick = {
-                    navController.navigate("player_create_team")
-                }
+                onProfileClick = { navController.navigate("player_profile") },
+                onTeamDetailsClick = { isUserTeam -> navController.navigate("player_team_details/$isUserTeam") },
+                onManageTeamClick = { navController.navigate("player_manage_team") },
+                onCreateTeamClick = { navController.navigate("player_create_team") }
             )
         }
 
         composable(
             route = "player_team_details/{isUserTeam}",
-            arguments = listOf(
-                navArgument("isUserTeam") {
-                    type = NavType.BoolType
-                }
-            )
+            arguments = listOf(navArgument("isUserTeam") { type = NavType.BoolType })
         ) { backStackEntry ->
             val isUserTeam = backStackEntry.arguments?.getBoolean("isUserTeam") ?: false
 
             PlayerTeamDetailsScreen(
                 isUserTeam = isUserTeam,
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onInvitePlayerClick = {
-                    navController.navigate("player_invite_player")
-                },
-                onViewPlayerProfileClick = {
-                    navController.navigate("player_team_player_details")
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onInvitePlayerClick = { navController.navigate("player_invite_player") },
+                onViewPlayerProfileClick = { navController.navigate("player_team_player_details") },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_team_player_details") {
             PlayerTeamPlayerDetailsScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_invite_player") {
             PlayerInvitePlayerScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onSendInviteClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onSendInviteClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_manage_team") {
             PlayerManageTeamScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onInvitePlayerClick = {
-                    navController.navigate("player_invite_player")
-                },
-                onViewPlayerProfileClick = {
-                    navController.navigate("player_team_player_details")
-                },
+                onBackClick = { navController.popBackStack() },
+                onInvitePlayerClick = { navController.navigate("player_invite_player") },
+                onViewPlayerProfileClick = { navController.navigate("player_team_player_details") },
                 onMakeCaptainClick = {},
                 onRemoveFromTeamClick = {},
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("player_create_team") {
             PlayerCreateTeamScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onCreateTeamClick = {
-                    navController.popBackStack()
-                },
-                onHomeClick = {
-                    navController.navigate("player_home")
-                },
-                onTournamentsClick = {
-                    navController.navigate("player_tournaments")
-                },
+                onBackClick = { navController.popBackStack() },
+                onCreateTeamClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = {},
-                onTeamsClick = {
-                    navController.navigate("player_teams")
-                },
-                onProfileClick = {
-                    navController.navigate("player_profile")
-                }
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
         composable("home") {
             HomeScreen(
-                onVerTorneios = {
-                    navController.navigate("torneios")
-                },
-                onCreateTournamentClick = {
-                    navController.navigate("create_tournament")
-                },
-                onHomeClick = {
-                }
+                onVerTorneios = { navController.navigate("torneios") },
+                onCreateTournamentClick = { navController.navigate("create_tournament") }
             )
         }
 
         composable("create_tournament") {
             CreateTournamentScreen(
                 onBackClick = { navController.popBackStack() },
-                onProceedClick = {
-                    navController.navigate("create_tournament_step_2")
-                },
-                onHomeClick = {
-                    navController.navigate("home") { popUpTo("home") { inclusive = true } }
-                }
+                onProceedClick = { navController.navigate("create_tournament_step_2") },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
             )
         }
 
         composable("create_tournament_step_2") {
             CreateTournamentStep2Screen(
                 onBackClick = { navController.popBackStack() },
-                onProceedClick = {
-                    navController.navigate("create_tournament_step_3")
-                },
-                onHomeClick = {
-                    navController.navigate("home") { popUpTo("home") { inclusive = true } }
-                }
+                onProceedClick = { navController.navigate("create_tournament_step_3") },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
             )
         }
 
         composable("create_tournament_step_3") {
             CreateTournamentStep3Screen(
                 onBackClick = { navController.popBackStack() },
-                onProceedClick = {
-                    navController.navigate("create_tournament_step_4")            },
-                onHomeClick = {
-                    navController.navigate("home") { popUpTo("home") { inclusive = true } }
-                }
+                onProceedClick = { navController.navigate("create_tournament_step_4") },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
             )
         }
 
         composable("create_tournament_step_4") {
             CreateTournamentStep4Screen(
                 onBackClick = { navController.popBackStack() },
-                onPublishClick = {
-                    // Aqui vamos enviar os dados para a Base de Dados
-                    // Por agora, ao publicar, manda o utilizador de volta para a Home.
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
-                onHomeClick = {
-                    navController.navigate("home") { popUpTo("home") { inclusive = true } }
-                }
+                onPublishClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
             )
         }
 
@@ -633,60 +448,33 @@ fun MatchPointApp() {
         composable("create_team") {
             CreateTeamScreen(
                 onBackClick = { navController.popBackStack() },
-                onCreateClick = {
-                    navController.popBackStack()
-                },
+                onCreateClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }
             )
         }
-
 
         composable("admin_home") {
             AdminHomeScreen(
                 onManageUsersClick = {},
                 onManageTeamsClick = {},
-                onManageTournamentsClick = {
-                    navController.navigate("torneios")
-                },
+                onManageTournamentsClick = { navController.navigate("torneios") },
                 onReviewRequestsClick = {},
                 onHomeClick = {},
-                onTournamentsClick = {
-                    navController.navigate("torneios")
-                },
+                onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = {},
                 onTeamsClick = {},
-                onProfileClick = {
-                    navController.navigate("admin_profile")
-                }
+                onProfileClick = { navController.navigate("admin_profile") }
             )
         }
 
         composable("admin_profile") {
             AdminProfileScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onLogoutSuccess = {
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                onChangePasswordClick = {
-                    navController.navigate("change_password")
-                },
-                onDashboardClick = {
-                    navController.navigate("admin_home") {
-                        popUpTo("admin_home") { inclusive = false }
-                    }
-                },
-                onHomeClick = {
-                    navController.navigate("admin_home") {
-                        popUpTo("admin_home") { inclusive = false }
-                    }
-                },
-                onTournamentsClick = {
-                    navController.navigate("torneios")
-                },
+                onBackClick = { navController.popBackStack() },
+                onLogoutSuccess = { navController.navigate("login") { popUpTo(0) { inclusive = true } } },
+                onChangePasswordClick = { navController.navigate("change_password") },
+                onDashboardClick = { navController.navigate("admin_home") { popUpTo("admin_home") { inclusive = false } } },
+                onHomeClick = { navController.navigate("admin_home") { popUpTo("admin_home") { inclusive = false } } },
+                onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = {},
                 onTeamsClick = {},
                 onProfileClick = {}

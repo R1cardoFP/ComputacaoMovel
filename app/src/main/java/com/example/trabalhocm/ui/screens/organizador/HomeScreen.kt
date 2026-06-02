@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 val DarkBlue = Color(0xFF152238)
 val EmeraldGreen = Color(0xFF0E8A6F)
@@ -49,7 +49,7 @@ fun HomeScreen(
             )
         },
         bottomBar = {
-            MatchPointBottomBar(
+            MatchLeagueBottomBar(
                 selectedTab = "HOME",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onVerTorneios
