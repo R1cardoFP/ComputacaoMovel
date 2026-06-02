@@ -23,6 +23,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+
+// Imports
 import com.example.trabalhocm.ui.screens.BrowseTeamsScreen
 import com.example.trabalhocm.ui.screens.CreateTeamScreen
 import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
@@ -56,10 +58,10 @@ import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
-
-// NOVOS IMPORTS CORRIGIDOS
 import com.example.trabalhocm.ui.screens.organizador.TeamDetailsScreen
 import com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerProfileScreen
 
 import kotlinx.coroutines.launch
 
@@ -88,6 +90,9 @@ fun MatchLeagueApp() {
         navController = navController,
         startDestination = "splash"
     ) {
+        // ==========================================
+        // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
+        // ==========================================
         composable("splash") {
             SplashScreen(onEnd = { navController.navigate("onboarding") { popUpTo("splash") { inclusive = true } } })
         }
@@ -123,91 +128,14 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("offline") {
-            OfflineScreen(
-                onRetrySync = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
-            )
-        }
-
+        // ==========================================
+        // 2. ÁREA DO JOGADOR (Player)
+        // ==========================================
         composable("player_home") {
             PlayerHomeScreen(
                 onTournamentsClick = { navController.navigate("player_tournaments") },
                 onCasualMatchesClick = {},
                 onLiveMatchesClick = {},
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
-            )
-        }
-
-        composable("player_tournaments") {
-            PlayerTournamentManagementScreen(
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = {},
-                onMatchesClick = {},
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") },
-                onDetailsClick = { navController.navigate("player_tournament_details") },
-                onRegisterClick = { navController.navigate("player_tournament_registration") },
-                onAskOrganizerClick = { navController.navigate("player_become_organizer") },
-                onHistoryClick = { navController.navigate("player_tournament_history") },
-                onFiltersClick = { navController.navigate("player_tournament_filters") }
-            )
-        }
-
-        composable("player_tournament_history") {
-            PlayerTournamentHistoryScreen(
-                onBackClick = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
-            )
-        }
-
-        composable("player_tournament_details") {
-            PlayerTournamentDetailsScreen(
-                onBackClick = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
-            )
-        }
-
-        composable("player_tournament_filters") {
-            PlayerTournamentFiltersScreen(
-                onCloseClick = { navController.popBackStack() },
-                onApplyClick = { navController.popBackStack() }
-            )
-        }
-
-        composable("player_tournament_registration") {
-            PlayerTournamentRegistrationScreen(
-                onBackClick = { navController.popBackStack() },
-                onSubmitClick = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
-            )
-        }
-
-        composable("player_become_organizer") {
-            PlayerBecomeOrganizerScreen(
-                onBackClick = { navController.popBackStack() },
-                onSubmitClick = { navController.popBackStack() },
-                onCancelClick = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )
@@ -220,7 +148,6 @@ fun MatchLeagueApp() {
 
             var nomeUtilizador by remember { mutableStateOf("A carregar...") }
             var emailUtilizador by remember { mutableStateOf("A carregar...") }
-
             var bioUtilizador by remember { mutableStateOf("") }
             var photoUri by remember { mutableStateOf<Uri?>(null) }
             var userId by remember { mutableStateOf("") }
@@ -274,7 +201,7 @@ fun MatchLeagueApp() {
                 onDashboardClick = { navController.navigate("player_stats") },
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = {}
             )
@@ -302,16 +229,83 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("player_profile_settings") {
-            navController.popBackStack()
-        }
+        composable("player_profile_settings") { navController.popBackStack() }
 
         composable("player_notifications") {
             PlayerNotificationsScreen(
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
+            )
+        }
+
+        composable("player_tournaments") {
+            PlayerTournamentManagementScreen(
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") },
+                onDetailsClick = { navController.navigate("player_tournament_details") },
+                onRegisterClick = { navController.navigate("player_tournament_registration") },
+                onAskOrganizerClick = { navController.navigate("player_become_organizer") },
+                onHistoryClick = { navController.navigate("player_tournament_history") },
+                onFiltersClick = { navController.navigate("player_tournament_filters") }
+            )
+        }
+
+        composable("player_tournament_history") {
+            PlayerTournamentHistoryScreen(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
+            )
+        }
+
+        composable("player_tournament_details") {
+            PlayerTournamentDetailsScreen(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
+            )
+        }
+
+        composable("player_tournament_filters") {
+            PlayerTournamentFiltersScreen(
+                onCloseClick = { navController.popBackStack() },
+                onApplyClick = { navController.popBackStack() }
+            )
+        }
+
+        composable("player_tournament_registration") {
+            PlayerTournamentRegistrationScreen(
+                onBackClick = { navController.popBackStack() },
+                onSubmitClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
+            )
+        }
+
+        composable("player_become_organizer") {
+            PlayerBecomeOrganizerScreen(
+                onBackClick = { navController.popBackStack() },
+                onSubmitClick = { navController.popBackStack() },
+                onCancelClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )
@@ -321,7 +315,7 @@ fun MatchLeagueApp() {
             PlayerTeamsScreen(
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {},
                 onProfileClick = { navController.navigate("player_profile") },
                 onTeamDetailsClick = { isUserTeam -> navController.navigate("player_team_details/$isUserTeam") },
@@ -330,7 +324,6 @@ fun MatchLeagueApp() {
             )
         }
 
-        // ROTA ANTIGA DO PLAYER COM O NOVO NOME
         composable(
             route = "player_team_details/{isUserTeam}",
             arguments = listOf(navArgument("isUserTeam") { type = NavType.BoolType })
@@ -344,7 +337,7 @@ fun MatchLeagueApp() {
                 onViewPlayerProfileClick = { navController.navigate("player_team_player_details") },
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )
@@ -355,7 +348,7 @@ fun MatchLeagueApp() {
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )
@@ -367,7 +360,7 @@ fun MatchLeagueApp() {
                 onSendInviteClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )
@@ -382,7 +375,7 @@ fun MatchLeagueApp() {
                 onRemoveFromTeamClick = {},
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )
@@ -394,18 +387,29 @@ fun MatchLeagueApp() {
                 onCreateTeamClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
-        // --- ZONA DO ORGANIZADOR ---
-
+        // ==========================================
+        // 3. ÁREA DO ORGANIZADOR
+        // ==========================================
         composable("home") {
             HomeScreen(
                 onVerTorneios = { navController.navigate("torneios") },
                 onCreateTournamentClick = { navController.navigate("create_tournament") }
+            )
+        }
+
+        composable("organizador_profile") {
+            OrganizerProfileScreen(
+                onLogoutClick = { navController.navigate("login") { popUpTo(0) { inclusive = true } } },
+                onPlayerDashboardClick = { navController.navigate("player_stats") },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onTeamsClick = { navController.navigate("teams") }
             )
         }
 
@@ -441,7 +445,64 @@ fun MatchLeagueApp() {
             )
         }
 
-        // ROTA ATUALIZADA: Agora navega para os teus novos ecrãs!
+        composable("organizador_match_center") {
+            com.example.trabalhocm.ui.screens.organizador.OrganizerMatchCenterScreen(
+                onLiveMatchClick = { navController.navigate("organizador_live_match") },
+                onHistoryClick = { navController.navigate("organizador_matches") },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = {  },
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = { navController.navigate("organizador_profile") },
+                onCreateCasualMatchClick = { navController.navigate("organizador_create_casual") }
+            )
+        }
+
+        composable("organizador_live_match") {
+            com.example.trabalhocm.ui.screens.organizador.OrganizerLiveMatchScreen(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = { navController.navigate("organizador_matches") },
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = { navController.navigate("organizador_profile") }
+            )
+        }
+
+        composable("organizador_matches") {
+            OrganizerMatchesScreen(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = {  },
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = { navController.navigate("organizador_profile") }
+            )
+        }
+
+        composable("organizador_casual_details") {
+            com.example.trabalhocm.ui.screens.organizador.CasualMatchDetailsScreen(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = { navController.navigate("organizador_profile") }
+            )
+        }
+
+        composable("organizador_create_casual") {
+            com.example.trabalhocm.ui.screens.organizador.OrganizerCreateCasualMatchScreen(
+                onBackClick = { navController.popBackStack() },
+                onPublishClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = { navController.navigate("organizador_profile") }
+            )
+        }
+
         composable("teams") {
             BrowseTeamsScreen(
                 onCreateTeamClick = { navController.navigate("create_team") },
@@ -451,7 +512,6 @@ fun MatchLeagueApp() {
             )
         }
 
-        // NOVA ROTA: Detalhes da equipa (Versão Organizador)
         composable(
             route = "organizador_team_details/{isUserTeam}",
             arguments = listOf(navArgument("isUserTeam") { type = NavType.BoolType })
@@ -462,22 +522,10 @@ fun MatchLeagueApp() {
                 isUserTeam = isUserTeam,
                 onBackClick = { navController.popBackStack() },
                 onInvitePlayerClick = { navController.navigate("organizador_invite_player") },
-                onViewPlayerProfileClick = { /* A FAZER SE NECESSÁRIO NO FUTURO */ },
+                onViewPlayerProfileClick = { },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
-                onMatchesClick = {},
-                onTeamsClick = { navController.navigate("teams") },
-                onProfileClick = {}
-            )
-        }
-
-        composable("organizador_invite_player") {
-            com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen(
-                onBackClick = { navController.popBackStack() },
-                onSendInviteClick = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("home") },
-                onTournamentsClick = { navController.navigate("torneios") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("teams") },
                 onProfileClick = {}
             )
@@ -491,8 +539,21 @@ fun MatchLeagueApp() {
             )
         }
 
-        // --- ZONA DO ADMIN ---
+        composable("organizador_invite_player") {
+            com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen(
+                onBackClick = { navController.popBackStack() },
+                onSendInviteClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = {}
+            )
+        }
 
+        // ==========================================
+        // 4. ÁREA DO ADMIN
+        // ==========================================
         composable("admin_home") {
             AdminHomeScreen(
                 onManageUsersClick = {},
@@ -501,7 +562,7 @@ fun MatchLeagueApp() {
                 onReviewRequestsClick = {},
                 onHomeClick = {},
                 onTournamentsClick = { navController.navigate("torneios") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {},
                 onProfileClick = { navController.navigate("admin_profile") }
             )
@@ -515,9 +576,23 @@ fun MatchLeagueApp() {
                 onDashboardClick = { navController.navigate("admin_home") { popUpTo("admin_home") { inclusive = false } } },
                 onHomeClick = { navController.navigate("admin_home") { popUpTo("admin_home") { inclusive = false } } },
                 onTournamentsClick = { navController.navigate("torneios") },
-                onMatchesClick = {},
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {},
                 onProfileClick = {}
+            )
+        }
+
+        // ==========================================
+        // 5. TELAS COMUNS / UTILIDADES
+        // ==========================================
+        composable("offline") {
+            OfflineScreen(
+                onRetrySync = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
