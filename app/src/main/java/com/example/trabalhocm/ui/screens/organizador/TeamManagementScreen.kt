@@ -91,7 +91,7 @@ fun TeamManagementScreen(
             )
         },
         bottomBar = {
-            MatchPointBottomBar(selectedTab = "TEAMS", onHomeClick = onHomeClick)
+            MatchLeagueBottomBar(selectedTab = "TEAMS", onHomeClick = onHomeClick)
         },
         containerColor = BgLight
     ) { paddingValues ->

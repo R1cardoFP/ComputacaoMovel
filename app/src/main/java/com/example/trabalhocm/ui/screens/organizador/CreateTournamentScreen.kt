@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 val TealGreen = Color(0xFF0CA789)
 val CardBg = Color(0xFFFFFFFF)
@@ -61,7 +61,7 @@ fun CreateTournamentScreen(
             )
         },
         bottomBar = {
-            MatchPointBottomBar(
+            MatchLeagueBottomBar(
                 selectedTab = "TOURNAMENTS",
                 onHomeClick = onHomeClick
             )

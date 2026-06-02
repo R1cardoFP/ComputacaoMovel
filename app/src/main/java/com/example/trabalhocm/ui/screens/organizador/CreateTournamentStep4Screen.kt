@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +54,7 @@ fun CreateTournamentStep4Screen(
             )
         },
         bottomBar = {
-            MatchPointBottomBar(
+            MatchLeagueBottomBar(
                 selectedTab = "TOURNAMENTS",
                 onHomeClick = onHomeClick
             )

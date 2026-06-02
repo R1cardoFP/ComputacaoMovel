@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.ui.screens.MatchPointBottomBar
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -88,7 +88,7 @@ fun CreateTournamentStep2Screen(
             )
         },
         bottomBar = {
-            MatchPointBottomBar(
+            MatchLeagueBottomBar(
                 selectedTab = "TOURNAMENTS",
                 onHomeClick = onHomeClick
             )

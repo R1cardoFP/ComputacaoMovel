@@ -79,6 +79,21 @@ class AuthRepository {
         }
     }
 
+    suspend fun obterUtilizadorAtual(): Result<Utilizador> {
+        return runCatching {
+            val userId = client.auth.currentUserOrNull()?.id
+                ?: throw Exception("Nenhum utilizador com sessão iniciada.")
+
+            client.from("utilizador")
+                .select {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
+                .decodeSingle<Utilizador>()
+        }
+    }
+
     suspend fun logout(): Result<Unit> {
         return runCatching {
             client.auth.signOut()

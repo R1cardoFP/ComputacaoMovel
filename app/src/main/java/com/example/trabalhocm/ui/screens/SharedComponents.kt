@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun MatchPointBottomBar(
+fun MatchLeagueBottomBar(
     selectedTab: String,
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},

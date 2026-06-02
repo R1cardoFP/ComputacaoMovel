@@ -96,7 +96,7 @@ fun MatchesCalendarScreen(
             )
         },
         bottomBar = {
-            MatchPointBottomBar(selectedTab = "MATCHES", onHomeClick = onHomeClick)
+            MatchLeagueBottomBar(selectedTab = "MATCHES", onHomeClick = onHomeClick)
         },
         containerColor = BgLight
     ) { paddingValues ->
