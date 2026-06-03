@@ -48,19 +48,63 @@ class AdminUserRepository {
     }
 
     suspend fun tornarAdministrador(userId: String): Result<Unit> {
-        return adicionarPapel(userId = userId, nomePapel = "Administrador")
+        return runCatching {
+            val utilizador = obterUtilizadorPorId(userId)
+
+            adicionarPapel(userId = userId, nomePapel = "Administrador").getOrThrow()
+
+            criarNotificacaoAdmin(
+                titulo = "User Role Updated",
+                descricao = "${utilizador.nome} foi promovido a administrador.",
+                tipo = "MODERATION",
+                acaoTexto = "VIEW USER PROFILE"
+            )
+        }
     }
 
     suspend fun tornarOrganizador(userId: String): Result<Unit> {
-        return adicionarPapel(userId = userId, nomePapel = "Organizador")
+        return runCatching {
+            val utilizador = obterUtilizadorPorId(userId)
+
+            adicionarPapel(userId = userId, nomePapel = "Organizador").getOrThrow()
+
+            criarNotificacaoAdmin(
+                titulo = "User Role Updated",
+                descricao = "${utilizador.nome} foi promovido a organizador.",
+                tipo = "MODERATION",
+                acaoTexto = "VIEW USER PROFILE"
+            )
+        }
     }
 
     suspend fun removerAdministrador(userId: String): Result<Unit> {
-        return removerPapel(userId = userId, nomePapel = "Administrador")
+        return runCatching {
+            val utilizador = obterUtilizadorPorId(userId)
+
+            removerPapel(userId = userId, nomePapel = "Administrador").getOrThrow()
+
+            criarNotificacaoAdmin(
+                titulo = "Administrator Role Revoked",
+                descricao = "O papel de administrador foi removido de ${utilizador.nome}.",
+                tipo = "MODERATION",
+                acaoTexto = "VIEW USER PROFILE"
+            )
+        }
     }
 
     suspend fun removerOrganizador(userId: String): Result<Unit> {
-        return removerPapel(userId = userId, nomePapel = "Organizador")
+        return runCatching {
+            val utilizador = obterUtilizadorPorId(userId)
+
+            removerPapel(userId = userId, nomePapel = "Organizador").getOrThrow()
+
+            criarNotificacaoAdmin(
+                titulo = "Organizer Role Revoked",
+                descricao = "O papel de organizador foi removido de ${utilizador.nome}.",
+                tipo = "MODERATION",
+                acaoTexto = "VIEW USER PROFILE"
+            )
+        }
     }
 
     suspend fun apagarUtilizador(userId: String): Result<Unit> {
@@ -71,6 +115,8 @@ class AdminUserRepository {
             if (currentUserId == userId) {
                 throw Exception("Não podes apagar a tua própria conta.")
             }
+
+            val utilizador = obterUtilizadorPorId(userId)
 
             client.from("utilizador_papel")
                 .delete {
@@ -85,6 +131,12 @@ class AdminUserRepository {
                         eq("id", userId)
                     }
                 }
+
+            criarNotificacaoAdmin(
+                titulo = "User Deleted",
+                descricao = "${utilizador.nome} foi removido da plataforma.",
+                tipo = "MODERATION"
+            )
         }
     }
 
@@ -135,6 +187,33 @@ class AdminUserRepository {
                 }
             }
             .decodeSingle<PapelDto>()
+    }
+
+    private suspend fun obterUtilizadorPorId(userId: String): UtilizadorAdminDto {
+        return client.from("utilizador")
+            .select {
+                filter {
+                    eq("id", userId)
+                }
+            }
+            .decodeSingle<UtilizadorAdminDto>()
+    }
+
+    private suspend fun criarNotificacaoAdmin(
+        titulo: String,
+        descricao: String,
+        tipo: String = "MODERATION",
+        acaoTexto: String? = null
+    ) {
+        client.from("notificacao_admin")
+            .insert(
+                NovaNotificacaoAdminDto(
+                    titulo = titulo,
+                    descricao = descricao,
+                    tipo = tipo,
+                    acaoTexto = acaoTexto
+                )
+            )
     }
 
     private fun escolherPapelPrincipal(papeis: List<String>): String {
@@ -215,4 +294,14 @@ private data class NovoUtilizadorPapelDto(
 
     @SerialName("id_papel")
     val idPapel: Int
+)
+
+@Serializable
+private data class NovaNotificacaoAdminDto(
+    val titulo: String,
+    val descricao: String,
+    val tipo: String,
+
+    @SerialName("acao_texto")
+    val acaoTexto: String? = null
 )
