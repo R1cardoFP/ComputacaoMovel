@@ -5,8 +5,11 @@ import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.from
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.OffsetDateTime
 
 class AuthRepository {
 
@@ -21,6 +24,17 @@ class AuthRepository {
 
             val userId = client.auth.currentUserOrNull()?.id
                 ?: throw Exception("Utilizador autenticado não encontrado.")
+
+            client.from("utilizador")
+                .update(
+                    AtualizarUltimoLogin(
+                        ultimoLogin = OffsetDateTime.now().toString()
+                    )
+                ) {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
 
             client.from("utilizador")
                 .select {
@@ -100,3 +114,9 @@ class AuthRepository {
         }
     }
 }
+
+@Serializable
+private data class AtualizarUltimoLogin(
+    @SerialName("ultimo_login")
+    val ultimoLogin: String
+)

@@ -24,7 +24,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
-// Imports
 import com.example.trabalhocm.ui.screens.BrowseTeamsScreen
 import com.example.trabalhocm.ui.screens.CreateTeamScreen
 import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
@@ -62,6 +61,8 @@ import com.example.trabalhocm.ui.screens.organizador.TeamDetailsScreen
 import com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen
 import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesScreen
 import com.example.trabalhocm.ui.screens.organizador.OrganizerProfileScreen
+import com.example.trabalhocm.ui.screens.admin.AdminUserManagementScreen
+import com.example.trabalhocm.ui.screens.admin.AdminNotificationsScreen
 
 import kotlinx.coroutines.launch
 
@@ -551,12 +552,11 @@ fun MatchLeagueApp() {
             )
         }
 
-        // ==========================================
-        // 4. ÁREA DO ADMIN
-        // ==========================================
         composable("admin_home") {
             AdminHomeScreen(
-                onManageUsersClick = {},
+                onManageUsersClick = {
+                    navController.navigate("admin_users")
+                },
                 onManageTeamsClick = {},
                 onManageTournamentsClick = { navController.navigate("torneios") },
                 onReviewRequestsClick = {},
@@ -579,6 +579,47 @@ fun MatchLeagueApp() {
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {},
                 onProfileClick = {}
+            )
+        }
+
+        composable("admin_users") {
+            AdminUserManagementScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable("admin_notifications") {
+            AdminNotificationsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("torneios")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
             )
         }
 
