@@ -1,6 +1,7 @@
 package com.example.trabalhocm.ui.screens.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,7 +51,9 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
 
 @Composable
-fun RecoverPasswordScreen() {
+fun RecoverPasswordScreen(
+    onBackClick: () -> Unit = {} // ADICIONADO AQUI
+) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
@@ -68,11 +71,30 @@ fun RecoverPasswordScreen() {
             .padding(horizontal = 28.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(165.dp))
+        Spacer(modifier = Modifier.height(100.dp)) // Ajustado para ficar mais harmonioso com a seta
 
-        RecoverLogo()
+        // --- CABEÇALHO COM SETA DE VOLTAR E LOGO ---
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Seta alinhada à esquerda
+            Text(
+                text = "←",
+                color = BrandBlue,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clickable { onBackClick() }
+                    .padding(end = 16.dp, bottom = 8.dp, top = 8.dp) // Área de clique
+            )
 
-        Spacer(modifier = Modifier.height(28.dp))
+            // Logo centrado
+            RecoverLogo()
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth(),

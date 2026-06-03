@@ -15,10 +15,30 @@ class AuthRepository {
 
     private val client = SupabaseClient.client
 
-    suspend fun login(email: String, password: String): Result<Utilizador> {
+    suspend fun login(identificador: String, password: String): Result<Utilizador> {
         return runCatching {
+            // Verifica se inseriu um email ou um username
+            val emailParaLogin = if (identificador.contains("@")) {
+                identificador
+            } else {
+                // Vai procurar o email na base de dados pelo username
+                val utilizadores = client.from("utilizador")
+                    .select {
+                        filter {
+                            eq("username", identificador)
+                        }
+                    }
+                    .decodeList<Utilizador>()
+
+                if (utilizadores.isEmpty()) {
+                    throw Exception("Username não encontrado.")
+                }
+                utilizadores.first().email
+            }
+
+            // Faz o login nativo com a Supabase
             client.auth.signInWith(Email) {
-                this.email = email
+                this.email = emailParaLogin
                 this.password = password
             }
 
@@ -46,7 +66,12 @@ class AuthRepository {
         }
     }
 
-    suspend fun registar(nome: String, email: String, password: String): Result<Utilizador> {
+    suspend fun registar(
+        nome: String,
+        username: String,
+        email: String,
+        password: String
+    ): Result<Utilizador> {
         return runCatching {
             client.auth.signUpWith(Email) {
                 this.email = email
@@ -54,7 +79,7 @@ class AuthRepository {
 
                 data = buildJsonObject {
                     put("nome", nome)
-                    put("username", email.substringBefore("@"))
+                    put("username", username)
                 }
             }
 
