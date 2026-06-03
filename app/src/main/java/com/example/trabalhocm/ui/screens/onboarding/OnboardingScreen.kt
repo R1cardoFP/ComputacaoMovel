@@ -1,12 +1,16 @@
 package com.example.trabalhocm.ui.screens.onboarding
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,121 +27,261 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
-import com.example.trabalhocm.R
-import androidx.compose.foundation.Image
 
 private val BrandBlue = Color(0xFF0B1F3A)
-private val AccentGreen = Color(0xFF008D7D)
+private val AccentGreen = Color(0xFF499D82)
+private val BgGray = Color(0xFFF9F9FB)
+private val TextGray = Color(0xFF6B7280)
 
 @Composable
 fun OnboardingFlow(onFinish: () -> Unit) {
     var page by remember { mutableIntStateOf(1) }
 
     when (page) {
-        1 -> Onboarding1 { page = 2 }
-        2 -> Onboarding2 { page = 3 }
+        1 -> Onboarding1(onSkip = onFinish, onNext = { page = 2 })
+        2 -> Onboarding2(onSkip = onFinish, onNext = { page = 3 })
         else -> Onboarding3 { onFinish() }
     }
 }
 
 @Composable
-fun Onboarding1(onNext: () -> Unit) {
-    OnboardingShell(page = 1, buttonText = "NEXT  →", onNext = onNext, centeredHeader = false) {
-        Spacer(Modifier.height(42.dp))
+fun Onboarding1(onSkip: () -> Unit, onNext: () -> Unit) {
+    OnboardingShell(page = 1, buttonText = "NEXT ›", onNext = onNext, onSkip = onSkip) {
+        // Mais espaço no topo para puxar o conteúdo para o meio
+        Spacer(Modifier.height(110.dp))
+
+        // Letra maior (46.sp)
         Text(
             buildAnnotatedString {
                 append("Manage Every\n")
                 withStyle(SpanStyle(color = AccentGreen)) { append("Tournament.") }
             },
-            color = BrandBlue, fontSize = 48.sp, lineHeight = 54.sp, fontWeight = FontWeight.Medium
+            color = BrandBlue,
+            fontSize = 46.sp,
+            lineHeight = 52.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
         )
-        Spacer(Modifier.height(18.dp))
-        Desc("Create leagues, knockout\ncompetitions,\nand professional sports events with\nease.")
+
+        Spacer(Modifier.height(24.dp))
+
+        Desc(
+            text = "Create leagues, knockout competitions,\nand professional sports events with\nease.",
+            fontSize = 16.sp,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
     }
 }
 
 @Composable
-fun Onboarding2(onNext: () -> Unit) {
-    OnboardingShell(page = 2, buttonText = "NEXT  >", onNext = onNext, centeredHeader = false) {
-        Spacer(Modifier.height(10.dp))
+fun Onboarding2(onSkip: () -> Unit, onNext: () -> Unit) {
+    OnboardingShell(page = 2, buttonText = "NEXT ›", onNext = onNext, onSkip = onSkip) {
+        // Empurrar o cartão mais para o meio
+        Spacer(Modifier.height(70.dp))
+
         MatchCard()
-        Spacer(Modifier.height(26.dp))
+
+        Spacer(Modifier.height(40.dp))
+
+        // Letra maior (40.sp)
         Text(
             buildAnnotatedString {
-                append("TRACK LIVE ")
+                append("TRACK LIVE\n")
                 withStyle(SpanStyle(color = AccentGreen)) { append("RESULTS.") }
             },
-            color = BrandBlue, fontSize = 42.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold
+            color = BrandBlue,
+            fontSize = 40.sp,
+            lineHeight = 44.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(Modifier.height(14.dp))
-        Desc("Get real-time updates, live standings, and\ndetailed statistics for every match.", centered = true)
+
+        Spacer(Modifier.height(16.dp))
+
+        Desc(
+            text = "Get real-time updates, live standings, and\ndetailed statistics for every match.",
+            centered = true,
+            fontSize = 16.sp,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
 @Composable
 fun Onboarding3(onFinish: () -> Unit) {
-    OnboardingShell(page = 3, buttonText = "GET STARTED", onNext = onFinish, centeredHeader = true, skipVisible = false) {
-        Spacer(Modifier.height(14.dp))
-        CommunityTopCard()
-        Spacer(Modifier.height(16.dp))
-        Box(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                .background(Color(0xFFF7F8FA)).padding(horizontal = 18.dp, vertical = 20.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgGray)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
+        // Top Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 24.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Indicators(3, showText = false)
-                Spacer(Modifier.height(14.dp))
-                Text("COMMUNITY HUB", color = BrandBlue.copy(alpha = 0.55f), fontSize = 10.sp, letterSpacing = 1.8.sp)
-                Spacer(Modifier.height(12.dp))
+            Text(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = BrandBlue, fontWeight = FontWeight.Normal)) { append("MATCH") }
+                    withStyle(SpanStyle(color = AccentGreen, fontWeight = FontWeight.Normal)) { append("LEAGUE") }
+                },
+                fontSize = 14.sp,
+                letterSpacing = 1.sp
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        // Zona do Card das Comunidades
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(horizontal = 24.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            CommunityTopCard()
+        }
+
+        // Card Branco Inferior Colado ao Fundo
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+            colors = CardDefaults.cardColors(containerColor = BrandWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 28.dp, vertical = 36.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "COMMUNITY HUB",
+                    color = TextGray,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.5.sp
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
                 Text(
                     buildAnnotatedString {
                         append("Join the ")
                         withStyle(SpanStyle(color = AccentGreen)) { append("League.") }
                     },
-                    color = BrandBlue, fontSize = 42.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold
+                    color = BrandBlue,
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.height(14.dp))
-                Desc("Invite players, manage teams, and book\ncasual pickup games in your\nneighborhood.", centered = true)
-                Spacer(Modifier.height(18.dp))
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Desc(
+                    text = "Invite players, manage teams, and book\ncasual pickup games in your\nneighborhood.",
+                    centered = true,
+                    fontSize = 15.sp
+                )
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Indicators(page = 3)
+
+                Spacer(modifier = Modifier.height(30.dp))
+
                 Button(
                     onClick = onFinish,
-                    modifier = Modifier.fillMaxWidth().height(54.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandGreen)
-                ) { Text("GET STARTED", color = BrandWhite, fontSize = 14.sp, letterSpacing = 1.5.sp) }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(6.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
+                ) {
+                    Text(
+                        text = "GET STARTED",
+                        color = BrandWhite,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 1.5.sp
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun OnboardingShell(page: Int, buttonText: String, onNext: () -> Unit, centeredHeader: Boolean, skipVisible: Boolean = true, body: @Composable ColumnScope.() -> Unit) {
+fun OnboardingShell(
+    page: Int,
+    buttonText: String,
+    onNext: () -> Unit,
+    onSkip: () -> Unit,
+    body: @Composable ColumnScope.() -> Unit
+) {
     Column(
-        Modifier.fillMaxSize().background(Color(0xFFF2F3F9)).statusBarsPadding().navigationBarsPadding().padding(horizontal = 18.dp, vertical = 18.dp)
+        Modifier
+            .fillMaxSize()
+            .background(BgGray)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 28.dp, vertical = 24.dp)
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = if (centeredHeader) Arrangement.Center else Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        // Header padrão para Página 1 e 2
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 buildAnnotatedString {
-                    withStyle(SpanStyle(color = BrandBlue)) { append("MATCH") }
-                    withStyle(SpanStyle(color = AccentGreen)) { append("LEAGUE") }
+                    withStyle(SpanStyle(color = BrandBlue, fontWeight = FontWeight.Normal)) { append("MATCH") }
+                    withStyle(SpanStyle(color = AccentGreen, fontWeight = FontWeight.Normal)) { append("LEAGUE") }
                 },
-                fontSize = 15.sp, fontWeight = FontWeight.Medium
+                fontSize = 14.sp,
+                letterSpacing = 1.sp
             )
-            if (!centeredHeader && skipVisible) {
-                Text("SKIP", color = BrandBlue.copy(alpha = 0.6f), fontSize = 11.sp)
-            }
+            Text(
+                text = "SKIP",
+                color = TextGray,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 1.sp,
+                modifier = Modifier.clickable { onSkip() }
+            )
         }
+
         body()
+
         Spacer(Modifier.weight(1f))
-        if (page != 3) {
-            Indicators(page, showText = false)
-            Spacer(Modifier.height(18.dp))
-            Button(
-                onClick = onNext, modifier = Modifier.fillMaxWidth().height(54.dp),
-                shape = RoundedCornerShape(8.dp), colors = ButtonDefaults.buttonColors(containerColor = BrandGreen)
-            ) { Text(buttonText, color = BrandWhite, fontSize = 14.sp, letterSpacing = 1.5.sp) }
+
+        Indicators(page = page)
+
+        Spacer(Modifier.height(26.dp))
+
+        Button(
+            onClick = onNext,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(6.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
+        ) {
+            Text(
+                text = buttonText,
+                color = BrandWhite,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 1.5.sp
+            )
         }
     }
 }
@@ -147,25 +291,37 @@ fun MatchCard() {
     Box(
         Modifier
             .fillMaxWidth()
-            .height(170.dp)
+            .height(200.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF0C1F41))
-            .padding(16.dp)
+            .background(Color(0xFF131B2A))
+            .padding(24.dp)
     ) {
         Column {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("LIVE · 74'", color = AccentGreen, fontSize = 11.sp)
-                Text("PREMIER LEAGUE", color = BrandBlue.copy(alpha = 0.55f), fontSize = 10.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(AccentGreen)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("LIVE • 74'", color = AccentGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
             }
-            Spacer(Modifier.height(14.dp))
-            Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0x33FFFFFF)))
-            Spacer(Modifier.height(14.dp))
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                TeamBlock(R.drawable.team_vianense, "VIANENSE")
-                Text("2", color = BrandWhite, fontSize = 54.sp, fontWeight = FontWeight.Medium)
-                Text(":", color = BrandBlue.copy(alpha = 0.5f), fontSize = 36.sp)
-                Text("1", color = BrandWhite, fontSize = 54.sp, fontWeight = FontWeight.Medium)
-                TeamBlock(R.drawable.team_sporting, "SPORTING")
+            Spacer(Modifier.height(24.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TeamBlock(R.drawable.team_vianense, "VIANE\nNSE")
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("2", color = BrandWhite, fontSize = 48.sp, fontWeight = FontWeight.Medium)
+                    Text("  :  ", color = Color(0xFF333E50), fontSize = 28.sp, fontWeight = FontWeight.Medium)
+                    Text("1", color = BrandWhite, fontSize = 48.sp, fontWeight = FontWeight.Medium)
+                }
+
+                TeamBlock(R.drawable.team_sporting, "SPORT\nING")
             }
         }
     }
@@ -173,15 +329,29 @@ fun MatchCard() {
 
 @Composable
 fun TeamBlock(logoRes: Int, team: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(60.dp)
+    ) {
         Image(
             painter = painterResource(logoRes),
             contentDescription = team,
             contentScale = ContentScale.Fit,
-            modifier = Modifier.size(52.dp).clip(RoundedCornerShape(10.dp)).background(Color.White).padding(4.dp)
+            modifier = Modifier
+                .size(54.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .padding(6.dp)
         )
-        Spacer(Modifier.height(8.dp))
-        Text(team, color = BrandWhite, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = team,
+            color = BrandWhite,
+            fontSize = 10.sp,
+            lineHeight = 14.sp,
+            fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -190,87 +360,121 @@ fun CommunityTopCard() {
     Box(
         Modifier
             .fillMaxWidth()
-            .height(190.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFEAEDF8))
+            .height(260.dp) // Aumentado para dar espaço para descer a imagem
     ) {
+        // Bloco de Trás / Esquerda (Live Nearby)
         Column(
             Modifier
-                .padding(10.dp)
-                .width(220.dp)
+                .width(230.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF7F8FA))
-                .padding(12.dp)
+                .background(BrandWhite)
+                .padding(18.dp)
+                .align(Alignment.TopStart)
         ) {
-            Text("LIVE NEARBY", color = AccentGreen, fontSize = 10.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(6.dp).clip(CircleShape).background(AccentGreen))
+                Spacer(Modifier.width(8.dp))
+                Text("LIVE NEARBY", color = AccentGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("Central Park 5-a-side", color = BrandBlue, fontSize = 15.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(10.dp))
-            Text("Central Park 5-a-side", color = BrandBlue, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-            Spacer(Modifier.height(10.dp))
-            Text("8/10 Players joined", color = BrandBlue.copy(alpha = 0.7f), fontSize = 12.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("👥", fontSize = 12.sp)
+                Spacer(Modifier.width(6.dp))
+                Text("8/10 Players joined", color = TextGray, fontSize = 11.sp)
+            }
         }
 
+        // Bloco da Frente / Direita Sobreposto (Kings League Team)
+        // Adicionado um offset(y = 30.dp) para o empurrar mais para baixo!
         Column(
             Modifier
                 .align(Alignment.BottomEnd)
-                .padding(10.dp)
-                .width(142.dp)
+                .offset(y = 30.dp)
+                .width(170.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF7F8FA))
-                .padding(10.dp)
+                .background(BrandWhite)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row {
-                repeat(3) { idx ->
-                    Image(
-                        painter = painterResource(R.drawable.avatar_player),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.offset(x = (idx * -5).dp).size(26.dp).clip(CircleShape).border(1.dp, Color.White, CircleShape)
-                    )
+            Row(horizontalArrangement = Arrangement.Center) {
+                Box(contentAlignment = Alignment.Center) {
+                    Row {
+                        repeat(3) { idx ->
+                            Image(
+                                painter = painterResource(R.drawable.avatar_player),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .clip(CircleShape)
+                                    .border(1.5.dp, BrandWhite, CircleShape)
+                            )
+                            if (idx < 2) Spacer(modifier = Modifier.width((-8).dp))
+                        }
+                    }
                 }
+                Spacer(modifier = Modifier.width(6.dp))
                 Box(
-                    Modifier.offset(x = (-12).dp).size(26.dp).clip(CircleShape).background(Color(0xFFC2D2FF)),
+                    Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE8EEFF)),
                     contentAlignment = Alignment.Center
-                ) { Text("+12", color = BrandBlue, fontSize = 9.sp, fontWeight = FontWeight.Bold) }
+                ) {
+                    Text("+12", color = Color(0xFF3566C9), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
             Text("Kings League Team", color = BrandBlue, fontSize = 11.sp, fontWeight = FontWeight.Medium)
-            Spacer(Modifier.height(6.dp))
-            Text("NEW MATCH INVITE", color = BrandBlue, fontSize = 9.sp, fontWeight = FontWeight.Medium)
-        }
-    }
-}
-
-@Composable
-fun Indicators(page: Int, showText: Boolean) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-        repeat(3) { idx ->
-            val active = idx + 1 == page
+            Spacer(Modifier.height(12.dp))
             Box(
-                Modifier
-                    .padding(horizontal = 4.dp)
-                    .width(if (active) 42.dp else 8.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (active) BrandBlue else BrandBlue.copy(alpha = 0.25f))
-            )
-        }
-        if (showText) {
-            Spacer(Modifier.width(8.dp))
-            Text("1 OF 3", fontSize = 9.sp, color = BrandBlue.copy(alpha = 0.6f), fontWeight = FontWeight.Medium)
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFFF3F6FF))
+                    .padding(horizontal = 8.dp, vertical = 5.dp)
+            ) {
+                Text("NEW MATCH INVITE", color = Color(0xFF3566C9), fontSize = 7.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+            }
         }
     }
 }
 
 @Composable
-fun Desc(text: String, centered: Boolean = false) {
+fun Indicators(page: Int) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val arrangementModifier = if (page == 3) Modifier.fillMaxWidth() else Modifier
+        Row(modifier = arrangementModifier, horizontalArrangement = if (page == 3) Arrangement.Center else Arrangement.Start) {
+            repeat(3) { idx ->
+                val active = idx + 1 == page
+                Box(
+                    Modifier
+                        .padding(end = 6.dp)
+                        .width(if (active) 32.dp else 20.dp)
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (active) Color(0xFF3566C9) else Color(0xFFC7CBD6))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun Desc(text: String, centered: Boolean = false, fontSize: androidx.compose.ui.unit.TextUnit = 14.sp, modifier: Modifier = Modifier) {
     Text(
-        text,
-        color = BrandBlue.copy(alpha = 0.7f),
-        fontSize = 15.sp,
+        text = text,
+        color = TextGray,
+        fontSize = fontSize,
         lineHeight = 24.sp,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         textAlign = if (centered) TextAlign.Center else TextAlign.Start,
-        modifier = if (centered) Modifier.fillMaxWidth() else Modifier
+        modifier = modifier
     )
 }
 

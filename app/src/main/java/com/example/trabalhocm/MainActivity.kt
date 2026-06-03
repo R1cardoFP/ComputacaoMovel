@@ -117,7 +117,9 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("recover_password") { RecoverPasswordScreen() }
+        composable("recover_password") {
+            RecoverPasswordScreen(onBackClick = { navController.popBackStack() })
+        }
 
         composable("change_password") { ChangePasswordScreen(onPasswordChanged = { navController.popBackStack() }) }
 
