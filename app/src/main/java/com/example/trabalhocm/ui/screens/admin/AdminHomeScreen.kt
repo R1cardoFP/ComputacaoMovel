@@ -71,6 +71,9 @@ fun AdminHomeScreen(
     var adminStats by remember { mutableStateOf(AdminStats()) }
     var isLoadingStats by remember { mutableStateOf(true) }
 
+    var organizerRequestsPending by remember { mutableStateOf(0) }
+    var isLoadingOrganizerRequests by remember { mutableStateOf(true) }
+
     LaunchedEffect(Unit) {
         adminRepository.carregarEstatisticasAdmin()
             .onSuccess { stats ->
@@ -78,16 +81,30 @@ fun AdminHomeScreen(
             }
 
         isLoadingStats = false
+
+        adminRepository.carregarPedidosOrganizadorPendentes()
+            .onSuccess { total ->
+                organizerRequestsPending = total
+            }
+
+        isLoadingOrganizerRequests = false
     }
 
     val usersText = if (isLoadingStats) "..." else adminStats.totalUsers.toString()
     val teamsText = if (isLoadingStats) "..." else adminStats.totalTeams.toString()
     val tournamentsText = if (isLoadingStats) "..." else adminStats.totalTournaments.toString()
 
+    val organizerRequestsText = if (isLoadingOrganizerRequests) {
+        "..."
+    } else {
+        organizerRequestsPending.toString()
+    }
+
     AdminHomeContent(
         usersText = usersText,
         teamsText = teamsText,
         tournamentsText = tournamentsText,
+        organizerRequestsText = organizerRequestsText,
         onManageUsersClick = onManageUsersClick,
         onManageTeamsClick = onManageTeamsClick,
         onManageTournamentsClick = onManageTournamentsClick,
@@ -106,6 +123,7 @@ private fun AdminHomeContent(
     usersText: String,
     teamsText: String,
     tournamentsText: String,
+    organizerRequestsText: String,
     onManageUsersClick: () -> Unit = {},
     onManageTeamsClick: () -> Unit = {},
     onManageTournamentsClick: () -> Unit = {},
@@ -237,7 +255,7 @@ private fun AdminHomeContent(
                     icon = AppIcons.Notifications,
                     title = "Organizer Requests",
                     description = "Review and approve new organizers.",
-                    badge = "4 PENDING",
+                    badge = "$organizerRequestsText PENDING",
                     iconColor = Color(0xFFE2A600),
                     iconBackground = Color(0xFFFFF7DE),
                     buttonText = "REVIEW REQUESTS",
@@ -552,6 +570,7 @@ fun AdminHomeScreenPreview() {
     AdminHomeContent(
         usersText = "142",
         teamsText = "3",
-        tournamentsText = "4"
+        tournamentsText = "4",
+        organizerRequestsText = "4"
     )
 }
