@@ -23,10 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-// Import das tuas cores maravilhosas!
 import com.example.trabalhocm.ui.theme.*
 
-// Modelo de Dados Temporário para a UI
 data class JoinedPlayer(val name: String, val joinedTime: String, val isYou: Boolean = false)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,7 +99,6 @@ fun CasualMatchDetailsScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // Etiquetas
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MatchDetailsTag("• LIVE NOW", TealGreen, TealGreen.copy(alpha = 0.1f))
                         MatchDetailsTag("OPEN REGISTRATION", PrimaryBlue, PrimaryBlue.copy(alpha = 0.1f))
@@ -139,7 +136,7 @@ fun CasualMatchDetailsScreen(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(
-                        progress = { 0.8f }, // 8 de 10
+                        progress = { 0.8f },
                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                         color = TealGreen,
                         trackColor = InputBg,
@@ -214,7 +211,7 @@ fun CasualMatchDetailsScreen(
                             .fillMaxWidth()
                             .height(140.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF94A3B8)), // Cinzento a imitar mapa
+                            .background(Color(0xFF94A3B8)),
                         contentAlignment = Alignment.Center
                     ) {
                         Surface(

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-// Import das tuas cores centralizadas
 import com.example.trabalhocm.ui.theme.*
 
 enum class EventType { GOAL, HALF_TIME, YELLOW_CARD, SUBSTITUTION, SAVE, START }
@@ -50,7 +49,6 @@ fun OrganizerLiveMatchScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    // 1. Transformámos a lista estática numa lista reativa (mutableStateListOf)
     val matchEvents = remember {
         mutableStateListOf(
             MatchEvent("68'", EventType.GOAL, "GOAL!", "M. Rashford", "Clinical finish into the bottom left corner."),
@@ -62,7 +60,6 @@ fun OrganizerLiveMatchScreen(
         )
     }
 
-    // 2. Controlar se o botão já foi clicado para o esconder depois
     var hasLoadedMore by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -135,11 +132,10 @@ fun OrganizerLiveMatchScreen(
                     if (!hasLoadedMore) {
                         Button(
                             onClick = {
-                                // Adiciona novos eventos ao fundo da lista
                                 matchEvents.add(MatchEvent("08'", EventType.YELLOW_CARD, "YELLOW CARD", "D. Dalot", "Late challenge on the winger."))
                                 matchEvents.add(MatchEvent("04'", EventType.SAVE, "GREAT SAVE", "D. Costa", "Crucial early block."))
                                 matchEvents.add(MatchEvent("00'", EventType.START, "KICK-OFF", "Referee", "The match gets underway!"))
-                                hasLoadedMore = true // Esconde o botão
+                                hasLoadedMore = true
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                             shape = RoundedCornerShape(8.dp),
@@ -150,7 +146,6 @@ fun OrganizerLiveMatchScreen(
                             Text("LOAD MORE EVENTS", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                         }
                     } else {
-                        // Mensagem simples quando já não há mais eventos
                         Text(
                             text = "NO MORE EVENTS",
                             color = TextGray,
@@ -270,7 +265,7 @@ fun LiveScoreCard() {
 fun EventRow(event: MatchEvent) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top // O verticalAlignment aqui está perfeitinho agora!
+        verticalAlignment = Alignment.Top
     ) {
         Text(
             text = event.time,

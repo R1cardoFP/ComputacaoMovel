@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-// IMPORT DAS CORES CENTRALIZADAS!
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +35,6 @@ fun CreateTournamentStep4Screen(
     onPublishClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    // Estado para o papel no torneio
     var selectedRole by remember { mutableStateOf("Participate as Player") }
 
     Scaffold(
@@ -72,10 +70,8 @@ fun CreateTournamentStep4Screen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // CABEÇALHO (Step 4 of 4)
             Step4HeaderSection()
 
-            // MY ROLE IN THIS TOURNAMENT
             Column {
                 Step4SectionLabel("MY ROLE IN THIS TOURNAMENT")
                 Spacer(modifier = Modifier.height(8.dp))
@@ -83,7 +79,7 @@ fun CreateTournamentStep4Screen(
                 RoleCard(
                     title = "Organizer Only",
                     description = "Manage the event, brackets, and scores. You will not play.",
-                    icon = Icons.Default.Build, // Temporário para a mala
+                    icon = Icons.Default.Build,
                     isSelected = selectedRole == "Organizer Only",
                     onClick = { selectedRole = "Organizer Only" }
                 )
@@ -229,7 +225,7 @@ fun CreateTournamentStep4Screen(
 
                 Button(
                     onClick = onPublishClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen), // Botão Verde Final!
+                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .weight(0.65f)
@@ -263,7 +259,6 @@ fun Step4HeaderSection() {
         ) {
             Text("Role &\nReview", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
 
-            // Progress Bar (Tudo a verde!)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
                 Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
@@ -370,7 +365,6 @@ fun ReviewRow(label: String, value: String) {
     }
 }
 
-// ESTA É A FUNÇÃO SUBSTITUTA, PRIVADA E COM NOME ÚNICO PARA O STEP 4
 private @Composable
 fun Step4SectionLabel(text: String) {
     Text(

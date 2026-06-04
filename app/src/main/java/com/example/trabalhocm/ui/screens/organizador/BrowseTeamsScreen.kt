@@ -39,8 +39,12 @@ data class Team(
 fun BrowseTeamsScreen(
     onCreateTeamClick: () -> Unit = {},
     onManageTeamClick: () -> Unit = {},
-    onViewDetailsClick: (Boolean) -> Unit = {}, // <-- O PARÂMETRO QUE FALTAVA!
-    onHomeClick: () -> Unit = {}
+    onViewDetailsClick: (Boolean) -> Unit = {},
+    onHomeClick: () -> Unit = {},
+    onTournamentsClick: () -> Unit = {},
+    onMatchesClick: () -> Unit = {},
+    onTeamsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val tabs = listOf("All Teams", "Division A", "Division B")
@@ -96,7 +100,14 @@ fun BrowseTeamsScreen(
                         Text("CREATE TEAM", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                     }
                 }
-                MatchLeagueBottomBar(selectedTab = "TEAMS", onHomeClick = onHomeClick)
+                MatchLeagueBottomBar(
+                    selectedTab = "TEAMS",
+                    onHomeClick = onHomeClick,
+                    onTournamentsClick = onTournamentsClick,
+                    onMatchesClick = onMatchesClick,
+                    onTeamsClick = onTeamsClick,
+                    onProfileClick = onProfileClick
+                )
             }
         },
         containerColor = BgLight
@@ -174,12 +185,12 @@ fun BrowseTeamsScreen(
                     MyTeamCard(
                         team = team,
                         onManageTeamClick = onManageTeamClick,
-                        onViewDetailsClick = { onViewDetailsClick(true) } // Passa que é a tua equipa
+                        onViewDetailsClick = { onViewDetailsClick(true) }
                     )
                 } else {
                     RegularTeamCard(
                         team = team,
-                        onViewDetailsClick = { onViewDetailsClick(false) } // Passa que é equipa dos outros
+                        onViewDetailsClick = { onViewDetailsClick(false) }
                     )
                 }
             }

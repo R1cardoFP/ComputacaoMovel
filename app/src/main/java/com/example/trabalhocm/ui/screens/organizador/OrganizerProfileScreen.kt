@@ -38,7 +38,9 @@ fun OrganizerProfileScreen(
     onChangePasswordClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
-    onTeamsClick: () -> Unit = {}
+    onMatchesClick: () -> Unit = {},
+    onTeamsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     var fullName by remember { mutableStateOf(initialName) }
     var email by remember { mutableStateOf(initialEmail) }
@@ -61,9 +63,9 @@ fun OrganizerProfileScreen(
                 selectedTab = "PROFILE",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
-                onMatchesClick = {},
+                onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
-                onProfileClick = {}
+                onProfileClick = onProfileClick
             )
         },
         containerColor = BgLight

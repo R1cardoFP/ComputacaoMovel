@@ -48,14 +48,14 @@ data class Player(
 @Composable
 fun TeamManagementScreen(
     onBackClick: () -> Unit = {},
-    onHomeClick: () -> Unit = {}
+    onHomeClick: () -> Unit = {},
+    onInviteClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All") }
 
     val filters = listOf("All", "Forward", "Midfielder", "Defender", "Goalkeeper")
 
-    // Lista de Jogadores Baseada nos teus mockups (Seleção Portuguesa vibes!)
     val roster = listOf(
         Player("Bruno Fernandes", "Midfielder", 10, isCaptain = true),
         Player("Cristiano Ronaldo", "Forward", 9),
@@ -112,7 +112,7 @@ fun TeamManagementScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // TEAM INFO CARD (Azul Escuro)
+            // TEAM INFO CARD
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = DarkBlue),
@@ -148,7 +148,7 @@ fun TeamManagementScreen(
             // INVITE PLAYER BUTTON
             item {
                 Button(
-                    onClick = { /* Lógica de convite */ },
+                    onClick = onInviteClick,
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
@@ -186,7 +186,6 @@ fun TeamManagementScreen(
                 )
             }
 
-            // FILTROS (Com FlowRow para quebra de linha automática)
             item {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -247,7 +246,6 @@ fun PlayerCard(player: Player) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                // A linha vermelha fina à esquerda caso seja capitão
                 .drawBehind {
                     if (player.isCaptain) {
                         drawLine(
@@ -261,7 +259,6 @@ fun PlayerCard(player: Player) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Placeholder da Foto do Jogador (Circulo com as iniciais)
             Box(
                 modifier = Modifier
                     .size(48.dp)

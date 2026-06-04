@@ -189,7 +189,6 @@ fun OrganizerNotificationsScreen(
 
 @Composable
 fun NotificationCard(notification: AppNotification) {
-    // Substituí o ícone da Cloud pelo Info para não dar erro de import!
     val (iconColor, iconBg, iconVector) = when (notification.type) {
         NotificationType.MATCH -> Triple(PrimaryBlue, PrimaryBlue.copy(alpha = 0.1f), Icons.Outlined.DateRange)
         NotificationType.TEAM -> Triple(TealGreen, TealGreen.copy(alpha = 0.1f), Icons.Outlined.Person)
@@ -216,7 +215,7 @@ fun NotificationCard(notification: AppNotification) {
                     }
                 }
                 .padding(16.dp),
-            verticalAlignment = Alignment.Top // CORRIGIDO AQUI!
+            verticalAlignment = Alignment.Top
         ) {
             // ICONE
             Surface(

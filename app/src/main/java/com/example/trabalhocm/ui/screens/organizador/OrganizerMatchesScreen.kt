@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-// IMPORT DAS CORES CENTRALIZADAS!
 import com.example.trabalhocm.ui.theme.*
 
 enum class MatchResult { WIN, LOSS, DRAW }
@@ -116,7 +115,7 @@ fun OrganizerMatchesScreen(
             "Wins" -> match.result == MatchResult.WIN
             "Losses" -> match.result == MatchResult.LOSS
             "Draws" -> match.result == MatchResult.DRAW
-            else -> true // "All"
+            else -> true
         }
     }
 
