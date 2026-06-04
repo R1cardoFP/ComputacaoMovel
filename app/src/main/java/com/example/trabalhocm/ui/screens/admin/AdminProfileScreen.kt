@@ -66,6 +66,7 @@ fun AdminProfileScreen(
     onLogoutSuccess: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
     onDashboardClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -106,7 +107,8 @@ fun AdminProfileScreen(
         topBar = {
             AdminProfileTopBar(
                 title = "Profile",
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                onNotificationsClick = onNotificationsClick
             )
         },
         bottomBar = {
@@ -442,7 +444,8 @@ private fun AdminProfileHeader(nome: String) {
 @Composable
 private fun AdminProfileTopBar(
     title: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNotificationsClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -475,10 +478,14 @@ private fun AdminProfileTopBar(
         }
 
         Icon(
-            imageVector = AppIcons.Settings,
-            contentDescription = "Definições",
+            imageVector = AppIcons.Notifications,
+            contentDescription = "Notificações",
             tint = Color.White,
-            modifier = Modifier.size(23.dp)
+            modifier = Modifier
+                .size(23.dp)
+                .clickable {
+                    onNotificationsClick()
+                }
         )
     }
 }

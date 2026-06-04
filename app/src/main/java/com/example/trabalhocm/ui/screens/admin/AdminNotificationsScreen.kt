@@ -1,6 +1,8 @@
 package com.example.trabalhocm.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +64,8 @@ private data class NotificationVisual(
 @Composable
 fun AdminNotificationsScreen(
     onBackClick: () -> Unit = {},
+    onViewUserProfileClick: (AdminNotification) -> Unit = {},
+    onViewTournamentDetailsClick: (AdminNotification) -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -232,7 +237,9 @@ fun AdminNotificationsScreen(
                                         }
                                 }
                             }
-                        }
+                        },
+                        onViewUserProfileClick = onViewUserProfileClick,
+                        onViewTournamentDetailsClick = onViewTournamentDetailsClick
                     )
                 }
             }
@@ -339,7 +346,8 @@ private fun AdminNotificationFilterChip(
             color = if (selected) Color.White else BrandBlue,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.5.sp
+            letterSpacing = 0.5.sp,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -347,7 +355,9 @@ private fun AdminNotificationFilterChip(
 @Composable
 private fun AdminNotificationCard(
     notification: AdminNotification,
-    onNotificationClick: (AdminNotification) -> Unit
+    onNotificationClick: (AdminNotification) -> Unit,
+    onViewUserProfileClick: (AdminNotification) -> Unit,
+    onViewTournamentDetailsClick: (AdminNotification) -> Unit
 ) {
     val visual = notificationVisual(notification)
 
@@ -411,7 +421,8 @@ private fun AdminNotificationCard(
                             text = notification.timeText,
                             color = TextGray,
                             fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         )
                     }
 
@@ -439,25 +450,57 @@ private fun AdminNotificationCard(
                 if (notification.actionText != null) {
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(34.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(Color.White)
-                            .padding(horizontal = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = notification.actionText,
-                            color = BrandBlue,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    NotificationActionButton(
+                        text = notification.actionText,
+                        onClick = {
+                            onNotificationClick(notification)
+
+                            when {
+                                notification.actionText.contains("user", ignoreCase = true) -> {
+                                    onViewUserProfileClick(notification)
+                                }
+
+                                notification.actionText.contains("tournament", ignoreCase = true) -> {
+                                    onViewTournamentDetailsClick(notification)
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NotificationActionButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(36.dp)
+            .clip(RoundedCornerShape(5.dp))
+            .background(Color.White)
+            .border(
+                BorderStroke(1.dp, Color(0xFFD8DEE9)),
+                RoundedCornerShape(5.dp)
+            )
+            .clickable {
+                onClick()
+            }
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = BrandBlue,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

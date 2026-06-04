@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +51,7 @@ private val AdminGreen = Color(0xFF008D7D)
 private val AdminBackground = Color(0xFFF4F5FA)
 private val TextMuted = Color(0xFF6F7A8A)
 private val CardWhite = Color.White
+private val ButtonBorderGray = Color(0xFFD8DEE9)
 
 @Composable
 fun AdminHomeScreen(
@@ -57,6 +60,7 @@ fun AdminHomeScreen(
     onManageTournamentsClick: () -> Unit = {},
     onReviewRequestsClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -89,6 +93,7 @@ fun AdminHomeScreen(
         onManageTournamentsClick = onManageTournamentsClick,
         onReviewRequestsClick = onReviewRequestsClick,
         onHomeClick = onHomeClick,
+        onNotificationsClick = onNotificationsClick,
         onTournamentsClick = onTournamentsClick,
         onMatchesClick = onMatchesClick,
         onTeamsClick = onTeamsClick,
@@ -106,6 +111,7 @@ private fun AdminHomeContent(
     onManageTournamentsClick: () -> Unit = {},
     onReviewRequestsClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -114,7 +120,10 @@ private fun AdminHomeContent(
     Scaffold(
         containerColor = AdminBackground,
         topBar = {
-            AdminTopBar(title = "Admin Dashboard")
+            AdminTopBar(
+                title = "Admin Dashboard",
+                onNotificationsClick = onNotificationsClick
+            )
         },
         bottomBar = {
             AdminBottomBar(
@@ -242,7 +251,10 @@ private fun AdminHomeContent(
 }
 
 @Composable
-private fun AdminTopBar(title: String) {
+private fun AdminTopBar(
+    title: String,
+    onNotificationsClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -271,10 +283,14 @@ private fun AdminTopBar(title: String) {
         }
 
         Icon(
-            imageVector = AppIcons.Settings,
-            contentDescription = "Definições",
+            imageVector = AppIcons.Notifications,
+            contentDescription = "Notificações",
             tint = Color.White,
-            modifier = Modifier.size(23.dp)
+            modifier = Modifier
+                .size(23.dp)
+                .clickable {
+                    onNotificationsClick()
+                }
         )
     }
 }
@@ -376,6 +392,8 @@ private fun AdminManagementCard(
     buttonTextColor: Color,
     onClick: () -> Unit
 ) {
+    val hasLightButton = buttonColor == Color.White
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -445,7 +463,12 @@ private fun AdminManagementCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(38.dp),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(5.dp),
+                border = if (hasLightButton) {
+                    BorderStroke(1.dp, ButtonBorderGray)
+                } else {
+                    null
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = buttonColor,
                     contentColor = buttonTextColor
@@ -456,7 +479,9 @@ private fun AdminManagementCard(
                     text = buttonText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

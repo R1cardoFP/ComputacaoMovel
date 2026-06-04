@@ -5,12 +5,17 @@ import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.Duration
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class AdminNotificationRepository {
 
     private val client = SupabaseClient.client
+    private val zonaPortugal = ZoneId.of("Europe/Lisbon")
 
     suspend fun listarNotificacoes(): Result<List<AdminNotification>> {
         return runCatching {
@@ -28,7 +33,10 @@ class AdminNotificationRepository {
                         type = notificacao.tipo,
                         actionText = notificacao.acaoTexto,
                         unread = !notificacao.lida,
-                        timeText = formatTime(notificacao.criadaEm)
+                        timeText = formatTime(notificacao.criadaEm),
+                        createdAt = notificacao.criadaEm,
+                        userId = notificacao.idUtilizador,
+                        tournamentId = notificacao.idTorneio
                     )
                 }
         }
@@ -51,19 +59,30 @@ class AdminNotificationRepository {
 
     private fun formatTime(data: String): String {
         return try {
-            val criadaEm = OffsetDateTime.parse(data)
-            val agora = OffsetDateTime.now()
-            val duration = Duration.between(criadaEm, agora)
+            val dataHora = parseDataSupabase(data)
+            val formatter = DateTimeFormatter.ofPattern("HH'h'", Locale("pt", "PT"))
 
-            when {
-                duration.toMinutes() < 1 -> "NOW"
-                duration.toMinutes() < 60 -> "${duration.toMinutes()}M AGO"
-                duration.toHours() < 24 -> "${duration.toHours()}H AGO"
-                duration.toDays() == 1L -> "YESTERDAY"
-                else -> "${duration.toDays()}D AGO"
-            }
+            dataHora.format(formatter)
         } catch (e: Exception) {
             "UNKNOWN"
+        }
+    }
+
+    private fun parseDataSupabase(data: String): LocalDateTime {
+        return try {
+            OffsetDateTime
+                .parse(data)
+                .atZoneSameInstant(zonaPortugal)
+                .toLocalDateTime()
+        } catch (e1: Exception) {
+            try {
+                Instant
+                    .parse(data)
+                    .atZone(zonaPortugal)
+                    .toLocalDateTime()
+            } catch (e2: Exception) {
+                LocalDateTime.parse(data)
+            }
         }
     }
 }
@@ -81,7 +100,13 @@ private data class AdminNotificationDto(
     val lida: Boolean = false,
 
     @SerialName("criada_em")
-    val criadaEm: String
+    val criadaEm: String,
+
+    @SerialName("id_utilizador")
+    val idUtilizador: String? = null,
+
+    @SerialName("id_torneio")
+    val idTorneio: String? = null
 )
 
 @Serializable

@@ -7,5 +7,8 @@ data class AdminNotification(
     val type: String,
     val actionText: String?,
     val unread: Boolean,
-    val timeText: String
+    val timeText: String,
+    val createdAt: String,
+    val userId: String? = null,
+    val tournamentId: String? = null
 )
