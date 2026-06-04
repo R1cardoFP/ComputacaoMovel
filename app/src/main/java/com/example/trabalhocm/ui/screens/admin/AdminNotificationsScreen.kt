@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,23 +35,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.model.AdminNotification
 import com.example.trabalhocm.data.repository.AdminNotificationRepository
+import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
 import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.TextGray
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private data class NotificationVisual(
-    val icon: String,
+    val icon: ImageVector,
     val iconColor: Color,
     val iconBackground: Color
 )
@@ -255,11 +258,11 @@ private fun AdminNotificationsTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onBackClick() }
         ) {
-            Text(
-                text = "←",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = AppIcons.Back,
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -272,10 +275,11 @@ private fun AdminNotificationsTopBar(
             )
         }
 
-        Text(
-            text = "🔔",
-            color = Color.White,
-            fontSize = 21.sp
+        Icon(
+            imageVector = AppIcons.Notifications,
+            contentDescription = "Notificações",
+            tint = Color.White,
+            modifier = Modifier.size(22.dp)
         )
     }
 }
@@ -370,11 +374,11 @@ private fun AdminNotificationCard(
                     .background(visual.iconBackground),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = visual.icon,
-                    color = visual.iconColor,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = visual.icon,
+                    contentDescription = notification.title,
+                    tint = visual.iconColor,
+                    modifier = Modifier.size(22.dp)
                 )
             }
 
@@ -463,37 +467,37 @@ private fun notificationVisual(notification: AdminNotification): NotificationVis
 
     return when {
         notification.type == "SYSTEM" -> NotificationVisual(
-            icon = "☁",
+            icon = AppIcons.Sync,
             iconColor = Color(0xFF64748B),
             iconBackground = Color(0xFFEAF3FF)
         )
 
         title.contains("tournament") || description.contains("tournament") -> NotificationVisual(
-            icon = "♜",
+            icon = AppIcons.Tournaments,
             iconColor = Color(0xFFE2A600),
             iconBackground = Color(0xFFFFF7DE)
         )
 
         title.contains("team") || description.contains("team") -> NotificationVisual(
-            icon = "♟",
+            icon = AppIcons.Teams,
             iconColor = Color(0xFF0057C8),
             iconBackground = Color(0xFFEAF3FF)
         )
 
         title.contains("suspended") || description.contains("suspended") -> NotificationVisual(
-            icon = "⊗",
+            icon = AppIcons.Cancel,
             iconColor = Color(0xFFDC2626),
             iconBackground = Color(0xFFFEE2E2)
         )
 
         title.contains("payment") || description.contains("payment") -> NotificationVisual(
-            icon = "▤",
+            icon = AppIcons.Payment,
             iconColor = BrandGreen,
             iconBackground = Color(0xFFEAF8F5)
         )
 
         else -> NotificationVisual(
-            icon = "♙",
+            icon = AppIcons.Profile,
             iconColor = BrandGreen,
             iconBackground = Color(0xFFEAF8F5)
         )
@@ -518,37 +522,39 @@ private fun AdminNotificationsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AdminNotificationsBottomItem("⌂", "HOME", selected == "home", onHomeClick)
-        AdminNotificationsBottomItem("♜", "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        AdminNotificationsBottomItem("◎", "MATCHES", selected == "matches", onMatchesClick)
-        AdminNotificationsBottomItem("♟", "TEAMS", selected == "teams", onTeamsClick)
-        AdminNotificationsBottomItem("♙", "PROFILE", selected == "profile", onProfileClick)
+        AdminNotificationsBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
+        AdminNotificationsBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
+        AdminNotificationsBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
+        AdminNotificationsBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
+        AdminNotificationsBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
     }
 }
 
 @Composable
 private fun AdminNotificationsBottomItem(
-    icon: String,
+    icon: ImageVector,
     label: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+
     Column(
         modifier = Modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = icon,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(20.dp)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = label,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
+            color = color,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp

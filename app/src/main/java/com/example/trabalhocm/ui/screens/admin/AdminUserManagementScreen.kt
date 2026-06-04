@@ -28,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -45,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.model.AdminUser
 import com.example.trabalhocm.data.repository.AdminUserRepository
+import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
@@ -397,11 +400,11 @@ private fun AdminUsersTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onBackClick() }
         ) {
-            Text(
-                text = "←",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = AppIcons.Back,
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -414,13 +417,15 @@ private fun AdminUsersTopBar(
             )
         }
 
-        Text(
-            text = "🔔",
-            color = Color.White,
-            fontSize = 21.sp,
-            modifier = Modifier.clickable {
-                onNotificationsClick()
-            }
+        Icon(
+            imageVector = AppIcons.Notifications,
+            contentDescription = "Notificações",
+            tint = Color.White,
+            modifier = Modifier
+                .size(22.dp)
+                .clickable {
+                    onNotificationsClick()
+                }
         )
     }
 }
@@ -441,10 +446,11 @@ private fun SearchBox(
             )
         },
         leadingIcon = {
-            Text(
-                text = "⌕",
-                color = TextGray,
-                fontSize = 18.sp
+            Icon(
+                imageVector = AppIcons.Search,
+                contentDescription = "Pesquisar",
+                tint = TextGray,
+                modifier = Modifier.size(20.dp)
             )
         },
         keyboardOptions = KeyboardOptions(
@@ -560,14 +566,15 @@ private fun AdminUserCard(
             }
 
             Box {
-                Text(
-                    text = "⋮",
-                    color = BrandBlue,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable {
-                        menuExpanded = true
-                    }
+                Icon(
+                    imageVector = AppIcons.MoreVert,
+                    contentDescription = "Opções",
+                    tint = BrandBlue,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            menuExpanded = true
+                        }
                 )
 
                 DropdownMenu(
@@ -581,10 +588,10 @@ private fun AdminUserCard(
                         "ADMINISTRATOR" -> {
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "🛡 Revoke Administrator",
-                                        color = BrandBlue,
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Security,
+                                        text = "Revoke Administrator",
+                                        color = BrandBlue
                                     )
                                 },
                                 onClick = {
@@ -595,10 +602,10 @@ private fun AdminUserCard(
 
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "🗑 Delete User",
-                                        color = Color(0xFFDC2626),
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Delete,
+                                        text = "Delete User",
+                                        color = Color(0xFFDC2626)
                                     )
                                 },
                                 onClick = {
@@ -611,10 +618,10 @@ private fun AdminUserCard(
                         "ORGANIZER" -> {
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "🛡 Make Administrator",
-                                        color = BrandBlue,
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Security,
+                                        text = "Make Administrator",
+                                        color = BrandBlue
                                     )
                                 },
                                 onClick = {
@@ -625,10 +632,10 @@ private fun AdminUserCard(
 
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "👤 Revoke Organizer",
-                                        color = Color(0xFFDC2626),
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Profile,
+                                        text = "Revoke Organizer",
+                                        color = Color(0xFFDC2626)
                                     )
                                 },
                                 onClick = {
@@ -639,10 +646,10 @@ private fun AdminUserCard(
 
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "🗑 Delete User",
-                                        color = Color(0xFFDC2626),
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Delete,
+                                        text = "Delete User",
+                                        color = Color(0xFFDC2626)
                                     )
                                 },
                                 onClick = {
@@ -655,10 +662,10 @@ private fun AdminUserCard(
                         else -> {
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "🛡 Make Administrator",
-                                        color = BrandBlue,
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Security,
+                                        text = "Make Administrator",
+                                        color = BrandBlue
                                     )
                                 },
                                 onClick = {
@@ -669,10 +676,10 @@ private fun AdminUserCard(
 
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "👤 Make Organizer",
-                                        color = BrandBlue,
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Profile,
+                                        text = "Make Organizer",
+                                        color = BrandBlue
                                     )
                                 },
                                 onClick = {
@@ -683,10 +690,10 @@ private fun AdminUserCard(
 
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        text = "🗑 Delete User",
-                                        color = Color(0xFFDC2626),
-                                        fontSize = 13.sp
+                                    MenuItemContent(
+                                        icon = AppIcons.Delete,
+                                        text = "Delete User",
+                                        color = Color(0xFFDC2626)
                                     )
                                 },
                                 onClick = {
@@ -699,6 +706,32 @@ private fun AdminUserCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MenuItemContent(
+    icon: ImageVector,
+    text: String,
+    color: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = color,
+            modifier = Modifier.size(17.dp)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            text = text,
+            color = color,
+            fontSize = 13.sp
+        )
     }
 }
 
@@ -782,37 +815,39 @@ private fun AdminUsersBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AdminUsersBottomItem("⌂", "HOME", selected == "home", onHomeClick)
-        AdminUsersBottomItem("♜", "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        AdminUsersBottomItem("◎", "MATCHES", selected == "matches", onMatchesClick)
-        AdminUsersBottomItem("♟", "TEAMS", selected == "teams", onTeamsClick)
-        AdminUsersBottomItem("♙", "PROFILE", selected == "profile", onProfileClick)
+        AdminUsersBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
+        AdminUsersBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
+        AdminUsersBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
+        AdminUsersBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
+        AdminUsersBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
     }
 }
 
 @Composable
 private fun AdminUsersBottomItem(
-    icon: String,
+    icon: ImageVector,
     label: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+
     Column(
         modifier = Modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = icon,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(20.dp)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = label,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
+            color = color,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp

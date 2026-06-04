@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -41,15 +43,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.repository.AdminProfileRepository
+import com.example.trabalhocm.ui.theme.AppIcons
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.ui.text.TextStyle
 
 private val AdminBlue = Color(0xFF0B1F3A)
 private val AdminGreen = Color(0xFF008D7D)
@@ -146,7 +149,7 @@ fun AdminProfileScreen(
                 item {
                     ProfileSectionCard(
                         title = "Account Settings",
-                        icon = "♙"
+                        icon = AppIcons.Profile
                     ) {
                         ProfileInput(
                             label = "FULL NAME",
@@ -178,7 +181,7 @@ fun AdminProfileScreen(
                 item {
                     ProfileSectionCard(
                         title = "Preferences",
-                        icon = "◎"
+                        icon = AppIcons.Settings
                     ) {
                         Text(
                             text = "LANGUAGE",
@@ -207,7 +210,7 @@ fun AdminProfileScreen(
                 item {
                     ProfileSectionCard(
                         title = "Active Dashboards",
-                        icon = "♜"
+                        icon = AppIcons.Home
                     ) {
                         DashboardOption(
                             onClick = onDashboardClick
@@ -218,7 +221,7 @@ fun AdminProfileScreen(
                 item {
                     ProfileSectionCard(
                         title = "Security",
-                        icon = "◇"
+                        icon = AppIcons.Security
                     ) {
                         Row(
                             modifier = Modifier
@@ -257,17 +260,30 @@ fun AdminProfileScreen(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        Text(
-                            text = "↬ CHANGE PASSWORD",
-                            color = Color(0xFF0057C8),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
+                        Row(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
                                 .clickable {
                                     onChangePasswordClick()
-                                }
-                        )
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.Edit,
+                                contentDescription = "Change password",
+                                tint = Color(0xFF0057C8),
+                                modifier = Modifier.size(16.dp)
+                            )
+
+                            Spacer(modifier = Modifier.size(6.dp))
+
+                            Text(
+                                text = "CHANGE PASSWORD",
+                                color = Color(0xFF0057C8),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
@@ -387,9 +403,11 @@ private fun AdminProfileHeader(nome: String) {
                     .background(Color(0xFFE6EEF8)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "👨🏽‍💻",
-                    fontSize = 36.sp
+                Icon(
+                    imageVector = AppIcons.Profile,
+                    contentDescription = "Perfil do administrador",
+                    tint = AdminBlue,
+                    modifier = Modifier.size(42.dp)
                 )
             }
 
@@ -439,11 +457,11 @@ private fun AdminProfileTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onBackClick() }
         ) {
-            Text(
-                text = "←",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = AppIcons.Back,
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
             )
 
             Spacer(modifier = Modifier.size(8.dp))
@@ -456,10 +474,11 @@ private fun AdminProfileTopBar(
             )
         }
 
-        Text(
-            text = "♢",
-            color = Color.White,
-            fontSize = 23.sp
+        Icon(
+            imageVector = AppIcons.Settings,
+            contentDescription = "Definições",
+            tint = Color.White,
+            modifier = Modifier.size(23.dp)
         )
     }
 }
@@ -467,7 +486,7 @@ private fun AdminProfileTopBar(
 @Composable
 private fun ProfileSectionCard(
     title: String,
-    icon: String,
+    icon: ImageVector,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -485,16 +504,17 @@ private fun ProfileSectionCard(
 
 private fun contentWithTitle(
     title: String,
-    icon: String,
+    icon: ImageVector,
     content: @Composable ColumnScope.() -> Unit
 ): @Composable ColumnScope.() -> Unit = {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = icon,
-            color = AdminBlue,
-            fontSize = 14.sp
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = AdminBlue,
+            modifier = Modifier.size(17.dp)
         )
 
         Spacer(modifier = Modifier.size(8.dp))
@@ -608,11 +628,11 @@ private fun LanguageOption(
                         .background(Color(0xFF3566C9)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "✓",
-                        color = Color.White,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = AppIcons.Confirm,
+                        contentDescription = "Selecionado",
+                        tint = Color.White,
+                        modifier = Modifier.size(12.dp)
                     )
                 }
             }
@@ -641,10 +661,11 @@ private fun DashboardOption(
                 .background(AdminGreen, RoundedCornerShape(2.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "⌂",
-                color = Color.White,
-                fontSize = 16.sp
+            Icon(
+                imageVector = AppIcons.Home,
+                contentDescription = "Dashboard admin",
+                tint = Color.White,
+                modifier = Modifier.size(19.dp)
             )
         }
 
@@ -667,10 +688,11 @@ private fun DashboardOption(
             )
         }
 
-        Text(
-            text = "›",
-            color = AdminBlue,
-            fontSize = 22.sp
+        Icon(
+            imageVector = AppIcons.ChevronRight,
+            contentDescription = "Abrir dashboard",
+            tint = AdminBlue,
+            modifier = Modifier.size(22.dp)
         )
     }
 }
@@ -693,37 +715,39 @@ private fun AdminProfileBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AdminProfileBottomItem("⌂", "HOME", selected == "home", onHomeClick)
-        AdminProfileBottomItem("♜", "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        AdminProfileBottomItem("◎", "MATCHES", selected == "matches", onMatchesClick)
-        AdminProfileBottomItem("♟", "TEAMS", selected == "teams", onTeamsClick)
-        AdminProfileBottomItem("♙", "PROFILE", selected == "profile", onProfileClick)
+        AdminProfileBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
+        AdminProfileBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
+        AdminProfileBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
+        AdminProfileBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
+        AdminProfileBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
     }
 }
 
 @Composable
 private fun AdminProfileBottomItem(
-    icon: String,
+    icon: ImageVector,
     label: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+
     Column(
         modifier = Modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = icon,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(20.dp)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = label,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
+            color = color,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp

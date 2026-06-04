@@ -22,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,12 +35,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.model.AdminStats
 import com.example.trabalhocm.data.repository.AdminRepository
+import com.example.trabalhocm.ui.theme.AppIcons
 
 private val AdminBlue = Color(0xFF0B1F3A)
 private val AdminGreen = Color(0xFF008D7D)
@@ -177,7 +180,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "∞",
+                    icon = AppIcons.Profile,
                     title = "User Management",
                     description = "Oversee all accounts and roles.",
                     badge = usersText,
@@ -192,7 +195,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "⌂",
+                    icon = AppIcons.Teams,
                     title = "Teams Management",
                     description = "View teams, rosters, and status.",
                     badge = teamsText,
@@ -207,7 +210,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "♜",
+                    icon = AppIcons.Tournaments,
                     title = "Tournaments Management",
                     description = "Create, edit, and monitor leagues.",
                     badge = tournamentsText,
@@ -222,7 +225,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "◇",
+                    icon = AppIcons.Notifications,
                     title = "Organizer Requests",
                     description = "Review and approve new organizers.",
                     badge = "4 PENDING",
@@ -250,11 +253,11 @@ private fun AdminTopBar(title: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "←",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = AppIcons.Back,
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -267,10 +270,11 @@ private fun AdminTopBar(title: String) {
             )
         }
 
-        Text(
-            text = "♢",
-            color = Color.White,
-            fontSize = 23.sp
+        Icon(
+            imageVector = AppIcons.Settings,
+            contentDescription = "Definições",
+            tint = Color.White,
+            modifier = Modifier.size(23.dp)
         )
     }
 }
@@ -361,7 +365,7 @@ private fun OverviewNumber(number: String, label: String) {
 
 @Composable
 private fun AdminManagementCard(
-    icon: String,
+    icon: ImageVector,
     title: String,
     description: String,
     badge: String,
@@ -392,11 +396,11 @@ private fun AdminManagementCard(
                         .background(iconBackground),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = icon,
-                        color = iconColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = title,
+                        tint = iconColor,
+                        modifier = Modifier.size(21.dp)
                     )
                 }
 
@@ -477,37 +481,39 @@ private fun AdminBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomItem("⌂", "HOME", selected == "home", onHomeClick)
-        BottomItem("♜", "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomItem("◎", "MATCHES", selected == "matches", onMatchesClick)
-        BottomItem("♟", "TEAMS", selected == "teams", onTeamsClick)
-        BottomItem("♙", "PROFILE", selected == "profile", onProfileClick)
+        BottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
+        BottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
+        BottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
+        BottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
+        BottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
     }
 }
 
 @Composable
 private fun BottomItem(
-    icon: String,
+    icon: ImageVector,
     label: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+
     Column(
         modifier = Modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = icon,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(20.dp)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = label,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
+            color = color,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp
