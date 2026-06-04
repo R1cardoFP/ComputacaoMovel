@@ -4,6 +4,7 @@ import com.example.trabalhocm.data.model.Utilizador
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -83,8 +84,32 @@ class AuthRepository {
                 }
             }
 
+            // ATENÇÃO: Como agora ativaste a confirmação por email (OTP),
+            // a Supabase NÃO faz o login automático aqui.
+            // Para a app não bloquear e conseguir avançar para o ecrã dos 6 dígitos,
+            // enviamos um Utilizador "temporário". O verdadeiro é devolvido após inserir o código!
+            Utilizador(
+                id = "pendente",
+                username = username,
+                nome = nome,
+                email = email
+            )
+        }
+    }
+
+    // --- NOVA FUNÇÃO: VERIFICAR CÓDIGO DE 6 DÍGITOS ---
+    suspend fun verificarCodigoRegisto(email: String, codigo: String): Result<Utilizador> {
+        return runCatching {
+            // 1. Envia o código à Supabase para confirmar
+            client.auth.verifyEmailOtp(
+                type = OtpType.Email.SIGNUP,
+                email = email,
+                token = codigo
+            )
+
+            // 2. Se o código estiver certo, o login é feito automaticamente. Vamos buscar os dados:
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Conta criada, mas o utilizador autenticado não foi encontrado. Verifica se a confirmação por email está ativa na Supabase.")
+                ?: throw Exception("Erro: Utilizador não encontrado após verificação.")
 
             client.from("utilizador")
                 .select {
@@ -93,6 +118,25 @@ class AuthRepository {
                     }
                 }
                 .decodeSingle<Utilizador>()
+        }
+    }
+
+    // --- NOVA FUNÇÃO: ATUALIZAR NOME DE UTILIZADOR (PROFILE) ---
+    suspend fun atualizarPerfil(username: String, bio: String): Result<Unit> {
+        return runCatching {
+            val userId = client.auth.currentUserOrNull()?.id
+                ?: throw Exception("Utilizador não autenticado.")
+
+            client.from("utilizador")
+                .update(
+                    AtualizarPerfilRequest(
+                        username = username
+                    )
+                ) {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
         }
     }
 
@@ -140,8 +184,14 @@ class AuthRepository {
     }
 }
 
+// CLASSES AUXILIARES PARA ENVIAR DADOS PARA A BASE DE DADOS
 @Serializable
 private data class AtualizarUltimoLogin(
     @SerialName("ultimo_login")
     val ultimoLogin: String
+)
+
+@Serializable
+private data class AtualizarPerfilRequest(
+    val username: String
 )
