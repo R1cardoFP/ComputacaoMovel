@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-// Import das tuas cores centralizadas
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,7 +147,7 @@ fun OrganizerCreateCasualMatchScreen(
                         value = time,
                         onValueChange = { time = it },
                         placeholder = { Text("--:--", color = TextGray) },
-                        leadingIcon = { Icon(Icons.Outlined.Face, contentDescription = "Clock", tint = DarkBlue) }, // Substituir Face por Relógio se tiveres
+                        leadingIcon = { Icon(Icons.Outlined.Face, contentDescription = "Clock", tint = DarkBlue) },
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
@@ -331,7 +330,7 @@ fun LevelChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) Color(0xFFBAE6FD) else CardBg // Azul claro do design
+    val bgColor = if (isSelected) Color(0xFFBAE6FD) else CardBg
     val borderColor = if (isSelected) PrimaryBlue else Color(0xFFE2E8F0)
 
     Surface(

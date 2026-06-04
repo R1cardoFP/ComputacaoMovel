@@ -28,7 +28,6 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import java.text.NumberFormat
 import java.util.Locale
 
-// IMPORT DAS CORES CENTRALIZADAS!
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -330,7 +329,6 @@ fun PrizeInputRow(
     }
 }
 
-// ESTA É A FUNÇÃO SUBSTITUTA, PRIVADA E COM NOME ÚNICO PARA O STEP 3
 private @Composable
 fun Step3SectionLabel(text: String) {
     Text(

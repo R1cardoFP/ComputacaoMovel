@@ -27,7 +27,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Cores base
 private val DarkBlue = Color(0xFF111827)
 private val PrimaryBlue = Color(0xFF0346B8)
 private val TealGreen = Color(0xFF0CA789)
@@ -36,15 +35,14 @@ private val BgLight = Color(0xFFF8FAFC)
 private val CardBg = Color(0xFFFFFFFF)
 private val InputBg = Color(0xFFF1F5F9)
 
-// Estrutura de dados para um Jogo
 data class MatchEvent(
     val day: Int,
     val time: String,
     val sport: String,
     val team1: String,
     val team2: String,
-    val statusText: String, // ex: "2 - 1" ou "VS"
-    val subStatus: String, // ex: "72'" ou "in 2h" ou "at 11:00"
+    val statusText: String,
+    val subStatus: String,
     val location: String,
     val isLive: Boolean
 )
@@ -55,24 +53,19 @@ fun MatchesCalendarScreen(
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    // ESTADO: O dia de "Hoje" é o 14, mas podemos selecionar outros
     val today = 14
     var selectedDay by remember { mutableStateOf(14) }
 
-    // DADOS FALSOS baseados nos teus prints
     val allMatches = listOf(
-        // Jogos do Dia 14
         MatchEvent(14, "14:00", "FOOTBALL", "Sporting", "Vianense", "2 - 1", "72'", "Emirates Stadium • Matchday 26", true),
         MatchEvent(14, "16:30", "BASKETBALL", "Benfica", "Sporting", "VS", "in 2h", "Etihad Stadium • Matchday 26", false),
         MatchEvent(14, "16:30", "VOLLEYBALL", "Porto", "Sporting", "VS", "in 2h", "Anfield • Matchday 26", false),
         MatchEvent(14, "19:00", "VOLLEYBALL", "Benfica", "Vianense", "VS", "in 5h", "Stadium of Light • Matchday 26", false),
 
-        // Jogos do Dia 3
         MatchEvent(3, "11:00", "BASKETBALL", "Porto", "Benfica", "VS", "at 11:00", "Dragon Arena • Matchday 26", false),
         MatchEvent(3, "18:00", "VOLLEYBALL", "Sporting", "Vianense", "VS", "at 18:00", "Green Stadium • Matchday 26", false)
     )
 
-    // Dias que têm bolinha verde/azul por baixo
     val daysWithEvents = allMatches.map { it.day }.distinct()
 
     // Filtra os jogos para mostrar apenas os do dia selecionado
@@ -100,7 +93,6 @@ fun MatchesCalendarScreen(
         },
         containerColor = BgLight
     ) { paddingValues ->
-        // Usamos LazyColumn para que todo o ecrã faça scroll suave
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -187,7 +179,7 @@ fun CalendarWidget(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Grelha de Dias (Hardcoded para bater certo com o mockup de Maio 2026)
+            // Grelha de Dias
             val calendarGrid = listOf(
                 listOf(27 to false, 28 to false, 29 to false, 30 to false, 1 to true, 2 to true, 3 to true),
                 listOf(4 to true, 5 to true, 6 to true, 7 to true, 8 to true, 9 to true, 10 to true),
@@ -250,7 +242,6 @@ fun DayCell(
             Text(text = day.toString(), color = textColor, fontSize = 14.sp, fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal)
         }
 
-        // Ponto verde/azul por baixo do número se houver jogos
         Box(modifier = Modifier.height(6.dp)) {
             if (hasEvent) {
                 Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(TealGreen).align(Alignment.Center))
@@ -272,7 +263,6 @@ fun MatchCard(match: MatchEvent) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                // Badges (Status e Desporto)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusBadge(
                         text = if (match.isLive) "LIVE NOW" else "UPCOMING",
@@ -350,7 +340,6 @@ fun MatchCard(match: MatchEvent) {
     }
 }
 
-// Círculos coloridos como placeholders para os emblemas
 @Composable
 fun TeamColumn(name: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {

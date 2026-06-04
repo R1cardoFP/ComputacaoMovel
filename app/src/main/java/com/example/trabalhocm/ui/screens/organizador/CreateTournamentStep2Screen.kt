@@ -31,7 +31,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-// IMPORT DAS CORES CENTRALIZADAS!
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +40,6 @@ fun CreateTournamentStep2Screen(
     onProceedClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    // Gerar datas sugeridas dinamicamente (Começa em 2 dias, acaba em 4 dias)
     val (defaultStart, defaultEnd, defaultDeadline) = remember {
         val sdf = SimpleDateFormat("dd/MM/yy", Locale.getDefault()).apply {
             timeZone = TimeZone.getTimeZone("UTC")
@@ -49,16 +47,13 @@ fun CreateTournamentStep2Screen(
 
         val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
-        // Data de Início Sugerida: Daqui a 2 dias
         cal.add(Calendar.DAY_OF_YEAR, 2)
         val startStr = sdf.format(cal.time)
 
-        // Data de Fim Sugerida: Daqui a 4 dias a contar de hoje (ou seja, 2 dias após o início)
         val endCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         endCal.add(Calendar.DAY_OF_YEAR, 4)
         val endStr = sdf.format(endCal.time)
 
-        // Deadline de Inscrição Sugerida: 1 dia antes do início (Daqui a 1 dia)
         val deadlineCal = cal.clone() as Calendar
         deadlineCal.add(Calendar.DAY_OF_YEAR, -1)
         val deadlineStr = sdf.format(deadlineCal.time)
@@ -66,7 +61,6 @@ fun CreateTournamentStep2Screen(
         Triple(startStr, endStr, deadlineStr)
     }
 
-    // Variáveis de Estado usando as novas datas inteligentes
     var startDate by remember { mutableStateOf(defaultStart) }
     var endDate by remember { mutableStateOf(defaultEnd) }
     var registrationDeadline by remember { mutableStateOf(defaultDeadline) }
@@ -108,7 +102,6 @@ fun CreateTournamentStep2Screen(
         ) {
             Step2HeaderSection()
 
-            // START & END DATES (Lado a lado com Calendário)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -161,7 +154,6 @@ fun CreateTournamentStep2Screen(
                 }
             }
 
-            // REGISTRATION DEADLINE (Com Calendário)
             Column {
                 Step2SectionLabel("REGISTRATION DEADLINE")
                 Spacer(modifier = Modifier.height(8.dp))
@@ -275,7 +267,6 @@ fun Step2HeaderSection() {
         ) {
             Text("Schedule and\nRegistration", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
 
-            // Progress Bar (2 verdes, 2 cinzentos)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
                 Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
@@ -450,7 +441,6 @@ fun RegistrationFormatCard(
     }
 }
 
-// ESTA É A FUNÇÃO SUBSTITUTA, PRIVADA E COM NOME ÚNICO
 private @Composable
 fun Step2SectionLabel(text: String) {
     Text(

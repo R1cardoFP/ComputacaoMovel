@@ -34,7 +34,11 @@ private val TextGray = Color(0xFF6B7280)
 fun HomeScreen(
     onVerTorneios: () -> Unit = {},
     onCreateTournamentClick: () -> Unit = {},
-    onHomeClick: () -> Unit = {}
+    onHomeClick: () -> Unit = {},
+    onTournamentsClick: () -> Unit = {},
+    onMatchesClick: () -> Unit = {},
+    onTeamsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -52,7 +56,10 @@ fun HomeScreen(
             MatchLeagueBottomBar(
                 selectedTab = "HOME",
                 onHomeClick = onHomeClick,
-                onTournamentsClick = onVerTorneios
+                onTournamentsClick = onTournamentsClick,
+                onMatchesClick = onMatchesClick,
+                onTeamsClick = onTeamsClick,
+                onProfileClick = onProfileClick
             )
         },
         containerColor = BgLight

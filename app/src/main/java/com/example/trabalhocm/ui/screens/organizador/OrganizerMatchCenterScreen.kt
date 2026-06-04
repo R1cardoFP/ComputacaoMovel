@@ -29,10 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
-// Import das tuas cores centralizadas
 import com.example.trabalhocm.ui.theme.*
 
-// Cor extra para o status "Full"
 private val WarningYellow = Color(0xFFF59E0B)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -51,7 +49,6 @@ fun OrganizerMatchCenterScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
-    // Estado para controlar se a gaveta dos filtros está aberta
     var showFiltersSheet by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -157,7 +154,6 @@ fun OrganizerMatchCenterScreen(
                     HorizontalDivider(color = InputBg)
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // BOTÃO QUE ABRE OS FILTROS!
                     OutlinedButton(
                         onClick = { showFiltersSheet = true },
                         shape = RoundedCornerShape(8.dp),
@@ -226,13 +222,12 @@ fun OrganizerMatchCenterScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // BÓIA DE SALVAÇÃO: O BOTTOM SHEET DOS FILTROS!
         if (showFiltersSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showFiltersSheet = false },
                 containerColor = BgLight,
-                dragHandle = null, // Retiramos o drag handle padrão para fazer o cabeçalho azul do Figma
-                modifier = Modifier.fillMaxHeight(0.9f) // Ocupa 90% do ecrã
+                dragHandle = null,
+                modifier = Modifier.fillMaxHeight(0.9f)
             ) {
                 FiltersBottomSheetContent(onCloseClick = { showFiltersSheet = false })
             }
@@ -240,16 +235,13 @@ fun OrganizerMatchCenterScreen(
     }
 }
 
-// -------------------------------------------------------------
-// COMPONENTES DOS FILTROS (BOTTOM SHEET)
-// -------------------------------------------------------------
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
     var feeRange by remember { mutableStateOf(10f..70f) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Cabeçalho Azul Escuro
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -315,9 +307,8 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChipCustom("Upcoming", isSelected = false)
 
-                    // O Live tem cores especiais no Figma!
                     Surface(
-                        color = Color(0xFFD1FAE5), // Verde clarinho
+                        color = Color(0xFFD1FAE5),
                         shape = RoundedCornerShape(6.dp),
                         border = BorderStroke(1.dp, TealGreen)
                     ) {
@@ -456,9 +447,7 @@ fun FilterSectionLabel(text: String) {
     )
 }
 
-// -------------------------------------------------------------
-// COMPONENTES DOS CARTÕES (MANTER OS MESMOS)
-// -------------------------------------------------------------
+
 @Composable
 fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
     Card(

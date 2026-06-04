@@ -28,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Import das cores centralizadas e da barra de navegação
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,11 +37,10 @@ fun CreateTeamScreen(
     onCreateClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    // Variáveis de Estado (Tudo vazio por defeito!)
     var teamName by remember { mutableStateOf("") }
     var initials by remember { mutableStateOf("") }
     var homeCity by remember { mutableStateOf("") }
-    var selectedSport by remember { mutableStateOf("") } // Vazio, obriga a escolher
+    var selectedSport by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -144,12 +142,11 @@ fun CreateTeamScreen(
                 TextField(
                     value = initials,
                     onValueChange = {
-                        // Limita a 4 caracteres e mete tudo em maiúsculas automaticamente
                         if (it.length <= 4) initials = it.uppercase()
                     },
                     placeholder = { Text("e.g. FCM", color = Color.LightGray) },
                     modifier = Modifier
-                        .fillMaxWidth(0.5f) // Ocupa só metade da largura como no design
+                        .fillMaxWidth(0.5f)
                         .clip(RoundedCornerShape(8.dp)),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = InputBg,
@@ -194,7 +191,7 @@ fun CreateTeamScreen(
                     TeamSportCard(
                         modifier = Modifier.weight(1f),
                         title = "Football",
-                        icon = Icons.Default.Star, // Substituir pelo ícone de bola depois se quiseres
+                        icon = Icons.Default.Star,
                         isSelected = selectedSport == "Football",
                         onClick = { selectedSport = "Football" }
                     )
