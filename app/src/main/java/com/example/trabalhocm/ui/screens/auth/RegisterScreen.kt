@@ -29,7 +29,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -54,6 +53,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,7 +81,9 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
     var mensagem by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) } // Controla se a mensagem é vermelha ou não
     var isLoading by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -229,23 +231,27 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (nome.isBlank() || username.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-                            mensagem = "Preenche todos os campos."
+                            mensagem = "Please fill in all fields."
+                            isError = true
                             return@Button
                         }
 
                         if (password != confirmPassword) {
-                            mensagem = "As passwords não coincidem."
+                            mensagem = "Passwords do not match."
+                            isError = true
                             return@Button
                         }
 
                         if (password.length < 6) {
-                            mensagem = "A password deve ter pelo menos 6 caracteres."
+                            mensagem = "Password must be at least 6 characters long."
+                            isError = true
                             return@Button
                         }
 
                         scope.launch {
                             isLoading = true
                             mensagem = ""
+                            isError = false
 
                             val resultado = authRepository.registar(
                                 nome = nome,
@@ -263,11 +269,13 @@ fun RegisterScreen(
                                         }
                                     }
 
-                                    mensagem = "Conta criada com sucesso."
+                                    isError = false
                                     onRegisterSuccess(email)
                                 }
                                 .onFailure { erro ->
-                                    mensagem = "Erro ao criar conta: ${erro.message}"
+                                    isError = true
+                                    // Mostra diretamente a mensagem em inglês definida no Repository
+                                    mensagem = erro.message ?: "An unexpected error occurred."
                                 }
 
                             isLoading = false
@@ -301,12 +309,9 @@ fun RegisterScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = mensagem,
-                        color = if (mensagem.startsWith("Erro")) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            BrandBlue
-                        },
-                        fontSize = 13.sp
+                        color = if (isError) MaterialTheme.colorScheme.error else BrandBlue,
+                        fontSize = 13.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
             }

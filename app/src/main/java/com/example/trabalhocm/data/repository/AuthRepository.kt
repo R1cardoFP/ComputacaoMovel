@@ -18,11 +18,9 @@ class AuthRepository {
 
     suspend fun login(identificador: String, password: String): Result<Utilizador> {
         return runCatching {
-            // Verifica se inseriu um email ou um username
             val emailParaLogin = if (identificador.contains("@")) {
                 identificador
             } else {
-                // Vai procurar o email na base de dados pelo username
                 val utilizadores = client.from("utilizador")
                     .select {
                         filter {
@@ -37,7 +35,6 @@ class AuthRepository {
                 utilizadores.first().email
             }
 
-            // Faz o login nativo com a Supabase
             client.auth.signInWith(Email) {
                 this.email = emailParaLogin
                 this.password = password
@@ -74,6 +71,30 @@ class AuthRepository {
         password: String
     ): Result<Utilizador> {
         return runCatching {
+            val usernameExists = client.from("utilizador")
+                .select {
+                    filter {
+                        eq("username", username)
+                    }
+                }
+                .decodeList<Utilizador>()
+
+            if (usernameExists.isNotEmpty()) {
+                throw Exception("This username is already taken.")
+            }
+
+            val emailExists = client.from("utilizador")
+                .select {
+                    filter {
+                        eq("email", email)
+                    }
+                }
+                .decodeList<Utilizador>()
+
+            if (emailExists.isNotEmpty()) {
+                throw Exception("This email address is already registered.")
+            }
+
             client.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
@@ -84,10 +105,6 @@ class AuthRepository {
                 }
             }
 
-            // ATENÇÃO: Como agora ativaste a confirmação por email (OTP),
-            // a Supabase NÃO faz o login automático aqui.
-            // Para a app não bloquear e conseguir avançar para o ecrã dos 6 dígitos,
-            // enviamos um Utilizador "temporário". O verdadeiro é devolvido após inserir o código!
             Utilizador(
                 id = "pendente",
                 username = username,
@@ -97,17 +114,14 @@ class AuthRepository {
         }
     }
 
-    // --- NOVA FUNÇÃO: VERIFICAR CÓDIGO DE 6 DÍGITOS ---
     suspend fun verificarCodigoRegisto(email: String, codigo: String): Result<Utilizador> {
         return runCatching {
-            // 1. Envia o código à Supabase para confirmar
             client.auth.verifyEmailOtp(
                 type = OtpType.Email.SIGNUP,
                 email = email,
                 token = codigo
             )
 
-            // 2. Se o código estiver certo, o login é feito automaticamente. Vamos buscar os dados:
             val userId = client.auth.currentUserOrNull()?.id
                 ?: throw Exception("Erro: Utilizador não encontrado após verificação.")
 
@@ -121,7 +135,37 @@ class AuthRepository {
         }
     }
 
-    // --- NOVA FUNÇÃO: ATUALIZAR NOME DE UTILIZADOR (PROFILE) ---
+    // --- FUNÇÃO DO GOOGLE CORRIGIDA ---
+    suspend fun sincronizarUtilizadorGoogle(): Result<Unit> {
+        return runCatching {
+            val user = client.auth.currentUserOrNull()
+                ?: throw Exception("Utilizador Google não autenticado.")
+
+            val utilizadores = client.from("utilizador")
+                .select { filter { eq("id", user.id) } }
+                .decodeList<Utilizador>()
+
+            if (utilizadores.isEmpty()) {
+                // Lê o nome diretamente e remove as aspas se existirem
+                val nomeGoogle = user.userMetadata?.get("full_name")?.toString()?.removeSurrounding("\"") ?: "Novo Jogador"
+                val emailGoogle = user.email ?: ""
+
+                val baseUsername = emailGoogle.substringBefore("@").replace(".", "").lowercase()
+                val usernameUnico = "${baseUsername}_${(1000..9999).random()}"
+
+                val novoUtilizador = Utilizador(
+                    id = user.id,
+                    username = usernameUnico,
+                    nome = nomeGoogle,
+                    email = emailGoogle
+                )
+
+                client.from("utilizador").insert(novoUtilizador)
+            }
+        }
+    }
+
+    // --- FUNÇÃO DE ATUALIZAR PERFIL CORRIGIDA (AGORA USA A BIO) ---
     suspend fun atualizarPerfil(username: String, bio: String): Result<Unit> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
@@ -130,7 +174,8 @@ class AuthRepository {
             client.from("utilizador")
                 .update(
                     AtualizarPerfilRequest(
-                        username = username
+                        username = username,
+                        bio = bio
                     )
                 ) {
                     filter {
@@ -193,5 +238,6 @@ private data class AtualizarUltimoLogin(
 
 @Serializable
 private data class AtualizarPerfilRequest(
-    val username: String
+    val username: String,
+    val bio: String // <- BIO ADICIONADA AQUI
 )
