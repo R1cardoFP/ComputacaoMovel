@@ -50,10 +50,8 @@ fun OnboardingFlow(onFinish: () -> Unit) {
 @Composable
 fun Onboarding1(onSkip: () -> Unit, onNext: () -> Unit) {
     OnboardingShell(page = 1, buttonText = "NEXT ›", onNext = onNext, onSkip = onSkip) {
-        // Mais espaço no topo para puxar o conteúdo para o meio
         Spacer(Modifier.height(110.dp))
 
-        // Letra maior (46.sp)
         Text(
             buildAnnotatedString {
                 append("Manage Every\n")
@@ -79,14 +77,12 @@ fun Onboarding1(onSkip: () -> Unit, onNext: () -> Unit) {
 @Composable
 fun Onboarding2(onSkip: () -> Unit, onNext: () -> Unit) {
     OnboardingShell(page = 2, buttonText = "NEXT ›", onNext = onNext, onSkip = onSkip) {
-        // Empurrar o cartão mais para o meio
         Spacer(Modifier.height(70.dp))
 
         MatchCard()
 
         Spacer(Modifier.height(40.dp))
 
-        // Letra maior (40.sp)
         Text(
             buildAnnotatedString {
                 append("TRACK LIVE\n")
@@ -120,7 +116,6 @@ fun Onboarding3(onFinish: () -> Unit) {
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        // Top Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,7 +134,6 @@ fun Onboarding3(onFinish: () -> Unit) {
 
         Spacer(Modifier.height(10.dp))
 
-        // Zona do Card das Comunidades
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -150,7 +144,6 @@ fun Onboarding3(onFinish: () -> Unit) {
             CommunityTopCard()
         }
 
-        // Card Branco Inferior Colado ao Fundo
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
@@ -235,7 +228,6 @@ fun OnboardingShell(
             .navigationBarsPadding()
             .padding(horizontal = 28.dp, vertical = 24.dp)
     ) {
-        // Header padrão para Página 1 e 2
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -255,7 +247,10 @@ fun OnboardingShell(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
                 letterSpacing = 1.sp,
-                modifier = Modifier.clickable { onSkip() }
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .clickable { onSkip() }
+                    .padding(8.dp)
             )
         }
 
@@ -360,9 +355,8 @@ fun CommunityTopCard() {
     Box(
         Modifier
             .fillMaxWidth()
-            .height(260.dp) // Aumentado para dar espaço para descer a imagem
+            .height(260.dp)
     ) {
-        // Bloco de Trás / Esquerda (Live Nearby)
         Column(
             Modifier
                 .width(230.dp)
@@ -386,8 +380,6 @@ fun CommunityTopCard() {
             }
         }
 
-        // Bloco da Frente / Direita Sobreposto (Kings League Team)
-        // Adicionado um offset(y = 30.dp) para o empurrar mais para baixo!
         Column(
             Modifier
                 .align(Alignment.BottomEnd)
