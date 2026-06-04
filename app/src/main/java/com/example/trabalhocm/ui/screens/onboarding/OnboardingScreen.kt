@@ -27,6 +27,7 @@ import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import com.example.trabalhocm.R
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 
 private val BrandBlue = Color(0xFF0B1F3A)
 private val AccentGreen = Color(0xFF008D7D)
@@ -36,15 +37,15 @@ fun OnboardingFlow(onFinish: () -> Unit) {
     var page by remember { mutableIntStateOf(1) }
 
     when (page) {
-        1 -> Onboarding1 { page = 2 }
-        2 -> Onboarding2 { page = 3 }
+        1 -> Onboarding1(onNext = { page = 2 }, onSkip = onFinish)
+        2 -> Onboarding2(onNext = { page = 3 }, onSkip = onFinish)
         else -> Onboarding3 { onFinish() }
     }
 }
 
 @Composable
-fun Onboarding1(onNext: () -> Unit) {
-    OnboardingShell(page = 1, buttonText = "NEXT  →", onNext = onNext, centeredHeader = false) {
+fun Onboarding1(onNext: () -> Unit, onSkip: () -> Unit) {
+    OnboardingShell(page = 1, buttonText = "NEXT  →", onNext = onNext, onSkip = onSkip, centeredHeader = false) {
         Spacer(Modifier.height(42.dp))
         Text(
             buildAnnotatedString {
@@ -59,8 +60,8 @@ fun Onboarding1(onNext: () -> Unit) {
 }
 
 @Composable
-fun Onboarding2(onNext: () -> Unit) {
-    OnboardingShell(page = 2, buttonText = "NEXT  >", onNext = onNext, centeredHeader = false) {
+fun Onboarding2(onNext: () -> Unit, onSkip: () -> Unit) {
+    OnboardingShell(page = 2, buttonText = "NEXT  >", onNext = onNext, onSkip = onSkip, centeredHeader = false) {
         Spacer(Modifier.height(10.dp))
         MatchCard()
         Spacer(Modifier.height(26.dp))
@@ -113,11 +114,28 @@ fun Onboarding3(onFinish: () -> Unit) {
 }
 
 @Composable
-fun OnboardingShell(page: Int, buttonText: String, onNext: () -> Unit, centeredHeader: Boolean, skipVisible: Boolean = true, body: @Composable ColumnScope.() -> Unit) {
+fun OnboardingShell(
+    page: Int,
+    buttonText: String,
+    onNext: () -> Unit,
+    onSkip: () -> Unit = {},
+    centeredHeader: Boolean,
+    skipVisible: Boolean = true,
+    body: @Composable ColumnScope.() -> Unit
+) {
     Column(
-        Modifier.fillMaxSize().background(Color(0xFFF2F3F9)).statusBarsPadding().navigationBarsPadding().padding(horizontal = 18.dp, vertical = 18.dp)
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF2F3F9))
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 18.dp, vertical = 18.dp)
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = if (centeredHeader) Arrangement.Center else Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = if (centeredHeader) Arrangement.Center else Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 buildAnnotatedString {
                     withStyle(SpanStyle(color = BrandBlue)) { append("MATCH") }
@@ -126,7 +144,15 @@ fun OnboardingShell(page: Int, buttonText: String, onNext: () -> Unit, centeredH
                 fontSize = 15.sp, fontWeight = FontWeight.Medium
             )
             if (!centeredHeader && skipVisible) {
-                Text("SKIP", color = BrandBlue.copy(alpha = 0.6f), fontSize = 11.sp)
+                Text(
+                    "SKIP",
+                    color = BrandBlue.copy(alpha = 0.6f),
+                    fontSize = 11.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { onSkip() }
+                        .padding(8.dp)
+                )
             }
         }
         body()
