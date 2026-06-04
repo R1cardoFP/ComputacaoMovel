@@ -1,6 +1,8 @@
 package com.example.trabalhocm.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,112 +22,91 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.model.AdminNotification
+import com.example.trabalhocm.data.repository.AdminNotificationRepository
+import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
 import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.TextGray
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-private data class AdminNotification(
-    val title: String,
-    val description: String,
-    val time: String,
-    val type: String,
-    val icon: String,
+private data class NotificationVisual(
+    val icon: ImageVector,
     val iconColor: Color,
-    val iconBackground: Color,
-    val actionText: String? = null,
-    val unread: Boolean = false
+    val iconBackground: Color
 )
 
 @Composable
 fun AdminNotificationsScreen(
     onBackClick: () -> Unit = {},
+    onViewUserProfileClick: (AdminNotification) -> Unit = {},
+    onViewTournamentDetailsClick: (AdminNotification) -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    var selectedFilter by remember { mutableStateOf("ALL") }
+    val repository = remember { AdminNotificationRepository() }
+    val scope = rememberCoroutineScope()
 
-    val notifications = remember {
-        listOf(
-            AdminNotification(
-                title = "New Tournament Created",
-                description = "Liga Regional Sul created by M. Silva.",
-                time = "22M AGO",
-                type = "MODERATION",
-                icon = "♜",
-                iconColor = Color(0xFFE2A600),
-                iconBackground = Color(0xFFFFF7DE),
-                actionText = "VIEW TOURNAMENT DETAILS",
-                unread = true
-            ),
-            AdminNotification(
-                title = "New User Registered",
-                description = "Beatriz Almeida joined the platform. Total users: 143.",
-                time = "1H AGO",
-                type = "MODERATION",
-                icon = "♙",
-                iconColor = BrandGreen,
-                iconBackground = Color(0xFFEAF8F5),
-                actionText = "VIEW USER PROFILE"
-            ),
-            AdminNotification(
-                title = "New Team Created",
-                description = "Iron Eagles registered by J. Costa. Captain confirmed.",
-                time = "3H AGO",
-                type = "MODERATION",
-                icon = "♟",
-                iconColor = Color(0xFF0057C8),
-                iconBackground = Color(0xFFEAF3FF),
-                actionText = "VIEW TEAM DETAILS"
-            ),
-            AdminNotification(
-                title = "Account Suspended",
-                description = "Maria Santos suspended Tomás Pinto for repeated violations.",
-                time = "YESTERDAY",
-                type = "MODERATION",
-                icon = "⊗",
-                iconColor = Color(0xFFDC2626),
-                iconBackground = Color(0xFFFEE2E2)
-            ),
-            AdminNotification(
-                title = "System",
-                description = "Daily backup completed successfully. 2.4 GB stored.",
-                time = "YESTERDAY",
-                type = "SYSTEM",
-                icon = "☁",
-                iconColor = Color(0xFF64748B),
-                iconBackground = Color(0xFFEAF3FF)
-            ),
-            AdminNotification(
-                title = "Tournament Payment",
-                description = "€150 transferred to organizer of Premier Summer Cup. 12 registrations confirmed.",
-                time = "2D AGO",
-                type = "MODERATION",
-                icon = "▤",
-                iconColor = BrandGreen,
-                iconBackground = Color(0xFFEAF8F5)
-            )
-        )
+    var selectedFilter by remember { mutableStateOf("ALL") }
+    var notifications by remember { mutableStateOf<List<AdminNotification>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf("") }
+
+    fun carregarNotificacoes(mostrarLoading: Boolean = true) {
+        scope.launch {
+            if (mostrarLoading) {
+                isLoading = true
+            }
+
+            errorMessage = ""
+
+            repository.listarNotificacoes()
+                .onSuccess {
+                    notifications = it
+                }
+                .onFailure {
+                    errorMessage = "Erro ao carregar notificações: ${it.message}"
+                }
+
+            isLoading = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        carregarNotificacoes()
+
+        while (true) {
+            delay(60_000)
+            carregarNotificacoes(mostrarLoading = false)
+        }
     }
 
     val visibleNotifications = notifications.filter {
@@ -151,61 +132,116 @@ fun AdminNotificationsScreen(
             )
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                end = 20.dp,
-                top = 18.dp,
-                bottom = 28.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            item {
-                Column {
-                    Text(
-                        text = "ADMIN CONSOLE",
-                        color = BrandGreen,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
-                    )
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = BrandGreen)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 18.dp,
+                    bottom = 28.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                item {
+                    Column {
+                        Text(
+                            text = "ADMIN CONSOLE",
+                            color = BrandGreen,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
-                    Text(
-                        text = "Notifications",
-                        color = BrandBlue,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                        Text(
+                            text = "Notifications",
+                            color = BrandBlue,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                    Text(
-                        text = "Platform alerts, moderation queue and system\nevents.",
-                        color = TextGray,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
+                        Text(
+                            text = "Platform alerts, moderation queue and system\nevents.",
+                            color = TextGray,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+
+                item {
+                    AdminNotificationFilterRow(
+                        selectedFilter = selectedFilter,
+                        onFilterClick = {
+                            selectedFilter = it
+                        }
                     )
                 }
-            }
 
-            item {
-                AdminNotificationFilterRow(
-                    selectedFilter = selectedFilter,
-                    onFilterClick = {
-                        selectedFilter = it
+                if (errorMessage.isNotBlank()) {
+                    item {
+                        Text(
+                            text = errorMessage,
+                            color = Color(0xFFDC2626),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                )
-            }
+                }
 
-            items(visibleNotifications.size) { index ->
-                AdminNotificationCard(
-                    notification = visibleNotifications[index]
-                )
+                if (visibleNotifications.isEmpty()) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(9.dp),
+                            colors = CardDefaults.cardColors(containerColor = CardBg),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Text(
+                                text = "Sem notificações para mostrar.",
+                                color = TextGray,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(18.dp)
+                            )
+                        }
+                    }
+                }
+
+                items(visibleNotifications.size) { index ->
+                    AdminNotificationCard(
+                        notification = visibleNotifications[index],
+                        onNotificationClick = { notification ->
+                            if (notification.unread) {
+                                scope.launch {
+                                    repository.marcarComoLida(notification.id)
+                                        .onSuccess {
+                                            carregarNotificacoes()
+                                        }
+                                        .onFailure {
+                                            errorMessage = "Erro ao atualizar notificação: ${it.message}"
+                                        }
+                                }
+                            }
+                        },
+                        onViewUserProfileClick = onViewUserProfileClick,
+                        onViewTournamentDetailsClick = onViewTournamentDetailsClick
+                    )
+                }
             }
         }
     }
@@ -229,11 +265,11 @@ private fun AdminNotificationsTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onBackClick() }
         ) {
-            Text(
-                text = "←",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = AppIcons.Back,
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -246,10 +282,11 @@ private fun AdminNotificationsTopBar(
             )
         }
 
-        Text(
-            text = "🔔",
-            color = Color.White,
-            fontSize = 21.sp
+        Icon(
+            imageVector = AppIcons.Notifications,
+            contentDescription = "Notificações",
+            tint = Color.White,
+            modifier = Modifier.size(22.dp)
         )
     }
 }
@@ -309,17 +346,27 @@ private fun AdminNotificationFilterChip(
             color = if (selected) Color.White else BrandBlue,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.5.sp
+            letterSpacing = 0.5.sp,
+            textAlign = TextAlign.Center
         )
     }
 }
 
 @Composable
 private fun AdminNotificationCard(
-    notification: AdminNotification
+    notification: AdminNotification,
+    onNotificationClick: (AdminNotification) -> Unit,
+    onViewUserProfileClick: (AdminNotification) -> Unit,
+    onViewTournamentDetailsClick: (AdminNotification) -> Unit
 ) {
+    val visual = notificationVisual(notification)
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onNotificationClick(notification)
+            },
         shape = RoundedCornerShape(9.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -334,14 +381,14 @@ private fun AdminNotificationCard(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(notification.iconBackground),
+                    .background(visual.iconBackground),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = notification.icon,
-                    color = notification.iconColor,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = visual.icon,
+                    contentDescription = notification.title,
+                    tint = visual.iconColor,
+                    modifier = Modifier.size(22.dp)
                 )
             }
 
@@ -371,10 +418,11 @@ private fun AdminNotificationCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = notification.time,
+                            text = notification.timeText,
                             color = TextGray,
                             fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         )
                     }
 
@@ -402,25 +450,100 @@ private fun AdminNotificationCard(
                 if (notification.actionText != null) {
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(34.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(Color.White)
-                            .padding(horizontal = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = notification.actionText,
-                            color = BrandBlue,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    NotificationActionButton(
+                        text = notification.actionText,
+                        onClick = {
+                            onNotificationClick(notification)
+
+                            when {
+                                notification.actionText.contains("user", ignoreCase = true) -> {
+                                    onViewUserProfileClick(notification)
+                                }
+
+                                notification.actionText.contains("tournament", ignoreCase = true) -> {
+                                    onViewTournamentDetailsClick(notification)
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NotificationActionButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(36.dp)
+            .clip(RoundedCornerShape(5.dp))
+            .background(Color.White)
+            .border(
+                BorderStroke(1.dp, Color(0xFFD8DEE9)),
+                RoundedCornerShape(5.dp)
+            )
+            .clickable {
+                onClick()
+            }
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = BrandBlue,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+private fun notificationVisual(notification: AdminNotification): NotificationVisual {
+    val title = notification.title.lowercase()
+    val description = notification.description.lowercase()
+
+    return when {
+        notification.type == "SYSTEM" -> NotificationVisual(
+            icon = AppIcons.Sync,
+            iconColor = Color(0xFF64748B),
+            iconBackground = Color(0xFFEAF3FF)
+        )
+
+        title.contains("tournament") || description.contains("tournament") -> NotificationVisual(
+            icon = AppIcons.Tournaments,
+            iconColor = Color(0xFFE2A600),
+            iconBackground = Color(0xFFFFF7DE)
+        )
+
+        title.contains("team") || description.contains("team") -> NotificationVisual(
+            icon = AppIcons.Teams,
+            iconColor = Color(0xFF0057C8),
+            iconBackground = Color(0xFFEAF3FF)
+        )
+
+        title.contains("suspended") || description.contains("suspended") -> NotificationVisual(
+            icon = AppIcons.Cancel,
+            iconColor = Color(0xFFDC2626),
+            iconBackground = Color(0xFFFEE2E2)
+        )
+
+        title.contains("payment") || description.contains("payment") -> NotificationVisual(
+            icon = AppIcons.Payment,
+            iconColor = BrandGreen,
+            iconBackground = Color(0xFFEAF8F5)
+        )
+
+        else -> NotificationVisual(
+            icon = AppIcons.Profile,
+            iconColor = BrandGreen,
+            iconBackground = Color(0xFFEAF8F5)
+        )
     }
 }
 
@@ -442,37 +565,39 @@ private fun AdminNotificationsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AdminNotificationsBottomItem("⌂", "HOME", selected == "home", onHomeClick)
-        AdminNotificationsBottomItem("♜", "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        AdminNotificationsBottomItem("◎", "MATCHES", selected == "matches", onMatchesClick)
-        AdminNotificationsBottomItem("♟", "TEAMS", selected == "teams", onTeamsClick)
-        AdminNotificationsBottomItem("♙", "PROFILE", selected == "profile", onProfileClick)
+        AdminNotificationsBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
+        AdminNotificationsBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
+        AdminNotificationsBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
+        AdminNotificationsBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
+        AdminNotificationsBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
     }
 }
 
 @Composable
 private fun AdminNotificationsBottomItem(
-    icon: String,
+    icon: ImageVector,
     label: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+
     Column(
         modifier = Modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = icon,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(20.dp)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = label,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
+            color = color,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp
