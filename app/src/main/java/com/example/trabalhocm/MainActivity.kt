@@ -49,6 +49,7 @@ import com.example.trabalhocm.ui.screens.player.PlayerTournamentManagementScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentRegistrationScreen
 import com.example.trabalhocm.ui.screens.auth.RecoverPasswordScreen
 import com.example.trabalhocm.ui.screens.auth.RegisterScreen
+import com.example.trabalhocm.ui.screens.auth.VerifyAccountScreen
 import com.example.trabalhocm.ui.screens.onboarding.SplashScreen
 import com.example.trabalhocm.ui.screens.TorneiosScreen
 import com.example.trabalhocm.ui.screens.auth.UserTypeScreen
@@ -114,8 +115,31 @@ fun MatchLeagueApp() {
 
         composable("register") {
             RegisterScreen(
-                onRegisterSuccess = { navController.navigate("user_type") { popUpTo("register") { inclusive = true } } },
+                onRegisterSuccess = { email ->
+                    val encodedEmail = Uri.encode(email)
+                    navController.navigate("verify_account/$encodedEmail") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                },
                 onGoToLogin = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "verify_account/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val encodedEmail = backStackEntry.arguments?.getString("email") ?: ""
+            val email = Uri.decode(encodedEmail)
+
+            VerifyAccountScreen(
+                email = email,
+                onVerificationSuccess = {
+                    navController.navigate("user_type") {
+                        popUpTo("verify_account") { inclusive = true }
+                    }
+                },
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -167,6 +191,7 @@ fun MatchLeagueApp() {
             val scope = rememberCoroutineScope()
             val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
 
+            var usernameUtilizador by remember { mutableStateOf("A carregar...") }
             var nomeUtilizador by remember { mutableStateOf("A carregar...") }
             var emailUtilizador by remember { mutableStateOf("A carregar...") }
             var bioUtilizador by remember { mutableStateOf("") }
@@ -177,6 +202,7 @@ fun MatchLeagueApp() {
 
             LaunchedEffect(Unit) {
                 authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+                    usernameUtilizador = utilizador.username
                     nomeUtilizador = utilizador.nome
                     emailUtilizador = utilizador.email
                     userId = utilizador.id
@@ -191,12 +217,14 @@ fun MatchLeagueApp() {
                     val savedBio = sharedPrefs.getString("bio_$userId", null)
                     if (savedBio != null) bioUtilizador = savedBio
                 }.onFailure {
+                    usernameUtilizador = "Erro"
                     nomeUtilizador = "Erro ao carregar"
                     emailUtilizador = "Erro ao carregar"
                 }
             }
 
             PlayerProfileScreen(
+                initialUsername = usernameUtilizador,
                 initialName = nomeUtilizador,
                 initialEmail = emailUtilizador,
                 initialBio = bioUtilizador,
@@ -207,8 +235,10 @@ fun MatchLeagueApp() {
                         navController.navigate("login") { popUpTo(0) { inclusive = true } }
                     }
                 },
-                onSaveChanges = { novaBio, novaPhotoUri ->
+                onSaveChanges = { novoUsername, novaBio, novaPhotoUri ->
                     scope.launch {
+                        authRepository.atualizarPerfil(novoUsername, novaBio)
+
                         sharedPrefs.edit {
                             if (novaPhotoUri != null) {
                                 putString("avatar_$userId", novaPhotoUri.toString())
@@ -217,6 +247,10 @@ fun MatchLeagueApp() {
                             }
                             putString("bio_$userId", novaBio)
                         }
+
+                        usernameUtilizador = novoUsername
+                        bioUtilizador = novaBio
+                        photoUri = novaPhotoUri
                     }
                 },
                 onDashboardClick = { navController.navigate("player_stats") },
@@ -574,16 +608,19 @@ fun MatchLeagueApp() {
 
         composable("admin_home") {
             AdminHomeScreen(
-                onManageUsersClick = { navController.navigate("admin_users") },
+                onManageUsersClick = {
+                    navController.navigate("admin_users")
+                },
                 onManageTeamsClick = {},
                 onManageTournamentsClick = { navController.navigate("torneios") },
-                onReviewRequestsClick = { navController.navigate("admin_organizer_requests") },
+                onReviewRequestsClick = {
+                    navController.navigate("admin_organizer_requests")
+                },
                 onHomeClick = {},
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {},
-                onProfileClick = { navController.navigate("admin_profile") },
-                onNotificationsClick = { navController.navigate("admin_notifications") }
+                onProfileClick = { navController.navigate("admin_profile") }
             )
         }
 
@@ -597,8 +634,7 @@ fun MatchLeagueApp() {
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {},
-                onProfileClick = {},
-                onNotificationsClick = { navController.navigate("admin_notifications") }
+                onProfileClick = {}
             )
         }
 
@@ -655,13 +691,13 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onTournamentsClick = {
-                    navController.navigate("admin_tournaments")
+                    navController.navigate("torneios")
                 },
                 onMatchesClick = {
-                    navController.navigate("admin_matches")
+                    navController.navigate("organizador_match_center")
                 },
                 onTeamsClick = {
-                    navController.navigate("admin_teams")
+                    navController.navigate("teams")
                 },
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -677,7 +713,7 @@ fun MatchLeagueApp() {
                 onRetrySync = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
                 onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = { navController.navigate("player_matches") },
+                onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
             )

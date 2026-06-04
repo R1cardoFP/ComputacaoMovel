@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,7 +35,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -48,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,10 +62,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
 
 private val BgGray = Color(0xFFF4F5FA)
 private val InputBg = Color(0xFFF1F2FB)
@@ -72,6 +76,7 @@ private val TextDark = Color(0xFF303646)
 
 @Composable
 fun PlayerProfileScreen(
+    initialUsername: String = "A carregar...",
     initialName: String = "A carregar...",
     initialEmail: String = "A carregar...",
     initialBio: String = "",
@@ -80,7 +85,7 @@ fun PlayerProfileScreen(
     roles: List<String> = listOf("PLAYER"),
     tier: String = "BRONZE TIER",
     onLogoutClick: () -> Unit = {},
-    onSaveChanges: (String, Uri?) -> Unit = { _, _ -> },
+    onSaveChanges: (String, String, Uri?) -> Unit = { _, _, _ -> },
     onDashboardClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -88,9 +93,18 @@ fun PlayerProfileScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val authRepository = remember { AuthRepository() }
+    val scope = rememberCoroutineScope()
+
+    var username by remember(initialUsername) { mutableStateOf(initialUsername) }
     var bio by remember(initialBio) { mutableStateOf(initialBio) }
     var twoFactorEnabled by remember { mutableStateOf(true) }
     var selectedImageUri by remember(initialPhotoUri) { mutableStateOf(initialPhotoUri) }
+
+    // Estados para o feedback visual ao guardar
+    var isLoading by remember { mutableStateOf(false) }
+    var mensagem by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -134,7 +148,7 @@ fun PlayerProfileScreen(
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
             ProfileHeaderCard(
-                name = initialName.ifBlank { "Sem Nome" },
+                username = username.ifBlank { "Sem Username" },
                 memberSince = memberSinceYear,
                 roles = roles,
                 tier = tier,
@@ -147,13 +161,17 @@ fun PlayerProfileScreen(
             SectionHeader(icon = Icons.Outlined.Person, title = "Account Settings")
             Spacer(modifier = Modifier.height(16.dp))
 
+            // USERNAME É EDITÁVEL
+            CustomTextField(label = "USERNAME", value = username, onValueChange = { username = it }, readOnly = false)
+            Spacer(modifier = Modifier.height(12.dp))
+
             // NOME E EMAIL SÃO READ ONLY
             CustomTextField(label = "FULL NAME", value = initialName, onValueChange = {}, readOnly = true)
             Spacer(modifier = Modifier.height(12.dp))
             CustomTextField(label = "EMAIL ADDRESS", value = initialEmail, onValueChange = {}, readOnly = true)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // BIO É EDITÁVEL (O placeholder aparece quando "bio" é vazio "")
+            // BIO É EDITÁVEL
             CustomTextField(
                 label = "BIO",
                 value = bio,
@@ -196,15 +214,62 @@ fun PlayerProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // BOTÃO DE SAVE CHANGES COM LÓGICA DB
             Button(
-                onClick = { onSaveChanges(bio, selectedImageUri) },
+                onClick = {
+                    if (username.isBlank()) {
+                        mensagem = "O username não pode estar vazio."
+                        isError = true
+                        return@Button
+                    }
+
+                    scope.launch {
+                        isLoading = true
+                        mensagem = ""
+                        isError = false
+
+                        val resultado = authRepository.atualizarPerfil(username, bio)
+
+                        resultado
+                            .onSuccess {
+                                mensagem = "Perfil atualizado com sucesso!"
+                                isError = false
+                                onSaveChanges(username, bio, selectedImageUri)
+                            }
+                            .onFailure { erro ->
+                                isError = true
+                                mensagem = if (erro.message?.contains("duplicate key") == true || erro.message?.contains("unique") == true) {
+                                    "Este username já está em uso! Escolhe outro."
+                                } else {
+                                    "Erro ao guardar: ${erro.message}"
+                                }
+                            }
+
+                        isLoading = false
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
+                enabled = !isLoading,
                 shape = RoundedCornerShape(6.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = BrandGreen)
             ) {
-                Text("SAVE CHANGES", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(color = BrandWhite, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("SAVE CHANGES", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                }
+            }
+
+            if (mensagem.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = mensagem,
+                    color = if (isError) MaterialTheme.colorScheme.error else BrandGreen,
+                    fontSize = 13.sp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -237,7 +302,7 @@ fun PlayerProfileScreen(
 
 @Composable
 fun ProfileHeaderCard(
-    name: String,
+    username: String,
     memberSince: String,
     roles: List<String>,
     tier: String,
@@ -272,7 +337,6 @@ fun ProfileHeaderCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    // SUBSTITUÍDO: Agora mostra o boneco cinzento em vez do Ronaldo
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -297,7 +361,7 @@ fun ProfileHeaderCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = name,
+                text = username,
                 color = BrandWhite,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Medium

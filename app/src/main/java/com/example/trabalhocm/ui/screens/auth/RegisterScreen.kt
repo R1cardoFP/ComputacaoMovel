@@ -68,7 +68,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: () -> Unit = {},
+    onRegisterSuccess: (String) -> Unit = {},
     onGoToLogin: () -> Unit = {}
 ) {
     val authRepository = remember { AuthRepository() }
@@ -264,7 +264,7 @@ fun RegisterScreen(
                                     }
 
                                     mensagem = "Conta criada com sucesso."
-                                    onRegisterSuccess()
+                                    onRegisterSuccess(email)
                                 }
                                 .onFailure { erro ->
                                     mensagem = "Erro ao criar conta: ${erro.message}"
