@@ -4,23 +4,58 @@ import com.example.trabalhocm.data.model.Utilizador
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.postgrest.from
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.OffsetDateTime
 
 class AuthRepository {
 
     private val client = SupabaseClient.client
 
-    suspend fun login(email: String, password: String): Result<Utilizador> {
+    suspend fun login(identificador: String, password: String): Result<Utilizador> {
         return runCatching {
+            // Verifica se inseriu um email ou um username
+            val emailParaLogin = if (identificador.contains("@")) {
+                identificador
+            } else {
+                // Vai procurar o email na base de dados pelo username
+                val utilizadores = client.from("utilizador")
+                    .select {
+                        filter {
+                            eq("username", identificador)
+                        }
+                    }
+                    .decodeList<Utilizador>()
+
+                if (utilizadores.isEmpty()) {
+                    throw Exception("Username não encontrado.")
+                }
+                utilizadores.first().email
+            }
+
+            // Faz o login nativo com a Supabase
             client.auth.signInWith(Email) {
-                this.email = email
+                this.email = emailParaLogin
                 this.password = password
             }
 
             val userId = client.auth.currentUserOrNull()?.id
                 ?: throw Exception("Utilizador autenticado não encontrado.")
+
+            client.from("utilizador")
+                .update(
+                    AtualizarUltimoLogin(
+                        ultimoLogin = OffsetDateTime.now().toString()
+                    )
+                ) {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
 
             client.from("utilizador")
                 .select {
@@ -32,7 +67,12 @@ class AuthRepository {
         }
     }
 
-    suspend fun registar(nome: String, email: String, password: String): Result<Utilizador> {
+    suspend fun registar(
+        nome: String,
+        username: String,
+        email: String,
+        password: String
+    ): Result<Utilizador> {
         return runCatching {
             client.auth.signUpWith(Email) {
                 this.email = email
@@ -40,12 +80,36 @@ class AuthRepository {
 
                 data = buildJsonObject {
                     put("nome", nome)
-                    put("username", email.substringBefore("@"))
+                    put("username", username)
                 }
             }
 
+            // ATENÇÃO: Como agora ativaste a confirmação por email (OTP),
+            // a Supabase NÃO faz o login automático aqui.
+            // Para a app não bloquear e conseguir avançar para o ecrã dos 6 dígitos,
+            // enviamos um Utilizador "temporário". O verdadeiro é devolvido após inserir o código!
+            Utilizador(
+                id = "pendente",
+                username = username,
+                nome = nome,
+                email = email
+            )
+        }
+    }
+
+    // --- NOVA FUNÇÃO: VERIFICAR CÓDIGO DE 6 DÍGITOS ---
+    suspend fun verificarCodigoRegisto(email: String, codigo: String): Result<Utilizador> {
+        return runCatching {
+            // 1. Envia o código à Supabase para confirmar
+            client.auth.verifyEmailOtp(
+                type = OtpType.Email.SIGNUP,
+                email = email,
+                token = codigo
+            )
+
+            // 2. Se o código estiver certo, o login é feito automaticamente. Vamos buscar os dados:
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Conta criada, mas o utilizador autenticado não foi encontrado. Verifica se a confirmação por email está ativa na Supabase.")
+                ?: throw Exception("Erro: Utilizador não encontrado após verificação.")
 
             client.from("utilizador")
                 .select {
@@ -54,6 +118,25 @@ class AuthRepository {
                     }
                 }
                 .decodeSingle<Utilizador>()
+        }
+    }
+
+    // --- NOVA FUNÇÃO: ATUALIZAR NOME DE UTILIZADOR (PROFILE) ---
+    suspend fun atualizarPerfil(username: String, bio: String): Result<Unit> {
+        return runCatching {
+            val userId = client.auth.currentUserOrNull()?.id
+                ?: throw Exception("Utilizador não autenticado.")
+
+            client.from("utilizador")
+                .update(
+                    AtualizarPerfilRequest(
+                        username = username
+                    )
+                ) {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
         }
     }
 
@@ -100,3 +183,15 @@ class AuthRepository {
         }
     }
 }
+
+// CLASSES AUXILIARES PARA ENVIAR DADOS PARA A BASE DE DADOS
+@Serializable
+private data class AtualizarUltimoLogin(
+    @SerialName("ultimo_login")
+    val ultimoLogin: String
+)
+
+@Serializable
+private data class AtualizarPerfilRequest(
+    val username: String
+)

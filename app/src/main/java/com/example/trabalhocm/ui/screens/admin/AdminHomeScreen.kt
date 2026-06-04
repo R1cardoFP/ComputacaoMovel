@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,18 +36,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.model.AdminStats
 import com.example.trabalhocm.data.repository.AdminRepository
+import com.example.trabalhocm.ui.theme.AppIcons
 
 private val AdminBlue = Color(0xFF0B1F3A)
 private val AdminGreen = Color(0xFF008D7D)
 private val AdminBackground = Color(0xFFF4F5FA)
 private val TextMuted = Color(0xFF6F7A8A)
 private val CardWhite = Color.White
+private val ButtonBorderGray = Color(0xFFD8DEE9)
 
 @Composable
 fun AdminHomeScreen(
@@ -54,6 +60,7 @@ fun AdminHomeScreen(
     onManageTournamentsClick: () -> Unit = {},
     onReviewRequestsClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -86,6 +93,7 @@ fun AdminHomeScreen(
         onManageTournamentsClick = onManageTournamentsClick,
         onReviewRequestsClick = onReviewRequestsClick,
         onHomeClick = onHomeClick,
+        onNotificationsClick = onNotificationsClick,
         onTournamentsClick = onTournamentsClick,
         onMatchesClick = onMatchesClick,
         onTeamsClick = onTeamsClick,
@@ -103,6 +111,7 @@ private fun AdminHomeContent(
     onManageTournamentsClick: () -> Unit = {},
     onReviewRequestsClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -111,7 +120,10 @@ private fun AdminHomeContent(
     Scaffold(
         containerColor = AdminBackground,
         topBar = {
-            AdminTopBar(title = "Admin Dashboard")
+            AdminTopBar(
+                title = "Admin Dashboard",
+                onNotificationsClick = onNotificationsClick
+            )
         },
         bottomBar = {
             AdminBottomBar(
@@ -177,7 +189,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "∞",
+                    icon = AppIcons.Profile,
                     title = "User Management",
                     description = "Oversee all accounts and roles.",
                     badge = usersText,
@@ -192,7 +204,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "⌂",
+                    icon = AppIcons.Teams,
                     title = "Teams Management",
                     description = "View teams, rosters, and status.",
                     badge = teamsText,
@@ -207,7 +219,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "♜",
+                    icon = AppIcons.Tournaments,
                     title = "Tournaments Management",
                     description = "Create, edit, and monitor leagues.",
                     badge = tournamentsText,
@@ -222,7 +234,7 @@ private fun AdminHomeContent(
 
             item {
                 AdminManagementCard(
-                    icon = "◇",
+                    icon = AppIcons.Notifications,
                     title = "Organizer Requests",
                     description = "Review and approve new organizers.",
                     badge = "4 PENDING",
@@ -239,7 +251,10 @@ private fun AdminHomeContent(
 }
 
 @Composable
-private fun AdminTopBar(title: String) {
+private fun AdminTopBar(
+    title: String,
+    onNotificationsClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -250,11 +265,11 @@ private fun AdminTopBar(title: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "←",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = AppIcons.Back,
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -267,10 +282,15 @@ private fun AdminTopBar(title: String) {
             )
         }
 
-        Text(
-            text = "♢",
-            color = Color.White,
-            fontSize = 23.sp
+        Icon(
+            imageVector = AppIcons.Notifications,
+            contentDescription = "Notificações",
+            tint = Color.White,
+            modifier = Modifier
+                .size(23.dp)
+                .clickable {
+                    onNotificationsClick()
+                }
         )
     }
 }
@@ -361,7 +381,7 @@ private fun OverviewNumber(number: String, label: String) {
 
 @Composable
 private fun AdminManagementCard(
-    icon: String,
+    icon: ImageVector,
     title: String,
     description: String,
     badge: String,
@@ -372,6 +392,8 @@ private fun AdminManagementCard(
     buttonTextColor: Color,
     onClick: () -> Unit
 ) {
+    val hasLightButton = buttonColor == Color.White
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -392,11 +414,11 @@ private fun AdminManagementCard(
                         .background(iconBackground),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = icon,
-                        color = iconColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = title,
+                        tint = iconColor,
+                        modifier = Modifier.size(21.dp)
                     )
                 }
 
@@ -441,7 +463,12 @@ private fun AdminManagementCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(38.dp),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(5.dp),
+                border = if (hasLightButton) {
+                    BorderStroke(1.dp, ButtonBorderGray)
+                } else {
+                    null
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = buttonColor,
                     contentColor = buttonTextColor
@@ -452,7 +479,9 @@ private fun AdminManagementCard(
                     text = buttonText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -477,37 +506,39 @@ private fun AdminBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomItem("⌂", "HOME", selected == "home", onHomeClick)
-        BottomItem("♜", "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomItem("◎", "MATCHES", selected == "matches", onMatchesClick)
-        BottomItem("♟", "TEAMS", selected == "teams", onTeamsClick)
-        BottomItem("♙", "PROFILE", selected == "profile", onProfileClick)
+        BottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
+        BottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
+        BottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
+        BottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
+        BottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
     }
 }
 
 @Composable
 private fun BottomItem(
-    icon: String,
+    icon: ImageVector,
     label: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+
     Column(
         modifier = Modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = icon,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(20.dp)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = label,
-            color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5),
+            color = color,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp

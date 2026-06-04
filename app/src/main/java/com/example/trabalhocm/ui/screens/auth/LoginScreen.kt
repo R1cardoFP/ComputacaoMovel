@@ -63,7 +63,7 @@ fun LoginScreen(
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
-    var email by remember { mutableStateOf("") }
+    var emailOrUsername by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var mensagem by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
@@ -114,11 +114,11 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 LoginInput(
-                    label = "EMAIL ADDRESS",
-                    value = email,
-                    onValueChange = { email = it },
-                    placeholder = "name@example.com",
-                    keyboardType = KeyboardType.Email
+                    label = "EMAIL OR USERNAME",
+                    value = emailOrUsername,
+                    onValueChange = { emailOrUsername = it },
+                    placeholder = "name@example.com or player123",
+                    keyboardType = KeyboardType.Text
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))
@@ -161,8 +161,8 @@ fun LoginScreen(
 
                 Button(
                     onClick = {
-                        if (email.isBlank() || password.isBlank()) {
-                            mensagem = "Preenche o email e a password."
+                        if (emailOrUsername.isBlank() || password.isBlank()) {
+                            mensagem = "Preenche o identificador e a password."
                             return@Button
                         }
 
@@ -171,7 +171,7 @@ fun LoginScreen(
                             mensagem = ""
 
                             val resultado = authRepository.login(
-                                email = email,
+                                identificador = emailOrUsername.trim(),
                                 password = password
                             )
 
