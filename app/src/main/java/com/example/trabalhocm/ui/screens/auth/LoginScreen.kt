@@ -49,9 +49,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.repository.AuthRepository
+import com.example.trabalhocm.data.remote.SupabaseClient
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+
+// IMPORTS CORRIGIDOS PARA O COMPOSE AUTH
+import io.github.jan.supabase.compose.auth.composeAuth
+import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
+import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
 import kotlinx.coroutines.launch
 
 @Composable
@@ -67,6 +73,48 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var mensagem by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+
+    // --- LÓGICA DO GOOGLE LOGIN ---
+    val composeAuth = SupabaseClient.client.composeAuth
+    val googleSignIn = composeAuth.rememberSignInWithGoogle(
+        onResult = { result ->
+            when (result) {
+                is NativeSignInResult.Success -> {
+                    mensagem = "A criar perfil de jogador..."
+                    isLoading = true
+
+                    // Chama a nossa nova função de sincronização!
+                    scope.launch {
+                        authRepository.sincronizarUtilizadorGoogle()
+                            .onSuccess {
+                                mensagem = "Login feito com sucesso!"
+                                isLoading = false
+                                onLoginSuccess() // Isto manda-te para o ecrã seguinte (UserType/Profile)
+                            }
+                            .onFailure { erro ->
+                                mensagem = "Erro ao guardar na base de dados: ${erro.message}"
+                                isLoading = false
+                            }
+                    }
+                }
+                is NativeSignInResult.ClosedByUser -> {
+                    isLoading = false
+                }
+                is NativeSignInResult.Error -> {
+                    mensagem = "Erro no Google. Falta registar o SHA-1 na Cloud."
+                    isLoading = false
+                }
+                is NativeSignInResult.NetworkError -> {
+                    mensagem = "Erro de rede ao ligar ao Google."
+                    isLoading = false
+                }
+            }
+        },
+        fallback = {
+            mensagem = "Erro: O Google Login não é suportado neste dispositivo."
+            isLoading = false
+        }
+    )
 
     Column(
         modifier = Modifier
@@ -216,7 +264,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
                         text = mensagem,
-                        color = if (mensagem.startsWith("Erro")) {
+                        color = if (mensagem.startsWith("Erro") || mensagem.startsWith("Preenche")) {
                             MaterialTheme.colorScheme.error
                         } else {
                             BrandBlue
@@ -253,22 +301,16 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Row(
+                LoginSocialButton(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    LoginSocialButton(
-                        modifier = Modifier.weight(1f),
-                        icon = "G",
-                        text = "GOOGLE"
-                    )
-
-                    LoginSocialButton(
-                        modifier = Modifier.weight(1f),
-                        icon = "●",
-                        text = "APPLE"
-                    )
-                }
+                    icon = "G",
+                    text = "CONTINUE WITH GOOGLE",
+                    onClick = {
+                        isLoading = true
+                        mensagem = ""
+                        googleSignIn.startFlow() // <- Abre o ecrã de permissões do Google
+                    }
+                )
             }
         }
 
@@ -416,10 +458,11 @@ fun LoginInputField(
 fun LoginSocialButton(
     modifier: Modifier = Modifier,
     icon: String,
-    text: String
+    text: String,
+    onClick: () -> Unit
 ) {
     Button(
-        onClick = {},
+        onClick = onClick,
         modifier = modifier.height(50.dp),
         shape = RoundedCornerShape(3.dp),
         colors = ButtonDefaults.buttonColors(

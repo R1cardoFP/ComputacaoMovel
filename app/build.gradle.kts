@@ -81,6 +81,7 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp:3.0.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("io.github.jan-tennert.supabase:compose-auth")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

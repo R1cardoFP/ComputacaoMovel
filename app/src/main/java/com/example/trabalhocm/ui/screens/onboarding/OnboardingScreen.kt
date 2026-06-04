@@ -1,5 +1,12 @@
 package com.example.trabalhocm.ui.screens.onboarding
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -40,10 +47,28 @@ private val TextGray = Color(0xFF6B7280)
 fun OnboardingFlow(onFinish: () -> Unit) {
     var page by remember { mutableIntStateOf(1) }
 
-    when (page) {
-        1 -> Onboarding1(onSkip = onFinish, onNext = { page = 2 })
-        2 -> Onboarding2(onSkip = onFinish, onNext = { page = 3 })
-        else -> Onboarding3 { onFinish() }
+    // O AnimatedContent vai tratar de animar qualquer mudança na variável 'page'
+    AnimatedContent(
+        targetState = page,
+        transitionSpec = {
+            // Animação: Desliza da direita para a esquerda (junto com um ligeiro fade in/out)
+            (slideInHorizontally(
+                animationSpec = tween(400),
+                initialOffsetX = { fullWidth -> fullWidth }
+            ) + fadeIn(animationSpec = tween(400))).togetherWith(
+                slideOutHorizontally(
+                    animationSpec = tween(400),
+                    targetOffsetX = { fullWidth -> -fullWidth }
+                ) + fadeOut(animationSpec = tween(400))
+            )
+        },
+        label = "onboarding_animation"
+    ) { targetPage ->
+        when (targetPage) {
+            1 -> Onboarding1(onSkip = onFinish, onNext = { page = 2 })
+            2 -> Onboarding2(onSkip = onFinish, onNext = { page = 3 })
+            else -> Onboarding3 { onFinish() }
+        }
     }
 }
 
@@ -61,7 +86,9 @@ fun Onboarding1(onSkip: () -> Unit, onNext: () -> Unit) {
             fontSize = 46.sp,
             lineHeight = 52.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
         )
 
         Spacer(Modifier.height(24.dp))
