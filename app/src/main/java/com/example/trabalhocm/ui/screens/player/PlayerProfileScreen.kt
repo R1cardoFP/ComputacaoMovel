@@ -101,7 +101,6 @@ fun PlayerProfileScreen(
     var twoFactorEnabled by remember { mutableStateOf(true) }
     var selectedImageUri by remember(initialPhotoUri) { mutableStateOf(initialPhotoUri) }
 
-    // Estados para o feedback visual ao guardar
     var isLoading by remember { mutableStateOf(false) }
     var mensagem by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
@@ -161,17 +160,14 @@ fun PlayerProfileScreen(
             SectionHeader(icon = Icons.Outlined.Person, title = "Account Settings")
             Spacer(modifier = Modifier.height(16.dp))
 
-            // USERNAME É EDITÁVEL
             CustomTextField(label = "USERNAME", value = username, onValueChange = { username = it }, readOnly = false)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // NOME E EMAIL SÃO READ ONLY
             CustomTextField(label = "FULL NAME", value = initialName, onValueChange = {}, readOnly = true)
             Spacer(modifier = Modifier.height(12.dp))
             CustomTextField(label = "EMAIL ADDRESS", value = initialEmail, onValueChange = {}, readOnly = true)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // BIO É EDITÁVEL
             CustomTextField(
                 label = "BIO",
                 value = bio,
@@ -214,7 +210,6 @@ fun PlayerProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // BOTÃO DE SAVE CHANGES COM LÓGICA DB
             Button(
                 onClick = {
                     if (username.isBlank()) {
@@ -370,14 +365,15 @@ fun ProfileHeaderCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (roles.isNotEmpty()) {
+                // --- AGORA ELE DESENHA UMA ETIQUETA PARA CADA PAPEL QUE O UTILIZADOR TENHA ---
+                roles.forEach { role ->
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .background(BrandGreen)
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Text(roles.first(), color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(role, color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 

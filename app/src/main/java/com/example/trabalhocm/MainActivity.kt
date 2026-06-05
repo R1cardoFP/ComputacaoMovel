@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -288,8 +289,7 @@ fun MatchLeagueApp() {
         composable("player_profile") {
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
-            val authRepository =
-                remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
 
             var usernameUtilizador by remember { mutableStateOf("A carregar...") }
             var nomeUtilizador by remember { mutableStateOf("A carregar...") }
@@ -297,9 +297,9 @@ fun MatchLeagueApp() {
             var bioUtilizador by remember { mutableStateOf("") }
             var photoUri by remember { mutableStateOf<Uri?>(null) }
             var userId by remember { mutableStateOf("") }
+            var rolesUtilizador by remember { mutableStateOf(listOf("A carregar...")) } // <-- NOVA VARIÁVEL PARA AS LABELS
 
-            val sharedPrefs =
-                remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
+            val sharedPrefs = remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
 
             LaunchedEffect(Unit) {
                 authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
@@ -308,12 +308,46 @@ fun MatchLeagueApp() {
                     emailUtilizador = utilizador.email
                     userId = utilizador.id
 
+                    // Carrega a Foto
                     if (!utilizador.fotoUrl.isNullOrEmpty()) {
-                        photoUri = utilizador.fotoUrl.toUri()
+                        val urlAtualizada = "${utilizador.fotoUrl}?v=${System.currentTimeMillis()}"
+                        photoUri = urlAtualizada.toUri()
+                    } else {
+                        val uriRegisto = sharedPrefs.getString("avatar_${utilizador.email}", null)
+
+                        if (uriRegisto != null) {
+                            val localUri = uriRegisto.toUri()
+                            photoUri = localUri
+
+                            try {
+                                val imageStream = context.contentResolver.openInputStream(localUri)
+                                val imageBytes = imageStream?.readBytes()
+                                imageStream?.close()
+
+                                if (imageBytes != null) {
+                                    authRepository.atualizarFotoPerfil(imageBytes)
+                                    sharedPrefs.edit { remove("avatar_${utilizador.email}") }
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
                     }
 
-                    val savedUriStr = sharedPrefs.getString("avatar_$userId", null)
-                    if (savedUriStr != null) photoUri = savedUriStr.toUri()
+                    // --- VAI BUSCAR OS PAPÉIS DO UTILIZADOR ---
+                    authRepository.obterPapeisUtilizador(utilizador.id).onSuccess { papeis ->
+                        val tags = mutableListOf<String>()
+
+                        // Adiciona as etiquetas de forma dinâmica baseada nos IDs da tabela!
+                        if (papeis.contains(1)) tags.add("ADMIN")
+                        if (papeis.contains(2)) tags.add("ORGANIZADOR")
+                        if (papeis.contains(3)) tags.add("PLAYER")
+
+                        // Fallback se não tiver nada (para nunca ficar vazio)
+                        if (tags.isEmpty()) tags.add("PLAYER")
+
+                        rolesUtilizador = tags
+                    }
 
                     val savedBio = sharedPrefs.getString("bio_$userId", null)
                     if (savedBio != null) bioUtilizador = savedBio
@@ -330,6 +364,7 @@ fun MatchLeagueApp() {
                 initialEmail = emailUtilizador,
                 initialBio = bioUtilizador,
                 initialPhotoUri = photoUri,
+                roles = rolesUtilizador, // <-- PASSA A LISTA AQUI!
                 onLogoutClick = {
                     scope.launch {
                         authRepository.logout()
@@ -340,18 +375,27 @@ fun MatchLeagueApp() {
                     scope.launch {
                         authRepository.atualizarPerfil(novoUsername, novaBio)
 
-                        sharedPrefs.edit {
-                            if (novaPhotoUri != null) {
-                                putString("avatar_$userId", novaPhotoUri.toString())
-                            } else {
-                                remove("avatar_$userId")
+                        if (novaPhotoUri != null && novaPhotoUri != photoUri && novaPhotoUri.toString().startsWith("content://")) {
+                            try {
+                                val imageStream = context.contentResolver.openInputStream(novaPhotoUri)
+                                val imageBytes = imageStream?.readBytes()
+                                imageStream?.close()
+
+                                if (imageBytes != null) {
+                                    authRepository.atualizarFotoPerfil(imageBytes)
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
+                        }
+
+                        sharedPrefs.edit {
                             putString("bio_$userId", novaBio)
                         }
 
                         usernameUtilizador = novoUsername
                         bioUtilizador = novaBio
-                        photoUri = novaPhotoUri
+                        if (novaPhotoUri != null) photoUri = novaPhotoUri
                     }
                 },
                 onDashboardClick = { navController.navigate("player_stats") },
@@ -364,24 +408,69 @@ fun MatchLeagueApp() {
         }
 
         composable("player_stats") {
-            val authRepository =
-                remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+
             var nomeUtilizador by remember { mutableStateOf("A carregar...") }
+            var usernameUtilizador by remember { mutableStateOf("") }
+            var fotoUriUtilizador by remember { mutableStateOf<Uri?>(null) }
+
+            var futPontuacao by remember { mutableIntStateOf(0) }
+            var futVitorias by remember { mutableIntStateOf(0) }
+
+            var basqPontuacao by remember { mutableIntStateOf(0) }
+            var basqWinRate by remember { mutableIntStateOf(0) }
+
+            var volPontuacao by remember { mutableIntStateOf(0) }
+            var volWinRate by remember { mutableIntStateOf(0) }
 
             LaunchedEffect(Unit) {
                 authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
                     nomeUtilizador = utilizador.nome
+                    usernameUtilizador = utilizador.username
+
+                    if (!utilizador.fotoUrl.isNullOrEmpty()) {
+                        val urlAtualizada = "${utilizador.fotoUrl}?v=${System.currentTimeMillis()}"
+                        fotoUriUtilizador = urlAtualizada.toUri()
+                    }
+
+                    authRepository.obterEstatisticasJogador(utilizador.id).onSuccess { listaEstatisticas ->
+                        listaEstatisticas.forEach { estatistica ->
+
+                            val winRate = if (estatistica.numJogos > 0) {
+                                (estatistica.vitorias * 100) / estatistica.numJogos
+                            } else 0
+
+                            when (estatistica.idModalidade) {
+                                1 -> {
+                                    futPontuacao = estatistica.pontuacao
+                                    futVitorias = estatistica.vitorias
+                                }
+                                2 -> {
+                                    basqPontuacao = estatistica.pontuacao
+                                    basqWinRate = winRate
+                                }
+                                3 -> {
+                                    volPontuacao = estatistica.pontuacao
+                                    volWinRate = winRate
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             PlayerStatsScreen(
                 playerName = nomeUtilizador,
-                footballGoals = 24,
-                footballAssists = 18,
-                basketballPoints = 412,
-                basketballWinRate = 65,
-                volleyballSpikes = 84,
-                volleyballWinRate = 82,
+                playerUsername = usernameUtilizador,
+                playerPhotoUri = fotoUriUtilizador,
+
+                footballGoals = futPontuacao,
+                footballAssists = futVitorias,
+                basketballPoints = basqPontuacao,
+                basketballWinRate = basqWinRate,
+                volleyballSpikes = volPontuacao,
+                volleyballWinRate = volWinRate,
+
                 onBackClick = { navController.popBackStack() }
             )
         }

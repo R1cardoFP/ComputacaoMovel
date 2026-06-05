@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.player
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,9 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 private val BrandBlue = Color(0xFF0B1F3A)
 private val BrandGreen = Color(0xFF008D7D)
@@ -43,10 +46,8 @@ private val InputBg = Color(0xFFF1F2FB)
 @Composable
 fun PlayerStatsScreen(
     playerName: String = "A carregar...",
-    playerRank: String = "#14 GLOBAL",
-    playerRole: String = "MIDFIELDER",
-    playerTeam: String = "FC Mancos",
-    playerCountry: String = "Portugal",
+    playerUsername: String = "",
+    playerPhotoUri: Uri? = null,
     footballGoals: Int = 0,
     footballAssists: Int = 0,
     basketballPoints: Int = 0,
@@ -98,12 +99,11 @@ fun PlayerStatsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
+            // CABEÇALHO LIMPO DE DADOS FALSOS
             StatsHeaderCard(
                 name = playerName,
-                rank = playerRank,
-                role = playerRole,
-                team = playerTeam,
-                country = playerCountry
+                username = playerUsername,
+                photoUri = playerPhotoUri
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -111,11 +111,11 @@ fun PlayerStatsScreen(
             SportStatCard(
                 sportName = "Football",
                 sportIcon = "⚽",
-                roleTag = "FORWARD",
+                roleTag = "", // <-- Removido o FORWARD estático
                 stat1Label = "GOALS",
                 stat1Value = footballGoals.toString(),
                 stat1Color = Color(0xFF3566C9),
-                stat2Label = "ASSISTS",
+                stat2Label = "WINS", // Ajustado para corresponder à DB
                 stat2Value = footballAssists.toString(),
                 stat2Color = TextDark
             )
@@ -140,7 +140,7 @@ fun PlayerStatsScreen(
                 sportName = "Volleyball",
                 sportIcon = "🏐",
                 roleTag = "",
-                stat1Label = "SPIKES",
+                stat1Label = "POINTS", // Ajustado para corresponder à DB
                 stat1Value = volleyballSpikes.toString(),
                 stat1Color = TextDark,
                 stat2Label = "WIN %",
@@ -179,10 +179,13 @@ fun PlayerStatsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            MatchHistoryRow(team1 = "Sporting", team2 = "Vianense", score = "3 - 1", subtitle = "Tournament Finals • Oct 14, 2023", resultIcon = "⚽ ⚽")
-            MatchHistoryRow(team1 = "Benfica", team2 = "Porto", score = "0 - 0", subtitle = "League Match • Oct 10, 2023", resultIcon = "FULL TIME")
-            MatchHistoryRow(team1 = "Vianense", team2 = "Benfica", score = "1 - 4", subtitle = "Quarter Finals • Oct 03, 2023", resultIcon = "⚽ ⚡")
-            MatchHistoryRow(team1 = "Porto", team2 = "Sporting", score = "2 - 0", subtitle = "Exhibition • Sep 28, 2023", resultIcon = "⚽")
+            // LISTA DE JOGOS LIMPA. FUTURAMENTE PODES INJETAR OS JOGOS REAIS AQUI
+            Text(
+                text = "Ainda não há jogos registados.",
+                color = TextGray,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -192,10 +195,8 @@ fun PlayerStatsScreen(
 @Composable
 fun StatsHeaderCard(
     name: String,
-    rank: String,
-    role: String,
-    team: String,
-    country: String
+    username: String,
+    photoUri: Uri?
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -216,31 +217,19 @@ fun StatsHeaderCard(
                     .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                Text("👤", fontSize = 40.sp)
+                if (photoUri != null) {
+                    AsyncImage(
+                        model = photoUri,
+                        contentDescription = "User Photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text("👤", fontSize = 40.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(BrandGreen)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text("RANK $rank", color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF2B3F60))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(role, color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = name,
@@ -249,23 +238,14 @@ fun StatsHeaderCard(
                 fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("👥", color = TextGray, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(team, color = BrandWhite, fontSize = 12.sp)
-                }
-                Text("|", color = TextGray, fontSize = 12.sp)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("⚑", color = TextGray, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(country, color = BrandWhite, fontSize = 12.sp)
-                }
+            if (username.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "@$username",
+                    color = BrandGreen,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -364,6 +344,7 @@ fun SportStatCard(
     }
 }
 
+// Mantivemos esta função caso precises dela mais tarde quando tiveres jogos!
 @Composable
 fun MatchHistoryRow(
     team1: String,

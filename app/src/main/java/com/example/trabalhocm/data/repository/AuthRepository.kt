@@ -1,11 +1,13 @@
 package com.example.trabalhocm.data.repository
 
 import com.example.trabalhocm.data.model.Utilizador
+import com.example.trabalhocm.data.model.EstatisticaJogador
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.storage.storage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
@@ -135,7 +137,6 @@ class AuthRepository {
         }
     }
 
-    // --- FUNÇÃO DO GOOGLE CORRIGIDA ---
     suspend fun sincronizarUtilizadorGoogle(): Result<Unit> {
         return runCatching {
             val user = client.auth.currentUserOrNull()
@@ -146,7 +147,6 @@ class AuthRepository {
                 .decodeList<Utilizador>()
 
             if (utilizadores.isEmpty()) {
-                // Lê o nome diretamente e remove as aspas se existirem
                 val nomeGoogle = user.userMetadata?.get("full_name")?.toString()?.removeSurrounding("\"") ?: "Novo Jogador"
                 val emailGoogle = user.email ?: ""
 
@@ -165,7 +165,6 @@ class AuthRepository {
         }
     }
 
-    // --- FUNÇÃO DE ATUALIZAR PERFIL CORRIGIDA (AGORA USA A BIO) ---
     suspend fun atualizarPerfil(username: String, bio: String): Result<Unit> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
@@ -182,6 +181,53 @@ class AuthRepository {
                         eq("id", userId)
                     }
                 }
+        }
+    }
+
+    suspend fun atualizarFotoPerfil(imageBytes: ByteArray): Result<String> {
+        return runCatching {
+            val userId = client.auth.currentUserOrNull()?.id
+                ?: throw Exception("Utilizador não autenticado.")
+
+            val path = "avatar_$userId.jpg"
+
+            client.storage.from("avatars").upload(path, imageBytes) {
+                upsert = true
+            }
+
+            val publicUrl = client.storage.from("avatars").publicUrl(path)
+
+            client.from("utilizador").update(AtualizarFotoRequest(fotoUrl = publicUrl)) {
+                filter { eq("id", userId) }
+            }
+
+            publicUrl
+        }
+    }
+
+    suspend fun obterEstatisticasJogador(userId: String): Result<List<EstatisticaJogador>> {
+        return runCatching {
+            client.from("estatistica_jogador")
+                .select {
+                    filter {
+                        eq("id_utilizador", userId)
+                    }
+                }
+                .decodeList<EstatisticaJogador>()
+        }
+    }
+
+    // --- NOVA FUNÇÃO PARA OS PAPÉIS DO UTILIZADOR ---
+    suspend fun obterPapeisUtilizador(userId: String): Result<List<Int>> {
+        return runCatching {
+            client.from("utilizador_papel")
+                .select {
+                    filter {
+                        eq("id_utilizador", userId)
+                    }
+                }
+                .decodeList<UtilizadorPapel>()
+                .map { it.idPapel } // Devolve apenas a lista dos números (ex: [2, 3])
         }
     }
 
@@ -239,5 +285,18 @@ private data class AtualizarUltimoLogin(
 @Serializable
 private data class AtualizarPerfilRequest(
     val username: String,
-    val bio: String // <- BIO ADICIONADA AQUI
+    val bio: String
+)
+
+@Serializable
+private data class AtualizarFotoRequest(
+    @SerialName("foto_url")
+    val fotoUrl: String
+)
+
+// --- NOVA CLASSE PARA LER OS PAPÉIS ---
+@Serializable
+private data class UtilizadorPapel(
+    @SerialName("id_utilizador") val idUtilizador: String,
+    @SerialName("id_papel") val idPapel: Int
 )

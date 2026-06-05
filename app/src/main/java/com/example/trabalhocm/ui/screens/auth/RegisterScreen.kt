@@ -261,11 +261,15 @@ fun RegisterScreen(
                             )
 
                             resultado
-                                .onSuccess { utilizador ->
+                                .onSuccess {
+                                    // COPIA A IMAGEM PARA O TELEMÓVEL DE FORMA SEGURA ENQUANTO O EMAIL NÃO É CONFIRMADO
                                     if (photoUri != null) {
-                                        val sharedPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                                        sharedPrefs.edit {
-                                            putString("avatar_${utilizador.id}", photoUri.toString())
+                                        val uriPermanente = guardarImagemInternamente(context, photoUri!!, email)
+                                        if (uriPermanente != null) {
+                                            val sharedPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                                            sharedPrefs.edit {
+                                                putString("avatar_$email", uriPermanente)
+                                            }
                                         }
                                     }
 
@@ -274,7 +278,6 @@ fun RegisterScreen(
                                 }
                                 .onFailure { erro ->
                                     isError = true
-                                    // Mostra diretamente a mensagem em inglês definida no Repository
                                     mensagem = erro.message ?: "An unexpected error occurred."
                                 }
 
@@ -472,8 +475,17 @@ fun RegisterInput(
     }
 }
 
-@Preview(showBackground = true, name = "Register Screen")
-@Composable
-fun RegisterScreenPreview() {
-    RegisterScreen()
+// FUNÇÃO PARA GUARDAR IMAGEM TEMPORARIAMENTE NO TELEMÓVEL
+fun guardarImagemInternamente(context: Context, uri: Uri, identificador: String): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val file = java.io.File(context.filesDir, "avatar_$identificador.jpg")
+        val outputStream = java.io.FileOutputStream(file)
+        inputStream?.copyTo(outputStream)
+        inputStream?.close()
+        outputStream.close()
+        Uri.fromFile(file).toString()
+    } catch (e: Exception) {
+        null
+    }
 }

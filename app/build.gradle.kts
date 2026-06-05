@@ -82,6 +82,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.github.jan-tennert.supabase:compose-auth")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
