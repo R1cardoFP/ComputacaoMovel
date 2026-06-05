@@ -70,6 +70,7 @@ import com.example.trabalhocm.ui.screens.admin.AdminUserManagementScreen
 import com.example.trabalhocm.ui.screens.admin.AdminNotificationsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminOrganizerRequestsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerMatchHistoryScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentArchiveScreen
 
 import kotlinx.coroutines.launch
 
@@ -953,12 +954,12 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_users")
                 },
                 onManageTeamsClick = {},
-                onManageTournamentsClick = { navController.navigate("torneios") },
+                onManageTournamentsClick = { navController.navigate("admin_tournaments") },
                 onReviewRequestsClick = {
                     navController.navigate("admin_organizer_requests")
                 },
                 onHomeClick = {},
-                onTournamentsClick = { navController.navigate("torneios") },
+                onTournamentsClick = { navController.navigate("admin_tournaments") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {},
                 onProfileClick = { navController.navigate("admin_profile") }
@@ -1050,7 +1051,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onTournamentsClick = {
-                    navController.navigate("torneios")
+                    navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
                     navController.navigate("organizador_match_center")
@@ -1058,6 +1059,26 @@ fun MatchLeagueApp() {
                 onTeamsClick = {
                     navController.navigate("teams")
                 },
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable("admin_tournaments") {
+            AdminTournamentArchiveScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {},
+                onMatchesClick = {},
+                onTeamsClick = {},
                 onProfileClick = {
                     navController.navigate("admin_profile")
                 }
