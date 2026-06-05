@@ -71,6 +71,8 @@ import com.example.trabalhocm.ui.screens.admin.AdminNotificationsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminOrganizerRequestsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerMatchHistoryScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTournamentArchiveScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentDetailsScreen
 
 import kotlinx.coroutines.launch
 
@@ -955,9 +957,7 @@ fun MatchLeagueApp() {
                 },
                 onManageTeamsClick = {},
                 onManageTournamentsClick = { navController.navigate("admin_tournaments") },
-                onReviewRequestsClick = {
-                    navController.navigate("admin_organizer_requests")
-                },
+                onReviewRequestsClick = { navController.navigate("admin_organizer_requests") },
                 onHomeClick = {},
                 onTournamentsClick = { navController.navigate("admin_tournaments") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
@@ -1066,6 +1066,21 @@ fun MatchLeagueApp() {
         }
 
         composable("admin_tournaments") {
+            AdminTournamentsScreen(
+                onBackClick = { navController.popBackStack() },
+                onNotificationsClick = { navController.navigate("admin_notifications") },
+                onArchiveClick = { navController.navigate("admin_tournament_archive") },
+                onTournamentDetailsClick = {tournamentId -> navController.navigate("admin_tournament_details/$tournamentId")},
+                onManageRegistrationClick = {},
+                onHomeClick = { navController.navigate("admin_home") },
+                onTournamentsClick = {},
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = { navController.navigate("admin_profile") }
+            )
+        }
+
+        composable("admin_tournament_archive") {
             AdminTournamentArchiveScreen(
                 onBackClick = {
                     navController.popBackStack()
@@ -1076,7 +1091,50 @@ fun MatchLeagueApp() {
                 onHomeClick = {
                     navController.navigate("admin_home")
                 },
-                onTournamentsClick = {},
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "admin_tournament_details/{tournamentId}",
+            arguments = listOf(
+                navArgument("tournamentId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val tournamentId = backStackEntry.arguments?.getString("tournamentId") ?: ""
+
+            AdminTournamentDetailsScreen(
+                tournamentId = tournamentId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onManageRegistrationClick = { id ->
+                    // ligar ao ecrã de inscrições
+                },
+                onEditTournamentClick = { id ->
+                    // ligar ao ecrã de edição
+                },
+                onDeleteTournamentClick = { id ->
+                    // reaproveitar a lógica de apagar
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
                 onMatchesClick = {},
                 onTeamsClick = {},
                 onProfileClick = {

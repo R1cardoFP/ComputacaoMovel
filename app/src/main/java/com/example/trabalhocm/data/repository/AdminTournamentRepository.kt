@@ -1,6 +1,7 @@
 package com.example.trabalhocm.data.repository
 
 import com.example.trabalhocm.data.model.AdminTournament
+import com.example.trabalhocm.data.model.AdminTournamentDetails
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.SerialName
@@ -50,6 +51,74 @@ class AdminTournamentRepository {
         }
     }
 
+    suspend fun obterDetalhesTorneio(tournamentId: String): Result<AdminTournamentDetails> {
+        return runCatching {
+            val id = tournamentId.toIntOrNull()
+                ?: throw Exception("ID do torneio inválido.")
+
+            val torneio = client.from("torneio")
+                .select {
+                    filter {
+                        eq("id", id)
+                    }
+                }
+                .decodeSingle<TorneioArquivoAdminDto>()
+
+            val modalidadeNome = torneio.idModalidade?.let { idModalidade ->
+                client.from("modalidade")
+                    .select {
+                        filter {
+                            eq("id", idModalidade)
+                        }
+                    }
+                    .decodeSingle<ModalidadeArquivoAdminDto>()
+                    .nome
+            } ?: "Unknown"
+
+            val organizadorNome = torneio.idOrganizador?.let { idOrganizador ->
+                client.from("utilizador")
+                    .select {
+                        filter {
+                            eq("id", idOrganizador)
+                        }
+                    }
+                    .decodeSingle<OrganizadorArquivoAdminDto>()
+                    .nome
+            } ?: "Unknown organizer"
+
+            AdminTournamentDetails(
+                id = torneio.id.toString(),
+                nome = torneio.nome,
+                descricao = torneio.descricao ?: "Sem descrição disponível.",
+                estado = torneio.estado ?: "IN PROGRESS",
+                modalidade = modalidadeNome.uppercase(),
+                organizerName = organizadorNome,
+                dataInicio = formatDateLong(torneio.dataInicio),
+                dataFim = formatDateLong(torneio.dataFim),
+                inscricoesFecham = formatDateLong(torneio.dataInicio),
+                formato = torneio.formato ?: "Não definido",
+                local = torneio.local ?: "Local não definido",
+                premio = formatPrize(torneio.premio),
+                season = formatSeason(torneio.dataInicio, torneio.dataFim),
+                teamsCount = 0
+            )
+        }
+    }
+
+    suspend fun apagarTorneio(tournamentId: String): Result<Unit> {
+        return runCatching {
+            val id = tournamentId.toIntOrNull()
+                ?: throw Exception("ID do torneio inválido.")
+
+            client.from("torneio")
+                .delete {
+                    filter {
+                        eq("id", id)
+                    }
+                }
+        }
+    }
+
     private fun formatPrize(valor: Double?): String {
         if (valor == null || valor <= 0.0) {
             return "€0"
@@ -81,12 +150,50 @@ class AdminTournamentRepository {
             }
         }
     }
+
+    private fun formatDateLong(data: String?): String {
+        if (data.isNullOrBlank()) {
+            return "Não definido"
+        }
+
+        return try {
+            val partes = data.take(10).split("-")
+            if (partes.size != 3) return data.take(10)
+
+            val ano = partes[0]
+            val mes = partes[1]
+            val dia = partes[2]
+
+            val mesTexto = when (mes) {
+                "01" -> "Jan"
+                "02" -> "Feb"
+                "03" -> "Mar"
+                "04" -> "Apr"
+                "05" -> "May"
+                "06" -> "Jun"
+                "07" -> "Jul"
+                "08" -> "Aug"
+                "09" -> "Sep"
+                "10" -> "Oct"
+                "11" -> "Nov"
+                "12" -> "Dec"
+                else -> mes
+            }
+
+            "$dia $mesTexto $ano"
+        } catch (e: Exception) {
+            data.take(10)
+        }
+    }
 }
 
 @Serializable
 private data class TorneioArquivoAdminDto(
     val id: Int,
     val nome: String,
+    val descricao: String? = null,
+    val formato: String? = null,
+    val local: String? = null,
 
     @SerialName("id_organizador")
     val idOrganizador: String? = null,
