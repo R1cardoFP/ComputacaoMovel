@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -60,7 +62,7 @@ fun PlayerMatchesScreen(
     onCalendarClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     onFiltersClick: () -> Unit = {},
-    onDetailsClick: () -> Unit = {},
+    onDetailsClick: (Long) -> Unit = {},
     onJoinMatchClick: () -> Unit = {},
     onWatchLiveClick: (Long) -> Unit = {},
     onAskOrganizerClick: () -> Unit = {},
@@ -72,14 +74,16 @@ fun PlayerMatchesScreen(
 ) {
     val repository = remember { PeladinhaRepository() }
     val liveMatchRepository = remember { LiveMatchRepository() }
+    val scope = rememberCoroutineScope()
 
     var peladinhas by remember { mutableStateOf<List<PeladinhaComInfo>>(emptyList()) }
     var liveMatches by remember { mutableStateOf<List<LiveMatchInfo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var mensagemErro by remember { mutableStateOf("") }
     var search by remember { mutableStateOf("") }
+    var isJoiningPeladinhaId by remember { mutableStateOf<Long?>(null) }
 
-    LaunchedEffect(Unit) {
+    suspend fun carregarPartidas() {
         isLoading = true
         mensagemErro = ""
 
@@ -106,6 +110,10 @@ fun PlayerMatchesScreen(
             }
 
         isLoading = false
+    }
+
+    LaunchedEffect(Unit) {
+        carregarPartidas()
     }
 
     val selectedSport = PlayerMatchFiltersState.selectedSport
@@ -286,7 +294,9 @@ fun PlayerMatchesScreen(
                             onWatchLiveClick = {
                                 onWatchLiveClick(liveMatch.idJogo)
                             },
-                            onDetailsClick = onDetailsClick
+                            onDetailsClick = {
+                                onWatchLiveClick(liveMatch.idJogo)
+                            }
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
@@ -313,8 +323,27 @@ fun PlayerMatchesScreen(
                     peladinhasFiltradas.forEach { item ->
                         CasualMatchCard(
                             item = item,
-                            onDetailsClick = onDetailsClick,
-                            onJoinMatchClick = onJoinMatchClick
+                            isJoining = isJoiningPeladinhaId == item.peladinha.id,
+                            onDetailsClick = {
+                                onDetailsClick(item.peladinha.id)
+                            },
+                            onJoinMatchClick = {
+                                scope.launch {
+                                    isJoiningPeladinhaId = item.peladinha.id
+                                    mensagemErro = ""
+
+                                    repository.entrarNaPeladinha(item.peladinha.id)
+                                        .onSuccess {
+                                            carregarPartidas()
+                                            onJoinMatchClick()
+                                        }
+                                        .onFailure {
+                                            mensagemErro = it.message ?: "Erro ao entrar na partida."
+                                        }
+
+                                    isJoiningPeladinhaId = null
+                                }
+                            }
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
@@ -666,6 +695,7 @@ fun LiveMatchTeamPreview(
 @Composable
 fun CasualMatchCard(
     item: PeladinhaComInfo,
+    isJoining: Boolean = false,
     onDetailsClick: () -> Unit,
     onJoinMatchClick: () -> Unit
 ) {
@@ -700,7 +730,7 @@ fun CasualMatchCard(
         else -> "JOIN MATCH"
     }
 
-    val buttonEnabled = estadoNormalizado == "aberta"
+    val buttonEnabled = estadoNormalizado == "aberta" && !isJoining
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -834,7 +864,7 @@ fun CasualMatchCard(
                     )
                 ) {
                     Text(
-                        text = buttonText,
+                        text = if (isJoining) "A ENTRAR..." else buttonText,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
