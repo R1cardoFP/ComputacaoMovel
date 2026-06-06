@@ -36,10 +36,12 @@ import com.example.trabalhocm.ui.screens.auth.LoginScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.onboarding.OnboardingFlow
 import com.example.trabalhocm.ui.screens.player.PlayerBecomeOrganizerScreen
+import com.example.trabalhocm.ui.screens.player.PlayerCasualMatchDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerCreateTeamScreen
 import com.example.trabalhocm.ui.screens.player.PlayerHomeScreen
 import com.example.trabalhocm.ui.screens.player.PlayerLiveMatchScreen
 import com.example.trabalhocm.ui.screens.player.PlayerManageTeamScreen
+import com.example.trabalhocm.ui.screens.player.PlayerMatchCalendarScreen
 import com.example.trabalhocm.ui.screens.player.PlayerMatchFiltersScreen
 import com.example.trabalhocm.ui.screens.player.PlayerMatchesScreen
 import com.example.trabalhocm.ui.screens.player.PlayerNotificationsScreen
@@ -76,8 +78,8 @@ import com.example.trabalhocm.ui.screens.admin.AdminTournamentsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTournamentDetailsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTournamentEditScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTeamsScreen
-
 import kotlinx.coroutines.launch
+import com.example.trabalhocm.ui.screens.player.PlayerCalendarMatchDetailsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,7 +104,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "player_matches"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -175,7 +177,9 @@ fun MatchLeagueApp() {
             RecoverPasswordScreen(onBackClick = { navController.popBackStack() })
         }
 
-        composable("change_password") { ChangePasswordScreen(onPasswordChanged = { navController.popBackStack() }) }
+        composable("change_password") {
+            ChangePasswordScreen(onPasswordChanged = { navController.popBackStack() })
+        }
 
         composable("user_type") {
             val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
@@ -183,34 +187,27 @@ fun MatchLeagueApp() {
             LaunchedEffect(Unit) {
                 authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
                     authRepository.obterPapeisUtilizador(utilizador.id).onSuccess { papeis ->
-
-                        // Lógica de prioridade: Admin > Organizador > Jogador
                         val destino = when {
                             papeis.contains(1) -> "admin_home"
                             papeis.contains(2) -> "home"
                             else -> "player_home"
                         }
 
-                        // Navega diretamente para o ecrã final e apaga este "loading" do histórico
                         navController.navigate(destino) {
                             popUpTo("user_type") { inclusive = true }
                         }
-
                     }.onFailure {
-                        // Se falhar a ler papéis, vai para o jogador por segurança
                         navController.navigate("player_home") {
                             popUpTo("user_type") { inclusive = true }
                         }
                     }
                 }.onFailure {
-                    // Se a sessão expirou ou deu erro, volta ao login
                     navController.navigate("login") {
                         popUpTo("user_type") { inclusive = true }
                     }
                 }
             }
 
-            // Ecrã de carregamento super simples que só aparece durante uns milissegundos
             androidx.compose.foundation.layout.Box(
                 modifier = androidx.compose.ui.Modifier
                     .fillMaxSize()
@@ -238,14 +235,18 @@ fun MatchLeagueApp() {
 
         composable("player_matches") {
             PlayerMatchesScreen(
-                onCalendarClick = {},
+                onCalendarClick = {
+                    navController.navigate("player_match_calendar")
+                },
                 onHistoryClick = {
                     navController.navigate("player_match_history")
                 },
                 onFiltersClick = {
                     navController.navigate("player_match_filters")
                 },
-                onDetailsClick = {},
+                onDetailsClick = { idPeladinha ->
+                    navController.navigate("player_casual_match_details/$idPeladinha")
+                },
                 onJoinMatchClick = {},
                 onWatchLiveClick = { idJogo ->
                     navController.navigate("player_live_match/$idJogo")
@@ -256,6 +257,97 @@ fun MatchLeagueApp() {
                 onMatchesClick = {},
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") }
+            )
+        }
+
+        composable("player_match_calendar") {
+            PlayerMatchCalendarScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onWatchLiveClick = { idJogo ->
+                    navController.navigate("player_live_match/$idJogo")
+                },
+                onDetailsClick = { idJogo ->
+                    navController.navigate("player_calendar_match_details/$idJogo")
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("player_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("player_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("player_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "player_calendar_match_details/{idJogo}",
+            arguments = listOf(navArgument("idJogo") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idJogo = backStackEntry.arguments?.getLong("idJogo") ?: 0L
+
+            PlayerCalendarMatchDetailsScreen(
+                idJogo = idJogo,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onWatchLiveClick = { jogoId ->
+                    navController.navigate("player_live_match/$jogoId")
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("player_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("player_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("player_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "player_casual_match_details/{idPeladinha}",
+            arguments = listOf(navArgument("idPeladinha") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idPeladinha = backStackEntry.arguments?.getLong("idPeladinha") ?: 0L
+
+            PlayerCasualMatchDetailsScreen(
+                idPeladinha = idPeladinha,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onJoinSuccess = {},
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("player_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("player_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("player_profile")
+                }
             )
         }
 
@@ -270,7 +362,9 @@ fun MatchLeagueApp() {
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onCalendarClick = {},
+                onCalendarClick = {
+                    navController.navigate("player_match_calendar")
+                },
                 onHistoryClick = {
                     navController.navigate("player_match_history")
                 },
@@ -694,7 +788,6 @@ fun MatchLeagueApp() {
             )
         }
 
-        // 1. Torneios
         composable("torneios") {
             com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentsScreen(
                 onHistoryClick = { navController.navigate("organizador_tournament_history") },
@@ -703,9 +796,7 @@ fun MatchLeagueApp() {
                 onDetailsClick = { navController.navigate("organizador_tournament_details") },
                 onInviteTeamsClick = { navController.navigate("invite_teams") },
                 onManageRegistrationClick = { navController.navigate("manage_registration") },
-
                 onEditClick = { navController.navigate("edit_tournament") },
-
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
@@ -737,7 +828,6 @@ fun MatchLeagueApp() {
             )
         }
 
-        // 2. Detalhes do torneio
         composable("organizador_tournament_details") {
             com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentDetailsScreen(
                 onBackClick = { navController.popBackStack() },
@@ -1107,7 +1197,9 @@ fun MatchLeagueApp() {
                 onBackClick = { navController.popBackStack() },
                 onNotificationsClick = { navController.navigate("admin_notifications") },
                 onArchiveClick = { navController.navigate("admin_tournament_archive") },
-                onTournamentDetailsClick = {tournamentId -> navController.navigate("admin_tournament_details/$tournamentId")},
+                onTournamentDetailsClick = { tournamentId ->
+                    navController.navigate("admin_tournament_details/$tournamentId")
+                },
                 onManageRegistrationClick = {},
                 onHomeClick = { navController.navigate("admin_home") },
                 onTournamentsClick = {},
