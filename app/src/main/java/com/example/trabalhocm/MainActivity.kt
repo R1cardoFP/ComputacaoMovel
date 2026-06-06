@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +57,6 @@ import com.example.trabalhocm.ui.screens.auth.RegisterScreen
 import com.example.trabalhocm.ui.screens.auth.VerifyAccountScreen
 import com.example.trabalhocm.ui.screens.onboarding.SplashScreen
 import com.example.trabalhocm.ui.screens.TorneiosScreen
-import com.example.trabalhocm.ui.screens.auth.UserTypeScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
 import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
@@ -175,11 +176,49 @@ fun MatchLeagueApp() {
         composable("change_password") { ChangePasswordScreen(onPasswordChanged = { navController.popBackStack() }) }
 
         composable("user_type") {
-            UserTypeScreen(
-                onAdminClick = { navController.navigate("admin_home") },
-                onOrganizerClick = { navController.navigate("home") },
-                onPlayerClick = { navController.navigate("player_home") }
-            )
+            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+
+            LaunchedEffect(Unit) {
+                authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+                    authRepository.obterPapeisUtilizador(utilizador.id).onSuccess { papeis ->
+
+                        // Lógica de prioridade: Admin > Organizador > Jogador
+                        val destino = when {
+                            papeis.contains(1) -> "admin_home"
+                            papeis.contains(2) -> "home"
+                            else -> "player_home"
+                        }
+
+                        // Navega diretamente para o ecrã final e apaga este "loading" do histórico
+                        navController.navigate(destino) {
+                            popUpTo("user_type") { inclusive = true }
+                        }
+
+                    }.onFailure {
+                        // Se falhar a ler papéis, vai para o jogador por segurança
+                        navController.navigate("player_home") {
+                            popUpTo("user_type") { inclusive = true }
+                        }
+                    }
+                }.onFailure {
+                    // Se a sessão expirou ou deu erro, volta ao login
+                    navController.navigate("login") {
+                        popUpTo("user_type") { inclusive = true }
+                    }
+                }
+            }
+
+            // Ecrã de carregamento super simples que só aparece durante uns milissegundos
+            androidx.compose.foundation.layout.Box(
+                modifier = androidx.compose.ui.Modifier
+                    .fillMaxSize()
+                    .background(androidx.compose.ui.graphics.Color(0xFFF4F5FA)),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    color = androidx.compose.ui.graphics.Color(0xFF008D7D)
+                )
+            }
         }
 
         // ==========================================
@@ -300,7 +339,7 @@ fun MatchLeagueApp() {
             var bioUtilizador by remember { mutableStateOf("") }
             var photoUri by remember { mutableStateOf<Uri?>(null) }
             var userId by remember { mutableStateOf("") }
-            var rolesUtilizador by remember { mutableStateOf(listOf("A carregar...")) } // <-- NOVA VARIÁVEL PARA AS LABELS
+            var rolesUtilizador by remember { mutableStateOf(listOf("A carregar...")) }
 
             val sharedPrefs = remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
 
@@ -311,7 +350,6 @@ fun MatchLeagueApp() {
                     emailUtilizador = utilizador.email
                     userId = utilizador.id
 
-                    // Carrega a Foto
                     if (!utilizador.fotoUrl.isNullOrEmpty()) {
                         val urlAtualizada = "${utilizador.fotoUrl}?v=${System.currentTimeMillis()}"
                         photoUri = urlAtualizada.toUri()
@@ -337,16 +375,13 @@ fun MatchLeagueApp() {
                         }
                     }
 
-                    // --- VAI BUSCAR OS PAPÉIS DO UTILIZADOR ---
                     authRepository.obterPapeisUtilizador(utilizador.id).onSuccess { papeis ->
                         val tags = mutableListOf<String>()
 
-                        // Adiciona as etiquetas de forma dinâmica baseada nos IDs da tabela!
                         if (papeis.contains(1)) tags.add("ADMIN")
                         if (papeis.contains(2)) tags.add("ORGANIZADOR")
                         if (papeis.contains(3)) tags.add("PLAYER")
 
-                        // Fallback se não tiver nada (para nunca ficar vazio)
                         if (tags.isEmpty()) tags.add("PLAYER")
 
                         rolesUtilizador = tags
@@ -367,7 +402,7 @@ fun MatchLeagueApp() {
                 initialEmail = emailUtilizador,
                 initialBio = bioUtilizador,
                 initialPhotoUri = photoUri,
-                roles = rolesUtilizador, // <-- PASSA A LISTA AQUI!
+                roles = rolesUtilizador,
                 onLogoutClick = {
                     scope.launch {
                         authRepository.logout()
