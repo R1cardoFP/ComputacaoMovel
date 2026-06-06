@@ -482,24 +482,40 @@ private fun StatusBadgeDetails(status: String) {
     val normalized = status.lowercase()
 
     val background = when {
-        normalized.contains("open") -> Color(0xFFEAF8F5)
-        normalized.contains("live") -> Color(0xFFFEE2E2)
-        normalized.contains("completed") || normalized.contains("archived") -> Color(0xFFEAF2F5)
+        normalized.contains("aberto") || normalized.contains("open") -> Color(0xFFEAF8F5)
+        normalized.contains("decorrer") || normalized.contains("live") -> Color(0xFFFEE2E2)
+        normalized.contains("terminado") || normalized.contains("archived") -> Color(0xFFEAF2F5)
+        normalized.contains("cancelado") -> Color(0xFFFEE2E2)
         else -> Color(0xFFEAF8F5)
     }
 
     val textColor = when {
-        normalized.contains("live") -> Color(0xFFDC2626)
-        normalized.contains("completed") || normalized.contains("archived") -> TextGray
+        normalized.contains("aberto") || normalized.contains("open") -> BrandGreen
+        normalized.contains("decorrer") || normalized.contains("live") -> Color(0xFFDC2626)
+        normalized.contains("terminado") || normalized.contains("archived") -> TextGray
+        normalized.contains("cancelado") -> Color(0xFFDC2626)
         else -> BrandGreen
     }
 
     val text = when {
-        normalized.contains("live") -> "LIVE"
-        normalized.contains("open") -> "OPEN"
-        normalized.contains("completed") -> "COMPLETED"
-        normalized.contains("archived") -> "COMPLETED"
-        else -> "IN PROGRESS"
+        normalized.contains("aberto") ||
+                normalized.contains("open") -> "OPEN"
+
+        normalized.contains("decorrer") ||
+                normalized.contains("live") ||
+                normalized.contains("progress") -> "IN PROGRESS"
+
+        normalized.contains("terminado") ||
+                normalized.contains("completed") ||
+                normalized.contains("archived") -> "COMPLETED"
+
+        normalized.contains("cancelado") ||
+                normalized.contains("cancel") -> "CANCELLED"
+
+        normalized.contains("rascunho") ||
+                normalized.contains("draft") -> "DRAFT"
+
+        else -> status.uppercase()
     }
 
     SmallBadgeDetails(
