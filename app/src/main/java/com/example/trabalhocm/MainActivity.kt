@@ -74,6 +74,8 @@ import com.example.trabalhocm.ui.screens.player.PlayerMatchHistoryScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTournamentArchiveScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTournamentsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTournamentDetailsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentEditScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTeamsScreen
 
 import kotlinx.coroutines.launch
 
@@ -990,13 +992,13 @@ fun MatchLeagueApp() {
                 onManageUsersClick = {
                     navController.navigate("admin_users")
                 },
-                onManageTeamsClick = {},
+                onManageTeamsClick = { navController.navigate("admin_teams") },
                 onManageTournamentsClick = { navController.navigate("admin_tournaments") },
                 onReviewRequestsClick = { navController.navigate("admin_organizer_requests") },
                 onHomeClick = {},
                 onTournamentsClick = { navController.navigate("admin_tournaments") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
-                onTeamsClick = {},
+                onTeamsClick = { navController.navigate("admin_teams") },
                 onProfileClick = { navController.navigate("admin_profile") }
             )
         }
@@ -1159,10 +1161,91 @@ fun MatchLeagueApp() {
                     // ligar ao ecrã de inscrições
                 },
                 onEditTournamentClick = { id ->
-                    // ligar ao ecrã de edição
+                    navController.navigate("admin_tournament_edit/$id")
                 },
                 onDeleteTournamentClick = { id ->
                     // reaproveitar a lógica de apagar
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "admin_tournament_edit/{tournamentId}",
+            arguments = listOf(
+                navArgument("tournamentId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val tournamentId = backStackEntry.arguments?.getString("tournamentId") ?: ""
+
+            AdminTournamentEditScreen(
+                tournamentId = tournamentId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onSaveSuccess = {
+                    navController.navigate("admin_tournament_details/$tournamentId") {
+                        popUpTo("admin_tournament_edit/$tournamentId") {
+                            inclusive = true
+                        }
+                    }
+                },
+                onCancelSuccess = {
+                    navController.navigate("admin_tournaments") {
+                        popUpTo("admin_tournaments") {
+                            inclusive = false
+                        }
+                    }
+                },
+                onDiscardChangesClick = {
+                    navController.navigate("admin_tournament_details/$tournamentId") {
+                        popUpTo("admin_tournament_edit/$tournamentId") {
+                            inclusive = true
+                        }
+                    }
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {},
+                onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable("admin_teams") {
+            AdminTeamsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onViewDetailsClick = { teamId ->
+                    // ligar ao ecrã de detalhes da equipa
+                },
+                onManageTeamClick = { teamId ->
+                    // ligar ao ecrã de gestão da equipa
                 },
                 onHomeClick = {
                     navController.navigate("admin_home")
