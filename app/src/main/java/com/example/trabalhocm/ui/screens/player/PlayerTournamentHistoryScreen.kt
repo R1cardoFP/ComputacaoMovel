@@ -20,8 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.AuthRepository
+import com.example.trabalhocm.data.repository.Torneio
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
@@ -43,6 +52,25 @@ fun PlayerTournamentHistoryScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    // --- ESTADOS PARA A BASE DE DADOS ---
+    val authRepository = remember { AuthRepository() }
+    var historico by remember { mutableStateOf<List<Torneio>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    // Vai buscar o histórico à BD assim que a página abre
+    LaunchedEffect(Unit) {
+        authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+            authRepository.obterHistoricoTorneios(utilizador.id).onSuccess { lista ->
+                historico = lista
+                isLoading = false
+            }.onFailure {
+                isLoading = false
+            }
+        }.onFailure {
+            isLoading = false
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -90,61 +118,55 @@ fun PlayerTournamentHistoryScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            TournamentHistoryCard(
-                accentColor = BrandGreen,
-                chips = listOf(
-                    HistoryChip("COMPLETED", BrandGreen),
-                    HistoryChip("CHAMPION", Color(0xFF0757C8))
-                ),
-                title = "Premier Summer Cup 2026",
-                subtitle = "Football · League System · Season 25/26",
-                role = "Organizer",
-                finalPosition = "1st",
-                played = "14",
-                goalsLabel = "GOALS",
-                goals = "28",
-                footer = "Champion: FC Mancos · Prize €125 000"
-            )
+            // --- LÓGICA DINÂMICA PARA DESENHAR O HISTÓRICO ---
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = BrandGreen)
+                }
+            } else if (historico.isEmpty()) {
+                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    Text("Ainda não participaste em nenhum torneio.", color = Color.Gray)
+                }
+            } else {
+                historico.forEach { torneio ->
 
-            Spacer(modifier = Modifier.height(14.dp))
+                    val modalidadeNome = when (torneio.idModalidade) {
+                        1 -> "Football"
+                        2 -> "Basketball"
+                        3 -> "Volleyball"
+                        else -> "Sport"
+                    }
 
-            TournamentHistoryCard(
-                accentColor = Color(0xFF0757C8),
-                chips = listOf(
-                    HistoryChip("ARCHIVED", Color(0xFF7D8497)),
-                    HistoryChip("RUNNER-UP", Color(0xFF0757C8))
-                ),
-                title = "Liga Regional Sul 2025",
-                subtitle = "Basketball · Knockout · Season 24/25",
-                role = "Player",
-                finalPosition = "2nd",
-                played = "9",
-                goalsLabel = "PTS/GAME",
-                goals = "14.2",
-                footer = null
-            )
+                    // A cor de destaque pode mudar consoante o estado do torneio
+                    val isConcluido = torneio.estado?.lowercase() == "concluido" || torneio.estado?.lowercase() == "arquivado"
+                    val corDestaque = if (isConcluido) Color(0xFF7D8497) else BrandGreen
+                    val etiquetaEstado = if (isConcluido) "COMPLETED" else (torneio.estado?.uppercase() ?: "ACTIVE")
 
-            Spacer(modifier = Modifier.height(14.dp))
+                    TournamentHistoryCard(
+                        accentColor = corDestaque,
+                        chips = listOf(
+                            HistoryChip(etiquetaEstado, corDestaque)
+                        ),
+                        title = torneio.nome,
+                        subtitle = "$modalidadeNome · ${torneio.formato?.replaceFirstChar { it.uppercase() } ?: "League"} · ${torneio.dataInicio ?: "TBD"}",
+                        role = "Player",
+                        finalPosition = "TBD", // Requer lógica extra no futuro se tiveres classificações reais
+                        played = "-",
+                        goalsLabel = "POINTS",
+                        goals = "-",
+                        footer = if (torneio.premio != null && torneio.premio > 0.0) "Prize Pool: €${torneio.premio}" else null
+                    )
 
-            TournamentHistoryCard(
-                accentColor = Color(0xFFB7BDC9),
-                chips = listOf(
-                    HistoryChip("ARCHIVED", Color(0xFF7D8497))
-                ),
-                title = "Copa Inverno 2024",
-                subtitle = "Football · Group + Knockout · Season 23/24",
-                role = "Player",
-                finalPosition = "QF",
-                played = "5",
-                goalsLabel = "GOALS",
-                goals = "3",
-                footer = null
-            )
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        TournamentHistoryBottomBar(
+        // --- BARRA OFICIAL APLICADA AQUI ---
+        MatchLeagueBottomBar(
+            selectedTab = "TOURNAMENTS",
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,
             onMatchesClick = onMatchesClick,
@@ -355,62 +377,6 @@ fun HistoryStat(
             text = value,
             color = valueColor,
             fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-fun TournamentHistoryBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        TournamentHistoryBottomItem("⌂", "HOME", false, onHomeClick)
-        TournamentHistoryBottomItem("♕", "TOURNAMENTS", true, onTournamentsClick)
-        TournamentHistoryBottomItem("◎", "MATCHES", false, onMatchesClick)
-        TournamentHistoryBottomItem("♟", "TEAMS", false, onTeamsClick)
-        TournamentHistoryBottomItem("♙", "PROFILE", false, onProfileClick)
-    }
-}
-
-@Composable
-fun TournamentHistoryBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0757C8) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
             fontWeight = FontWeight.Bold
         )
     }
