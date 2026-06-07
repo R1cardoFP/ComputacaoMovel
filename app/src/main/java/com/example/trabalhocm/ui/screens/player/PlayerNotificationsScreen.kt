@@ -1,7 +1,6 @@
 package com.example.trabalhocm.ui.screens.player
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,9 +23,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,10 +40,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.AuthRepository
+import com.example.trabalhocm.data.repository.Notificacao
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import java.time.Duration
+import java.time.OffsetDateTime
 
 @Composable
 fun PlayerNotificationsScreen(
@@ -55,6 +60,24 @@ fun PlayerNotificationsScreen(
 ) {
     var selectedTab by remember { mutableStateOf("ALL") }
 
+    // Estados para carregar as notificações da BD
+    val authRepository = remember { AuthRepository() }
+    var notificacoes by remember { mutableStateOf<List<Notificacao>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+            authRepository.obterNotificacoes(utilizador.id).onSuccess { lista ->
+                notificacoes = lista
+                isLoading = false
+            }.onFailure {
+                isLoading = false
+            }
+        }.onFailure {
+            isLoading = false
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -62,9 +85,7 @@ fun PlayerNotificationsScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        NotificationsTopBar(
-            onBackClick = onBackClick
-        )
+        NotificationsTopBar(onBackClick = onBackClick)
 
         Column(
             modifier = Modifier
@@ -99,10 +120,34 @@ fun PlayerNotificationsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            when (selectedTab) {
-                "ALL" -> AllNotificationsContent()
-                "MATCHES" -> MatchesNotificationsContent()
-                "SYSTEM" -> SystemNotificationsContent()
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = BrandGreen)
+                }
+            } else if (notificacoes.isEmpty()) {
+                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    Text("Sem notificações de momento.", color = Color.Gray)
+                }
+            } else {
+                // Filtra as notificações com base na aba escolhida
+                val listaFiltrada = notificacoes.filter { notif ->
+                    when (selectedTab) {
+                        "MATCHES" -> notif.tipo.uppercase() == "MATCH" || notif.tipo.uppercase() == "RESULT"
+                        "SYSTEM" -> notif.tipo.uppercase() == "SYSTEM"
+                        else -> true // "ALL" mostra tudo
+                    }
+                }
+
+                if (listaFiltrada.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                        Text("Sem notificações para esta categoria.", color = Color.Gray)
+                    }
+                } else {
+                    listaFiltrada.forEach { notif ->
+                        DesenharNotificacao(notificacao = notif)
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -111,13 +156,94 @@ fun PlayerNotificationsScreen(
         }
 
         MatchLeagueBottomBar(
-            selectedTab = "PROFILE",
+            selectedTab = "PROFILE", // O sino das notificações costuma estar no perfil ou nav superior
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,
             onMatchesClick = onMatchesClick,
             onTeamsClick = onTeamsClick,
             onProfileClick = onProfileClick
         )
+    }
+}
+
+// --- FUNÇÃO INTELIGENTE QUE DECIDE QUAL CARTÃO DESENHAR ---
+@Composable
+fun DesenharNotificacao(notificacao: Notificacao) {
+    val tempoCalculado = calcularTempoAtras(notificacao.data)
+    val tipo = notificacao.tipo.uppercase()
+
+    when (tipo) {
+        "TEAM_INVITE" -> {
+            TeamInvitationNotificationCard(
+                title = notificacao.titulo,
+                description = notificacao.mensagem,
+                time = tempoCalculado
+            )
+        }
+        "MATCH" -> {
+            NotificationCard(
+                icon = "⏱",
+                iconColor = Color(0xFF2949FF),
+                title = notificacao.titulo,
+                time = tempoCalculado,
+                description = notificacao.mensagem,
+                highlighted = !notificacao.lida,
+                unread = !notificacao.lida
+            )
+        }
+        "SYSTEM" -> {
+            NotificationCard(
+                icon = "☁",
+                iconColor = Color(0xFF7D8497),
+                title = notificacao.titulo,
+                time = tempoCalculado,
+                description = notificacao.mensagem,
+                highlighted = !notificacao.lida,
+                unread = !notificacao.lida
+            )
+        }
+        "RESULT" -> {
+            NotificationCard(
+                icon = "◎",
+                iconColor = Color(0xFF7D8497),
+                title = notificacao.titulo,
+                time = tempoCalculado,
+                description = notificacao.mensagem,
+                highlighted = !notificacao.lida,
+                unread = !notificacao.lida
+            )
+        }
+        else -> {
+            // Cartão Genérico de fallback
+            NotificationCard(
+                icon = "🔔",
+                iconColor = BrandGreen,
+                title = notificacao.titulo,
+                time = tempoCalculado,
+                description = notificacao.mensagem,
+                highlighted = !notificacao.lida,
+                unread = !notificacao.lida
+            )
+        }
+    }
+}
+
+// --- FUNÇÃO PARA CALCULAR "X MIN AGO" ---
+fun calcularTempoAtras(dataCriacao: String): String {
+    return try {
+        val dataPassada = OffsetDateTime.parse(dataCriacao)
+        val agora = OffsetDateTime.now()
+        val minutos = Duration.between(dataPassada, agora).toMinutes()
+
+        when {
+            minutos < 1 -> "JUST NOW"
+            minutos < 60 -> "${minutos}M AGO"
+            minutos < 1440 -> "${minutos / 60}H AGO" // Menos de 24h
+            minutos < 2880 -> "YESTERDAY" // Entre 24h e 48h
+            else -> "${minutos / 1440}D AGO" // Mais de 2 dias
+        }
+    } catch (e: Exception) {
+        "RECENTLY"
     }
 }
 
@@ -227,85 +353,6 @@ fun NotificationTabButton(
 }
 
 @Composable
-fun AllNotificationsContent() {
-    NotificationCard(
-        icon = "⏱",
-        iconColor = Color(0xFF2949FF),
-        title = "Match Reminder",
-        time = "2M AGO",
-        description = "Match vs Iron Eagles starts\nin 1 hour.",
-        highlighted = true,
-        unread = true
-    )
-
-    Spacer(modifier = Modifier.height(14.dp))
-
-    TeamInvitationNotificationCard()
-
-    Spacer(modifier = Modifier.height(14.dp))
-
-    NotificationCard(
-        icon = "◎",
-        iconColor = Color(0xFF7D8497),
-        title = "Result Update",
-        time = "2H AGO",
-        description = "Final Score: Match #42 - Team\nA wins 2-1.",
-        highlighted = false,
-        unread = false
-    )
-
-    Spacer(modifier = Modifier.height(14.dp))
-
-    NotificationCard(
-        icon = "☁",
-        iconColor = Color(0xFF7D8497),
-        title = "System",
-        time = "YESTERDAY",
-        description = "Offline data synced successfully.",
-        highlighted = false,
-        unread = false
-    )
-}
-
-@Composable
-fun MatchesNotificationsContent() {
-    NotificationCard(
-        icon = "⏱",
-        iconColor = Color(0xFF2949FF),
-        title = "Match Reminder",
-        time = "2M AGO",
-        description = "Match vs Iron Eagles starts\nin 1 hour.",
-        highlighted = true,
-        unread = true
-    )
-
-    Spacer(modifier = Modifier.height(14.dp))
-
-    NotificationCard(
-        icon = "◎",
-        iconColor = Color(0xFF7D8497),
-        title = "Result Update",
-        time = "2H AGO",
-        description = "Final Score: Match #42 - Team\nA wins 2-1.",
-        highlighted = false,
-        unread = false
-    )
-}
-
-@Composable
-fun SystemNotificationsContent() {
-    NotificationCard(
-        icon = "☁",
-        iconColor = Color(0xFF7D8497),
-        title = "System",
-        time = "YESTERDAY",
-        description = "Offline data synced successfully.",
-        highlighted = false,
-        unread = false
-    )
-}
-
-@Composable
 fun NotificationCard(
     icon: String,
     iconColor: Color,
@@ -405,7 +452,11 @@ fun NotificationCard(
 }
 
 @Composable
-fun TeamInvitationNotificationCard() {
+fun TeamInvitationNotificationCard(
+    title: String,
+    description: String,
+    time: String
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(5.dp),
@@ -442,7 +493,7 @@ fun TeamInvitationNotificationCard() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Team Invitation",
+                        text = title,
                         color = BrandBlue,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
@@ -450,7 +501,7 @@ fun TeamInvitationNotificationCard() {
                     )
 
                     Text(
-                        text = "15M AGO",
+                        text = time,
                         color = Color(0xFF8D94A3),
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold
@@ -460,7 +511,7 @@ fun TeamInvitationNotificationCard() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "You have been invited to join\nSC BRAGA.",
+                    text = description,
                     color = Color(0xFF6D7486),
                     fontSize = 13.sp,
                     lineHeight = 19.sp,

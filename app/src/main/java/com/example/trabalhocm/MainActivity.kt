@@ -104,7 +104,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "player_matches"
+        startDestination = "splash"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -437,6 +437,8 @@ fun MatchLeagueApp() {
             var userId by remember { mutableStateOf("") }
             var rolesUtilizador by remember { mutableStateOf(listOf("A carregar...")) }
 
+            var anoMembro by remember { mutableStateOf("...") }
+
             val sharedPrefs = remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
 
             LaunchedEffect(Unit) {
@@ -445,6 +447,13 @@ fun MatchLeagueApp() {
                     nomeUtilizador = utilizador.nome
                     emailUtilizador = utilizador.email
                     userId = utilizador.id
+
+                    val dataCriacaoBD = utilizador.dataCriacao
+                    if (!dataCriacaoBD.isNullOrEmpty() && dataCriacaoBD.length >= 4) {
+                        anoMembro = dataCriacaoBD.substring(0, 4)
+                    } else {
+                        anoMembro = "2026"
+                    }
 
                     if (!utilizador.fotoUrl.isNullOrEmpty()) {
                         val urlAtualizada = "${utilizador.fotoUrl}?v=${System.currentTimeMillis()}"
@@ -499,6 +508,7 @@ fun MatchLeagueApp() {
                 initialBio = bioUtilizador,
                 initialPhotoUri = photoUri,
                 roles = rolesUtilizador,
+                memberSinceYear = anoMembro,
                 onLogoutClick = {
                     scope.launch {
                         authRepository.logout()
@@ -537,7 +547,8 @@ fun MatchLeagueApp() {
                 onTournamentsClick = { navController.navigate("player_tournaments") },
                 onMatchesClick = { navController.navigate("player_matches") },
                 onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = {}
+                onProfileClick = {},
+                onNotificationsClick = { navController.navigate("player_notifications") }
             )
         }
 
@@ -605,11 +616,10 @@ fun MatchLeagueApp() {
                 volleyballSpikes = volPontuacao,
                 volleyballWinRate = volWinRate,
 
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onNotificationsClick = { navController.navigate("player_notifications") }
             )
         }
-
-        composable("player_profile_settings") { navController.popBackStack() }
 
         composable("player_notifications") {
             PlayerNotificationsScreen(
@@ -629,11 +639,32 @@ fun MatchLeagueApp() {
                 onMatchesClick = { navController.navigate("player_matches") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") },
-                onDetailsClick = { navController.navigate("player_tournament_details") },
+                onDetailsClick = { idTorneio ->
+                    // --- MUDANÇA AQUI: Agora envia o ID ---
+                    navController.navigate("player_tournament_details/$idTorneio")
+                },
                 onRegisterClick = { navController.navigate("player_tournament_registration") },
                 onAskOrganizerClick = { navController.navigate("player_become_organizer") },
                 onHistoryClick = { navController.navigate("player_tournament_history") },
                 onFiltersClick = { navController.navigate("player_tournament_filters") }
+            )
+        }
+
+        // --- MUDANÇA AQUI: A Rota agora espera receber um ID ---
+        composable(
+            route = "player_tournament_details/{idTorneio}",
+            arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idTorneio = backStackEntry.arguments?.getLong("idTorneio") ?: 0L
+
+            PlayerTournamentDetailsScreen(
+                idTorneio = idTorneio,
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("player_home") },
+                onTournamentsClick = { navController.navigate("player_tournaments") },
+                onMatchesClick = { navController.navigate("player_matches") },
+                onTeamsClick = { navController.navigate("player_teams") },
+                onProfileClick = { navController.navigate("player_profile") }
             )
         }
 
