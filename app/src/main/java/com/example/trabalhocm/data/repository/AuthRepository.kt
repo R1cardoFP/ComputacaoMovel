@@ -74,7 +74,8 @@ class AuthRepository {
         password: String
     ): Result<Utilizador> {
         return runCatching {
-            client.auth.signUpWith(Email) {
+            // 1. Guardamos a resposta do Supabase numa variável em vez de chamar só por chamar
+            val authResponse = client.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
 
@@ -82,6 +83,13 @@ class AuthRepository {
                     put("nome", nome)
                     put("username", username)
                 }
+            }
+
+            // 2. VERIFICAÇÃO ANTI "FAKE SUCCESS" DO SUPABASE
+            // Se o Supabase devolver a lista 'identities' vazia num registo,
+            // significa que o email já existe, mas ele está a esconder o erro por segurança.
+            if (authResponse?.identities?.isEmpty() == true) {
+                throw Exception("already registered")
             }
 
             // ATENÇÃO: Como agora ativaste a confirmação por email (OTP),
