@@ -305,6 +305,51 @@ class AuthRepository {
                 .decodeSingle<Torneio>()
         }
     }
+
+    suspend fun obterHistoricoTorneios(userId: String): Result<List<Torneio>> {
+        return runCatching {
+            val equipas = client.from("membro_equipa")
+                .select {
+                    filter {
+                        eq("id_utilizador", userId)
+                        eq("estado_convite", "aceite")
+                    }
+                }
+                .decodeList<MembroEquipa>()
+
+            val idsEquipas = equipas.map { it.idEquipa }
+            val idsTorneios = mutableSetOf<Long>()
+
+            if (idsEquipas.isNotEmpty()) {
+                val inscricoes = client.from("inscricao")
+                    .select {
+                        filter { isIn("id_equipa", idsEquipas) }
+                    }
+                    .decodeList<InscricaoEquipa>()
+                idsTorneios.addAll(inscricoes.map { it.idTorneio })
+            }
+
+            val torneiosOrganizados = client.from("torneio")
+                .select {
+                    filter { eq("id_organizador", userId) }
+                }
+                .decodeList<Torneio>()
+
+            idsTorneios.addAll(torneiosOrganizados.map { it.id })
+
+            if (idsTorneios.isEmpty()) {
+                return@runCatching emptyList()
+            }
+
+            client.from("torneio")
+                .select {
+                    // --- CORREÇÃO AQUI: isIn em vez de inAny ---
+                    filter { isIn("id", idsTorneios.toList()) }
+                }
+                .decodeList<Torneio>()
+                .sortedByDescending { it.dataInicio ?: "" }
+        }
+    }
 }
 
 // CLASSES AUXILIARES PARA ENVIAR DADOS PARA A BASE DE DADOS
@@ -330,6 +375,17 @@ private data class AtualizarFotoRequest(
 private data class UtilizadorPapel(
     @SerialName("id_utilizador") val idUtilizador: String,
     @SerialName("id_papel") val idPapel: Int
+)
+
+@Serializable
+private data class MembroEquipa(
+    @SerialName("id_equipa") val idEquipa: Long,
+    @SerialName("estado_convite") val estadoConvite: String? = null
+)
+
+@Serializable
+private data class InscricaoEquipa(
+    @SerialName("id_torneio") val idTorneio: Long
 )
 
 @Serializable
