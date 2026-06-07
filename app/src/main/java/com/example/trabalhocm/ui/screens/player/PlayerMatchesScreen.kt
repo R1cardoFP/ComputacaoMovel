@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,20 +45,26 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.LiveMatchInfo
+import com.example.trabalhocm.data.repository.LiveMatchRepository
 import com.example.trabalhocm.data.repository.PeladinhaComInfo
 import com.example.trabalhocm.data.repository.PeladinhaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun PlayerMatchesScreen(
     onCalendarClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     onFiltersClick: () -> Unit = {},
-    onDetailsClick: () -> Unit = {},
+    onDetailsClick: (Long) -> Unit = {},
     onJoinMatchClick: () -> Unit = {},
+    onWatchLiveClick: (Long) -> Unit = {},
     onAskOrganizerClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -66,19 +73,23 @@ fun PlayerMatchesScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val repository = remember { PeladinhaRepository() }
+    val liveMatchRepository = remember { LiveMatchRepository() }
+    val scope = rememberCoroutineScope()
 
     var peladinhas by remember { mutableStateOf<List<PeladinhaComInfo>>(emptyList()) }
+    var liveMatches by remember { mutableStateOf<List<LiveMatchInfo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var mensagemErro by remember { mutableStateOf("") }
     var search by remember { mutableStateOf("") }
+    var isJoiningPeladinhaId by remember { mutableStateOf<Long?>(null) }
 
-    LaunchedEffect(Unit) {
+    suspend fun carregarPartidas() {
         isLoading = true
         mensagemErro = ""
 
-        val resultado = repository.listarPeladinhasComInfo()
+        val resultadoPeladinhas = repository.listarPeladinhasComInfo()
 
-        resultado
+        resultadoPeladinhas
             .onSuccess {
                 peladinhas = it
             }
@@ -86,12 +97,105 @@ fun PlayerMatchesScreen(
                 mensagemErro = it.message ?: "Erro ao carregar partidas casuais."
             }
 
+        val resultadoLive = liveMatchRepository.listarJogosEmDireto()
+
+        resultadoLive
+            .onSuccess {
+                liveMatches = it
+            }
+            .onFailure {
+                if (mensagemErro.isBlank()) {
+                    mensagemErro = it.message ?: "Erro ao carregar jogos em direto."
+                }
+            }
+
         isLoading = false
     }
 
+    LaunchedEffect(Unit) {
+        carregarPartidas()
+    }
+
+    val selectedSport = PlayerMatchFiltersState.selectedSport
+    val selectedStatus = PlayerMatchFiltersState.selectedStatus
+    val selectedRegion = PlayerMatchFiltersState.selectedRegion
+    val cityOrRegion = PlayerMatchFiltersState.cityOrRegion
+    val fromDate = PlayerMatchFiltersState.fromDate
+    val toDate = PlayerMatchFiltersState.toDate
+    val priceStart = PlayerMatchFiltersState.priceStart
+    val priceEnd = PlayerMatchFiltersState.priceEnd
+
+    val liveMatchesFiltrados = liveMatches.filter { match ->
+        val texto =
+            "${match.equipaCasa} ${match.equipaFora} ${match.local} ${match.torneioNome} Live Football"
+
+        val pesquisaOk =
+            search.isBlank() || texto.contains(search, ignoreCase = true)
+
+        val modalidadeOk =
+            selectedSport.isNullOrBlank() ||
+                    selectedSport.equals("Football", ignoreCase = true)
+
+        val estadoOk =
+            selectedStatus.isNullOrBlank() ||
+                    selectedStatus.equals("Live", ignoreCase = true)
+
+        val localNormalizado = match.local.lowercase()
+
+        val regiaoOk =
+            selectedRegion.isNullOrBlank() ||
+                    localNormalizado.contains(selectedRegion.lowercase())
+
+        val pesquisaRegiaoOk =
+            cityOrRegion.isBlank() ||
+                    localNormalizado.contains(cityOrRegion.lowercase())
+
+        val precoOk =
+            0.0 >= priceStart.toDouble() && 0.0 <= priceEnd.toDouble()
+
+        pesquisaOk && modalidadeOk && estadoOk && regiaoOk && pesquisaRegiaoOk && precoOk
+    }
+
     val peladinhasFiltradas = peladinhas.filter { item ->
-        val texto = "${item.peladinha.descricao} ${item.peladinha.local} ${item.modalidadeNome} ${item.peladinha.estado}"
-        search.isBlank() || texto.contains(search, ignoreCase = true)
+        val texto =
+            "${item.peladinha.descricao} ${item.peladinha.local} ${item.modalidadeNome} ${item.peladinha.estado}"
+
+        val pesquisaOk =
+            search.isBlank() || texto.contains(search, ignoreCase = true)
+
+        val modalidadeOk =
+            selectedSport.isNullOrBlank() ||
+                    playerMatchesCorrespondeModalidade(
+                        filtro = selectedSport,
+                        modalidade = item.modalidadeNome
+                    )
+
+        val estadoOk =
+            selectedStatus.isNullOrBlank() ||
+                    playerMatchesCorrespondeEstado(
+                        filtro = selectedStatus,
+                        estado = item.peladinha.estado
+                    )
+
+        val regiaoOk =
+            playerMatchesCorrespondeRegiao(
+                selectedRegion = selectedRegion,
+                cityOrRegion = cityOrRegion,
+                local = item.peladinha.local
+            )
+
+        val preco = item.peladinha.preco ?: 0.0
+        val precoOk =
+            preco >= priceStart.toDouble() && preco <= priceEnd.toDouble()
+
+        val dataOk =
+            playerMatchesCorrespondeData(
+                data = item.peladinha.data,
+                fromDate = fromDate,
+                toDate = toDate
+            )
+
+        pesquisaOk && modalidadeOk && estadoOk && regiaoOk && precoOk && dataOk
     }
 
     Column(
@@ -149,6 +253,8 @@ fun PlayerMatchesScreen(
 
             MatchesSearchAndFiltersCard(
                 search = search,
+                selectedStatus = selectedStatus,
+                selectedRegion = selectedRegion,
                 onSearchChange = { search = it },
                 onFiltersClick = onFiltersClick
             )
@@ -180,29 +286,68 @@ fun PlayerMatchesScreen(
                         modifier = Modifier.padding(18.dp)
                     )
                 }
-            } else if (peladinhasFiltradas.isEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = BrandWhite),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Text(
-                        text = "Ainda não existem partidas casuais disponíveis.",
-                        color = BrandBlue,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(18.dp)
-                    )
-                }
             } else {
-                peladinhasFiltradas.forEach { item ->
-                    CasualMatchCard(
-                        item = item,
-                        onDetailsClick = onDetailsClick,
-                        onJoinMatchClick = onJoinMatchClick
-                    )
+                if (liveMatchesFiltrados.isNotEmpty()) {
+                    liveMatchesFiltrados.forEach { liveMatch ->
+                        LiveMatchCard(
+                            match = liveMatch,
+                            onWatchLiveClick = {
+                                onWatchLiveClick(liveMatch.idJogo)
+                            },
+                            onDetailsClick = {
+                                onWatchLiveClick(liveMatch.idJogo)
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+                }
+
+                if (peladinhasFiltradas.isEmpty() && liveMatchesFiltrados.isEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Text(
+                            text = "Não existem partidas com estes filtros.",
+                            color = BrandBlue,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(14.dp))
+                } else {
+                    peladinhasFiltradas.forEach { item ->
+                        CasualMatchCard(
+                            item = item,
+                            isJoining = isJoiningPeladinhaId == item.peladinha.id,
+                            onDetailsClick = {
+                                onDetailsClick(item.peladinha.id)
+                            },
+                            onJoinMatchClick = {
+                                scope.launch {
+                                    isJoiningPeladinhaId = item.peladinha.id
+                                    mensagemErro = ""
+
+                                    repository.entrarNaPeladinha(item.peladinha.id)
+                                        .onSuccess {
+                                            carregarPartidas()
+                                            onJoinMatchClick()
+                                        }
+                                        .onFailure {
+                                            mensagemErro = it.message ?: "Erro ao entrar na partida."
+                                        }
+
+                                    isJoiningPeladinhaId = null
+                                }
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
                 }
             }
 
@@ -279,6 +424,8 @@ fun MatchesActionButton(
 @Composable
 fun MatchesSearchAndFiltersCard(
     search: String,
+    selectedStatus: String?,
+    selectedRegion: String?,
     onSearchChange: (String) -> Unit,
     onFiltersClick: () -> Unit
 ) {
@@ -300,7 +447,7 @@ fun MatchesSearchAndFiltersCard(
                 singleLine = true,
                 placeholder = {
                     Text(
-                        text = "Search tournaments...",
+                        text = "Search matches...",
                         color = Color(0xFF9EA4B3),
                         fontSize = 12.sp
                     )
@@ -334,12 +481,12 @@ fun MatchesSearchAndFiltersCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 MatchesFilterChip(
-                    text = "Status: All",
+                    text = "Status: ${selectedStatus ?: "All"}",
                     modifier = Modifier.weight(1f)
                 )
 
                 MatchesFilterChip(
-                    text = "Region: All",
+                    text = "Region: ${selectedRegion ?: "All"}",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -387,8 +534,168 @@ fun MatchesFilterChip(
 }
 
 @Composable
+fun LiveMatchCard(
+    match: LiveMatchInfo,
+    onWatchLiveClick: () -> Unit,
+    onDetailsClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+                MatchSmallBadge(
+                    text = "● LIVE NOW",
+                    backgroundColor = BrandGreen.copy(alpha = 0.12f),
+                    textColor = BrandGreen
+                )
+
+                MatchSmallBadge(
+                    text = "CASUAL",
+                    backgroundColor = Color(0xFFEFF1F6),
+                    textColor = Color(0xFF6D7486)
+                )
+
+                MatchSmallBadge(
+                    text = "FOOTBALL",
+                    backgroundColor = Color(0xFFEFF1F6),
+                    textColor = Color(0xFF6D7486)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LiveMatchTeamPreview(
+                    teamName = match.equipaCasa,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "${match.pontosCasa} - ${match.pontosFora}",
+                        color = BrandBlue,
+                        fontSize = 27.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "${match.minuto}'",
+                        color = Color(0xFFE53935),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                LiveMatchTeamPreview(
+                    teamName = match.equipaFora,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = match.local,
+                color = Color(0xFF6D7486),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onDetailsClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(42.dp),
+                    shape = RoundedCornerShape(3.dp)
+                ) {
+                    Text(
+                        text = "VIEW DETAILS",
+                        color = Color(0xFF0757C8),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Button(
+                    onClick = onWatchLiveClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(42.dp),
+                    shape = RoundedCornerShape(3.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BrandGreen,
+                        contentColor = BrandWhite
+                    )
+                ) {
+                    Text(
+                        text = "WATCH LIVE",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LiveMatchTeamPreview(
+    teamName: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .height(42.dp)
+                .width(42.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFFEAF0FB)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = playerLiveInitialsForCard(teamName),
+                color = BrandBlue,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = teamName,
+            color = BrandBlue,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 fun CasualMatchCard(
     item: PeladinhaComInfo,
+    isJoining: Boolean = false,
     onDetailsClick: () -> Unit,
     onJoinMatchClick: () -> Unit
 ) {
@@ -423,7 +730,7 @@ fun CasualMatchCard(
         else -> "JOIN MATCH"
     }
 
-    val buttonEnabled = estadoNormalizado == "aberta"
+    val buttonEnabled = estadoNormalizado == "aberta" && !isJoining
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -557,7 +864,7 @@ fun CasualMatchCard(
                     )
                 ) {
                     Text(
-                        text = buttonText,
+                        text = if (isJoining) "A ENTRAR..." else buttonText,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -665,6 +972,97 @@ fun formatarDataHoraLocal(
     val localTexto = local ?: "Local por definir"
 
     return "$dataTexto $horaTexto · $localTexto"
+}
+
+fun playerMatchesCorrespondeModalidade(
+    filtro: String,
+    modalidade: String
+): Boolean {
+    val filtroNormalizado = filtro.lowercase()
+    val modalidadeNormalizada = modalidade.lowercase()
+
+    return when (filtroNormalizado) {
+        "football" -> modalidadeNormalizada.contains("futebol") ||
+                modalidadeNormalizada.contains("football")
+
+        "volleyball" -> modalidadeNormalizada.contains("voleibol") ||
+                modalidadeNormalizada.contains("volleyball")
+
+        "basketball" -> modalidadeNormalizada.contains("basquetebol") ||
+                modalidadeNormalizada.contains("basketball")
+
+        else -> true
+    }
+}
+
+fun playerMatchesCorrespondeEstado(
+    filtro: String,
+    estado: String
+): Boolean {
+    val estadoNormalizado = estado.lowercase()
+
+    return when (filtro) {
+        "Registration Open" -> estadoNormalizado == "aberta"
+        "Upcoming" -> estadoNormalizado == "aberta"
+        "Completed" -> estadoNormalizado == "terminada"
+        "Live" -> estadoNormalizado.contains("live") ||
+                estadoNormalizado.contains("em curso")
+
+        else -> true
+    }
+}
+
+fun playerMatchesCorrespondeRegiao(
+    selectedRegion: String?,
+    cityOrRegion: String,
+    local: String?
+): Boolean {
+    val localNormalizado = local.orEmpty().lowercase()
+
+    val regiaoOk =
+        selectedRegion.isNullOrBlank() ||
+                localNormalizado.contains(selectedRegion.lowercase())
+
+    val pesquisaRegiaoOk =
+        cityOrRegion.isBlank() ||
+                localNormalizado.contains(cityOrRegion.lowercase())
+
+    return regiaoOk && pesquisaRegiaoOk
+}
+
+fun playerMatchesCorrespondeData(
+    data: String?,
+    fromDate: String,
+    toDate: String
+): Boolean {
+    val dataPartida = runCatching {
+        LocalDate.parse(data?.take(10))
+    }.getOrNull() ?: return true
+
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    val dataInicio = runCatching {
+        LocalDate.parse(fromDate, formatter)
+    }.getOrNull()
+
+    val dataFim = runCatching {
+        LocalDate.parse(toDate, formatter)
+    }.getOrNull()
+
+    val depoisDoInicio = dataInicio == null || !dataPartida.isBefore(dataInicio)
+    val antesDoFim = dataFim == null || !dataPartida.isAfter(dataFim)
+
+    return depoisDoInicio && antesDoFim
+}
+
+fun playerLiveInitialsForCard(teamName: String): String {
+    val words = teamName.split(" ").filter { it.isNotBlank() }
+
+    return when {
+        words.isEmpty() -> "?"
+        words.size == 1 -> words.first().take(2).uppercase()
+        else -> words.take(2).joinToString("") { it.first().uppercaseChar().toString() }
+    }
 }
 
 @Preview(showBackground = true, name = "Player Matches Screen")

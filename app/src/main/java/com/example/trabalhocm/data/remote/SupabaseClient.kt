@@ -4,6 +4,9 @@ import com.example.trabalhocm.BuildConfig
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.compose.auth.ComposeAuth
+import io.github.jan.supabase.compose.auth.googleNativeLogin
+import io.github.jan.supabase.storage.Storage // <-- NOVO IMPORT
 
 object SupabaseClient {
 
@@ -13,5 +16,10 @@ object SupabaseClient {
     ) {
         install(Auth)
         install(Postgrest)
+        install(Storage)
+
+        install(ComposeAuth) {
+            googleNativeLogin(serverClientId = "479970332367-oupvb78mgrbotfcrfrtj8ko73thjnt0i.apps.googleusercontent.com")
+        }
     }
 }

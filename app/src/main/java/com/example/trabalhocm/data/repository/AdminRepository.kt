@@ -4,6 +4,8 @@ import com.example.trabalhocm.data.model.AdminStats
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 class AdminRepository {
 
@@ -31,6 +33,24 @@ class AdminRepository {
                 totalTeams = teams,
                 totalTournaments = tournaments
             )
+        }
+    }
+
+    suspend fun carregarPedidosOrganizadorPendentes(): Result<Int> {
+        return runCatching {
+            val pedidos = client.from("pedido_organizador")
+                .select()
+                .decodeList<JsonObject>()
+
+            pedidos.count { pedido ->
+                val estado = pedido["estado"]
+                    ?.jsonPrimitive
+                    ?.contentOrNull
+                    ?.lowercase()
+                    ?: ""
+
+                estado == "pendente" || estado == "pending"
+            }
         }
     }
 }

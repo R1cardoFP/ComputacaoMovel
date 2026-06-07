@@ -56,6 +56,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -83,7 +84,9 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
     var mensagem by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -233,23 +236,27 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (nome.isBlank() || username.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-                            mensagem = "Preenche todos os campos."
+                            mensagem = "Please fill in all fields."
+                            isError = true
                             return@Button
                         }
 
                         if (password != confirmPassword) {
-                            mensagem = "As passwords não coincidem."
+                            mensagem = "Passwords do not match."
+                            isError = true
                             return@Button
                         }
 
                         if (password.length < 6) {
-                            mensagem = "A password deve ter pelo menos 6 caracteres."
+                            mensagem = "Password must be at least 6 characters long."
+                            isError = true
                             return@Button
                         }
 
                         scope.launch {
                             isLoading = true
                             mensagem = ""
+                            isError = false
 
                             val resultado = authRepository.registar(
                                 nome = nome,
@@ -259,22 +266,27 @@ fun RegisterScreen(
                             )
 
                             resultado
-                                .onSuccess { utilizador ->
+                                .onSuccess {
                                     if (photoUri != null) {
-                                        val sharedPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                                        sharedPrefs.edit {
-                                            putString("avatar_${utilizador.id}", photoUri.toString())
+                                        val uriPermanente = guardarImagemInternamente(context, photoUri!!, email)
+                                        if (uriPermanente != null) {
+                                            val sharedPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                                            sharedPrefs.edit {
+                                                putString("avatar_$email", uriPermanente)
+                                            }
                                         }
                                     }
 
-                                    mensagem = "Conta criada com sucesso."
+                                    isError = false
                                     onRegisterSuccess(email)
                                 }
                                 .onFailure { erro ->
+                                    isError = true
                                     val erroOriginal = erro.message ?: erro.toString()
                                     mensagem = when {
                                         erroOriginal.contains("already registered", ignoreCase = true) ||
                                                 erroOriginal.contains("already exists", ignoreCase = true) ||
+                                                erroOriginal.contains("taken", ignoreCase = true) ||
                                                 erroOriginal.contains("duplicate key value", ignoreCase = true) -> {
                                             "Já existe um utilizador com esse username ou email."
                                         }
@@ -319,12 +331,9 @@ fun RegisterScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = mensagem,
-                        color = if (mensagem.startsWith("Erro") || mensagem.startsWith("Já") || mensagem.startsWith("A password") || mensagem.startsWith("Preen")) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            BrandBlue
-                        },
-                        fontSize = 12.sp
+                        color = if (isError) MaterialTheme.colorScheme.error else BrandBlue,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -453,4 +462,18 @@ fun RegisterInput(
 @Composable
 fun RegisterScreenPreview() {
     RegisterScreen()
+}
+
+fun guardarImagemInternamente(context: Context, uri: Uri, identificador: String): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val file = java.io.File(context.filesDir, "avatar_$identificador.jpg")
+        val outputStream = java.io.FileOutputStream(file)
+        inputStream?.copyTo(outputStream)
+        inputStream?.close()
+        outputStream.close()
+        Uri.fromFile(file).toString()
+    } catch (e: Exception) {
+        null
+    }
 }
