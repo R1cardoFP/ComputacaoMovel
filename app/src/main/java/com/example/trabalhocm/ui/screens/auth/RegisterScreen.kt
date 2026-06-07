@@ -24,11 +24,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -83,7 +86,7 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
 
     var mensagem by remember { mutableStateOf("") }
-    var isError by remember { mutableStateOf(false) } // Controla se a mensagem é vermelha ou não
+    var isError by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -99,18 +102,16 @@ fun RegisterScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 28.dp, vertical = 28.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // --- CABEÇALHO COM SETA DE VOLTAR E LOGO ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 22.dp),
+                .padding(bottom = 8.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Seta alinhada à esquerda
             Text(
                 text = "←",
                 color = BrandBlue,
@@ -119,21 +120,20 @@ fun RegisterScreen(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .clickable { onGoToLogin() }
-                    .padding(end = 16.dp, bottom = 8.dp, top = 8.dp) // Área de clique mais confortável
+                    .padding(end = 16.dp)
             )
 
-            // Logo centrado
             AppLogoRegister()
         }
 
         Text(
             text = "Create Account",
             color = Color(0xFF2F3138),
-            fontSize = 28.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -142,15 +142,14 @@ fun RegisterScreen(
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 22.dp, vertical = 26.dp),
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                // SELETOR DE FOTO
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(90.dp)
+                        .size(76.dp)
                         .clip(CircleShape)
                         .border(2.dp, BrandGreen, CircleShape)
                         .background(Color(0xFFF1F2FB))
@@ -165,13 +164,19 @@ fun RegisterScreen(
                         )
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("📷", fontSize = 24.sp)
-                            Text("Add Photo", fontSize = 10.sp, color = Color(0xFF7D8497))
+                            Icon(
+                                imageVector = Icons.Outlined.PhotoCamera,
+                                contentDescription = "Add Photo",
+                                tint = Color(0xFF7D8497),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Photo", fontSize = 10.sp, color = Color(0xFF7D8497))
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 RegisterInput(
                     label = "Full Name",
@@ -181,7 +186,7 @@ fun RegisterScreen(
                     leading = "♙"
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 RegisterInput(
                     label = "Username",
@@ -191,7 +196,7 @@ fun RegisterScreen(
                     leading = "@"
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 RegisterInput(
                     label = "Email Address",
@@ -202,7 +207,7 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Email
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 RegisterInput(
                     label = "Password",
@@ -214,7 +219,7 @@ fun RegisterScreen(
                     isPassword = true
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 RegisterInput(
                     label = "Confirm Password",
@@ -226,7 +231,7 @@ fun RegisterScreen(
                     isPassword = true
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
@@ -262,7 +267,6 @@ fun RegisterScreen(
 
                             resultado
                                 .onSuccess {
-                                    // COPIA A IMAGEM PARA O TELEMÓVEL DE FORMA SEGURA ENQUANTO O EMAIL NÃO É CONFIRMADO
                                     if (photoUri != null) {
                                         val uriPermanente = guardarImagemInternamente(context, photoUri!!, email)
                                         if (uriPermanente != null) {
@@ -278,7 +282,21 @@ fun RegisterScreen(
                                 }
                                 .onFailure { erro ->
                                     isError = true
-                                    mensagem = erro.message ?: "An unexpected error occurred."
+                                    val erroOriginal = erro.message ?: erro.toString()
+                                    mensagem = when {
+                                        erroOriginal.contains("already registered", ignoreCase = true) ||
+                                                erroOriginal.contains("already exists", ignoreCase = true) ||
+                                                erroOriginal.contains("taken", ignoreCase = true) ||
+                                                erroOriginal.contains("duplicate key value", ignoreCase = true) -> {
+                                            "Já existe um utilizador com esse username ou email."
+                                        }
+                                        erroOriginal.contains("Password should be", ignoreCase = true) -> {
+                                            "A password é demasiado fraca. Escolha uma mais segura."
+                                        }
+                                        else -> {
+                                            "Ocorreu um erro ao criar a conta. Tente novamente."
+                                        }
+                                    }
                                 }
 
                             isLoading = false
@@ -297,11 +315,12 @@ fun RegisterScreen(
                     if (isLoading) {
                         CircularProgressIndicator(
                             color = BrandWhite,
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(24.dp)
                         )
                     } else {
                         Text(
-                            text = "Create Player Profile  →",
+                            text = "Create Profile  →",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -309,18 +328,18 @@ fun RegisterScreen(
                 }
 
                 if (mensagem.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = mensagem,
                         color = if (isError) MaterialTheme.colorScheme.error else BrandBlue,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         textAlign = TextAlign.Center
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -329,14 +348,14 @@ fun RegisterScreen(
             Text(
                 text = "Already have an account?",
                 color = Color(0xFF777A83),
-                fontSize = 14.sp
+                fontSize = 13.sp
             )
 
             TextButton(onClick = onGoToLogin) {
                 Text(
                     text = "Log In",
                     color = BrandBlue.copy(alpha = 0.75f),
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -353,11 +372,11 @@ fun AppLogoRegister() {
         Text(
             text = "ML",
             color = BrandBlue,
-            fontSize = 28.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         Text(
             buildAnnotatedString {
@@ -368,44 +387,8 @@ fun AppLogoRegister() {
                     append("League")
                 }
             },
-            fontSize = 22.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-fun SocialButton(
-    text: String,
-    icon: String,
-    backgroundColor: Color,
-    contentColor: Color
-) {
-    Button(
-        onClick = {},
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(44.dp),
-        shape = RoundedCornerShape(6.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = backgroundColor,
-            contentColor = contentColor
-        ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-    ) {
-        Text(
-            text = icon,
-            modifier = Modifier.padding(end = 18.dp),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = contentColor
-        )
-
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = contentColor
         )
     }
 }
@@ -430,7 +413,7 @@ fun RegisterInput(
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(7.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         OutlinedTextField(
             value = value,
@@ -443,7 +426,7 @@ fun RegisterInput(
                 Text(
                     text = placeholder,
                     color = Color(0xFFA8ABB5),
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
             },
             leadingIcon = {
@@ -475,7 +458,12 @@ fun RegisterInput(
     }
 }
 
-// FUNÇÃO PARA GUARDAR IMAGEM TEMPORARIAMENTE NO TELEMÓVEL
+@Preview(showBackground = true, name = "Register Screen Compact")
+@Composable
+fun RegisterScreenPreview() {
+    RegisterScreen()
+}
+
 fun guardarImagemInternamente(context: Context, uri: Uri, identificador: String): String? {
     return try {
         val inputStream = context.contentResolver.openInputStream(uri)

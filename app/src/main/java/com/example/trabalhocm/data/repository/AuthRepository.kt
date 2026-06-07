@@ -73,6 +73,7 @@ class AuthRepository {
         password: String
     ): Result<Utilizador> {
         return runCatching {
+
             val usernameExists = client.from("utilizador")
                 .select {
                     filter {
@@ -82,7 +83,7 @@ class AuthRepository {
                 .decodeList<Utilizador>()
 
             if (usernameExists.isNotEmpty()) {
-                throw Exception("This username is already taken.")
+                throw Exception("already exists")
             }
 
             val emailExists = client.from("utilizador")
@@ -94,10 +95,10 @@ class AuthRepository {
                 .decodeList<Utilizador>()
 
             if (emailExists.isNotEmpty()) {
-                throw Exception("This email address is already registered.")
+                throw Exception("already registered")
             }
 
-            client.auth.signUpWith(Email) {
+            val authResponse = client.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
 
@@ -107,6 +108,14 @@ class AuthRepository {
                 }
             }
 
+            if (authResponse?.identities?.isEmpty() == true) {
+                throw Exception("already registered")
+            }
+
+            // ATENÇÃO: Como agora ativaste a confirmação por email (OTP),
+            // a Supabase NÃO faz o login automático aqui.
+            // Para a app não bloquear e conseguir avançar para o ecrã dos 6 dígitos,
+            // enviamos um Utilizador "temporário". O verdadeiro é devolvido após inserir o código!
             Utilizador(
                 id = "pendente",
                 username = username,
@@ -226,7 +235,7 @@ class AuthRepository {
                     }
                 }
                 .decodeList<UtilizadorPapel>()
-                .map { it.idPapel } // Devolve apenas a lista dos números (ex: [2, 3])
+                .map { it.idPapel }
         }
     }
 
@@ -343,7 +352,6 @@ class AuthRepository {
 
             client.from("torneio")
                 .select {
-                    // --- CORREÇÃO AQUI: isIn em vez de inAny ---
                     filter { isIn("id", idsTorneios.toList()) }
                 }
                 .decodeList<Torneio>()
@@ -352,7 +360,6 @@ class AuthRepository {
     }
 }
 
-// CLASSES AUXILIARES PARA ENVIAR DADOS PARA A BASE DE DADOS
 @Serializable
 private data class AtualizarUltimoLogin(
     @SerialName("ultimo_login")
