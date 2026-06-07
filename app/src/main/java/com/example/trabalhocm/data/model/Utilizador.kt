@@ -14,5 +14,10 @@ data class Utilizador(
     val fotoUrl: String? = null,
 
     @SerialName("raio_km")
-    val raioKm: Int = 25
+    val raioKm: Int = 25,
+
+    @SerialName("created_at")
+    val dataCriacao: String? = null
+
+
 )

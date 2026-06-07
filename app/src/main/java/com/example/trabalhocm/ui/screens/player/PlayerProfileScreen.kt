@@ -91,7 +91,8 @@ fun PlayerProfileScreen(
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {} // <-- NOVO PARAMETRO AQUI
 ) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
@@ -136,7 +137,8 @@ fun PlayerProfileScreen(
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = "Notificações",
-                tint = BrandWhite
+                tint = BrandWhite,
+                modifier = Modifier.clickable { onNotificationsClick() } // <-- CLIQUE ADICIONADO AQUI
             )
         }
 
@@ -365,7 +367,6 @@ fun ProfileHeaderCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // --- AGORA ELE DESENHA UMA ETIQUETA PARA CADA PAPEL QUE O UTILIZADOR TENHA ---
                 roles.forEach { role ->
                     Box(
                         modifier = Modifier

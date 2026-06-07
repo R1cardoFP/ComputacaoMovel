@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar // <-- IMPORT DA BARRA OFICIAL
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
@@ -176,7 +177,9 @@ fun PlayerHomeScreen(
             Spacer(modifier = Modifier.height(22.dp))
         }
 
-        PlayerBottomBar(
+        // --- BARRA OFICIAL APLICADA AQUI ---
+        MatchLeagueBottomBar(
+            selectedTab = "HOME", // Diz à barra para acender o ícone de Home
             onHomeClick = {},
             onTournamentsClick = onTournamentsClick,
             onMatchesClick = onLiveMatchesClick,
@@ -816,62 +819,6 @@ fun GlobalRankCard() {
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-@Composable
-fun PlayerBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        PlayerBottomItem("⌂", "HOME", true, onHomeClick)
-        PlayerBottomItem("♕", "TOURNAMENTS", false, onTournamentsClick)
-        PlayerBottomItem("◎", "MATCHES", false, onMatchesClick)
-        PlayerBottomItem("♟", "TEAMS", false, onTeamsClick)
-        PlayerBottomItem("♙", "PROFILE", false, onProfileClick)
-    }
-}
-
-@Composable
-fun PlayerBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF3566C9) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

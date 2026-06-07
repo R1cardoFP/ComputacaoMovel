@@ -21,8 +21,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -54,7 +57,8 @@ fun PlayerStatsScreen(
     basketballWinRate: Int = 0,
     volleyballSpikes: Int = 0,
     volleyballWinRate: Int = 0,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {} // <-- NOVO PARAMETRO AQUI
 ) {
     Column(
         modifier = Modifier
@@ -86,10 +90,12 @@ fun PlayerStatsScreen(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "🔔",
-                color = BrandWhite,
-                fontSize = 20.sp
+            // --- MUDANÇA DE EMOJI PARA O ICONE OFICIAL ---
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Notificações",
+                tint = BrandWhite,
+                modifier = Modifier.clickable { onNotificationsClick() }
             )
         }
 
@@ -111,11 +117,11 @@ fun PlayerStatsScreen(
             SportStatCard(
                 sportName = "Football",
                 sportIcon = "⚽",
-                roleTag = "", // <-- Removido o FORWARD estático
+                roleTag = "",
                 stat1Label = "GOALS",
                 stat1Value = footballGoals.toString(),
                 stat1Color = Color(0xFF3566C9),
-                stat2Label = "WINS", // Ajustado para corresponder à DB
+                stat2Label = "WINS",
                 stat2Value = footballAssists.toString(),
                 stat2Color = TextDark
             )
@@ -140,7 +146,7 @@ fun PlayerStatsScreen(
                 sportName = "Volleyball",
                 sportIcon = "🏐",
                 roleTag = "",
-                stat1Label = "POINTS", // Ajustado para corresponder à DB
+                stat1Label = "POINTS",
                 stat1Value = volleyballSpikes.toString(),
                 stat1Color = TextDark,
                 stat2Label = "WIN %",
@@ -344,7 +350,6 @@ fun SportStatCard(
     }
 }
 
-// Mantivemos esta função caso precises dela mais tarde quando tiveres jogos!
 @Composable
 fun MatchHistoryRow(
     team1: String,

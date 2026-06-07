@@ -22,12 +22,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +43,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.AuthRepository
+import com.example.trabalhocm.data.repository.Torneio
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
@@ -52,13 +57,27 @@ fun PlayerTournamentManagementScreen(
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onDetailsClick: () -> Unit = {},
+    onDetailsClick: (Long) -> Unit = {},
     onRegisterClick: () -> Unit = {},
     onAskOrganizerClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
-    onFiltersClick: () -> Unit = {}
+    onFiltersClick: () -> Unit = {},
 ) {
     var search by remember { mutableStateOf("") }
+
+    // --- ESTADOS PARA A BASE DE DADOS ---
+    val authRepository = remember { AuthRepository() }
+    var listaTorneios by remember { mutableStateOf<List<Torneio>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        authRepository.obterTorneios().onSuccess { torneios ->
+            listaTorneios = torneios
+            isLoading = false
+        }.onFailure {
+            isLoading = false
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -128,91 +147,67 @@ fun PlayerTournamentManagementScreen(
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            PlayerTournamentCard(
-                status = "LIVE",
-                statusColor = Color(0xFFE53935),
-                tags = listOf("PRO LEAGUE", "FOOTBALL"),
-                infoText = "YOU Joined",
-                title = "Premier Summer Cup 2026",
-                date = "15 Jun – 30 Aug",
-                teamsText = "24",
-                gamesText = "6",
-                progress = null,
-                progressColor = BrandGreen,
-                primaryButtonText = null,
-                secondaryButtonText = "DETAILS",
-                disabledButton = false,
-                onDetailsClick = onDetailsClick,
-                onPrimaryClick = onRegisterClick
-            )
+            // --- LÓGICA DE DESENHO DINÂMICO E PESQUISA ---
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = BrandGreen)
+                }
+            } else {
+                // Filtra os torneios com base no que escreveste na barra de pesquisa (ignora maiúsculas/minúsculas)
+                val torneiosFiltrados = listaTorneios.filter {
+                    it.nome.contains(search, ignoreCase = true)
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                if (torneiosFiltrados.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                        Text("Nenhum torneio encontrado.", color = Color.Gray)
+                    }
+                } else {
+                    torneiosFiltrados.forEach { torneio ->
 
-            PlayerTournamentCard(
-                status = "OPEN",
-                statusColor = BrandGreen,
-                tags = listOf("AMATEUR", "BASKETBALL"),
-                infoText = null,
-                title = "Liga Regional Sul",
-                date = "Start: 10 Sep",
-                teamsText = null,
-                gamesText = null,
-                registeredText = "12/16",
-                progress = 0.75f,
-                progressColor = BrandGreen,
-                primaryButtonText = "REGISTER NOW",
-                secondaryButtonText = "DETAILS",
-                disabledButton = false,
-                onDetailsClick = onDetailsClick,
-                onPrimaryClick = onRegisterClick
-            )
+                        // Define as cores e textos com base no "estado" que vem da BD
+                        val estadoAberto = torneio.estado?.lowercase() == "aberto"
+                        val tagEstado = if (estadoAberto) "OPEN" else (torneio.estado?.uppercase() ?: "LIVE")
+                        val corEstado = if (estadoAberto) BrandGreen else Color(0xFFE53935)
+                        val btnTexto = if (estadoAberto) "REGISTER NOW" else "CLOSED"
 
-            Spacer(modifier = Modifier.height(16.dp))
+                        // Traduz o ID da modalidade para texto
+                        val modalidadeNome = when (torneio.idModalidade) {
+                            1 -> "FOOTBALL"
+                            2 -> "BASKETBALL"
+                            3 -> "VOLLEYBALL"
+                            else -> "SPORT"
+                        }
 
-            PlayerTournamentCard(
-                status = "SOLD OUT",
-                statusColor = Color(0xFFD19A00),
-                tags = listOf("PRO LEAGUE", "FOOTBALL"),
-                infoText = null,
-                title = "Atlantic Cup 2026",
-                date = "Start: 1 Oct",
-                teamsText = null,
-                gamesText = null,
-                registeredText = "32/32",
-                progress = 1f,
-                progressColor = Color(0xFFD19A00),
-                primaryButtonText = "ALL SLOTS FILLED",
-                secondaryButtonText = "DETAILS",
-                disabledButton = true,
-                onDetailsClick = onDetailsClick,
-                onPrimaryClick = onRegisterClick
-            )
+                        PlayerTournamentCard(
+                            status = tagEstado,
+                            statusColor = corEstado,
+                            tags = listOf(torneio.formato?.uppercase() ?: "LEAGUE", modalidadeNome),
+                            infoText = null,
+                            title = torneio.nome,
+                            date = "Start: ${torneio.dataInicio ?: "TBD"}",
+                            teamsText = null,
+                            gamesText = null,
+                            registeredText = null,
+                            progress = null,
+                            progressColor = BrandGreen,
+                            primaryButtonText = btnTexto,
+                            secondaryButtonText = "DETAILS",
+                            disabledButton = !estadoAberto,
+                            // --- MUDANÇA AQUI: Em vez de vazio, envia o torneio.id ---
+                            onDetailsClick = { onDetailsClick(torneio.id) },
+                            onPrimaryClick = onRegisterClick
+                        )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PlayerTournamentCard(
-                status = "INVITE ONLY",
-                statusColor = Color(0xFF3566C9),
-                tags = listOf("ELITE", "VOLLEYBALL"),
-                infoText = null,
-                title = "Elite Invitational 2026",
-                date = "Start: 12 Nov",
-                teamsText = null,
-                gamesText = null,
-                registeredText = null,
-                progress = null,
-                progressColor = Color(0xFF3566C9),
-                primaryButtonText = "INVITE ONLY — LOCKED",
-                secondaryButtonText = "DETAILS",
-                disabledButton = true,
-                onDetailsClick = onDetailsClick,
-                onPrimaryClick = onRegisterClick
-            )
-
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(22.dp))
         }
 
-        PlayerTournamentBottomBar(
+        MatchLeagueBottomBar(
+            selectedTab = "TOURNAMENTS",
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,
             onMatchesClick = onMatchesClick,
@@ -636,66 +631,4 @@ fun TournamentBadge(
             fontWeight = FontWeight.Bold
         )
     }
-}
-
-@Composable
-fun PlayerTournamentBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        PlayerTournamentBottomItem("⌂", "HOME", false, onHomeClick)
-        PlayerTournamentBottomItem("♕", "TOURNAMENTS", true, onTournamentsClick)
-        PlayerTournamentBottomItem("◎", "MATCHES", false, onMatchesClick)
-        PlayerTournamentBottomItem("♟", "TEAMS", false, onTeamsClick)
-        PlayerTournamentBottomItem("♙", "PROFILE", false, onProfileClick)
-    }
-}
-
-@Composable
-fun PlayerTournamentBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0757C8) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Player Tournament Management Screen")
-@Composable
-fun PlayerTournamentManagementScreenPreview() {
-    PlayerTournamentManagementScreen()
 }

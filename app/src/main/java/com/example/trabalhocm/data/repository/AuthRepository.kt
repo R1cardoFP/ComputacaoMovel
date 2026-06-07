@@ -217,7 +217,6 @@ class AuthRepository {
         }
     }
 
-    // --- NOVA FUNÇÃO PARA OS PAPÉIS DO UTILIZADOR ---
     suspend fun obterPapeisUtilizador(userId: String): Result<List<Int>> {
         return runCatching {
             client.from("utilizador_papel")
@@ -273,6 +272,39 @@ class AuthRepository {
             client.auth.signOut()
         }
     }
+
+    suspend fun obterNotificacoes(userId: String): Result<List<Notificacao>> {
+        return runCatching {
+            client.from("notificacoes")
+                .select {
+                    filter {
+                        eq("id_utilizador", userId)
+                    }
+                }
+                .decodeList<Notificacao>()
+                .sortedByDescending { it.data }
+        }
+    }
+
+    suspend fun obterTorneios(): Result<List<Torneio>> {
+        return runCatching {
+            client.from("torneio")
+                .select()
+                .decodeList<Torneio>()
+        }
+    }
+
+    suspend fun obterTorneioDetalhes(idTorneio: Long): Result<Torneio> {
+        return runCatching {
+            client.from("torneio")
+                .select {
+                    filter {
+                        eq("id", idTorneio)
+                    }
+                }
+                .decodeSingle<Torneio>()
+        }
+    }
 }
 
 // CLASSES AUXILIARES PARA ENVIAR DADOS PARA A BASE DE DADOS
@@ -294,9 +326,36 @@ private data class AtualizarFotoRequest(
     val fotoUrl: String
 )
 
-// --- NOVA CLASSE PARA LER OS PAPÉIS ---
 @Serializable
 private data class UtilizadorPapel(
     @SerialName("id_utilizador") val idUtilizador: String,
     @SerialName("id_papel") val idPapel: Int
+)
+
+@Serializable
+data class Notificacao(
+    val id: Long = 0,
+    @SerialName("id_utilizador") val idUtilizador: String,
+    val titulo: String,
+    val mensagem: String,
+    val tipo: String,
+    val data: String,
+    val lida: Boolean = false
+)
+
+@Serializable
+data class Torneio(
+    val id: Long = 0,
+    val nome: String,
+    val descricao: String? = null,
+    val regras: String? = null,
+    val local: String? = null,
+    @SerialName("data_inicio") val dataInicio: String? = null,
+    @SerialName("data_fim") val dataFim: String? = null,
+    val formato: String? = null,
+    @SerialName("taxa_inscricao") val taxaInscricao: Double? = null,
+    val premio: Double? = null,
+    val estado: String? = null,
+    @SerialName("id_organizador") val idOrganizador: String? = null,
+    @SerialName("id_modalidade") val idModalidade: Int? = null
 )
