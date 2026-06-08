@@ -85,6 +85,8 @@ import com.example.trabalhocm.ui.screens.organizador.CreateTournamentViewModel
 import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesViewModel
 import com.example.trabalhocm.ui.screens.player.PlayerLiveMatchesScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamDetailsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminManageRegistrationScreen
+import com.example.trabalhocm.ui.screens.admin.AdminInviteTeamsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,7 +113,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "player_home"
+        startDestination = "splash"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -1353,10 +1355,8 @@ fun MatchLeagueApp() {
                 onBackClick = { navController.popBackStack() },
                 onNotificationsClick = { navController.navigate("admin_notifications") },
                 onArchiveClick = { navController.navigate("admin_tournament_archive") },
-                onTournamentDetailsClick = { tournamentId ->
-                    navController.navigate("admin_tournament_details/$tournamentId")
-                },
-                onManageRegistrationClick = {},
+                onTournamentDetailsClick = { tournamentId -> navController.navigate("admin_tournament_details/$tournamentId") },
+                onManageRegistrationClick = { id -> navController.navigate("admin_manage_registration/$id") },
                 onHomeClick = { navController.navigate("admin_home") },
                 onTournamentsClick = {},
                 onMatchesClick = {},
@@ -1406,6 +1406,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onManageRegistrationClick = { id ->
+                    navController.navigate("admin_manage_registration/$id")
                 },
                 onEditTournamentClick = { id ->
                     navController.navigate("admin_tournament_edit/$id")
@@ -1502,6 +1503,84 @@ fun MatchLeagueApp() {
                 },
                 onMatchesClick = {},
                 onTeamsClick = {},
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "admin_manage_registration/{tournamentId}",
+            arguments = listOf(
+                navArgument("tournamentId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val tournamentId = backStackEntry.arguments?.getString("tournamentId") ?: ""
+
+            AdminManageRegistrationScreen(
+                tournamentId = tournamentId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onInviteTeamClick = { id ->
+                    navController.navigate("admin_invite_teams/$id")
+                },
+                onTeamDetailsClick = { teamId ->
+                    // ligar aos detalhes da equipa
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("organizador_match_center")
+                },
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "admin_invite_teams/{tournamentId}",
+            arguments = listOf(
+                navArgument("tournamentId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val tournamentId = backStackEntry.arguments?.getString("tournamentId") ?: ""
+
+            AdminInviteTeamsScreen(
+                tournamentId = tournamentId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {
+                    //ecrã admin de matches
+                },
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
                 onProfileClick = {
                     navController.navigate("admin_profile")
                 }

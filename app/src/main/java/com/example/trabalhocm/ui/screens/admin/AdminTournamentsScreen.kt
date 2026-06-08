@@ -60,6 +60,9 @@ import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
 import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.TextGray
+import androidx.compose.material3.LinearProgressIndicator
+import com.example.trabalhocm.ui.theme.WarningYellow
+import com.example.trabalhocm.ui.theme.ErrorRed
 import kotlinx.coroutines.launch
 
 @Composable
@@ -117,15 +120,20 @@ fun AdminTournamentsScreen(
                     tournament.organizerName.contains(searchText, ignoreCase = true)
 
         val matchesStatus = selectedStatus == "All" ||
-                tournament.estado.equals(selectedStatus, ignoreCase = true)
+                statusMatchesFilter(tournament.estado, selectedStatus)
 
         val matchesSport = selectedSport == "All" ||
-                tournament.modalidade.equals(selectedSport, ignoreCase = true)
+                tournament.modalidade.contains(selectedSport, ignoreCase = true)
 
         val matchesChip = when (selectedChip) {
-            "Live" -> tournament.estado.equals("live", ignoreCase = true)
-            "Open" -> tournament.estado.equals("open", ignoreCase = true)
-            "Completed" -> tournament.estado.equals("completed", ignoreCase = true) ||
+            "Live" -> tournament.estado.equals("em_decorrer", ignoreCase = true) ||
+                    tournament.estado.equals("live", ignoreCase = true)
+
+            "Open" -> tournament.estado.equals("aberto", ignoreCase = true) ||
+                    tournament.estado.equals("open", ignoreCase = true)
+
+            "Completed" -> tournament.estado.equals("terminado", ignoreCase = true) ||
+                    tournament.estado.equals("completed", ignoreCase = true) ||
                     tournament.estado.equals("archived", ignoreCase = true)
 
             else -> true
@@ -287,9 +295,9 @@ fun AdminTournamentsScreen(
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 selectedSport = when (selectedSport) {
-                                    "All" -> "FOOTBALL"
-                                    "FOOTBALL" -> "BASKETBALL"
-                                    "BASKETBALL" -> "VOLLEYBALL"
+                                    "All" -> "Futebol"
+                                    "Futebol" -> "Basquetebol"
+                                    "Basquetebol" -> "Voleibol"
                                     else -> "All"
                                 }
                             }
@@ -665,7 +673,7 @@ private fun AdminTournamentMainCard(
                     )
 
                     Text(
-                        text = "0",
+                        text = tournament.teamsCount.toString(),
                         color = BrandBlue,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
@@ -673,12 +681,32 @@ private fun AdminTournamentMainCard(
                 }
 
                 Text(
-                    text = "0/16",
+                    text = "${tournament.teamsCount}/${tournament.maxTeams}",
                     color = BrandBlue,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
+
+            Spacer(modifier = Modifier.height(7.dp))
+
+            LinearProgressIndicator(
+                progress = {
+                    tournamentOccupancyProgress(
+                        teamsCount = tournament.teamsCount,
+                        maxTeams = tournament.maxTeams
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(20.dp)),
+                color = tournamentOccupancyColor(
+                    teamsCount = tournament.teamsCount,
+                    maxTeams = tournament.maxTeams
+                ),
+                trackColor = Color(0xFFE5E7EB)
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -734,24 +762,27 @@ private fun StatusBadge(status: String) {
     val normalized = status.lowercase()
 
     val background = when {
-        normalized.contains("live") -> Color(0xFFFEE2E2)
-        normalized.contains("open") -> Color(0xFFEAF8F5)
-        normalized.contains("completed") || normalized.contains("archived") -> Color(0xFFEAF2F5)
+        normalized.contains("aberto") || normalized.contains("open") -> Color(0xFFEAF8F5)
+        normalized.contains("decorrer") || normalized.contains("live") -> Color(0xFFFEE2E2)
+        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") -> Color(0xFFEAF2F5)
+        normalized.contains("cancelado") -> Color(0xFFFEE2E2)
         else -> Color(0xFFEAF3FF)
     }
 
     val textColor = when {
-        normalized.contains("live") -> Color(0xFFDC2626)
-        normalized.contains("open") -> BrandGreen
-        normalized.contains("completed") || normalized.contains("archived") -> TextGray
+        normalized.contains("aberto") || normalized.contains("open") -> BrandGreen
+        normalized.contains("decorrer") || normalized.contains("live") -> Color(0xFFDC2626)
+        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") -> TextGray
+        normalized.contains("cancelado") -> Color(0xFFDC2626)
         else -> Color(0xFF0057C8)
     }
 
     val text = when {
-        normalized.contains("live") -> "LIVE"
-        normalized.contains("open") -> "OPEN"
-        normalized.contains("completed") -> "COMPLETED"
-        normalized.contains("archived") -> "COMPLETED"
+        normalized.contains("aberto") || normalized.contains("open") -> "OPEN"
+        normalized.contains("decorrer") || normalized.contains("live") -> "LIVE"
+        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") -> "COMPLETED"
+        normalized.contains("cancelado") -> "CANCELLED"
+        normalized.contains("rascunho") -> "DRAFT"
         else -> status.uppercase()
     }
 
@@ -842,6 +873,47 @@ private fun BottomItem(
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp
         )
+    }
+}
+
+private fun statusMatchesFilter(estado: String, filtro: String): Boolean {
+    val normalized = estado.lowercase()
+
+    return when (filtro) {
+        "Open" -> normalized.contains("aberto") || normalized.contains("open")
+        "Live" -> normalized.contains("decorrer") || normalized.contains("live")
+        "Completed" -> normalized.contains("terminado") ||
+                normalized.contains("completed") ||
+                normalized.contains("archived")
+        else -> true
+    }
+}
+
+private fun tournamentOccupancyProgress(
+    teamsCount: Int,
+    maxTeams: Int
+): Float {
+    if (maxTeams <= 0) {
+        return 0f
+    }
+
+    return (teamsCount.toFloat() / maxTeams.toFloat())
+        .coerceIn(0f, 1f)
+}
+
+private fun tournamentOccupancyColor(
+    teamsCount: Int,
+    maxTeams: Int
+): Color {
+    val progress = tournamentOccupancyProgress(
+        teamsCount = teamsCount,
+        maxTeams = maxTeams
+    )
+
+    return when {
+        progress < 0.5f -> BrandGreen
+        progress < 0.8f -> WarningYellow
+        else -> ErrorRed
     }
 }
 
