@@ -1,7 +1,7 @@
 package com.example.trabalhocm.ui.screens.player
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,15 +22,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,12 +46,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.R
+import androidx.core.net.toUri
+import coil.compose.AsyncImage
+import com.example.trabalhocm.data.repository.AuthRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
@@ -61,14 +69,38 @@ fun PlayerBecomeOrganizerScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val authRepository = remember { AuthRepository() }
+
     var sport by remember { mutableStateOf("Volleyball") }
     var experience by remember { mutableStateOf("Intermediate") }
     var tournamentsPerYear by remember { mutableStateOf("1–3 tournaments") }
-    var motivation by remember {
-        mutableStateOf("I've been part of FC Mancos for 3 seasons and I want to start organizing the local summer league. I have experience coordinating small 5-a-side events at my city's pavilion.")
-    }
+    var motivation by remember { mutableStateOf("") }
     var reference by remember { mutableStateOf("") }
-    var acceptedTerms by remember { mutableStateOf(true) }
+    var acceptedTerms by remember { mutableStateOf(false) }
+
+    var userName by remember { mutableStateOf("A carregar...") }
+    var userEmail by remember { mutableStateOf("") }
+    var userMemberSince by remember { mutableStateOf("2024") }
+    var userPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    val dropdownOptions = listOf("1–3 tournaments", "4–6 tournaments", "7–10 tournaments", "10+ tournaments")
+
+    LaunchedEffect(Unit) {
+        authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+            userName = utilizador.nome
+            userEmail = utilizador.email
+
+            if (!utilizador.dataCriacao.isNullOrEmpty() && utilizador.dataCriacao.length >= 4) {
+                userMemberSince = utilizador.dataCriacao.substring(0, 4)
+            }
+
+            if (!utilizador.fotoUrl.isNullOrEmpty()) {
+                val urlAtualizada = "${utilizador.fotoUrl}?v=${System.currentTimeMillis()}"
+                userPhotoUri = urlAtualizada.toUri()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -121,7 +153,12 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            OrganizerUserInfoCard()
+            OrganizerUserInfoCard(
+                name = userName,
+                email = userEmail,
+                memberSince = userMemberSince,
+                photoUri = userPhotoUri
+            )
 
             Spacer(modifier = Modifier.height(18.dp))
 
@@ -195,11 +232,49 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            OrganizerSimpleInputBox(
-                value = tournamentsPerYear,
-                onValueChange = { tournamentsPerYear = it },
-                minHeight = 54
-            )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = tournamentsPerYear,
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .clickable { isDropdownExpanded = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Select options",
+                            modifier = Modifier.clickable { isDropdownExpanded = true }
+                        )
+                    },
+                    shape = RoundedCornerShape(7.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFEFF1F6),
+                        unfocusedContainerColor = Color(0xFFEFF1F6),
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedTextColor = BrandBlue,
+                        unfocusedTextColor = BrandBlue
+                    )
+                )
+
+                DropdownMenu(
+                    expanded = isDropdownExpanded,
+                    onDismissRequest = { isDropdownExpanded = false },
+                    modifier = Modifier.fillMaxWidth(0.85f).background(BrandWhite)
+                ) {
+                    dropdownOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(text = option, color = BrandBlue) },
+                            onClick = {
+                                tournamentsPerYear = option
+                                isDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(22.dp))
 
@@ -209,7 +284,7 @@ fun PlayerBecomeOrganizerScreen(
 
             OrganizerSimpleInputBox(
                 value = motivation,
-                onValueChange = { motivation = it },
+                onValueChange = { if (it.length <= 500) motivation = it },
                 minHeight = 118
             )
 
@@ -245,7 +320,6 @@ fun PlayerBecomeOrganizerScreen(
             OrganizerSimpleInputBox(
                 value = reference,
                 onValueChange = { reference = it },
-                placeholder = "Name of an existing organizer who can vouch\nfor you",
                 minHeight = 64
             )
 
@@ -263,7 +337,7 @@ fun PlayerBecomeOrganizerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = acceptedTerms,
+                enabled = acceptedTerms && motivation.isNotBlank(),
                 shape = RoundedCornerShape(6.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BrandGreen,
@@ -315,7 +389,8 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        BecomeOrganizerBottomBar(
+        MatchLeagueBottomBar(
+            selectedTab = "TOURNAMENTS",
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,
             onMatchesClick = onMatchesClick,
@@ -398,7 +473,12 @@ fun OrganizerInfoBanner() {
 }
 
 @Composable
-fun OrganizerUserInfoCard() {
+fun OrganizerUserInfoCard(
+    name: String,
+    email: String,
+    memberSince: String,
+    photoUri: Uri?
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(9.dp),
@@ -433,15 +513,27 @@ fun OrganizerUserInfoCard() {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(R.drawable.avatar_player),
-                    contentDescription = "Cristiano Ronaldo",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFF0F2FA))
-                )
+                if (photoUri != null) {
+                    AsyncImage(
+                        model = photoUri,
+                        contentDescription = "User Photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFF0F2FA))
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFF0F2FA)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("👤", fontSize = 24.sp)
+                    }
+                }
 
                 Spacer(modifier = Modifier.width(14.dp))
 
@@ -449,14 +541,14 @@ fun OrganizerUserInfoCard() {
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Cristiano Ronaldo",
+                        text = name,
                         color = BrandBlue,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
 
                     Text(
-                        text = "cr7@gmail.com · Member since\n2021",
+                        text = "$email · Member since\n$memberSince",
                         color = Color(0xFF7D8497),
                         fontSize = 11.sp,
                         lineHeight = 15.sp,
@@ -683,62 +775,6 @@ fun OrganizerTermsBox(
             fontSize = 12.sp,
             lineHeight = 17.sp,
             fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-fun BecomeOrganizerBottomBar(
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp)
-            .background(BrandWhite)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        BecomeOrganizerBottomItem("⌂", "HOME", false, onHomeClick)
-        BecomeOrganizerBottomItem("♕", "TOURNAMENTS", true, onTournamentsClick)
-        BecomeOrganizerBottomItem("◎", "MATCHES", false, onMatchesClick)
-        BecomeOrganizerBottomItem("♟", "TEAMS", false, onTeamsClick)
-        BecomeOrganizerBottomItem("♙", "PROFILE", false, onProfileClick)
-    }
-}
-
-@Composable
-fun BecomeOrganizerBottomItem(
-    icon: String,
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0757C8) else Color(0xFF9EA4B3)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icon,
-            color = color,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = title,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
         )
     }
 }
