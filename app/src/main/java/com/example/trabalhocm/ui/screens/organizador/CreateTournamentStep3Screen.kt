@@ -33,21 +33,15 @@ import com.example.trabalhocm.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTournamentStep3Screen(
+    viewModel: CreateTournamentViewModel,
     onBackClick: () -> Unit = {},
     onProceedClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    var venue by remember { mutableStateOf("") }
-    var entryFee by remember { mutableStateOf("100.00") }
-    var prize1 by remember { mutableStateOf("75000") }
-    var prize2 by remember { mutableStateOf("35000") }
-    var prize3 by remember { mutableStateOf("20000") }
-    var notes by remember { mutableStateOf("") }
-
-    val totalPrizePool = remember(prize1, prize2, prize3) {
-        val p1 = prize1.filter { it.isDigit() }.toLongOrNull() ?: 0L
-        val p2 = prize2.filter { it.isDigit() }.toLongOrNull() ?: 0L
-        val p3 = prize3.filter { it.isDigit() }.toLongOrNull() ?: 0L
+    val totalPrizePool = remember(viewModel.prize1, viewModel.prize2, viewModel.prize3) {
+        val p1 = viewModel.prize1.filter { it.isDigit() }.toLongOrNull() ?: 0L
+        val p2 = viewModel.prize2.filter { it.isDigit() }.toLongOrNull() ?: 0L
+        val p3 = viewModel.prize3.filter { it.isDigit() }.toLongOrNull() ?: 0L
         p1 + p2 + p3
     }
 
@@ -71,10 +65,7 @@ fun CreateTournamentStep3Screen(
             )
         },
         bottomBar = {
-            MatchLeagueBottomBar(
-                selectedTab = "TOURNAMENTS",
-                onHomeClick = onHomeClick
-            )
+            MatchLeagueBottomBar(selectedTab = "TOURNAMENTS", onHomeClick = onHomeClick)
         },
         containerColor = BgLight
     ) { paddingValues ->
@@ -92,8 +83,8 @@ fun CreateTournamentStep3Screen(
                 Step3SectionLabel("VENUE / LOCATION")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    value = venue,
-                    onValueChange = { venue = it },
+                    value = viewModel.venue,
+                    onValueChange = { viewModel.venue = it },
                     placeholder = { Text("Pesquisar morada ou recinto...", color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -109,32 +100,14 @@ fun CreateTournamentStep3Screen(
                         Icon(Icons.Default.Place, contentDescription = null, tint = TextGray, modifier = Modifier.size(20.dp))
                     }
                 )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFE2E8F0))
-                        .clickable { },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Place, contentDescription = null, tint = TextGray, modifier = Modifier.size(32.dp))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Escolher localização", color = TextGray, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
             }
 
             Column {
                 Step3SectionLabel("ENTRY FEE PER TEAM")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    value = entryFee,
-                    onValueChange = { entryFee = it },
+                    value = viewModel.entryFee,
+                    onValueChange = { viewModel.entryFee = it },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -159,24 +132,24 @@ fun CreateTournamentStep3Screen(
                 PrizeInputRow(
                     rank = "1st Place",
                     iconColor = Color(0xFFFBBF24),
-                    value = prize1,
-                    onValueChange = { prize1 = it }
+                    value = viewModel.prize1,
+                    onValueChange = { viewModel.prize1 = it }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 PrizeInputRow(
                     rank = "2nd Place",
                     iconColor = Color(0xFF9CA3AF),
-                    value = prize2,
-                    onValueChange = { prize2 = it }
+                    value = viewModel.prize2,
+                    onValueChange = { viewModel.prize2 = it }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 PrizeInputRow(
                     rank = "3rd Place",
                     iconColor = Color(0xFFD97706),
-                    value = prize3,
-                    onValueChange = { prize3 = it }
+                    value = viewModel.prize3,
+                    onValueChange = { viewModel.prize3 = it }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -191,8 +164,8 @@ fun CreateTournamentStep3Screen(
                 Step3SectionLabel("VENUE NOTES (OPTIONAL)")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    value = notes,
-                    onValueChange = { notes = it },
+                    value = viewModel.notes,
+                    onValueChange = { viewModel.notes = it },
                     placeholder = { Text("Parking info, entrance details, special instructions...", color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -244,7 +217,6 @@ fun CreateTournamentStep3Screen(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -340,10 +312,3 @@ fun Step3SectionLabel(text: String) {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CreateTournamentStep3ScreenPreview() {
-    MaterialTheme {
-        CreateTournamentStep3Screen()
-    }
-}

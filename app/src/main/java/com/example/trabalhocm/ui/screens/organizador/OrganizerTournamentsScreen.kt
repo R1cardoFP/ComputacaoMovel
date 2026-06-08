@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 import com.example.trabalhocm.ui.theme.*
@@ -30,10 +32,11 @@ private val WarningYellow = Color(0xFFF59E0B)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizerTournamentsScreen(
+    viewModel: OrganizerTournamentsViewModel = viewModel(),
     onHistoryClick: () -> Unit = {},
     onFiltersClick: () -> Unit = {},
     onCreateNewClick: () -> Unit = {},
-    onDetailsClick: () -> Unit = {},
+    onDetailsClick: (Long) -> Unit = { _ -> },
     onInviteTeamsClick: () -> Unit = {},
     onManageRegistrationClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
@@ -41,17 +44,20 @@ fun OrganizerTournamentsScreen(
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onEditClick: () -> Unit = {}
+    onEditClick: (Long) -> Unit = { _ -> }
 ) {
     var searchQuery by remember { mutableStateOf("") }
+
+    val torneios = viewModel.torneios
+    val isLoading = viewModel.isLoading
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("List", color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                    IconButton(onClick = { viewModel.carregarTorneios() }) {
+                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -123,67 +129,67 @@ fun OrganizerTournamentsScreen(
                     ),
                     modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Surface(color = InputBg, shape = RoundedCornerShape(8.dp), modifier = Modifier.weight(1f).height(40.dp)) {
-                        Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(horizontal = 12.dp)) {
-                            Text("Status: All", color = TextGray, fontSize = 12.sp)
-                        }
-                    }
-                    Surface(color = InputBg, shape = RoundedCornerShape(8.dp), modifier = Modifier.weight(1f).height(40.dp)) {
-                        Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(horizontal = 12.dp)) {
-                            Text("Region: All", color = TextGray, fontSize = 12.sp)
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedButton(
-                    onClick = onFiltersClick,
-                    shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, InputBg),
-                    modifier = Modifier.fillMaxWidth().height(40.dp)
-                ) {
-                    Text("FILTERS", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            item {
-                OrganizerTournamentCard(
-                    status = "• LIVE", statusColor = ErrorRed, tags = listOf("PRO LEAGUE", "FOOTBALL"),
-                    title = "Premier Summer Cup 2026", dates = "15 Jun — 30 Aug",
-                    teams = 24, gamesToday = 6,
-                    onDetailsClick = onDetailsClick,
-                    onInviteTeamsClick = onInviteTeamsClick,
-                    onManageRegistrationClick = onManageRegistrationClick,
-                    onEditClick = onEditClick
-                )
-            }
+            if (isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = TealGreen)
+                    }
+                }
+            } else {
+                val torneiosFiltrados = torneios.filter { it.nome.contains(searchQuery, ignoreCase = true) }
 
-            item {
-                RegularTournamentCard(
-                    status = "• OPEN", statusColor = TealGreen, tags = listOf("AMATEUR", "BASKETBALL"),
-                    title = "Liga Regional Sul", dates = "Start: 10 Sep",
-                    registered = 12, capacity = 16, actionText = "REGISTER NOW", actionColor = TealGreen,
-                    onDetailsClick = onDetailsClick
-                )
-            }
+                if (torneiosFiltrados.isEmpty()) {
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                            Text("No tournaments found.", color = TextGray)
+                        }
+                    }
+                } else {
+                    items(torneiosFiltrados) { torneio ->
 
-            item {
-                RegularTournamentCard(
-                    status = "• SOLD OUT", statusColor = WarningYellow, tags = listOf("PRO LEAGUE", "FOOTBALL"),
-                    title = "Atlantic Cup 2026", dates = "Start: 1 Oct",
-                    registered = 32, capacity = 32, actionText = "ALL SLOTS FILLED", actionColor = InputBg, isActionEnabled = false,
-                    onDetailsClick = onDetailsClick
-                )
-            }
+                        val isOrganizer = torneio.idOrganizador == viewModel.currentUserId
+                        val sportName = when (torneio.idModalidade) {
+                            1L -> "FOOTBALL"
+                            2L -> "BASKETBALL"
+                            3L -> "VOLLEYBALL"
+                            else -> "SPORT"
+                        }
+                        val statusColor = if (torneio.estado == "aberto") TealGreen else WarningYellow
 
-            item {
-                RegularTournamentCard(
-                    status = "• INVITE ONLY", statusColor = PrimaryBlue, tags = listOf("ELITE", "VOLLEYBALL"),
-                    title = "Elite Invitational 2026", dates = "Start: 12 Nov",
-                    registered = null, capacity = null, actionText = "INVITE ONLY — LOCKED", actionColor = InputBg, isActionEnabled = false,
-                    onDetailsClick = onDetailsClick
-                )
+                        if (isOrganizer) {
+                            OrganizerTournamentCard(
+                                status = "• ${torneio.estado.uppercase()}",
+                                statusColor = statusColor,
+                                tags = listOf(torneio.formato.uppercase(), sportName),
+                                title = torneio.nome,
+                                dates = "${torneio.dataInicio} — ${torneio.dataFim ?: "TBD"}",
+                                teams = 0,
+                                gamesToday = 0,
+                                onDetailsClick = { onDetailsClick(torneio.id) },
+                                onInviteTeamsClick = onInviteTeamsClick,
+                                onManageRegistrationClick = onManageRegistrationClick,
+                                onEditClick = { onEditClick(torneio.id) }
+                            )
+                        } else {
+                            RegularTournamentCard(
+                                status = "• ${torneio.estado.uppercase()}",
+                                statusColor = statusColor,
+                                tags = listOf(torneio.formato.uppercase(), sportName),
+                                title = torneio.nome,
+                                dates = "Start: ${torneio.dataInicio}",
+                                registered = 0,
+                                capacity = 32,
+                                actionText = if (torneio.estado == "aberto") "REGISTER NOW" else "VIEW DETAILS",
+                                actionColor = if (torneio.estado == "aberto") TealGreen else InputBg,
+                                isActionEnabled = torneio.estado == "aberto",
+                                onDetailsClick = { onDetailsClick(torneio.id) }
+                            )
+                        }
+                    }
+                }
             }
 
             item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -311,13 +317,5 @@ private fun RegularTournamentCard(
 fun TourneyBadge(text: String, textColor: Color, bgColor: Color) {
     Surface(color = bgColor, shape = RoundedCornerShape(12.dp)) {
         Text(text, color = textColor, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
-    }
-}
-
-@Preview(showBackground = true, name = "Organizer Tournaments List")
-@Composable
-fun OrganizerTournamentsScreenPreview() {
-    MaterialTheme {
-        OrganizerTournamentsScreen()
     }
 }

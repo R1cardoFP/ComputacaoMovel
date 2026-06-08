@@ -31,12 +31,11 @@ import com.example.trabalhocm.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTournamentStep4Screen(
+    viewModel: CreateTournamentViewModel,
     onBackClick: () -> Unit = {},
     onPublishClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    var selectedRole by remember { mutableStateOf("Participate as Player") }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -55,10 +54,7 @@ fun CreateTournamentStep4Screen(
             )
         },
         bottomBar = {
-            MatchLeagueBottomBar(
-                selectedTab = "TOURNAMENTS",
-                onHomeClick = onHomeClick
-            )
+            MatchLeagueBottomBar(selectedTab = "TOURNAMENTS", onHomeClick = onHomeClick)
         },
         containerColor = BgLight
     ) { paddingValues ->
@@ -80,90 +76,19 @@ fun CreateTournamentStep4Screen(
                     title = "Organizer Only",
                     description = "Manage the event, brackets, and scores. You will not play.",
                     icon = Icons.Default.Build,
-                    isSelected = selectedRole == "Organizer Only",
-                    onClick = { selectedRole = "Organizer Only" }
+                    isSelected = viewModel.selectedRole == "Organizer Only",
+                    onClick = { viewModel.selectedRole = "Organizer Only" }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 RoleCard(
                     title = "Participate as Player",
                     description = "Manage the event and compete in the bracket.",
                     icon = Icons.Default.Person,
-                    isSelected = selectedRole == "Participate as Player",
-                    onClick = { selectedRole = "Participate as Player" }
+                    isSelected = viewModel.selectedRole == "Participate as Player",
+                    onClick = { viewModel.selectedRole = "Participate as Player" }
                 )
             }
 
-            // MY SEED / TEAM NAME
-            Column {
-                Step4SectionLabel("MY SEED / TEAM NAME")
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(
-                    value = "FC Mancos",
-                    onValueChange = {},
-                    readOnly = true,
-                    enabled = false,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp)),
-                    colors = TextFieldDefaults.colors(
-                        disabledContainerColor = InputBg,
-                        disabledIndicatorColor = Color.Transparent,
-                        disabledTextColor = DarkBlue
-                    ),
-                    textStyle = LocalTextStyle.current.copy(fontWeight = FontWeight.Bold),
-                    trailingIcon = {
-                        Icon(Icons.Outlined.Lock, contentDescription = "Locked", tint = TextGray, modifier = Modifier.size(20.dp))
-                    }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Auto-filled with your current team. Cannot be changed for this tournament.", color = TextGray, fontSize = 12.sp, lineHeight = 16.sp)
-            }
-
-            // EVENT STATUS
-            Column {
-                Step4SectionLabel("EVENT STATUS")
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
-                    shape = RoundedCornerShape(8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Registration Status", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        StatusBadge("OPEN", PrimaryBlue)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
-                    shape = RoundedCornerShape(8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Visibility", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        StatusBadge("PUBLIC", PrimaryBlue)
-                    }
-                }
-            }
-
-            // TOURNAMENT DETAILS REVIEW
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(8.dp),
@@ -177,34 +102,32 @@ fun CreateTournamentStep4Screen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Tournament Details", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text("EDIT", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.clickable { onBackClick() })
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    ReviewRow("Name", "FC Mancos")
+                    ReviewRow("Name", viewModel.tournamentName.ifBlank { "Sem Nome" })
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Sport", "Football")
+                    ReviewRow("Sport", viewModel.selectedSport)
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Format", "League System")
+                    ReviewRow("Format", viewModel.selectedFormat)
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Schedule", "15/07 - 20/07/26")
+                    ReviewRow("Schedule", "${viewModel.startDate} - ${viewModel.endDate}")
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Max Teams", "32")
+                    ReviewRow("Max Teams", viewModel.maxParticipants)
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Location", "Metro City Sports")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Prize Pool", color = TextGray, fontSize = 14.sp)
-                        Text("€ 125 000", color = TealGreen, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
-                    }
+                    ReviewRow("Location", viewModel.venue.ifBlank { "TBD" })
                 }
             }
 
-            // BOTÕES FINAIS
+            if (viewModel.errorMessage.isNotBlank()) {
+                Text(
+                    text = viewModel.errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp
+                )
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -214,7 +137,8 @@ fun CreateTournamentStep4Screen(
             ) {
                 TextButton(
                     onClick = onBackClick,
-                    modifier = Modifier.weight(0.35f)
+                    modifier = Modifier.weight(0.35f),
+                    enabled = !viewModel.isLoading
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
@@ -224,24 +148,30 @@ fun CreateTournamentStep4Screen(
                 }
 
                 Button(
-                    onClick = onPublishClick,
+                    onClick = {
+                        viewModel.publishTournament(onSuccess = onPublishClick)
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .weight(0.65f)
-                        .height(56.dp)
+                        .height(56.dp),
+                    enabled = !viewModel.isLoading
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text("PUBLISH TOURNAMENT", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                    if (viewModel.isLoading) {
+                        CircularProgressIndicator(color = BrandWhite, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text("PUBLISH TOURNAMENT", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        }
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -376,10 +306,3 @@ fun Step4SectionLabel(text: String) {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CreateTournamentStep4ScreenPreview() {
-    MaterialTheme {
-        CreateTournamentStep4Screen()
-    }
-}

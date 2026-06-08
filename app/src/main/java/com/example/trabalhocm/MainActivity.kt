@@ -80,6 +80,9 @@ import com.example.trabalhocm.ui.screens.admin.AdminTournamentEditScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTeamsScreen
 import kotlinx.coroutines.launch
 import com.example.trabalhocm.ui.screens.player.PlayerCalendarMatchDetailsScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentViewModel
+import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,6 +104,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MatchLeagueApp() {
     val navController = rememberNavController()
+
+    val createTournamentViewModel: CreateTournamentViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -640,7 +645,6 @@ fun MatchLeagueApp() {
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") },
                 onDetailsClick = { idTorneio ->
-                    // --- MUDANÇA AQUI: Agora envia o ID ---
                     navController.navigate("player_tournament_details/$idTorneio")
                 },
                 onRegisterClick = { navController.navigate("player_tournament_registration") },
@@ -650,7 +654,6 @@ fun MatchLeagueApp() {
             )
         }
 
-        // --- MUDANÇA AQUI: A Rota agora espera receber um ID ---
         composable(
             route = "player_tournament_details/{idTorneio}",
             arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
@@ -872,10 +875,57 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_profile") {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val scope = rememberCoroutineScope()
+            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+
+            var nomeUtilizador by remember { mutableStateOf("") }
+            var emailUtilizador by remember { mutableStateOf("") }
+            var bioUtilizador by remember { mutableStateOf("") }
+            var anoMembro by remember { mutableStateOf("2026") }
+            var userId by remember { mutableStateOf("") }
+
+            val sharedPrefs = remember { context.getSharedPreferences("user_prefs", android.content.Context.MODE_PRIVATE) }
+
+            LaunchedEffect(Unit) {
+                authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
+                    nomeUtilizador = utilizador.nome
+                    emailUtilizador = utilizador.email
+                    userId = utilizador.id
+
+                    val dataCriacao = utilizador.dataCriacao
+                    if (!dataCriacao.isNullOrEmpty() && dataCriacao.length >= 4) {
+                        anoMembro = dataCriacao.substring(0, 4)
+                    }
+
+                    val savedBio = sharedPrefs.getString("bio_$userId", null)
+                    if (savedBio != null) bioUtilizador = savedBio
+                }
+            }
+
             OrganizerProfileScreen(
+                initialName = nomeUtilizador,
+                initialEmail = emailUtilizador,
+                initialBio = bioUtilizador,
+                memberSinceYear = anoMembro,
                 onLogoutClick = {
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
+                    scope.launch {
+                        authRepository.logout()
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                },
+                onSaveChanges = { novoNome, novoEmail, novaBio ->
+                    scope.launch {
+                        sharedPrefs.edit {
+                            putString("bio_$userId", novaBio)
+                        }
+
+                        authRepository.atualizarPerfil(novoNome, novaBio)
+
+                        nomeUtilizador = novoNome
+                        bioUtilizador = novaBio
                     }
                 },
                 onPlayerDashboardClick = { navController.navigate("player_stats") },
@@ -887,8 +937,10 @@ fun MatchLeagueApp() {
             )
         }
 
+
         composable("create_tournament") {
             CreateTournamentScreen(
+                viewModel = createTournamentViewModel,
                 onBackClick = { navController.popBackStack() },
                 onProceedClick = { navController.navigate("create_tournament_step_2") },
                 onHomeClick = {
@@ -903,6 +955,7 @@ fun MatchLeagueApp() {
 
         composable("create_tournament_step_2") {
             CreateTournamentStep2Screen(
+                viewModel = createTournamentViewModel,
                 onBackClick = { navController.popBackStack() },
                 onProceedClick = { navController.navigate("create_tournament_step_3") },
                 onHomeClick = {
@@ -917,6 +970,7 @@ fun MatchLeagueApp() {
 
         composable("create_tournament_step_3") {
             CreateTournamentStep3Screen(
+                viewModel = createTournamentViewModel,
                 onBackClick = { navController.popBackStack() },
                 onProceedClick = { navController.navigate("create_tournament_step_4") },
                 onHomeClick = {
@@ -931,6 +985,7 @@ fun MatchLeagueApp() {
 
         composable("create_tournament_step_4") {
             CreateTournamentStep4Screen(
+                viewModel = createTournamentViewModel,
                 onBackClick = { navController.popBackStack() },
                 onPublishClick = {
                     navController.navigate("home") {
@@ -974,9 +1029,12 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_matches") {
+            val matchesViewModel: OrganizerMatchesViewModel = viewModel()
+
             OrganizerMatchesScreen(
+                viewModel = matchesViewModel, // <-- Passamos a mochila
                 onBackClick = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("home") },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { },
                 onTeamsClick = { navController.navigate("teams") },
@@ -1012,11 +1070,7 @@ fun MatchLeagueApp() {
                 onCreateTeamClick = { navController.navigate("create_team") },
                 onManageTeamClick = { navController.navigate("manage_team") },
                 onViewDetailsClick = { isUserTeam -> navController.navigate("organizador_team_details/$isUserTeam") },
-                onHomeClick = {
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {  },
@@ -1281,13 +1335,11 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onManageRegistrationClick = { id ->
-                    // ligar ao ecrã de inscrições
                 },
                 onEditTournamentClick = { id ->
                     navController.navigate("admin_tournament_edit/$id")
                 },
                 onDeleteTournamentClick = { id ->
-                    // reaproveitar a lógica de apagar
                 },
                 onHomeClick = {
                     navController.navigate("admin_home")
@@ -1365,10 +1417,8 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onViewDetailsClick = { teamId ->
-                    // ligar ao ecrã de detalhes da equipa
                 },
                 onManageTeamClick = { teamId ->
-                    // ligar ao ecrã de gestão da equipa
                 },
                 onHomeClick = {
                     navController.navigate("admin_home")

@@ -32,15 +32,11 @@ import com.example.trabalhocm.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTournamentScreen(
+    viewModel: CreateTournamentViewModel,
     onBackClick: () -> Unit = {},
     onProceedClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    var tournamentName by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var selectedSport by remember { mutableStateOf("Football") }
-    var selectedFormat by remember { mutableStateOf("League") }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -81,8 +77,8 @@ fun CreateTournamentScreen(
                 SectionLabel("TOURNAMENT NAME")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    value = tournamentName,
-                    onValueChange = { tournamentName = it },
+                    value = viewModel.tournamentName,
+                    onValueChange = { viewModel.tournamentName = it },
                     placeholder = { Text("e.g: FC Mancos", color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -109,30 +105,30 @@ fun CreateTournamentScreen(
                         modifier = Modifier.weight(1f),
                         title = "Football",
                         icon = Icons.Default.Star,
-                        isSelected = selectedSport == "Football",
+                        isSelected = viewModel.selectedSport == "Football",
                         onClick = {
-                            selectedSport = "Football"
-                            selectedFormat = "League System"
+                            viewModel.selectedSport = "Football"
+                            viewModel.selectedFormat = "League System"
                         }
                     )
                     SportCard(
                         modifier = Modifier.weight(1f),
                         title = "Volleyball",
                         icon = Icons.Default.Star,
-                        isSelected = selectedSport == "Volleyball",
+                        isSelected = viewModel.selectedSport == "Volleyball",
                         onClick = {
-                            selectedSport = "Volleyball"
-                            selectedFormat = "Pool Play + Playoffs"
+                            viewModel.selectedSport = "Volleyball"
+                            viewModel.selectedFormat = "Pool Play + Playoffs"
                         }
                     )
                     SportCard(
                         modifier = Modifier.weight(1f),
                         title = "Basketball",
                         icon = Icons.Default.Star,
-                        isSelected = selectedSport == "Basketball",
+                        isSelected = viewModel.selectedSport == "Basketball",
                         onClick = {
-                            selectedSport = "Basketball"
-                            selectedFormat = "Regular Season + Playoffs"
+                            viewModel.selectedSport = "Basketball"
+                            viewModel.selectedFormat = "Regular Season + Playoffs"
                         }
                     )
                 }
@@ -143,30 +139,30 @@ fun CreateTournamentScreen(
                 SectionLabel("COMPETITION FORMAT")
                 Spacer(modifier = Modifier.height(8.dp))
 
-                when (selectedSport) {
+                when (viewModel.selectedSport) {
                     "Football" -> {
                         FormatCard(
                             title = "League System",
                             description = "Round-robin format where teams earn points based on match outcomes.",
                             icon = Icons.Default.List,
-                            isSelected = selectedFormat == "League System",
-                            onClick = { selectedFormat = "League System" }
+                            isSelected = viewModel.selectedFormat == "League System",
+                            onClick = { viewModel.selectedFormat = "League System" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
                             title = "Knockout",
                             description = "Bracket-style elimination. Win to advance, lose to exit the tournament.",
                             icon = Icons.Default.Share,
-                            isSelected = selectedFormat == "Knockout",
-                            onClick = { selectedFormat = "Knockout" }
+                            isSelected = viewModel.selectedFormat == "Knockout",
+                            onClick = { viewModel.selectedFormat = "Knockout" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
                             title = "Group Stage + Knockout",
                             description = "Group round followed by elimination bracket. Hybrid competition format.",
                             icon = Icons.Default.Check,
-                            isSelected = selectedFormat == "Group+Knockout",
-                            onClick = { selectedFormat = "Group+Knockout" }
+                            isSelected = viewModel.selectedFormat == "Group+Knockout",
+                            onClick = { viewModel.selectedFormat = "Group+Knockout" }
                         )
                     }
 
@@ -175,24 +171,24 @@ fun CreateTournamentScreen(
                             title = "Pool Play + Playoffs",
                             description = "Teams compete in groups, with the top teams advancing to an elimination bracket.",
                             icon = Icons.Default.Menu,
-                            isSelected = selectedFormat == "Pool Play + Playoffs",
-                            onClick = { selectedFormat = "Pool Play + Playoffs" }
+                            isSelected = viewModel.selectedFormat == "Pool Play + Playoffs",
+                            onClick = { viewModel.selectedFormat = "Pool Play + Playoffs" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
                             title = "Double Elimination Bracket",
                             description = "A team is only eliminated from the tournament after losing two matches.",
                             icon = Icons.Default.Share,
-                            isSelected = selectedFormat == "Double Elimination",
-                            onClick = { selectedFormat = "Double Elimination" }
+                            isSelected = viewModel.selectedFormat == "Double Elimination",
+                            onClick = { viewModel.selectedFormat = "Double Elimination" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
                             title = "League System",
                             description = "Round-robin format where teams earn points based on match outcomes.",
                             icon = Icons.Default.List,
-                            isSelected = selectedFormat == "League System",
-                            onClick = { selectedFormat = "League System" }
+                            isSelected = viewModel.selectedFormat == "League System",
+                            onClick = { viewModel.selectedFormat = "League System" }
                         )
                     }
 
@@ -201,24 +197,24 @@ fun CreateTournamentScreen(
                             title = "Regular Season + Playoffs",
                             description = "A full regular season followed by a playoff bracket to determine the champion.",
                             icon = Icons.Default.DateRange,
-                            isSelected = selectedFormat == "Regular Season + Playoffs",
-                            onClick = { selectedFormat = "Regular Season + Playoffs" }
+                            isSelected = viewModel.selectedFormat == "Regular Season + Playoffs",
+                            onClick = { viewModel.selectedFormat = "Regular Season + Playoffs" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
                             title = "Single Elimination Bracket",
                             description = "Standard knockout tournament. Win to advance, lose and you're out.",
                             icon = Icons.Default.Share,
-                            isSelected = selectedFormat == "Single Elimination Bracket",
-                            onClick = { selectedFormat = "Single Elimination Bracket" }
+                            isSelected = viewModel.selectedFormat == "Single Elimination Bracket",
+                            onClick = { viewModel.selectedFormat = "Single Elimination Bracket" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
                             title = "3x3 Pool Play",
                             description = "Teams are divided into pools for round-robin play, with top teams advancing.",
                             icon = Icons.Default.Person,
-                            isSelected = selectedFormat == "3x3 Pool Play",
-                            onClick = { selectedFormat = "3x3 Pool Play" }
+                            isSelected = viewModel.selectedFormat == "3x3 Pool Play",
+                            onClick = { viewModel.selectedFormat = "3x3 Pool Play" }
                         )
                     }
                 }
@@ -228,8 +224,8 @@ fun CreateTournamentScreen(
                 SectionLabel("DESCRIPTION & RULES")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    value = description,
-                    onValueChange = { description = it },
+                    value = viewModel.description,
+                    onValueChange = { viewModel.description = it },
                     placeholder = { Text("Briefly describe the tournament goal, prizes, and specific house rules...", color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -439,10 +435,3 @@ fun SectionLabel(text: String) {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CreateTournamentScreenPreview() {
-    MaterialTheme {
-        CreateTournamentScreen()
-    }
-}

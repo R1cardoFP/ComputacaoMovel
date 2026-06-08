@@ -112,10 +112,6 @@ class AuthRepository {
                 throw Exception("already registered")
             }
 
-            // ATENÇÃO: Como agora ativaste a confirmação por email (OTP),
-            // a Supabase NÃO faz o login automático aqui.
-            // Para a app não bloquear e conseguir avançar para o ecrã dos 6 dígitos,
-            // enviamos um Utilizador "temporário". O verdadeiro é devolvido após inserir o código!
             Utilizador(
                 id = "pendente",
                 username = username,
