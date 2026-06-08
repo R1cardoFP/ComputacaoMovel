@@ -27,6 +27,10 @@ class AdminTournamentRepository {
                 .select()
                 .decodeList<OrganizadorArquivoAdminDto>()
 
+            val inscricoesEquipas = client.from("torneio_equipa")
+                .select()
+                .decodeList<TorneioEquipaResumoDto>()
+
             torneios.map { torneio ->
                 val modalidadeNome = modalidades
                     .firstOrNull { it.id == torneio.idModalidade }
@@ -38,6 +42,14 @@ class AdminTournamentRepository {
                     ?.nome
                     ?: "Unknown organizer"
 
+                val teamsCount = inscricoesEquipas.count { inscricao ->
+                    inscricao.idTorneio == torneio.id &&
+                            (
+                                    inscricao.estado.equals("pendente", ignoreCase = true) ||
+                                            inscricao.estado.equals("aprovada", ignoreCase = true)
+                                    )
+                }
+
                 AdminTournament(
                     id = torneio.id.toString(),
                     nome = torneio.nome,
@@ -47,7 +59,9 @@ class AdminTournamentRepository {
                     champion = "Por definir",
                     prize = formatPrize(torneio.premio),
                     season = formatSeason(torneio.dataInicio, torneio.dataFim),
-                    estado = torneio.estado ?: "ARCHIVED"
+                    estado = torneio.estado ?: "ARCHIVED",
+                    teamsCount = teamsCount,
+                    maxTeams = 16
                 )
             }.sortedBy { it.nome.lowercase() }
         }
@@ -421,4 +435,17 @@ private data class ModalidadeArquivoAdminDto(
 private data class OrganizadorArquivoAdminDto(
     val id: String,
     val nome: String
+)
+
+@Serializable
+private data class TorneioEquipaResumoDto(
+    val id: Long? = null,
+
+    @SerialName("id_torneio")
+    val idTorneio: Int,
+
+    @SerialName("id_equipa")
+    val idEquipa: Int,
+
+    val estado: String = ""
 )
