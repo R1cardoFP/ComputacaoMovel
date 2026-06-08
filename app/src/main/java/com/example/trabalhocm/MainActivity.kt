@@ -109,7 +109,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "admin_home"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -1339,7 +1339,13 @@ fun MatchLeagueApp() {
                 onEditTournamentClick = { id ->
                     navController.navigate("admin_tournament_edit/$id")
                 },
-                onDeleteTournamentClick = { id ->
+                onDeleteTournamentSuccess = {
+                    navController.navigate("admin_tournaments") {
+                        popUpTo("admin_tournaments") {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
                 },
                 onHomeClick = {
                     navController.navigate("admin_home")
@@ -1375,9 +1381,10 @@ fun MatchLeagueApp() {
                 },
                 onSaveSuccess = {
                     navController.navigate("admin_tournament_details/$tournamentId") {
-                        popUpTo("admin_tournament_edit/$tournamentId") {
+                        popUpTo("admin_tournament_details/{tournamentId}") {
                             inclusive = true
                         }
+                        launchSingleTop = true
                     }
                 },
                 onCancelSuccess = {
@@ -1388,11 +1395,7 @@ fun MatchLeagueApp() {
                     }
                 },
                 onDiscardChangesClick = {
-                    navController.navigate("admin_tournament_details/$tournamentId") {
-                        popUpTo("admin_tournament_edit/$tournamentId") {
-                            inclusive = true
-                        }
-                    }
+                    navController.popBackStack()
                 },
                 onHomeClick = {
                     navController.navigate("admin_home")

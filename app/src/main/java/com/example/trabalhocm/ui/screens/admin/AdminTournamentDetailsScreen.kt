@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,11 +29,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,9 +53,9 @@ import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
-import com.example.trabalhocm.ui.theme.LightBlueBadge
+import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.TextGray
-import androidx.compose.foundation.layout.ColumnScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminTournamentDetailsScreen(
@@ -60,7 +64,7 @@ fun AdminTournamentDetailsScreen(
     onNotificationsClick: () -> Unit = {},
     onManageRegistrationClick: (String) -> Unit = {},
     onEditTournamentClick: (String) -> Unit = {},
-    onDeleteTournamentClick: (String) -> Unit = {},
+    onDeleteTournamentSuccess: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -68,12 +72,20 @@ fun AdminTournamentDetailsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val repository = remember { AdminTournamentRepository() }
+    val scope = rememberCoroutineScope()
 
     var details by remember { mutableStateOf<AdminTournamentDetails?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var isDeleting by remember { mutableStateOf(false) }
+    var deleteMessage by remember { mutableStateOf("") }
+
     LaunchedEffect(tournamentId) {
+        isLoading = true
+        errorMessage = ""
+
         repository.obterDetalhesTorneio(tournamentId)
             .onSuccess {
                 details = it
@@ -83,6 +95,72 @@ fun AdminTournamentDetailsScreen(
             }
 
         isLoading = false
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!isDeleting) {
+                    showDeleteDialog = false
+                }
+            },
+            title = {
+                Text(
+                    text = "Delete Tournament",
+                    color = BrandBlue,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Tens a certeza que queres apagar este torneio? Esta ação não pode ser anulada.",
+                    color = TextGray,
+                    fontSize = 13.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !isDeleting,
+                    onClick = {
+                        scope.launch {
+                            isDeleting = true
+                            deleteMessage = ""
+
+                            repository.apagarTorneio(tournamentId)
+                                .onSuccess {
+                                    showDeleteDialog = false
+                                    onDeleteTournamentSuccess()
+                                }
+                                .onFailure {
+                                    deleteMessage = "Erro ao apagar torneio: ${it.message}"
+                                    showDeleteDialog = false
+                                }
+
+                            isDeleting = false
+                        }
+                    }
+                ) {
+                    Text(
+                        text = if (isDeleting) "A apagar..." else "Apagar",
+                        color = ErrorRed,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !isDeleting,
+                    onClick = {
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "Cancelar",
+                        color = BrandBlue
+                    )
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -127,7 +205,7 @@ fun AdminTournamentDetailsScreen(
                 ) {
                     Text(
                         text = errorMessage,
-                        color = Color(0xFFDC2626),
+                        color = ErrorRed,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -138,9 +216,12 @@ fun AdminTournamentDetailsScreen(
                 AdminTournamentDetailsContent(
                     details = details!!,
                     innerPadding = innerPadding,
+                    deleteMessage = deleteMessage,
                     onManageRegistrationClick = onManageRegistrationClick,
                     onEditTournamentClick = onEditTournamentClick,
-                    onDeleteTournamentClick = onDeleteTournamentClick
+                    onDeleteTournamentClick = {
+                        showDeleteDialog = true
+                    }
                 )
             }
         }
@@ -151,9 +232,10 @@ fun AdminTournamentDetailsScreen(
 private fun AdminTournamentDetailsContent(
     details: AdminTournamentDetails,
     innerPadding: PaddingValues,
+    deleteMessage: String,
     onManageRegistrationClick: (String) -> Unit,
     onEditTournamentClick: (String) -> Unit,
-    onDeleteTournamentClick: (String) -> Unit
+    onDeleteTournamentClick: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -231,6 +313,17 @@ private fun AdminTournamentDetailsContent(
                     color = TextGray,
                     fontSize = 12.sp,
                     lineHeight = 17.sp
+                )
+            }
+        }
+
+        if (deleteMessage.isNotBlank()) {
+            item {
+                Text(
+                    text = deleteMessage,
+                    color = ErrorRed,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -374,7 +467,7 @@ private fun AdminControlsCard(
     tournamentId: String,
     onManageRegistrationClick: (String) -> Unit,
     onEditTournamentClick: (String) -> Unit,
-    onDeleteTournamentClick: (String) -> Unit
+    onDeleteTournamentClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -447,14 +540,14 @@ private fun AdminControlsCard(
 
             Button(
                 onClick = {
-                    onDeleteTournamentClick(tournamentId)
+                    onDeleteTournamentClick()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(42.dp),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFDC2626),
+                    containerColor = ErrorRed,
                     contentColor = Color.White
                 )
             ) {
@@ -491,9 +584,9 @@ private fun StatusBadgeDetails(status: String) {
 
     val textColor = when {
         normalized.contains("aberto") || normalized.contains("open") -> BrandGreen
-        normalized.contains("decorrer") || normalized.contains("live") -> Color(0xFFDC2626)
+        normalized.contains("decorrer") || normalized.contains("live") -> ErrorRed
         normalized.contains("terminado") || normalized.contains("archived") -> TextGray
-        normalized.contains("cancelado") -> Color(0xFFDC2626)
+        normalized.contains("cancelado") -> ErrorRed
         else -> BrandGreen
     }
 
