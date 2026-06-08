@@ -1,6 +1,5 @@
 package com.example.trabalhocm.ui.screens.player
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,29 +24,36 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.R
+import com.example.trabalhocm.data.repository.EquipaDetalhesInfo
+import com.example.trabalhocm.data.repository.EquipaRepository
+import com.example.trabalhocm.data.repository.MembroEquipaDetalhesInfo
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import java.util.Locale
 
 @Composable
 fun PlayerTeamDetailsScreen(
-    isUserTeam: Boolean = false,
+    idEquipa: Long = 0L,
     onBackClick: () -> Unit = {},
     onInvitePlayerClick: () -> Unit = {},
     onViewPlayerProfileClick: () -> Unit = {},
@@ -57,6 +63,27 @@ fun PlayerTeamDetailsScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val repository = remember { EquipaRepository() }
+
+    var detalhes by remember { mutableStateOf<EquipaDetalhesInfo?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf("") }
+
+    LaunchedEffect(idEquipa) {
+        isLoading = true
+        errorMessage = ""
+
+        repository.obterDetalhesEquipa(idEquipa)
+            .onSuccess {
+                detalhes = it
+            }
+            .onFailure {
+                errorMessage = it.message ?: "Erro ao carregar detalhes da equipa."
+            }
+
+        isLoading = false
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,119 +95,130 @@ fun PlayerTeamDetailsScreen(
             onBackClick = onBackClick
         )
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-        ) {
-            TeamDetailsHeroCard()
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 22.dp, vertical = 18.dp)
-            ) {
-                TeamWinRateCard()
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    TeamSmallMetricCard(
-                        modifier = Modifier.weight(1f),
-                        icon = "◎",
-                        title = "Total Goals",
-                        value = "42",
-                        subtitle = "+5 this month"
-                    )
-
-                    TeamSmallMetricCard(
-                        modifier = Modifier.weight(1f),
-                        icon = "▦",
-                        title = "Matches Played",
-                        value = "24",
-                        subtitle = "16W - 4D - 4L"
+                    CircularProgressIndicator(
+                        color = BrandGreen
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+            errorMessage.isNotBlank() -> {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(22.dp)
                 ) {
-                    Text(
-                        text = "Active Roster",
-                        color = Color(0xFF20242D),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium
+                    TeamDetailsErrorCard(
+                        text = errorMessage
+                    )
+                }
+            }
+
+            detalhes != null -> {
+                val info = detalhes!!
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    TeamDetailsHeroCard(
+                        info = info
                     )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 22.dp, vertical = 18.dp)
+                    ) {
+                        TeamWinRateCard(
+                            winRate = info.winRate
+                        )
 
-                    if (isUserTeam) {
-                        Button(
-                            onClick = onInvitePlayerClick,
-                            modifier = Modifier
-                                .height(36.dp),
-                            shape = RoundedCornerShape(4.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF062B67),
-                                contentColor = BrandWhite
-                            )
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = "♙+  Invite Player",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
+                            TeamSmallMetricCard(
+                                modifier = Modifier.weight(1f),
+                                icon = "◎",
+                                title = "Total Goals",
+                                value = info.totalGolos.toString(),
+                                subtitle = "Total da equipa"
+                            )
+
+                            TeamSmallMetricCard(
+                                modifier = Modifier.weight(1f),
+                                icon = "▦",
+                                title = "Matches Played",
+                                value = info.jogosDisputados.toString(),
+                                subtitle = "${info.equipaInfo.vitorias}W - ${info.empates}D - ${info.equipaInfo.derrotas}L"
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Active Roster",
+                                color = Color(0xFF20242D),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            if (info.equipaInfo.utilizadorPertence) {
+                                Button(
+                                    onClick = onInvitePlayerClick,
+                                    modifier = Modifier.height(36.dp),
+                                    shape = RoundedCornerShape(4.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF062B67),
+                                        contentColor = BrandWhite
+                                    )
+                                ) {
+                                    Text(
+                                        text = "♙+  Invite Player",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        if (info.membros.isEmpty()) {
+                            TeamDetailsEmptyCard(
+                                text = "Esta equipa ainda não tem jogadores associados."
+                            )
+                        } else {
+                            info.membros.forEach { membro ->
+                                TeamPlayerRosterCard(
+                                    membro = membro,
+                                    onViewProfileClick = onViewPlayerProfileClick
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                TeamPlayerRosterCard(
-                    name = "Cristiano Ronaldo",
-                    role = "Striker · #9",
-                    captain = false,
-                    faded = false,
-                    onViewProfileClick = onViewPlayerProfileClick
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                TeamPlayerRosterCard(
-                    name = "Cristiano Ronaldo",
-                    role = "Midfielder · #10",
-                    captain = true,
-                    faded = false,
-                    onViewProfileClick = onViewPlayerProfileClick
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                TeamPlayerRosterCard(
-                    name = "Cristiano Ronaldo",
-                    role = "Defender · #4",
-                    captain = false,
-                    faded = false,
-                    onViewProfileClick = onViewPlayerProfileClick
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                TeamPlayerRosterCard(
-                    name = "Cristiano Ronaldo",
-                    role = "Goalkeeper · #1",
-                    captain = false,
-                    faded = true,
-                    onViewProfileClick = onViewPlayerProfileClick
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
 
@@ -239,7 +277,11 @@ fun TeamDetailsTopBar(
 }
 
 @Composable
-fun TeamDetailsHeroCard() {
+fun TeamDetailsHeroCard(
+    info: EquipaDetalhesInfo
+) {
+    val equipa = info.equipaInfo
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -258,7 +300,10 @@ fun TeamDetailsHeroCard() {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TeamDetailsLogoBox()
+            TeamDetailsLogoBox(
+                initials = equipa.iniciais,
+                color = teamDetailsColorFromName(equipa.equipa.nome)
+            )
 
             Spacer(modifier = Modifier.width(18.dp))
 
@@ -266,12 +311,12 @@ fun TeamDetailsHeroCard() {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFFFFE4E4))
+                        .background(Color(0xFFEAF0FB))
                         .padding(horizontal = 9.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "Premier Division",
-                        color = Color(0xFFB72D2D),
+                        text = equipa.divisao,
+                        color = Color(0xFF0757C8),
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -280,7 +325,7 @@ fun TeamDetailsHeroCard() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Benfica",
+                    text = equipa.equipa.nome,
                     color = BrandWhite,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Medium
@@ -289,7 +334,7 @@ fun TeamDetailsHeroCard() {
                 Spacer(modifier = Modifier.height(5.dp))
 
                 Text(
-                    text = "Est. 2018 • Portugal, PT",
+                    text = "${equipa.modalidadeNome} • ${equipa.cidade}",
                     color = Color(0xFFB8C2D3),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
@@ -300,7 +345,10 @@ fun TeamDetailsHeroCard() {
 }
 
 @Composable
-fun TeamDetailsLogoBox() {
+fun TeamDetailsLogoBox(
+    initials: String,
+    color: Color
+) {
     Box(
         modifier = Modifier
             .size(90.dp)
@@ -308,26 +356,19 @@ fun TeamDetailsLogoBox() {
             .background(BrandWhite),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "🦅",
-                fontSize = 32.sp
-            )
-
-            Text(
-                text = "SLB",
-                color = Color(0xFFE53935),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = initials.take(3).uppercase(),
+            color = color,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
 @Composable
-fun TeamWinRateCard() {
+fun TeamWinRateCard(
+    winRate: Double
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -355,7 +396,7 @@ fun TeamWinRateCard() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "68.5 %",
+                    text = "${String.format(Locale.US, "%.1f", winRate)} %",
                     color = Color(0xFF0757C8),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
@@ -370,8 +411,8 @@ fun TeamWinRateCard() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "↗",
-                    color = BrandGreen,
+                    text = if (winRate >= 50.0) "↗" else "↘",
+                    color = if (winRate >= 50.0) BrandGreen else Color(0xFFE53935),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -427,12 +468,12 @@ fun TeamSmallMetricCard(
 
 @Composable
 fun TeamPlayerRosterCard(
-    name: String,
-    role: String,
-    captain: Boolean,
-    faded: Boolean,
+    membro: MembroEquipaDetalhesInfo,
     onViewProfileClick: () -> Unit
 ) {
+    val nome = membro.utilizador.nome
+    val role = formatarPapelMembroEquipa(membro.papel)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -442,22 +483,10 @@ fun TeamPlayerRosterCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (captain) {
-                        Modifier.border(
-                            width = 0.dp,
-                            color = Color.Transparent,
-                            shape = RoundedCornerShape(7.dp)
-                        )
-                    } else {
-                        Modifier
-                    }
-                ),
+            modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (captain) {
+            if (membro.isCaptain) {
                 Box(
                     modifier = Modifier
                         .width(4.dp)
@@ -472,15 +501,20 @@ fun TeamPlayerRosterCard(
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(R.drawable.avatar_player),
-                    contentDescription = name,
-                    contentScale = ContentScale.Crop,
+                Box(
                     modifier = Modifier
                         .size(46.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFF0F2FA))
-                )
+                        .background(Color(0xFFF0F2FA)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = teamDetailsInitials(nome),
+                        color = BrandBlue,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(14.dp))
 
@@ -491,13 +525,13 @@ fun TeamPlayerRosterCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = name,
-                            color = if (faded) Color(0xFF9EA4B3) else BrandBlue,
+                            text = nome,
+                            color = BrandBlue,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium
                         )
 
-                        if (captain) {
+                        if (membro.isCaptain) {
                             Spacer(modifier = Modifier.width(8.dp))
 
                             Box(
@@ -543,18 +577,86 @@ fun TeamPlayerRosterCard(
     }
 }
 
-@Preview(showBackground = true, name = "Player Team Details - User Team")
 @Composable
-fun PlayerTeamDetailsUserPreview() {
-    PlayerTeamDetailsScreen(
-        isUserTeam = true
-    )
+fun TeamDetailsErrorCard(
+    text: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(7.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = "Erro: $text",
+            color = Color(0xFFD01818),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(18.dp)
+        )
+    }
 }
 
-@Preview(showBackground = true, name = "Player Team Details - Other Team")
 @Composable
-fun PlayerTeamDetailsOtherPreview() {
+fun TeamDetailsEmptyCard(
+    text: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(7.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color(0xFF6D7486),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(18.dp)
+        )
+    }
+}
+
+fun teamDetailsColorFromName(nome: String): Color {
+    val nomeNormalizado = nome.lowercase()
+
+    return when {
+        nomeNormalizado.contains("benfica") -> Color(0xFFE53935)
+        nomeNormalizado.contains("porto") -> Color(0xFF0757C8)
+        nomeNormalizado.contains("sporting") -> BrandGreen
+        nomeNormalizado.contains("vianense") -> Color(0xFFD19A00)
+        nomeNormalizado.contains("mancos") -> Color(0xFF4A555C)
+        else -> Color(0xFF49617F)
+    }
+}
+
+fun teamDetailsInitials(nome: String): String {
+    val palavras = nome
+        .split(" ")
+        .filter { it.isNotBlank() }
+
+    return when {
+        palavras.isEmpty() -> "?"
+        palavras.size == 1 -> palavras.first().take(2).uppercase()
+        else -> palavras.take(2).joinToString("") {
+            it.first().uppercaseChar().toString()
+        }
+    }
+}
+
+fun formatarPapelMembroEquipa(papel: String): String {
+    return when (papel.lowercase()) {
+        "capitao", "captain" -> "Captain"
+        "jogador", "player" -> "Player"
+        "treinador", "coach" -> "Coach"
+        else -> papel.replace("_", " ").uppercase()
+    }
+}
+
+@Preview(showBackground = true, name = "Player Team Details")
+@Composable
+fun PlayerTeamDetailsPreview() {
     PlayerTeamDetailsScreen(
-        isUserTeam = false
+        idEquipa = 1L
     )
 }

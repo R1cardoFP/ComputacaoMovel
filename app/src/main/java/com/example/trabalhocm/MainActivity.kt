@@ -83,6 +83,8 @@ import com.example.trabalhocm.ui.screens.player.PlayerCalendarMatchDetailsScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentViewModel
 import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesViewModel
+import com.example.trabalhocm.ui.screens.player.PlayerLiveMatchesScreen
+import com.example.trabalhocm.ui.screens.player.PlayerTeamDetailsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,7 +111,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "admin_home"
+        startDestination = "player_home"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -232,9 +234,15 @@ fun MatchLeagueApp() {
             PlayerHomeScreen(
                 onTournamentsClick = { navController.navigate("player_tournaments") },
                 onCasualMatchesClick = { navController.navigate("player_matches") },
-                onLiveMatchesClick = { navController.navigate("player_matches") },
+                onLiveMatchesClick = { navController.navigate("player_live_matches") },
                 onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
+                onProfileClick = { navController.navigate("player_profile") },
+                onWatchStreamClick = { idJogo ->
+                    navController.navigate("player_live_match/$idJogo")
+                },
+                onFixtureDetailsClick = { idJogo ->
+                    navController.navigate("player_calendar_match_details/$idJogo")
+                }
             )
         }
 
@@ -375,6 +383,35 @@ fun MatchLeagueApp() {
                 },
                 onCasualMatchesClick = {
                     navController.navigate("player_matches")
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("player_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("player_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("player_profile")
+                }
+            )
+        }
+
+        composable("player_live_matches") {
+            PlayerLiveMatchesScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onWatchLiveClick = { idJogo ->
+                    navController.navigate("player_live_match/$idJogo")
+                },
+                onDetailsClick = { idJogo ->
+                    navController.navigate("player_calendar_match_details/$idJogo")
                 },
                 onHomeClick = {
                     navController.navigate("player_home")
@@ -727,33 +764,67 @@ fun MatchLeagueApp() {
 
         composable("player_teams") {
             PlayerTeamsScreen(
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = { navController.navigate("player_matches") },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("player_matches")
+                },
                 onTeamsClick = {},
-                onProfileClick = { navController.navigate("player_profile") },
-                onTeamDetailsClick = { isUserTeam -> navController.navigate("player_team_details/$isUserTeam") },
-                onManageTeamClick = { navController.navigate("player_manage_team") },
-                onCreateTeamClick = { navController.navigate("player_create_team") }
+                onProfileClick = {
+                    navController.navigate("player_profile")
+                },
+                onTeamDetailsClick = { idEquipa ->
+                    navController.navigate("player_team_details/$idEquipa")
+                },
+                onManageTeamClick = {
+                    navController.navigate("player_manage_team")
+                },
+                onCreateTeamClick = {
+                    navController.navigate("player_create_team")
+                }
             )
         }
 
         composable(
-            route = "player_team_details/{isUserTeam}",
-            arguments = listOf(navArgument("isUserTeam") { type = NavType.BoolType })
+            route = "player_team_details/{idEquipa}",
+            arguments = listOf(
+                navArgument("idEquipa") {
+                    type = NavType.LongType
+                }
+            )
         ) { backStackEntry ->
-            val isUserTeam = backStackEntry.arguments?.getBoolean("isUserTeam") ?: false
+            val idEquipa = backStackEntry.arguments?.getLong("idEquipa") ?: 0L
 
-            TeamDetailsScreen(
-                isUserTeam = isUserTeam,
-                onBackClick = { navController.popBackStack() },
-                onInvitePlayerClick = { navController.navigate("player_invite_player") },
-                onViewPlayerProfileClick = { navController.navigate("player_team_player_details") },
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = { navController.navigate("player_matches") },
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
+            PlayerTeamDetailsScreen(
+                idEquipa = idEquipa,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onInvitePlayerClick = {
+                    navController.navigate("player_invite_player")
+                },
+                onViewPlayerProfileClick = {
+                    navController.navigate("player_team_player_details")
+                },
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("player_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("player_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("player_profile")
+                }
             )
         }
 

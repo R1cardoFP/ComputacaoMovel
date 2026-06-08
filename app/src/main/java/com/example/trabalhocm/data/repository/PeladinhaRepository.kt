@@ -10,7 +10,8 @@ import io.github.jan.supabase.postgrest.from
 data class PeladinhaComInfo(
     val peladinha: Peladinha,
     val modalidadeNome: String,
-    val jogadoresInscritos: Int
+    val jogadoresInscritos: Int,
+    val utilizadorJaInscrito: Boolean = false
 )
 
 data class PeladinhaDetalhesInfo(
@@ -45,16 +46,25 @@ class PeladinhaRepository {
 
             val modalidadesPorId = modalidades.associateBy { it.id }
 
+            val utilizadorAtualId = obterIdUtilizadorAtualOuPrimeiroTeste()
+
             peladinhas.map { peladinha ->
-                val totalInscritos = participantes.count {
+                val participantesValidos = participantes.filter {
                     it.idPeladinha == peladinha.id &&
                             it.estadoParticipacao.lowercase() != "recusado"
+                }
+
+                val totalInscritos = participantesValidos.size
+
+                val utilizadorJaInscrito = participantesValidos.any {
+                    it.idUtilizador == utilizadorAtualId
                 }
 
                 PeladinhaComInfo(
                     peladinha = peladinha,
                     modalidadeNome = modalidadesPorId[peladinha.idModalidade]?.nome ?: "Modalidade",
-                    jogadoresInscritos = totalInscritos
+                    jogadoresInscritos = totalInscritos,
+                    utilizadorJaInscrito = utilizadorJaInscrito
                 )
             }
         }
@@ -164,6 +174,20 @@ class PeladinhaRepository {
 
             client.from("peladinha_participante")
                 .insert(novoParticipante)
+        }
+    }
+
+    suspend fun sairDaPeladinha(idPeladinha: Long): Result<Unit> {
+        return runCatching {
+            val idUtilizador = obterIdUtilizadorAtualOuPrimeiroTeste()
+
+            client.from("peladinha_participante")
+                .delete {
+                    filter {
+                        eq("id_utilizador", idUtilizador)
+                        eq("id_peladinha", idPeladinha)
+                    }
+                }
         }
     }
 

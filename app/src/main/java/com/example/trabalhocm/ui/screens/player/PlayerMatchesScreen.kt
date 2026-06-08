@@ -82,6 +82,7 @@ fun PlayerMatchesScreen(
     var mensagemErro by remember { mutableStateOf("") }
     var search by remember { mutableStateOf("") }
     var isJoiningPeladinhaId by remember { mutableStateOf<Long?>(null) }
+    var isLeavingPeladinhaId by remember { mutableStateOf<Long?>(null) }
 
     suspend fun carregarPartidas() {
         isLoading = true
@@ -324,6 +325,7 @@ fun PlayerMatchesScreen(
                         CasualMatchCard(
                             item = item,
                             isJoining = isJoiningPeladinhaId == item.peladinha.id,
+                            isLeaving = isLeavingPeladinhaId == item.peladinha.id,
                             onDetailsClick = {
                                 onDetailsClick(item.peladinha.id)
                             },
@@ -342,6 +344,22 @@ fun PlayerMatchesScreen(
                                         }
 
                                     isJoiningPeladinhaId = null
+                                }
+                            },
+                            onLeaveMatchClick = {
+                                scope.launch {
+                                    isLeavingPeladinhaId = item.peladinha.id
+                                    mensagemErro = ""
+
+                                    repository.sairDaPeladinha(item.peladinha.id)
+                                        .onSuccess {
+                                            carregarPartidas()
+                                        }
+                                        .onFailure {
+                                            mensagemErro = it.message ?: "Erro ao sair da partida."
+                                        }
+
+                                    isLeavingPeladinhaId = null
                                 }
                             }
                         )
@@ -696,13 +714,17 @@ fun LiveMatchTeamPreview(
 fun CasualMatchCard(
     item: PeladinhaComInfo,
     isJoining: Boolean = false,
+    isLeaving: Boolean = false,
     onDetailsClick: () -> Unit,
-    onJoinMatchClick: () -> Unit
+    onJoinMatchClick: () -> Unit,
+    onLeaveMatchClick: () -> Unit
 ) {
     val peladinha = item.peladinha
     val estadoNormalizado = peladinha.estado.lowercase()
     val jogadores = item.jogadoresInscritos
     val maxJogadores = peladinha.maxJogadores
+    val utilizadorJaInscrito = item.utilizadorJaInscrito
+
     val progresso = if (maxJogadores > 0) {
         jogadores.toFloat() / maxJogadores.toFloat()
     } else {
@@ -723,14 +745,25 @@ fun CasualMatchCard(
         else -> Color(0xFF0757C8)
     }
 
-    val buttonText = when (estadoNormalizado) {
-        "aberta" -> "JOIN MATCH"
-        "fechada" -> "JOIN WAITING LIST"
-        "terminada" -> "FINISHED"
+    val buttonText = when {
+        utilizadorJaInscrito -> "LEAVE MATCH"
+        estadoNormalizado == "aberta" -> "JOIN MATCH"
+        estadoNormalizado == "fechada" -> "JOIN WAITING LIST"
+        estadoNormalizado == "terminada" -> "FINISHED"
         else -> "JOIN MATCH"
     }
 
-    val buttonEnabled = estadoNormalizado == "aberta" && !isJoining
+    val buttonEnabled = when {
+        utilizadorJaInscrito -> !isLeaving
+        estadoNormalizado == "aberta" -> !isJoining
+        else -> false
+    }
+
+    val buttonContainerColor = if (utilizadorJaInscrito) {
+        Color(0xFFD01818)
+    } else {
+        BrandGreen
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -850,21 +883,31 @@ fun CasualMatchCard(
                 }
 
                 Button(
-                    onClick = onJoinMatchClick,
+                    onClick = {
+                        if (utilizadorJaInscrito) {
+                            onLeaveMatchClick()
+                        } else {
+                            onJoinMatchClick()
+                        }
+                    },
                     enabled = buttonEnabled,
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
                     shape = RoundedCornerShape(3.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGreen,
+                        containerColor = buttonContainerColor,
                         contentColor = BrandWhite,
                         disabledContainerColor = Color(0xFFD4D9E3),
                         disabledContentColor = Color(0xFF7D8497)
                     )
                 ) {
                     Text(
-                        text = if (isJoining) "A ENTRAR..." else buttonText,
+                        text = when {
+                            isJoining -> "A ENTRAR..."
+                            isLeaving -> "A SAIR..."
+                            else -> buttonText
+                        },
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
