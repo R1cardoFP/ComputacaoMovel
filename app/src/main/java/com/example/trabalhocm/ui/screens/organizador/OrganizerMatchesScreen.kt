@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 import com.example.trabalhocm.ui.theme.*
@@ -46,6 +47,7 @@ data class MatchArchiveItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizerMatchesScreen(
+    viewModel: OrganizerMatchesViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -53,63 +55,12 @@ fun OrganizerMatchesScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    // Filtros
     val tabs = listOf("All", "Wins", "Losses", "Draws")
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
-    // Dados baseados no Figma
-    val allMatches = listOf(
-        MatchArchiveItem(
-            id = 1,
-            result = MatchResult.WIN,
-            context = "Premier Summer Cup • Group A",
-            team1Name = "FC Mancos",
-            team2Name = "Vianense",
-            score = "3 - 1",
-            date = "14 Oct 2026",
-            location = "Estádio Cidade",
-            stats = "2 G • 1 A",
-            isStatsHighlight = true
-        ),
-        MatchArchiveItem(
-            id = 2,
-            result = MatchResult.DRAW,
-            context = "League Match",
-            team1Name = "FC Mancos",
-            team2Name = "Porto",
-            score = "0 - 0",
-            date = "10 Oct 2026",
-            location = "Estádio do Dragão",
-            stats = "Full Time",
-            isStatsHighlight = false
-        ),
-        MatchArchiveItem(
-            id = 3,
-            result = MatchResult.LOSS,
-            context = "Quarter Finals • Copa Inverno",
-            team1Name = "FC Mancos",
-            team2Name = "Benfica",
-            score = "1 - 4",
-            date = "03 Oct 2026",
-            location = "Estádio da Luz",
-            stats = "1 G",
-            isStatsHighlight = true
-        ),
-        MatchArchiveItem(
-            id = 4,
-            result = MatchResult.WIN,
-            context = "Exhibition",
-            team1Name = "Porto",
-            team2Name = "Sporting",
-            score = "2 - 0",
-            date = "28 Sep 2026",
-            location = "José Alvalade",
-            stats = "1 G • 1 A",
-            isStatsHighlight = true
-        )
-    )
+    val allMatches = viewModel.matches
+    val isLoading = viewModel.isLoading
 
-    // Lógica mágica de filtrar a lista
     val filteredMatches = allMatches.filter { match ->
         when (selectedTab) {
             "Wins" -> match.result == MatchResult.WIN
@@ -129,8 +80,8 @@ fun OrganizerMatchesScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                    IconButton(onClick = { viewModel.carregarJogos() }) {
+                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -164,7 +115,6 @@ fun OrganizerMatchesScreen(
                 Text("All matches you have personally participated in.", color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // TABS DE FILTRO
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -190,9 +140,22 @@ fun OrganizerMatchesScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // LISTA DE JOGOS FILTRADA
-            items(filteredMatches) { match ->
-                MatchArchiveCard(match)
+            if (isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = TealGreen)
+                    }
+                }
+            } else if (filteredMatches.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("No matches found.", color = TextGray)
+                    }
+                }
+            } else {
+                items(filteredMatches) { match ->
+                    MatchArchiveCard(match)
+                }
             }
 
             item {
@@ -202,9 +165,10 @@ fun OrganizerMatchesScreen(
     }
 }
 
+
+
 @Composable
 fun MatchArchiveCard(match: MatchArchiveItem) {
-    // Definir as cores consoante o resultado
     val (badgeBg, badgeText, badgeString) = when (match.result) {
         MatchResult.WIN -> Triple(TealGreen.copy(alpha = 0.15f), TealGreen, "WIN")
         MatchResult.LOSS -> Triple(ErrorRed.copy(alpha = 0.15f), ErrorRed, "LOSS")
@@ -218,7 +182,6 @@ fun MatchArchiveCard(match: MatchArchiveItem) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // TOPO: Badge e Contexto
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -238,13 +201,11 @@ fun MatchArchiveCard(match: MatchArchiveItem) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // MEIO: Equipas e Resultado
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Equipa 1
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                     Box(
                         modifier = Modifier
@@ -259,7 +220,6 @@ fun MatchArchiveCard(match: MatchArchiveItem) {
                     Text(match.team1Name, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                 }
 
-                // Resultado
                 Text(
                     text = match.score,
                     color = DarkBlue,
@@ -268,7 +228,6 @@ fun MatchArchiveCard(match: MatchArchiveItem) {
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
-                // Equipa 2
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                     Box(
                         modifier = Modifier
@@ -288,7 +247,6 @@ fun MatchArchiveCard(match: MatchArchiveItem) {
             HorizontalDivider(color = InputBg)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // RODAPÉ: Data, Local e Stats
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

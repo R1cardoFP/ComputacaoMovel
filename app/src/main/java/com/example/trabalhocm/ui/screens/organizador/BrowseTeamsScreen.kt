@@ -23,20 +23,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.ui.theme.*
-
-data class Team(
-    val name: String,
-    val division: String?,
-    val wins: Int,
-    val losses: Int,
-    val streak: String,
-    val isMyTeam: Boolean = false
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowseTeamsScreen(
+    viewModel: BrowseTeamsViewModel = viewModel(),
     onCreateTeamClick: () -> Unit = {},
     onManageTeamClick: () -> Unit = {},
     onViewDetailsClick: (Boolean) -> Unit = {},
@@ -47,22 +40,17 @@ fun BrowseTeamsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val tabs = listOf("All Teams", "Division A", "Division B")
+    val tabs = listOf("All Teams", "My Teams", "Others")
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
-    val allTeams = listOf(
-        Team("FC Mancos", null, 21, 4, "W3", isMyTeam = true),
-        Team("Benfica", "DIVISION B", 24, 6, "W5"),
-        Team("Porto", "DIVISION A", 18, 12, "L2"),
-        Team("Vianense", "DIVISION A", 15, 15, "W1"),
-        Team("Sporting", "DIVISION B", 8, 22, "L5")
-    )
+    val allTeams = viewModel.teams
+    val isLoading = viewModel.isLoading
 
     val filteredTeams = allTeams.filter { team ->
         val matchesSearch = team.name.contains(searchQuery, ignoreCase = true)
         val matchesTab = when (selectedTab) {
-            "Division A" -> team.division == "DIVISION A" || team.isMyTeam
-            "Division B" -> team.division == "DIVISION B" || team.isMyTeam
+            "My Teams" -> team.isMyTeam
+            "Others" -> !team.isMyTeam
             else -> true
         }
         matchesSearch && matchesTab
@@ -73,8 +61,8 @@ fun BrowseTeamsScreen(
             TopAppBar(
                 title = { Text("Teams", color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                    IconButton(onClick = { viewModel.carregarEquipas() }) {
+                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -180,18 +168,32 @@ fun BrowseTeamsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            items(filteredTeams) { team ->
-                if (team.isMyTeam) {
-                    MyTeamCard(
-                        team = team,
-                        onManageTeamClick = onManageTeamClick,
-                        onViewDetailsClick = { onViewDetailsClick(true) }
-                    )
-                } else {
-                    RegularTeamCard(
-                        team = team,
-                        onViewDetailsClick = { onViewDetailsClick(false) }
-                    )
+            if (isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = TealGreen)
+                    }
+                }
+            } else if (filteredTeams.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("No teams found.", color = TextGray)
+                    }
+                }
+            } else {
+                items(filteredTeams) { team ->
+                    if (team.isMyTeam) {
+                        MyTeamCard(
+                            team = team,
+                            onManageTeamClick = onManageTeamClick,
+                            onViewDetailsClick = { onViewDetailsClick(true) }
+                        )
+                    } else {
+                        RegularTeamCard(
+                            team = team,
+                            onViewDetailsClick = { onViewDetailsClick(false) }
+                        )
+                    }
                 }
             }
 
@@ -204,7 +206,7 @@ fun BrowseTeamsScreen(
 
 @Composable
 fun MyTeamCard(
-    team: Team,
+    team: UiTeam,
     onManageTeamClick: () -> Unit = {},
     onViewDetailsClick: () -> Unit = {}
 ) {
@@ -220,7 +222,7 @@ fun MyTeamCard(
                     modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)).background(DarkBlue),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(team.name.take(1), color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(team.name.take(1).uppercase(), color = Color.White, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -263,7 +265,7 @@ fun MyTeamCard(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f).height(40.dp)
                 ) {
-                    Text("MANAGE TEAM", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text("MANAGE", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
         }
@@ -272,10 +274,10 @@ fun MyTeamCard(
 
 @Composable
 fun RegularTeamCard(
-    team: Team,
+    team: UiTeam,
     onViewDetailsClick: () -> Unit = {}
 ) {
-    val streakColor = if (team.streak.startsWith("W")) TealGreen else ErrorRed
+    val streakColor = if (team.streak.startsWith("W")) TealGreen else if (team.streak == "-") TextGray else ErrorRed
 
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
@@ -289,14 +291,14 @@ fun RegularTeamCard(
                     modifier = Modifier.size(40.dp).clip(CircleShape).background(InputBg),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(team.name.take(1), color = DarkBlue, fontWeight = FontWeight.Bold)
+                    Text(team.name.take(1).uppercase(), color = DarkBlue, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(team.name, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Surface(color = PrimaryBlue.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
-                        Text(team.division ?: "", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+                        Text(team.division ?: "UNKNOWN", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
                     }
                 }
             }
@@ -332,13 +334,5 @@ fun StatItem(label: String, value: String, valueColor: Color) {
         Text(label, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(4.dp))
         Text(value, color = valueColor, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun BrowseTeamsScreenPreview() {
-    MaterialTheme {
-        BrowseTeamsScreen()
     }
 }

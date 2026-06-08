@@ -36,36 +36,27 @@ import com.example.trabalhocm.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTournamentStep2Screen(
+    viewModel: CreateTournamentViewModel,
     onBackClick: () -> Unit = {},
     onProceedClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    val (defaultStart, defaultEnd, defaultDeadline) = remember {
-        val sdf = SimpleDateFormat("dd/MM/yy", Locale.getDefault()).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
+    LaunchedEffect(Unit) {
+        if (viewModel.startDate.isEmpty()) {
+            val sdf = SimpleDateFormat("dd/MM/yy", Locale.getDefault()).apply { timeZone = TimeZone.getTimeZone("UTC") }
+            val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            cal.add(Calendar.DAY_OF_YEAR, 2)
+            viewModel.startDate = sdf.format(cal.time)
+
+            val endCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            endCal.add(Calendar.DAY_OF_YEAR, 4)
+            viewModel.endDate = sdf.format(endCal.time)
+
+            val deadlineCal = cal.clone() as Calendar
+            deadlineCal.add(Calendar.DAY_OF_YEAR, -1)
+            viewModel.registrationDeadline = sdf.format(deadlineCal.time)
         }
-
-        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-
-        cal.add(Calendar.DAY_OF_YEAR, 2)
-        val startStr = sdf.format(cal.time)
-
-        val endCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-        endCal.add(Calendar.DAY_OF_YEAR, 4)
-        val endStr = sdf.format(endCal.time)
-
-        val deadlineCal = cal.clone() as Calendar
-        deadlineCal.add(Calendar.DAY_OF_YEAR, -1)
-        val deadlineStr = sdf.format(deadlineCal.time)
-
-        Triple(startStr, endStr, deadlineStr)
     }
-
-    var startDate by remember { mutableStateOf(defaultStart) }
-    var endDate by remember { mutableStateOf(defaultEnd) }
-    var registrationDeadline by remember { mutableStateOf(defaultDeadline) }
-    var maxParticipants by remember { mutableStateOf("32") }
-    var registrationFormat by remember { mutableStateOf("Open Registration") }
 
     Scaffold(
         topBar = {
@@ -110,10 +101,10 @@ fun CreateTournamentStep2Screen(
                     Step2SectionLabel("START DATE")
                     Spacer(modifier = Modifier.height(8.dp))
                     DatePickerField(
-                        value = startDate,
+                        value = viewModel.startDate,
                         maxDate = null,
                         onValueChange = { newDate ->
-                            startDate = newDate
+                            viewModel.startDate = newDate
 
                             try {
                                 val sdf = SimpleDateFormat("dd/MM/yy", Locale.getDefault()).apply {
@@ -126,15 +117,15 @@ fun CreateTournamentStep2Screen(
                                         time = parsedStart
                                         add(Calendar.DAY_OF_YEAR, -1)
                                     }
-                                    registrationDeadline = sdf.format(deadlineCal.time)
+                                    viewModel.registrationDeadline = sdf.format(deadlineCal.time)
 
-                                    val parsedEnd = sdf.parse(endDate)
+                                    val parsedEnd = sdf.parse(viewModel.endDate)
                                     if (parsedEnd != null && parsedStart.time >= parsedEnd.time) {
                                         val endCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
                                             time = parsedStart
                                             add(Calendar.DAY_OF_YEAR, 2)
                                         }
-                                        endDate = sdf.format(endCal.time)
+                                        viewModel.endDate = sdf.format(endCal.time)
                                     }
                                 }
                             } catch (e: Exception) { }
@@ -146,9 +137,9 @@ fun CreateTournamentStep2Screen(
                     Step2SectionLabel("END DATE")
                     Spacer(modifier = Modifier.height(8.dp))
                     DatePickerField(
-                        value = endDate,
-                        minDate = startDate,
-                        onValueChange = { endDate = it },
+                        value = viewModel.endDate,
+                        minDate = viewModel.startDate,
+                        onValueChange = { viewModel.endDate = it },
                         icon = Icons.Default.DateRange
                     )
                 }
@@ -158,9 +149,9 @@ fun CreateTournamentStep2Screen(
                 Step2SectionLabel("REGISTRATION DEADLINE")
                 Spacer(modifier = Modifier.height(8.dp))
                 DatePickerField(
-                    value = registrationDeadline,
-                    maxDate = startDate,
-                    onValueChange = { registrationDeadline = it },
+                    value = viewModel.registrationDeadline,
+                    maxDate = viewModel.startDate,
+                    onValueChange = { viewModel.registrationDeadline = it },
                     icon = Icons.Default.DateRange
                 )
             }
@@ -170,8 +161,8 @@ fun CreateTournamentStep2Screen(
                 Step2SectionLabel("MAX PARTICIPANTS")
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    value = maxParticipants,
-                    onValueChange = { maxParticipants = it },
+                    value = viewModel.maxParticipants,
+                    onValueChange = { viewModel.maxParticipants = it },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp)),
@@ -199,16 +190,16 @@ fun CreateTournamentStep2Screen(
                     title = "Open Registration",
                     description = "Any team can apply directly through the platform.",
                     icon = Icons.Default.Person,
-                    isSelected = registrationFormat == "Open Registration",
-                    onClick = { registrationFormat = "Open Registration" }
+                    isSelected = viewModel.registrationFormat == "Open Registration",
+                    onClick = { viewModel.registrationFormat = "Open Registration" }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 RegistrationFormatCard(
                     title = "Invite Only",
                     description = "You manually invite teams to participate. Add invitees from the tournament card after creation.",
                     icon = Icons.Default.Lock,
-                    isSelected = registrationFormat == "Invite Only",
-                    onClick = { registrationFormat = "Invite Only" }
+                    isSelected = viewModel.registrationFormat == "Invite Only",
+                    onClick = { viewModel.registrationFormat = "Invite Only" }
                 )
             }
 
@@ -249,7 +240,6 @@ fun CreateTournamentStep2Screen(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -452,10 +442,3 @@ fun Step2SectionLabel(text: String) {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CreateTournamentStep2ScreenPreview() {
-    MaterialTheme {
-        CreateTournamentStep2Screen()
-    }
-}

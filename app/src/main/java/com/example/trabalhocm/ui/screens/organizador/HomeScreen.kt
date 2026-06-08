@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.trabalhocm.data.model.Torneio
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 private val DarkBlue = Color(0xFF152238)
@@ -32,6 +34,7 @@ private val TextGray = Color(0xFF6B7280)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    viewModel: OrganizerHomeViewModel = viewModel(),
     onVerTorneios: () -> Unit = {},
     onCreateTournamentClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
@@ -45,7 +48,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("Home", color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { viewModel.carregarDashboard() }) {
                         Icon(Icons.Outlined.Notifications, contentDescription = "Notificações", tint = Color.White)
                     }
                 },
@@ -74,9 +77,56 @@ fun HomeScreen(
         ) {
             LiveMatchSection()
             QuickActionsSection(onCreateTournamentClick = onCreateTournamentClick)
-            ActiveTournamentsSection()
+
+            ActiveTournamentsSection(
+                tournaments = viewModel.activeTournaments,
+                isLoading = viewModel.isLoading,
+                onViewAllClick = onTournamentsClick
+            )
+
             UpcomingFixturesSection()
             PerformanceInsightsSection()
+        }
+    }
+}
+
+@Composable
+fun ActiveTournamentsSection(
+    tournaments: List<Torneio>,
+    isLoading: Boolean,
+    onViewAllClick: () -> Unit
+) {
+    Column {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            SectionTitle("MY ACTIVE TOURNAMENTS")
+            Text(
+                "VIEW ALL",
+                color = Color(0xFF2B5BFE),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onViewAllClick() }
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = EmeraldGreen)
+            }
+        } else if (tournaments.isEmpty()) {
+            Card(colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth()) {
+                Text("No active tournaments at the moment.", color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(16.dp))
+            }
+        } else {
+            tournaments.forEach { torneio ->
+                TournamentCard(
+                    title = torneio.nome,
+                    role = "ORGANIZER",
+                    progress = if (torneio.estado == "aberto") 25 else 75,
+                    color = if (torneio.estado == "aberto") EmeraldGreen else Color(0xFF2B5BFE)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
     }
 }
@@ -123,7 +173,6 @@ fun QuickActionCard(modifier: Modifier = Modifier, icon: androidx.compose.ui.gra
         }
     }
 }
-
 
 @Composable
 fun LiveMatchSection() {
@@ -193,20 +242,6 @@ fun LiveMatchSection() {
                 Text("WATCH STREAM")
             }
         }
-    }
-}
-
-@Composable
-fun ActiveTournamentsSection() {
-    Column {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            SectionTitle("ACTIVE TOURNAMENTS")
-            Text("VIEW ALL", color = Color(0xFF2B5BFE), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        TournamentCard("Summer Kickoff '26", "ORGANIZER", 65, EmeraldGreen)
-        Spacer(modifier = Modifier.height(12.dp))
-        TournamentCard("Pro Elite Series", "CAPTAIN", 12, Color(0xFF2B5BFE))
     }
 }
 
@@ -318,31 +353,6 @@ fun PerformanceInsightsSection() {
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(color = Color(0xFFEEF2FF), shape = RoundedCornerShape(8.dp)) {
-                        Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF2B5BFE), modifier = Modifier.padding(12.dp))
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text("YOUR GLOBAL RANK", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                        Text("#142", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = null, tint = EmeraldGreen, modifier = Modifier.size(16.dp))
-                    Text(" 12%", color = EmeraldGreen, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
     }
 }
 
@@ -363,12 +373,4 @@ fun SectionTitle(title: String) {
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    MaterialTheme {
-        HomeScreen()
-    }
 }

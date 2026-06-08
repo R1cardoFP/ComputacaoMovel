@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -30,21 +29,23 @@ import com.example.trabalhocm.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizerProfileScreen(
-    initialName: String = "Cristiano Ronaldo",
-    initialEmail: String = "cr7@gmail.com",
-    initialBio: String = "Seasoned striker and tournament coordinator for the Western Conference. Passionate about youth development.",
+    initialName: String = "",
+    initialEmail: String = "",
+    initialBio: String = "",
+    memberSinceYear: String = "2026",
     onLogoutClick: () -> Unit = {},
     onPlayerDashboardClick: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
+    onSaveChanges: (String, String, String) -> Unit = { _, _, _ -> },
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    var fullName by remember { mutableStateOf(initialName) }
-    var email by remember { mutableStateOf(initialEmail) }
-    var bio by remember { mutableStateOf(initialBio) }
+    var fullName by remember(initialName) { mutableStateOf(initialName) }
+    var email by remember(initialEmail) { mutableStateOf(initialEmail) }
+    var bio by remember(initialBio) { mutableStateOf(initialBio) }
 
     Scaffold(
         topBar = {
@@ -100,9 +101,9 @@ fun OrganizerProfileScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("MEMBER SINCE 2021", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text("MEMBER SINCE $memberSinceYear", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(fullName, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(fullName.ifBlank { "A carregar..." }, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
 
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -164,18 +165,6 @@ fun OrganizerProfileScreen(
                     ) {
                         Text("English (US)", color = PrimaryBlue, fontSize = 14.sp)
                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
-                    }
-                }
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Portuguese (PT)", color = TextGray, fontSize = 14.sp)
                     }
                 }
             }
@@ -254,25 +243,6 @@ fun OrganizerProfileScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Outlined.Phone, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text("Two-Factor Auth", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            }
-                            Switch(
-                                checked = true,
-                                onCheckedChange = { },
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = TealGreen)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
                             TextButton(onClick = onChangePasswordClick) {
@@ -288,7 +258,7 @@ fun OrganizerProfileScreen(
             // ACTION BUTTONS
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
-                    onClick = { },
+                    onClick = { onSaveChanges(fullName, email, bio) },
                     colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth().height(56.dp)
@@ -339,12 +309,4 @@ fun ProfileSectionLabel(text: String) {
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OrganizerProfileScreenPreview() {
-    MaterialTheme {
-        OrganizerProfileScreen()
-    }
 }
