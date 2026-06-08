@@ -49,8 +49,13 @@ import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
+import com.example.trabalhocm.ui.theme.BrandWhite
 import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.ErrorRed
+import com.example.trabalhocm.ui.theme.InputBg
 import com.example.trabalhocm.ui.theme.LightBlueBadge
+import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.TextGray
 
 @Composable
@@ -174,7 +179,7 @@ fun AdminTournamentArchiveScreen(
                     item {
                         Text(
                             text = errorMessage,
-                            color = Color(0xFFDC2626),
+                            color = ErrorRed,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -201,8 +206,7 @@ fun AdminTournamentArchiveScreen(
 
                 items(filteredTournaments.size) { index ->
                     AdminTournamentCard(
-                        tournament = filteredTournaments[index],
-                        accentColor = accentColorForIndex(index)
+                        tournament = filteredTournaments[index]
                     )
                 }
             }
@@ -234,7 +238,7 @@ private fun AdminArchiveTopBar(
             Icon(
                 imageVector = AppIcons.Back,
                 contentDescription = "Voltar",
-                tint = Color.White,
+                tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
 
@@ -242,7 +246,7 @@ private fun AdminArchiveTopBar(
 
             Text(
                 text = title,
-                color = Color.White,
+                color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -251,7 +255,7 @@ private fun AdminArchiveTopBar(
         Icon(
             imageVector = AppIcons.Notifications,
             contentDescription = "Notificações",
-            tint = Color.White,
+            tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
                 .clickable {
@@ -277,10 +281,11 @@ private fun ArchiveSearchBox(
             )
         },
         leadingIcon = {
-            Text(
-                text = "⌕",
-                color = TextGray,
-                fontSize = 18.sp
+            Icon(
+                imageVector = AppIcons.Search,
+                contentDescription = "Pesquisar",
+                tint = TextGray,
+                modifier = Modifier.size(18.dp)
             )
         },
         keyboardOptions = KeyboardOptions(
@@ -292,10 +297,10 @@ private fun ArchiveSearchBox(
             .height(54.dp),
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedBorderColor = Color(0xFFD8DEE9),
-            unfocusedBorderColor = Color(0xFFD8DEE9),
+            focusedContainerColor = BrandWhite,
+            unfocusedContainerColor = BrandWhite,
+            focusedBorderColor = InputBg,
+            unfocusedBorderColor = InputBg,
             focusedTextColor = BrandBlue,
             unfocusedTextColor = BrandBlue,
             cursorColor = BrandGreen
@@ -305,8 +310,7 @@ private fun ArchiveSearchBox(
 
 @Composable
 private fun AdminTournamentCard(
-    tournament: AdminTournament,
-    accentColor: Color
+    tournament: AdminTournament
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -321,7 +325,7 @@ private fun AdminTournamentCard(
                 modifier = Modifier
                     .width(4.dp)
                     .height(142.dp)
-                    .background(accentColor)
+                    .background(tournamentSportColor(tournament.modalidade))
             )
 
             Column(
@@ -334,12 +338,12 @@ private fun AdminTournamentCard(
                 ) {
                     SmallBadge(
                         text = tournament.estado.uppercase(),
-                        background = Color(0xFFEAF8F5),
+                        background = InputBg,
                         textColor = TextGray
                     )
 
                     SmallBadge(
-                        text = tournament.modalidade,
+                        text = tournament.modalidade.uppercase(),
                         background = LightBlueBadge,
                         textColor = TextGray
                     )
@@ -436,12 +440,21 @@ private fun TournamentInfo(
     }
 }
 
-private fun accentColorForIndex(index: Int): Color {
-    return when (index % 4) {
-        0 -> BrandGreen
-        1 -> Color(0xFF0057C8)
-        2 -> Color(0xFF94A3B8)
-        else -> Color(0xFFD97706)
+private fun tournamentSportColor(modalidade: String): Color {
+    return when {
+        modalidade.contains("futebol", ignoreCase = true) ||
+                modalidade.contains("football", ignoreCase = true) ||
+                modalidade.contains("soccer", ignoreCase = true) -> TealGreen
+
+        modalidade.contains("basquetebol", ignoreCase = true) ||
+                modalidade.contains("basketball", ignoreCase = true) ||
+                modalidade.contains("basket", ignoreCase = true) -> PrimaryBlue
+
+        modalidade.contains("voleibol", ignoreCase = true) ||
+                modalidade.contains("volleyball", ignoreCase = true) ||
+                modalidade.contains("volley", ignoreCase = true) -> TextGray
+
+        else -> BrandGreen
     }
 }
 
@@ -457,7 +470,7 @@ private fun AdminArchiveBottomBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(BrandWhite)
             .navigationBarsPadding()
             .padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceAround,
@@ -478,7 +491,7 @@ private fun BottomItem(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+    val color = if (selected) PrimaryBlue else TextGray
 
     Column(
         modifier = Modifier.clickable {
