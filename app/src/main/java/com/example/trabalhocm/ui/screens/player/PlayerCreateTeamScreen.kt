@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -31,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,10 +43,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerCreateTeamScreen(
@@ -56,10 +60,16 @@ fun PlayerCreateTeamScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    var teamName by remember { mutableStateOf("FC Mancos") }
-    var initials by remember { mutableStateOf("FCM") }
-    var homeCity by remember { mutableStateOf("Viana do Castelo, PT") }
+    val repository = remember { EquipaRepository() }
+    val scope = rememberCoroutineScope()
+
+    var teamName by remember { mutableStateOf("") }
+    var initials by remember { mutableStateOf("") }
+    var homeCity by remember { mutableStateOf("") }
     var selectedSport by remember { mutableStateOf("Football") }
+
+    var isSaving by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -112,39 +122,101 @@ fun PlayerCreateTeamScreen(
 
             TeamIdentityFieldsCard(
                 teamName = teamName,
-                onTeamNameChange = { teamName = it },
+                onTeamNameChange = {
+                    teamName = it
+                    errorMessage = ""
+                },
                 initials = initials,
-                onInitialsChange = { initials = it },
+                onInitialsChange = {
+                    initials = it.take(4).uppercase()
+                    errorMessage = ""
+                },
                 homeCity = homeCity,
-                onHomeCityChange = { homeCity = it }
+                onHomeCityChange = {
+                    homeCity = it
+                    errorMessage = ""
+                }
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
             SportCategoryCard(
                 selectedSport = selectedSport,
-                onSportSelected = { selectedSport = it }
+                onSportSelected = {
+                    selectedSport = it
+                    errorMessage = ""
+                }
             )
+
+            if (errorMessage.isNotBlank()) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(7.dp),
+                    colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Text(
+                        text = "Erro: $errorMessage",
+                        color = Color(0xFFD01818),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = onCreateTeamClick,
+                onClick = {
+                    scope.launch {
+                        isSaving = true
+                        errorMessage = ""
+
+                        repository.criarEquipa(
+                            nome = teamName,
+                            iniciais = initials,
+                            cidade = homeCity,
+                            modalidadeNome = selectedSport
+                        )
+                            .onSuccess {
+                                isSaving = false
+                                onCreateTeamClick()
+                            }
+                            .onFailure {
+                                errorMessage = it.message ?: "Erro ao criar equipa."
+                                isSaving = false
+                            }
+                    }
+                },
+                enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BrandGreen,
-                    contentColor = BrandWhite
+                    contentColor = BrandWhite,
+                    disabledContainerColor = Color(0xFFD4D9E3),
+                    disabledContentColor = Color(0xFF7D8497)
                 )
             ) {
-                Text(
-                    text = "CREATE TEAM  →",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = BrandWhite,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "CREATE TEAM  →",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))

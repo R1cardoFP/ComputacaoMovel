@@ -17,19 +17,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,22 +44,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.EquipaComInfo
+import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
-
-data class PlayerTeamMock(
-    val name: String,
-    val division: String,
-    val wins: Int,
-    val losses: Int,
-    val streak: String,
-    val streakGood: Boolean,
-    val isUserTeam: Boolean,
-    val logoText: String,
-    val logoColor: Color
-)
 
 @Composable
 fun PlayerTeamsScreen(
@@ -67,74 +58,45 @@ fun PlayerTeamsScreen(
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onTeamDetailsClick: (Boolean) -> Unit = {},
+    onTeamDetailsClick: (Long) -> Unit = {},
     onManageTeamClick: () -> Unit = {},
     onCreateTeamClick: () -> Unit = {}
 ) {
+    val repository = remember { EquipaRepository() }
+
     var selectedDivision by remember { mutableStateOf("All Teams") }
     var search by remember { mutableStateOf("") }
 
-    val teams = listOf(
-        PlayerTeamMock(
-            name = "FC Mancos",
-            division = "Your Team",
-            wins = 21,
-            losses = 4,
-            streak = "W3",
-            streakGood = true,
-            isUserTeam = true,
-            logoText = "FC",
-            logoColor = Color(0xFF4A555C)
-        ),
-        PlayerTeamMock(
-            name = "Benfica",
-            division = "Division B",
-            wins = 24,
-            losses = 6,
-            streak = "W5",
-            streakGood = true,
-            isUserTeam = false,
-            logoText = "B",
-            logoColor = Color(0xFFE53935)
-        ),
-        PlayerTeamMock(
-            name = "Porto",
-            division = "Division A",
-            wins = 18,
-            losses = 12,
-            streak = "L2",
-            streakGood = false,
-            isUserTeam = false,
-            logoText = "P",
-            logoColor = Color(0xFF0757C8)
-        ),
-        PlayerTeamMock(
-            name = "Vianense",
-            division = "Division A",
-            wins = 15,
-            losses = 15,
-            streak = "W1",
-            streakGood = true,
-            isUserTeam = false,
-            logoText = "V",
-            logoColor = Color(0xFFD19A00)
-        ),
-        PlayerTeamMock(
-            name = "Sporting",
-            division = "Division B",
-            wins = 8,
-            losses = 22,
-            streak = "L5",
-            streakGood = false,
-            isUserTeam = false,
-            logoText = "S",
-            logoColor = BrandGreen
-        )
-    )
+    var teams by remember { mutableStateOf<List<EquipaComInfo>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        isLoading = true
+        errorMessage = ""
+
+        repository.listarEquipasComInfo()
+            .onSuccess {
+                teams = it
+            }
+            .onFailure {
+                errorMessage = it.message ?: "Erro ao carregar equipas."
+            }
+
+        isLoading = false
+    }
 
     val filteredTeams = teams.filter { team ->
-        val matchesDivision = selectedDivision == "All Teams" || team.division == selectedDivision
-        val matchesSearch = search.isBlank() || team.name.contains(search, ignoreCase = true)
+        val matchesDivision =
+            selectedDivision == "All Teams" ||
+                    team.divisao.equals(selectedDivision, ignoreCase = true)
+
+        val matchesSearch =
+            search.isBlank() ||
+                    team.equipa.nome.contains(search, ignoreCase = true) ||
+                    team.modalidadeNome.contains(search, ignoreCase = true) ||
+                    team.cidade.contains(search, ignoreCase = true)
+
         matchesDivision && matchesSearch
     }
 
@@ -227,16 +189,69 @@ fun PlayerTeamsScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            filteredTeams.forEach { team ->
-                PlayerTeamCard(
-                    team = team,
-                    onDetailsClick = {
-                        onTeamDetailsClick(team.isUserTeam)
-                    },
-                    onManageTeamClick = onManageTeamClick
-                )
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = BrandGreen
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                errorMessage.isNotBlank() -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Text(
+                            text = "Erro: $errorMessage",
+                            color = Color(0xFFD01818),
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
+
+                filteredTeams.isEmpty() -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Text(
+                            text = "Não existem equipas com estes filtros.",
+                            color = BrandBlue,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
+
+                else -> {
+                    filteredTeams.forEach { team ->
+                        PlayerTeamCard(
+                            team = team,
+                            onDetailsClick = {
+                                onTeamDetailsClick(team.equipa.id)
+                            },
+                            onManageTeamClick = onManageTeamClick
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+                }
             }
 
             Button(
@@ -355,16 +370,18 @@ fun TeamDivisionButton(
 
 @Composable
 fun PlayerTeamCard(
-    team: PlayerTeamMock,
+    team: EquipaComInfo,
     onDetailsClick: () -> Unit,
     onManageTeamClick: () -> Unit
 ) {
+    val logoColor = teamColorFromName(team.equipa.nome)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .border(
-                width = if (team.isUserTeam) 1.dp else 0.dp,
-                color = if (team.isUserTeam) BrandGreen else Color.Transparent,
+                width = if (team.utilizadorPertence) 1.dp else 0.dp,
+                color = if (team.utilizadorPertence) BrandGreen else Color.Transparent,
                 shape = RoundedCornerShape(7.dp)
             ),
         shape = RoundedCornerShape(7.dp),
@@ -378,23 +395,27 @@ fun PlayerTeamCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TeamLogoBox(
-                    text = team.logoText,
-                    color = team.logoColor
+                    text = team.iniciais,
+                    color = logoColor
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column {
                     Text(
-                        text = team.name,
+                        text = team.equipa.nome,
                         color = BrandBlue,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
 
                     Text(
-                        text = team.division.uppercase(),
-                        color = if (team.isUserTeam) BrandGreen else Color(0xFF0757C8),
+                        text = if (team.utilizadorPertence) {
+                            "YOUR TEAM · ${team.divisao}".uppercase()
+                        } else {
+                            team.divisao.uppercase()
+                        },
+                        color = if (team.utilizadorPertence) BrandGreen else Color(0xFF0757C8),
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
@@ -410,13 +431,13 @@ fun PlayerTeamCard(
             ) {
                 TeamStat(
                     label = "WINS",
-                    value = team.wins.toString(),
+                    value = team.vitorias.toString(),
                     valueColor = Color(0xFF0757C8)
                 )
 
                 TeamStat(
                     label = "LOSSES",
-                    value = team.losses.toString(),
+                    value = team.derrotas.toString(),
                     valueColor = BrandBlue
                 )
 
@@ -449,7 +470,7 @@ fun PlayerTeamCard(
                     )
                 }
 
-                if (team.isUserTeam) {
+                if (team.utilizadorPertence) {
                     Button(
                         onClick = onManageTeamClick,
                         modifier = Modifier
@@ -486,7 +507,7 @@ fun TeamLogoBox(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = text,
+            text = text.take(3).uppercase(),
             color = color,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold
@@ -517,6 +538,19 @@ fun TeamStat(
             fontSize = 17.sp,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+fun teamColorFromName(nome: String): Color {
+    val nomeNormalizado = nome.lowercase()
+
+    return when {
+        nomeNormalizado.contains("benfica") -> Color(0xFFE53935)
+        nomeNormalizado.contains("porto") -> Color(0xFF0757C8)
+        nomeNormalizado.contains("sporting") -> BrandGreen
+        nomeNormalizado.contains("vianense") -> Color(0xFFD19A00)
+        nomeNormalizado.contains("mancos") -> Color(0xFF4A555C)
+        else -> Color(0xFF49617F)
     }
 }
 

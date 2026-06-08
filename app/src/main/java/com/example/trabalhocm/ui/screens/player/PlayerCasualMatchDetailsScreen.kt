@@ -226,7 +226,9 @@ fun PlayerCasualMatchDetailsScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    CasualDetailsAboutCard()
+                    CasualDetailsAboutCard(
+                        info = info
+                    )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -376,10 +378,36 @@ fun CasualDetailsSummaryCard(
     info: PeladinhaDetalhesInfo
 ) {
     val peladinha = info.peladinha
+    val estadoNormalizado = peladinha.estado.lowercase()
+
     val progresso = if (peladinha.maxJogadores > 0) {
         info.jogadoresInscritos.toFloat() / peladinha.maxJogadores.toFloat()
     } else {
         0f
+    }
+
+    val statusText = when (estadoNormalizado) {
+        "aberta" -> "● OPEN"
+        "fechada" -> "● CLOSED"
+        "terminada" -> "● FINISHED"
+        "em_direto", "live" -> "● LIVE NOW"
+        else -> "● ${peladinha.estado.uppercase()}"
+    }
+
+    val statusColor = when (estadoNormalizado) {
+        "aberta" -> BrandGreen
+        "em_direto", "live" -> BrandGreen
+        "fechada" -> Color(0xFFD39A00)
+        "terminada" -> Color(0xFF7D8497)
+        else -> Color(0xFF0757C8)
+    }
+
+    val registrationText = when (estadoNormalizado) {
+        "aberta" -> "OPEN REGISTRATION"
+        "fechada" -> "REGISTRATION CLOSED"
+        "terminada" -> "FINISHED"
+        "em_direto", "live" -> "LIVE MATCH"
+        else -> peladinha.estado.uppercase()
     }
 
     Card(
@@ -395,13 +423,13 @@ fun CasualDetailsSummaryCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CasualDetailsBadge(
-                    text = if (peladinha.estado.lowercase() == "aberta") "● LIVE NOW" else peladinha.estado.uppercase(),
-                    backgroundColor = BrandGreen.copy(alpha = 0.12f),
-                    textColor = BrandGreen
+                    text = statusText,
+                    backgroundColor = statusColor.copy(alpha = 0.12f),
+                    textColor = statusColor
                 )
 
                 CasualDetailsBadge(
-                    text = "OPEN REGISTRATION",
+                    text = registrationText,
                     backgroundColor = Color(0xFFEAF0FB),
                     textColor = Color(0xFF0757C8)
                 )
@@ -421,7 +449,9 @@ fun CasualDetailsSummaryCard(
             ) {
                 CasualDetailsMiniStat(
                     label = "SPOTS LEFT",
-                    value = (peladinha.maxJogadores - info.jogadoresInscritos).coerceAtLeast(0).toString()
+                    value = (peladinha.maxJogadores - info.jogadoresInscritos)
+                        .coerceAtLeast(0)
+                        .toString()
                 )
 
                 CasualDetailsMiniStat(
@@ -466,7 +496,7 @@ fun CasualDetailsSummaryCard(
                     .fillMaxWidth()
                     .height(5.dp)
                     .clip(RoundedCornerShape(20.dp)),
-                color = BrandGreen,
+                color = statusColor,
                 trackColor = Color(0xFFE8EAF2)
             )
         }
@@ -797,12 +827,43 @@ fun CasualDetailsPlayerRow(
 }
 
 @Composable
-fun CasualDetailsAboutCard() {
+fun CasualDetailsAboutCard(
+    info: PeladinhaDetalhesInfo
+) {
+    val peladinha = info.peladinha
+
+    val nomePartida = peladinha.descricao ?: "partida casual"
+    val local = peladinha.local ?: "local por definir"
+    val modalidade = info.modalidadeNome.lowercase()
+    val precoTexto = if (peladinha.preco != null && peladinha.preco > 0.0) {
+        "O custo por jogador é de € ${"%.2f".format(peladinha.preco)}."
+    } else {
+        "A participação não tem custo associado."
+    }
+
+    val texto = when {
+        modalidade.contains("voleibol") || modalidade.contains("volleyball") -> {
+            "$nomePartida é uma partida casual de voleibol em $local. Está aberta a jogadores de vários níveis. O objetivo é criar equipas equilibradas, jogar de forma descontraída e garantir uma boa experiência para todos. $precoTexto"
+        }
+
+        modalidade.contains("futebol") || modalidade.contains("football") -> {
+            "$nomePartida é uma partida casual de futebol em $local. Os jogadores inscritos serão organizados em equipas antes do início da partida. Recomenda-se chegar alguns minutos antes da hora marcada. $precoTexto"
+        }
+
+        modalidade.contains("basquetebol") || modalidade.contains("basketball") -> {
+            "$nomePartida é uma partida casual de basquetebol em $local. A partida destina-se a jogadores que queiram competir de forma simples e informal. $precoTexto"
+        }
+
+        else -> {
+            "$nomePartida é uma partida casual em $local. A inscrição reserva uma vaga para o jogador e permite participar na atividade organizada pelo anfitrião. $precoTexto"
+        }
+    }
+
     CasualDetailsSectionCard(
         title = "About this match"
     ) {
         Text(
-            text = "Casual evening volleyball game at the Riverside beach courts. All levels welcome — we mix teams to keep it balanced. Bring water, sunscreen and good vibes. Equipment and ball provided by the host.",
+            text = texto,
             color = Color(0xFF51607A),
             fontSize = 12.sp,
             lineHeight = 18.sp,
