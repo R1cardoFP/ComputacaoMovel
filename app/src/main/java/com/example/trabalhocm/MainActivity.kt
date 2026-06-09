@@ -87,6 +87,7 @@ import com.example.trabalhocm.ui.screens.player.PlayerLiveMatchesScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamDetailsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminManageRegistrationScreen
 import com.example.trabalhocm.ui.screens.admin.AdminInviteTeamsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTeamDetailsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,7 +114,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "admin_home"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -1492,6 +1493,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onViewDetailsClick = { teamId ->
+                    navController.navigate("admin_team_details/$teamId")
                 },
                 onManageTeamClick = { teamId ->
                 },
@@ -1578,6 +1580,46 @@ fun MatchLeagueApp() {
                 onMatchesClick = {
                     //ecrã admin de matches
                 },
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "admin_team_details/{teamId}",
+            arguments = listOf(
+                navArgument("teamId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val teamId = backStackEntry.arguments?.getString("teamId") ?: ""
+
+            AdminTeamDetailsScreen(
+                teamId = teamId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onManageTeamClick = { id ->
+                    // depois ligamos ao ecrã de gestão da equipa
+                },
+                onPlayerProfileClick = { playerId ->
+                    // depois ligamos ao perfil do jogador
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {},
                 onTeamsClick = {
                     navController.navigate("admin_teams")
                 },

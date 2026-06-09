@@ -90,4 +90,18 @@ class AdminTeamRepository {
 
         return null
     }
+
+    suspend fun apagarEquipa(teamId: String): Result<Unit> {
+        return runCatching {
+            val id = teamId.toLongOrNull()
+                ?: throw Exception("ID da equipa inválido.")
+
+            client.from("equipa")
+                .delete {
+                    filter {
+                        eq("id", id)
+                    }
+                }
+        }
+    }
 }
