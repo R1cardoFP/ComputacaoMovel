@@ -13,6 +13,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.time.OffsetDateTime
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class AuthRepository {
 
@@ -34,6 +39,7 @@ class AuthRepository {
                 if (utilizadores.isEmpty()) {
                     throw Exception("Username não encontrado.")
                 }
+
                 utilizadores.first().email
             }
 
@@ -44,6 +50,28 @@ class AuthRepository {
 
             val userId = client.auth.currentUserOrNull()?.id
                 ?: throw Exception("Utilizador autenticado não encontrado.")
+
+            val utilizadorJson = client.from("utilizador")
+                .select {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
+                .decodeSingle<JsonObject>()
+
+            val suspended = utilizadorJson.nestedBoolean("dados_pessoais", "suspended") ?: false
+            val deleted = utilizadorJson.nestedBoolean("dados_pessoais", "deleted") ?: false
+            val accountStatus = utilizadorJson.nestedText("dados_pessoais", "account_status")
+
+            if (suspended || accountStatus == "suspended") {
+                client.auth.signOut()
+                throw Exception("A tua conta está suspensa. Contacta o administrador.")
+            }
+
+            if (deleted || accountStatus == "deleted") {
+                client.auth.signOut()
+                throw Exception("Esta conta foi removida. Contacta o administrador.")
+            }
 
             client.from("utilizador")
                 .update(
@@ -353,6 +381,45 @@ class AuthRepository {
                 .decodeList<Torneio>()
                 .sortedByDescending { it.dataInicio ?: "" }
         }
+    }
+
+    private fun JsonObject.nestedText(objectKey: String, vararg keys: String): String {
+        val obj = this[objectKey]?.jsonObject ?: return ""
+
+        keys.forEach { key ->
+            val value = obj[key]
+                ?.jsonPrimitive
+                ?.contentOrNull
+
+            if (!value.isNullOrBlank()) {
+                return value
+            }
+        }
+
+        return ""
+    }
+
+    private fun JsonObject.nestedBoolean(objectKey: String, vararg keys: String): Boolean? {
+        val obj = this[objectKey]?.jsonObject ?: return null
+
+        keys.forEach { key ->
+            val primitive = obj[key]?.jsonPrimitive
+
+            val direct = primitive?.booleanOrNull
+            if (direct != null) {
+                return direct
+            }
+
+            val fromText = primitive
+                ?.contentOrNull
+                ?.toBooleanStrictOrNull()
+
+            if (fromText != null) {
+                return fromText
+            }
+        }
+
+        return null
     }
 }
 
