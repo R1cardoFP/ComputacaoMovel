@@ -6,7 +6,7 @@ data class AdminTeam(
     val modalidade: String,
     val divisao: String,
     val playersCount: Int,
-    val wins: Int,
-    val losses: Int,
-    val streak: String
+    val wins: Int = 0,
+    val losses: Int = 0,
+    val streak: String = "W0"
 )

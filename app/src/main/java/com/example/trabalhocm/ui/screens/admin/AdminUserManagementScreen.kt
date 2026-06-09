@@ -175,7 +175,7 @@ fun AdminUserManagementScreen(
         containerColor = BgLight,
         topBar = {
             AdminUsersTopBar(
-                title = "Manage Team",
+                title = "Manage Users",
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )

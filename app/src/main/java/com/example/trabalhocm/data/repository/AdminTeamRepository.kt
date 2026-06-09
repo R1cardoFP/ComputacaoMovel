@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.jsonObject
 
 class AdminTeamRepository {
 
@@ -48,9 +49,9 @@ class AdminTeamRepository {
                         "numero_jogadores",
                         "total_jogadores"
                     ) ?: 0,
-                    wins = equipa.intValue("vitorias", "wins", "win_count") ?: 0,
-                    losses = equipa.intValue("derrotas", "losses", "loss_count") ?: 0,
-                    streak = equipa.text("streak", "sequencia").ifBlank { "W0" }
+                    wins = equipa.nestedIntValue("dados_equipa", "wins", "vitorias") ?: 0,
+                    losses = equipa.nestedIntValue("dados_equipa", "losses", "derrotas") ?: 0,
+                    streak = equipa.nestedTextValue("dados_equipa", "streak", "serie").ifBlank { "W0" }
                 )
             }.sortedBy { it.nome.lowercase() }
         }
@@ -103,5 +104,35 @@ class AdminTeamRepository {
                     }
                 }
         }
+    }
+
+    private fun JsonObject.nestedIntValue(objectKey: String, vararg keys: String): Int? {
+        val obj = this[objectKey]?.jsonObject ?: return null
+
+        keys.forEach { key ->
+            val primitive = obj[key]?.jsonPrimitive
+
+            val direct = primitive?.intOrNull
+            if (direct != null) return direct
+
+            val fromText = primitive?.contentOrNull?.toIntOrNull()
+            if (fromText != null) return fromText
+        }
+
+        return null
+    }
+
+    private fun JsonObject.nestedTextValue(objectKey: String, vararg keys: String): String {
+        val obj = this[objectKey]?.jsonObject ?: return ""
+
+        keys.forEach { key ->
+            val value = obj[key]?.jsonPrimitive?.contentOrNull
+
+            if (!value.isNullOrBlank()) {
+                return value
+            }
+        }
+
+        return ""
     }
 }
