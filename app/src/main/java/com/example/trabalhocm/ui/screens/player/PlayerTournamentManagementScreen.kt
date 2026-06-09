@@ -79,6 +79,14 @@ fun PlayerTournamentManagementScreen(
         }
     }
 
+    // Escuta ativamente o gatilho de alteração dos filtros
+    val updateTrigger = PlayerTournamentFiltersState.updateTrigger
+    val selectedSport = PlayerTournamentFiltersState.selectedSport
+    val selectedFormat = PlayerTournamentFiltersState.selectedFormat
+    val selectedStatus = PlayerTournamentFiltersState.selectedStatus
+    val selectedRegion = PlayerTournamentFiltersState.selectedRegion
+    val cityOrRegion = PlayerTournamentFiltersState.cityOrRegion
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -141,21 +149,28 @@ fun PlayerTournamentManagementScreen(
 
             TournamentSearchAndFilters(
                 search = search,
+                selectedSport = selectedSport,
+                selectedStatus = selectedStatus,
                 onSearchChange = { search = it },
                 onFiltersClick = onFiltersClick
             )
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            // --- LÓGICA DE DESENHO DINÂMICO E PESQUISA ---
+            // --- LÓGICA DE DESENHO DINÂMICO E FILTRAGEM MULTI-CAMPO ---
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = BrandGreen)
                 }
             } else {
-                // Filtra os torneios com base no que escreveste na barra de pesquisa (ignora maiúsculas/minúsculas)
-                val torneiosFiltrados = listaTorneios.filter {
-                    it.nome.contains(search, ignoreCase = true)
+                val torneiosFiltrados = listaTorneios.filter { torneio ->
+                    val nomeOk = torneio.nome.contains(search, ignoreCase = true)
+                    val modalidadeOk = torneioCorrespondeModalidade(selectedSport, torneio.idModalidade)
+                    val formatoOk = torneioCorrespondeFormato(selectedFormat, torneio.formato)
+                    val estadoOk = torneioCorrespondeEstado(selectedStatus, torneio.estado)
+                    val regiaoOk = torneioCorrespondeRegiao(selectedRegion, cityOrRegion, torneio.local)
+
+                    nomeOk && modalidadeOk && formatoOk && estadoOk && regiaoOk
                 }
 
                 if (torneiosFiltrados.isEmpty()) {
@@ -165,13 +180,11 @@ fun PlayerTournamentManagementScreen(
                 } else {
                     torneiosFiltrados.forEach { torneio ->
 
-                        // Define as cores e textos com base no "estado" que vem da BD
                         val estadoAberto = torneio.estado?.lowercase() == "aberto"
                         val tagEstado = if (estadoAberto) "OPEN" else (torneio.estado?.uppercase() ?: "LIVE")
                         val corEstado = if (estadoAberto) BrandGreen else Color(0xFFE53935)
                         val btnTexto = if (estadoAberto) "REGISTER NOW" else "CLOSED"
 
-                        // Traduz o ID da modalidade para texto
                         val modalidadeNome = when (torneio.idModalidade) {
                             1 -> "FOOTBALL"
                             2 -> "BASKETBALL"
@@ -194,7 +207,6 @@ fun PlayerTournamentManagementScreen(
                             primaryButtonText = btnTexto,
                             secondaryButtonText = "DETAILS",
                             disabledButton = !estadoAberto,
-                            // --- MUDANÇA AQUI: Em vez de vazio, envia o torneio.id ---
                             onDetailsClick = { onDetailsClick(torneio.id) },
                             onPrimaryClick = onRegisterClick
                         )
@@ -292,6 +304,8 @@ fun TournamentMainActionButton(
 @Composable
 fun TournamentSearchAndFilters(
     search: String,
+    selectedSport: String?,
+    selectedStatus: String?,
     onSearchChange: (String) -> Unit,
     onFiltersClick: () -> Unit
 ) {
@@ -348,12 +362,12 @@ fun TournamentSearchAndFilters(
             ) {
                 FilterBox(
                     modifier = Modifier.weight(1f),
-                    text = "Status: All"
+                    text = "Sport: ${selectedSport ?: "All"}"
                 )
 
                 FilterBox(
                     modifier = Modifier.weight(1f),
-                    text = "Region: All"
+                    text = "Status: ${selectedStatus ?: "All"}"
                 )
             }
 
@@ -631,4 +645,51 @@ fun TournamentBadge(
             fontWeight = FontWeight.Bold
         )
     }
+}
+
+// --- FUNÇÕES DE CORRESPONDÊNCIA SEGURA PARA FILTRAGEM ---
+fun torneioCorrespondeModalidade(filtro: String?, idModalidade: Int?): Boolean {
+    if (filtro.isNullOrBlank()) return true
+    return when (filtro) {
+        "Football" -> idModalidade == 1
+        "Basketball" -> idModalidade == 2
+        "Volleyball" -> idModalidade == 3
+        else -> true
+    }
+}
+
+fun torneioCorrespondeFormato(filtro: String?, formato: String?): Boolean {
+    if (filtro.isNullOrBlank()) return true
+    val f = formato?.lowercase() ?: ""
+    return when (filtro) {
+        "League" -> f.contains("liga") || f.contains("league")
+        "Knockout" -> f.contains("elimin") || f.contains("knock") || f.contains("mata")
+        "Group Stage" -> f.contains("grupo") || f.contains("group")
+        else -> true
+    }
+}
+
+fun torneioCorrespondeEstado(filtro: String?, estado: String?): Boolean {
+    if (filtro.isNullOrBlank()) return true
+    val e = estado?.lowercase() ?: ""
+    return when (filtro) {
+        "Upcoming" -> e.contains("breve") || e.contains("pendente") || e.contains("upcoming")
+        "Live" -> e.contains("live") || e.contains("curso") || e.contains("decorrer")
+        "Registration Open" -> e.contains("aberto") || e.contains("open") || e.contains("inscri")
+        "Completed" -> e.contains("terminado") || e.contains("concluido") || e.contains("completed") || e.contains("fechado")
+        else -> true
+    }
+}
+
+fun torneioCorrespondeRegiao(selectedRegion: String?, cityOrRegion: String, local: String?): Boolean {
+    val localNormalizado = local.orEmpty().lowercase()
+    val regiaoOk = selectedRegion.isNullOrBlank() || localNormalizado.contains(selectedRegion.lowercase())
+    val pesquisaRegiaoOk = cityOrRegion.isBlank() || localNormalizado.contains(cityOrRegion.lowercase())
+    return regiaoOk && pesquisaRegiaoOk
+}
+
+@Preview(showBackground = true, name = "Player Tournament Management Screen")
+@Composable
+fun PlayerTournamentManagementScreenPreview() {
+    PlayerTournamentManagementScreen()
 }
