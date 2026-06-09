@@ -21,21 +21,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,8 +59,11 @@ import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.LightBlueBadge
+import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminTeamsScreen(
@@ -70,23 +78,35 @@ fun AdminTeamsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val repository = remember { AdminTeamRepository() }
+    val scope = rememberCoroutineScope()
 
     var teams by remember { mutableStateOf<List<AdminTeam>>(emptyList()) }
     var searchText by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All Teams") }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
+    var actionMessage by remember { mutableStateOf("") }
+    var teamToDelete by remember { mutableStateOf<AdminTeam?>(null) }
+
+    fun carregarEquipas() {
+        scope.launch {
+            isLoading = true
+            errorMessage = ""
+
+            repository.listarEquipasAdmin()
+                .onSuccess {
+                    teams = it
+                }
+                .onFailure {
+                    errorMessage = "Error loading teams: ${it.message}"
+                }
+
+            isLoading = false
+        }
+    }
 
     LaunchedEffect(Unit) {
-        repository.listarEquipasAdmin()
-            .onSuccess {
-                teams = it
-            }
-            .onFailure {
-                errorMessage = "Erro ao carregar equipas: ${it.message}"
-            }
-
-        isLoading = false
+        carregarEquipas()
     }
 
     val filteredTeams = teams.filter { team ->
@@ -96,15 +116,79 @@ fun AdminTeamsScreen(
                     team.divisao.contains(searchText, ignoreCase = true)
 
         val matchesFilter = when (selectedFilter) {
-            "Premier Tier" -> team.divisao.contains("premier", ignoreCase = true)
-            "Division A" -> team.divisao.contains("division a", ignoreCase = true) ||
-                    team.divisao.contains("divisão a", ignoreCase = true)
-            "Division B" -> team.divisao.contains("division b", ignoreCase = true) ||
-                    team.divisao.contains("divisão b", ignoreCase = true)
+            "Futebol" -> team.modalidade.contains("futebol", ignoreCase = true) ||
+                    team.modalidade.contains("football", ignoreCase = true)
+
+            "Basquetebol" -> team.modalidade.contains("basquetebol", ignoreCase = true) ||
+                    team.modalidade.contains("basket", ignoreCase = true)
+
+            "Voleibol" -> team.modalidade.contains("voleibol", ignoreCase = true) ||
+                    team.modalidade.contains("volley", ignoreCase = true)
+
             else -> true
         }
 
         matchesSearch && matchesFilter
+    }
+
+    val selectedTeamToDelete = teamToDelete
+
+    if (selectedTeamToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                teamToDelete = null
+            },
+            title = {
+                Text(
+                    text = "Delete Team",
+                    color = BrandBlue,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete ${selectedTeamToDelete.nome}?",
+                    color = TextGray,
+                    fontSize = 13.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            repository.apagarEquipa(selectedTeamToDelete.id)
+                                .onSuccess {
+                                    actionMessage = "Team deleted successfully."
+                                    teamToDelete = null
+                                    carregarEquipas()
+                                }
+                                .onFailure {
+                                    actionMessage = "Error deleting team: ${it.message}"
+                                    teamToDelete = null
+                                }
+                        }
+                    }
+                ) {
+                    Text(
+                        text = "Delete",
+                        color = ErrorRed,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        teamToDelete = null
+                    }
+                ) {
+                    Text(
+                        text = "Cancel",
+                        color = BrandBlue
+                    )
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -202,17 +286,17 @@ fun AdminTeamsScreen(
                             }
 
                             AdminTeamFilterChip(
-                                text = "Premier Tier",
-                                selected = selectedFilter == "Premier Tier"
+                                text = "Futebol",
+                                selected = selectedFilter == "Futebol"
                             ) {
-                                selectedFilter = "Premier Tier"
+                                selectedFilter = "Futebol"
                             }
 
                             AdminTeamFilterChip(
-                                text = "Division A",
-                                selected = selectedFilter == "Division A"
+                                text = "Basquetebol",
+                                selected = selectedFilter == "Basquetebol"
                             ) {
-                                selectedFilter = "Division A"
+                                selectedFilter = "Basquetebol"
                             }
                         }
 
@@ -220,10 +304,10 @@ fun AdminTeamsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             AdminTeamFilterChip(
-                                text = "Division B",
-                                selected = selectedFilter == "Division B"
+                                text = "Voleibol",
+                                selected = selectedFilter == "Voleibol"
                             ) {
-                                selectedFilter = "Division B"
+                                selectedFilter = "Voleibol"
                             }
                         }
                     }
@@ -233,7 +317,22 @@ fun AdminTeamsScreen(
                     item {
                         Text(
                             text = errorMessage,
-                            color = Color(0xFFDC2626),
+                            color = ErrorRed,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                if (actionMessage.isNotBlank()) {
+                    item {
+                        Text(
+                            text = actionMessage,
+                            color = if (actionMessage.startsWith("Error")) {
+                                ErrorRed
+                            } else {
+                                BrandGreen
+                            },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -249,7 +348,7 @@ fun AdminTeamsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = "Nenhuma equipa encontrada.",
+                                text = "No teams found.",
                                 color = TextGray,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(18.dp)
@@ -267,6 +366,9 @@ fun AdminTeamsScreen(
                         },
                         onManageTeamClick = {
                             onManageTeamClick(filteredTeams[index].id)
+                        },
+                        onDeleteTeamClick = {
+                            teamToDelete = filteredTeams[index]
                         }
                     )
                 }
@@ -378,7 +480,7 @@ private fun AdminTeamFilterChip(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(if (selected) Color(0xFF0057C8) else Color(0xFFE8EEF9))
+            .background(if (selected) PrimaryBlue else Color(0xFFE8EEF9))
             .clickable {
                 onClick()
             }
@@ -387,7 +489,7 @@ private fun AdminTeamFilterChip(
     ) {
         Text(
             text = text,
-            color = if (selected) Color.White else Color(0xFF0057C8),
+            color = if (selected) Color.White else PrimaryBlue,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold
         )
@@ -399,8 +501,11 @@ private fun AdminTeamCard(
     team: AdminTeam,
     index: Int,
     onViewDetailsClick: () -> Unit,
-    onManageTeamClick: () -> Unit
+    onManageTeamClick: () -> Unit,
+    onDeleteTeamClick: () -> Unit
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
@@ -416,7 +521,8 @@ private fun AdminTeamCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
                 ) {
                     TeamAvatar(
                         name = team.nome,
@@ -436,17 +542,54 @@ private fun AdminTeamCard(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         SmallTeamBadge(
-                            text = "${team.divisao.uppercase()} · ${team.playersCount} PLAYERS"
+                            text = "${team.modalidade.uppercase()} · ${team.playersCount} PLAYERS"
                         )
                     }
                 }
 
-                Icon(
-                    imageVector = AppIcons.MoreVert,
-                    contentDescription = "Opções",
-                    tint = BrandBlue,
-                    modifier = Modifier.size(22.dp)
-                )
+                Box {
+                    Icon(
+                        imageVector = AppIcons.MoreVert,
+                        contentDescription = "Opções",
+                        tint = BrandBlue,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clickable {
+                                menuExpanded = true
+                            }
+                    )
+
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = {
+                            menuExpanded = false
+                        },
+                        modifier = Modifier.background(Color.White)
+                    ) {
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = AppIcons.Delete,
+                                    contentDescription = null,
+                                    tint = ErrorRed,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = "Delete Team",
+                                    color = ErrorRed,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onDeleteTeamClick()
+                            }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -458,7 +601,7 @@ private fun AdminTeamCard(
                 TeamStat(
                     label = "WINS",
                     value = team.wins.toString(),
-                    color = Color(0xFF0057C8)
+                    color = PrimaryBlue
                 )
 
                 TeamStat(
@@ -471,7 +614,7 @@ private fun AdminTeamCard(
                     label = "STREAK",
                     value = team.streak.uppercase(),
                     color = if (team.streak.startsWith("L", ignoreCase = true)) {
-                        Color(0xFFDC2626)
+                        ErrorRed
                     } else {
                         BrandGreen
                     }
@@ -490,10 +633,10 @@ private fun AdminTeamCard(
                         .weight(1f)
                         .height(38.dp),
                     shape = RoundedCornerShape(4.dp),
-                    border = BorderStroke(1.dp, Color(0xFF0057C8)),
+                    border = BorderStroke(1.dp, PrimaryBlue),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color(0xFF0057C8)
+                        contentColor = PrimaryBlue
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
@@ -534,9 +677,9 @@ private fun TeamAvatar(
 ) {
     val color = when (index % 5) {
         0 -> Color(0xFFEAB308)
-        1 -> Color(0xFF0057C8)
-        2 -> Color(0xFF64748B)
-        3 -> Color(0xFF0E8A6F)
+        1 -> PrimaryBlue
+        2 -> TextGray
+        3 -> BrandGreen
         else -> Color(0xFF7C3AED)
     }
 
@@ -581,7 +724,7 @@ private fun SmallTeamBadge(
     ) {
         Text(
             text = text,
-            color = Color(0xFF0057C8),
+            color = PrimaryBlue,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.3.sp
@@ -650,7 +793,7 @@ private fun BottomTeamItem(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
+    val color = if (selected) PrimaryBlue else TextGray
 
     Column(
         modifier = Modifier.clickable {
