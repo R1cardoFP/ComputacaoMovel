@@ -30,6 +30,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,16 +46,34 @@ import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 
+object PlayerTournamentFiltersState {
+    var updateTrigger by mutableIntStateOf(0)
+    var selectedSport by mutableStateOf<String?>(null)
+    var selectedFormat by mutableStateOf<String?>(null)
+    var selectedStatus by mutableStateOf<String?>(null)
+    var selectedRegion by mutableStateOf<String?>(null)
+    var cityOrRegion by mutableStateOf("")
+
+    fun reset() {
+        selectedSport = null
+        selectedFormat = null
+        selectedStatus = null
+        selectedRegion = null
+        cityOrRegion = ""
+        updateTrigger++
+    }
+}
+
 @Composable
 fun PlayerTournamentFiltersScreen(
     onCloseClick: () -> Unit = {},
     onApplyClick: () -> Unit = {}
 ) {
-    var sportCategory by remember { mutableStateOf("Football") }
-    var competitionFormat by remember { mutableStateOf("League") }
-    var status by remember { mutableStateOf("Registration Open") }
-    var region by remember { mutableStateOf("") }
-    var regionQuick by remember { mutableStateOf("Lisbon") }
+    var sportCategory by remember { mutableStateOf(PlayerTournamentFiltersState.selectedSport) }
+    var competitionFormat by remember { mutableStateOf(PlayerTournamentFiltersState.selectedFormat) }
+    var status by remember { mutableStateOf(PlayerTournamentFiltersState.selectedStatus) }
+    var region by remember { mutableStateOf(PlayerTournamentFiltersState.cityOrRegion) }
+    var regionQuick by remember { mutableStateOf(PlayerTournamentFiltersState.selectedRegion) }
 
     Column(
         modifier = Modifier
@@ -99,11 +118,12 @@ fun PlayerTournamentFiltersScreen(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.2.sp,
                 modifier = Modifier.clickable {
-                    sportCategory = "Football"
-                    competitionFormat = "League"
-                    status = "Registration Open"
+                    PlayerTournamentFiltersState.reset()
+                    sportCategory = null
+                    competitionFormat = null
+                    status = null
                     region = ""
-                    regionQuick = "Lisbon"
+                    regionQuick = null
                 }
             )
         }
@@ -124,19 +144,19 @@ fun PlayerTournamentFiltersScreen(
                 FilterChipOption(
                     text = "⚽ Football",
                     selected = sportCategory == "Football",
-                    onClick = { sportCategory = "Football" }
+                    onClick = { sportCategory = if (sportCategory == "Football") null else "Football" }
                 )
 
                 FilterChipOption(
                     text = "🏐 Volleyball",
                     selected = sportCategory == "Volleyball",
-                    onClick = { sportCategory = "Volleyball" }
+                    onClick = { sportCategory = if (sportCategory == "Volleyball") null else "Volleyball" }
                 )
 
                 FilterChipOption(
                     text = "🏀 Basketball",
                     selected = sportCategory == "Basketball",
-                    onClick = { sportCategory = "Basketball" }
+                    onClick = { sportCategory = if (sportCategory == "Basketball") null else "Basketball" }
                 )
             }
 
@@ -152,19 +172,19 @@ fun PlayerTournamentFiltersScreen(
                 FilterChipOption(
                     text = "League",
                     selected = competitionFormat == "League",
-                    onClick = { competitionFormat = "League" }
+                    onClick = { competitionFormat = if (competitionFormat == "League") null else "League" }
                 )
 
                 FilterChipOption(
                     text = "Knockout",
                     selected = competitionFormat == "Knockout",
-                    onClick = { competitionFormat = "Knockout" }
+                    onClick = { competitionFormat = if (competitionFormat == "Knockout") null else "Knockout" }
                 )
 
                 FilterChipOption(
                     text = "Group Stage",
                     selected = competitionFormat == "Group Stage",
-                    onClick = { competitionFormat = "Group Stage" }
+                    onClick = { competitionFormat = if (competitionFormat == "Group Stage") null else "Group Stage" }
                 )
             }
 
@@ -180,20 +200,20 @@ fun PlayerTournamentFiltersScreen(
                 FilterChipOption(
                     text = "Upcoming",
                     selected = status == "Upcoming",
-                    onClick = { status = "Upcoming" }
+                    onClick = { status = if (status == "Upcoming") null else "Upcoming" }
                 )
 
                 FilterChipOption(
                     text = "Live",
                     selected = status == "Live",
                     outlinedSelected = true,
-                    onClick = { status = "Live" }
+                    onClick = { status = if (status == "Live") null else "Live" }
                 )
 
                 FilterChipOption(
                     text = "Registration Open",
                     selected = status == "Registration Open",
-                    onClick = { status = "Registration Open" }
+                    onClick = { status = if (status == "Registration Open") null else "Registration Open" }
                 )
             }
 
@@ -205,7 +225,7 @@ fun PlayerTournamentFiltersScreen(
                 FilterChipOption(
                     text = "Completed",
                     selected = status == "Completed",
-                    onClick = { status = "Completed" }
+                    onClick = { status = if (status == "Completed") null else "Completed" }
                 )
             }
 
@@ -256,25 +276,25 @@ fun PlayerTournamentFiltersScreen(
                 FilterChipOption(
                     text = "📍 Lisbon",
                     selected = regionQuick == "Lisbon",
-                    onClick = { regionQuick = "Lisbon" }
+                    onClick = { regionQuick = if (regionQuick == "Lisbon") null else "Lisbon" }
                 )
 
                 FilterChipOption(
                     text = "Porto",
                     selected = regionQuick == "Porto",
-                    onClick = { regionQuick = "Porto" }
+                    onClick = { regionQuick = if (regionQuick == "Porto") null else "Porto" }
                 )
 
                 FilterChipOption(
                     text = "Coimbra",
                     selected = regionQuick == "Coimbra",
-                    onClick = { regionQuick = "Coimbra" }
+                    onClick = { regionQuick = if (regionQuick == "Coimbra") null else "Coimbra" }
                 )
 
                 FilterChipOption(
                     text = "Braga",
                     selected = regionQuick == "Braga",
-                    onClick = { regionQuick = "Braga" }
+                    onClick = { regionQuick = if (regionQuick == "Braga") null else "Braga" }
                 )
             }
 
@@ -320,7 +340,16 @@ fun PlayerTournamentFiltersScreen(
                 .padding(bottom = 18.dp, top = 8.dp)
         ) {
             Button(
-                onClick = onApplyClick,
+                onClick = {
+                    PlayerTournamentFiltersState.selectedSport = sportCategory
+                    PlayerTournamentFiltersState.selectedFormat = competitionFormat
+                    PlayerTournamentFiltersState.selectedStatus = status
+                    PlayerTournamentFiltersState.cityOrRegion = region
+                    PlayerTournamentFiltersState.selectedRegion = regionQuick
+
+                    PlayerTournamentFiltersState.updateTrigger++ // Dispara atualização!
+                    onApplyClick()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(58.dp),
@@ -331,7 +360,7 @@ fun PlayerTournamentFiltersScreen(
                 )
             ) {
                 Text(
-                    text = "APPLY FILTERS (4)",
+                    text = "APPLY FILTERS",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
