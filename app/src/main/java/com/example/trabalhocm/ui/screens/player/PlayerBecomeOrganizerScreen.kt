@@ -57,6 +57,7 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerBecomeOrganizerScreen(
@@ -70,6 +71,9 @@ fun PlayerBecomeOrganizerScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val authRepository = remember { AuthRepository() }
+    val requestRepository = remember { com.example.trabalhocm.data.repository.PlayerOrganizerRepository() }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var isSubmitting by remember { mutableStateOf(false) }
 
     var sport by remember { mutableStateOf("Volleyball") }
     var experience by remember { mutableStateOf("Intermediate") }
@@ -262,7 +266,9 @@ fun PlayerBecomeOrganizerScreen(
                 DropdownMenu(
                     expanded = isDropdownExpanded,
                     onDismissRequest = { isDropdownExpanded = false },
-                    modifier = Modifier.fillMaxWidth(0.85f).background(BrandWhite)
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .background(BrandWhite)
                 ) {
                     dropdownOptions.forEach { option ->
                         DropdownMenuItem(
@@ -333,11 +339,29 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
-                onClick = onSubmitClick,
+                onClick = {
+                    scope.launch {
+                        isSubmitting = true
+
+                        // Chama o repositório passando os dados do state
+                        requestRepository.submeterPedido(
+                            modalidade = sport,
+                            experiencia = experience,
+                            frequencia = tournamentsPerYear,
+                            motivo = motivation
+                        ).onSuccess {
+                            isSubmitting = false
+                            onSubmitClick() // Volta para a Home apenas se gravar com sucesso!
+                        }.onFailure { erro ->
+                            isSubmitting = false
+                            println("Erro ao submeter pedido: ${erro.message}")
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = acceptedTerms && motivation.isNotBlank(),
+                enabled = acceptedTerms && motivation.isNotBlank() && !isSubmitting,
                 shape = RoundedCornerShape(6.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BrandGreen,
@@ -347,7 +371,7 @@ fun PlayerBecomeOrganizerScreen(
                 )
             ) {
                 Text(
-                    text = "✈  SUBMIT REQUEST",
+                    text = if (isSubmitting) "SUBMITTING..." else "✈  SUBMIT REQUEST",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.4.sp

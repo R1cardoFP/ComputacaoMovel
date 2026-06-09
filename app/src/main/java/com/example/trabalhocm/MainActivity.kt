@@ -958,6 +958,7 @@ fun MatchLeagueApp() {
             var bioUtilizador by remember { mutableStateOf("") }
             var anoMembro by remember { mutableStateOf("2026") }
             var userId by remember { mutableStateOf("") }
+            var photoUri by remember { mutableStateOf<Uri?>(null) } // <-- DECLARAÇÃO DA FOTO
 
             val sharedPrefs = remember { context.getSharedPreferences("user_prefs", android.content.Context.MODE_PRIVATE) }
 
@@ -974,6 +975,12 @@ fun MatchLeagueApp() {
 
                     val savedBio = sharedPrefs.getString("bio_$userId", null)
                     if (savedBio != null) bioUtilizador = savedBio
+
+                    // <-- CARREGAMENTO DA FOTO
+                    if (!utilizador.fotoUrl.isNullOrEmpty()) {
+                        val urlAtualizada = "${utilizador.fotoUrl}?v=${System.currentTimeMillis()}"
+                        photoUri = urlAtualizada.toUri()
+                    }
                 }
             }
 
@@ -982,6 +989,7 @@ fun MatchLeagueApp() {
                 initialEmail = emailUtilizador,
                 initialBio = bioUtilizador,
                 memberSinceYear = anoMembro,
+                photoUri = photoUri, // <-- PASSAGEM DA FOTO PARA O ECRÃ
                 onLogoutClick = {
                     scope.launch {
                         authRepository.logout()

@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
+import coil.compose.AsyncImage
 
 import com.example.trabalhocm.ui.theme.*
 
@@ -33,6 +34,7 @@ fun OrganizerProfileScreen(
     initialEmail: String = "",
     initialBio: String = "",
     memberSinceYear: String = "2026",
+    photoUri: android.net.Uri? = null,
     onLogoutClick: () -> Unit = {},
     onPlayerDashboardClick: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
@@ -97,7 +99,16 @@ fun OrganizerProfileScreen(
                             .border(3.dp, Color.White, RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(60.dp))
+                        if (photoUri != null) {
+                            AsyncImage(
+                                model = photoUri,
+                                contentDescription = "User Photo",
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(60.dp))
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))

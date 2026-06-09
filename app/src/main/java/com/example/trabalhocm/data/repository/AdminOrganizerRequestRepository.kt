@@ -38,7 +38,7 @@ class AdminOrganizerRequestRepository {
                         experience = pedido.experiencia ?: "Não definido",
                         applied = formatAppliedTime(pedido.criadaEm),
                         description = pedido.motivo ?: "Sem descrição.",
-                        status = pedido.estado,
+                        status = pedido.estado.uppercase(),
                         createdAt = pedido.criadaEm,
                         updatedAt = pedido.atualizadaEm
                     )
