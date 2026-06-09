@@ -186,7 +186,7 @@ private fun TeamDetailsContent(
                 SmallTeamStatCard(
                     modifier = Modifier
                         .weight(1f)
-                        .height(96.dp),
+                        .height(116.dp),
                     title = "Total Goals",
                     value = details.totalGoals.toString()
                 )
@@ -194,7 +194,7 @@ private fun TeamDetailsContent(
                 SmallTeamStatCard(
                     modifier = Modifier
                         .weight(1f)
-                        .height(96.dp),
+                        .height(116.dp),
                     title = "Matches Played",
                     value = details.matchesPlayed.toString(),
                     subtitle = "${details.wins}W · ${details.draws}D · ${details.losses}L"
@@ -401,7 +401,6 @@ private fun WinRateCard(details: AdminTeamDetails) {
     }
 }
 
-@Composable
 @Composable
 private fun SmallTeamStatCard(
     modifier: Modifier,
