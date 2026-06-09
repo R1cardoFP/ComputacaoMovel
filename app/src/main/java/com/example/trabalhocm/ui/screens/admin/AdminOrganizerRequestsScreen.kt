@@ -324,7 +324,6 @@ fun AdminOrganizerRequestsScreen(
                             }
                         },
                         onDetailsClick = {
-                            // Depois ligamos à rota real de detalhes do utilizador/pedido.
                         }
                     )
                 }
