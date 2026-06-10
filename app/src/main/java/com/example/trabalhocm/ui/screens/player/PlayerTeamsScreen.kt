@@ -59,7 +59,7 @@ fun PlayerTeamsScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onTeamDetailsClick: (Long) -> Unit = {},
-    onManageTeamClick: () -> Unit = {},
+    onManageTeamClick: (Long) -> Unit = {},
     onCreateTeamClick: () -> Unit = {}
 ) {
     val repository = remember { EquipaRepository() }
@@ -246,7 +246,9 @@ fun PlayerTeamsScreen(
                             onDetailsClick = {
                                 onTeamDetailsClick(team.equipa.id)
                             },
-                            onManageTeamClick = onManageTeamClick
+                            onManageTeamClick = {
+                                onManageTeamClick(team.equipa.id)
+                            }
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
@@ -410,10 +412,18 @@ fun PlayerTeamCard(
                     )
 
                     Text(
-                        text = if (team.utilizadorPertence) {
-                            "YOUR TEAM · ${team.divisao}".uppercase()
-                        } else {
-                            team.divisao.uppercase()
+                        text = when {
+                            team.utilizadorCapitao -> {
+                                "YOUR TEAM · CAPTAIN · ${team.divisao}".uppercase()
+                            }
+
+                            team.utilizadorPertence -> {
+                                "YOUR TEAM · ${team.divisao}".uppercase()
+                            }
+
+                            else -> {
+                                team.divisao.uppercase()
+                            }
                         },
                         color = if (team.utilizadorPertence) BrandGreen else Color(0xFF0757C8),
                         fontSize = 8.sp,
@@ -470,7 +480,7 @@ fun PlayerTeamCard(
                     )
                 }
 
-                if (team.utilizadorPertence) {
+                if (team.utilizadorCapitao) {
                     Button(
                         onClick = onManageTeamClick,
                         modifier = Modifier

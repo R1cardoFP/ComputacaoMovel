@@ -118,7 +118,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "admin_home"
+        startDestination = "player_home"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -787,8 +787,8 @@ fun MatchLeagueApp() {
                 onTeamDetailsClick = { idEquipa ->
                     navController.navigate("player_team_details/$idEquipa")
                 },
-                onManageTeamClick = {
-                    navController.navigate("player_manage_team")
+                onManageTeamClick = { idEquipa ->
+                    navController.navigate("player_manage_team/$idEquipa")
                 },
                 onCreateTeamClick = {
                     navController.navigate("player_create_team")
@@ -863,18 +863,44 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("player_manage_team") {
+        composable(
+            route = "player_manage_team/{idEquipa}",
+            arguments = listOf(
+                navArgument("idEquipa") {
+                    type = NavType.LongType
+                }
+            )
+        ) { backStackEntry ->
+            val idEquipa = backStackEntry.arguments?.getLong("idEquipa") ?: 0L
+
             PlayerManageTeamScreen(
-                onBackClick = { navController.popBackStack() },
-                onInvitePlayerClick = { navController.navigate("player_invite_player") },
-                onViewPlayerProfileClick = {},
+                idEquipa = idEquipa,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onInvitePlayerClick = {
+                    navController.navigate("player_invite_player")
+                },
+                onViewPlayerProfileClick = { playerId ->
+                    navController.navigate("player_team_player_details/$playerId")
+                },
                 onMakeCaptainClick = {},
                 onRemoveFromTeamClick = {},
-                onHomeClick = { navController.navigate("player_home") },
-                onTournamentsClick = { navController.navigate("player_tournaments") },
-                onMatchesClick = { navController.navigate("player_matches") },
-                onTeamsClick = { navController.navigate("player_teams") },
-                onProfileClick = { navController.navigate("player_profile") }
+                onHomeClick = {
+                    navController.navigate("player_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("player_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("player_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("player_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("player_profile")
+                }
             )
         }
 
