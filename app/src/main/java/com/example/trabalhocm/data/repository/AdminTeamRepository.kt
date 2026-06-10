@@ -6,8 +6,8 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class AdminTeamRepository {
 
@@ -19,12 +19,28 @@ class AdminTeamRepository {
                 .select()
                 .decodeList<JsonObject>()
 
+            val membrosEquipas = client.from("membro_equipa")
+                .select {
+                    filter {
+                        eq("estado_convite", "aceite")
+                    }
+                }
+                .decodeList<JsonObject>()
+
+            val jogadoresPorEquipa = membrosEquipas
+                .mapNotNull { membro ->
+                    membro.text("id_equipa").toLongOrNull()
+                }
+                .groupingBy { it }
+                .eachCount()
+
             val modalidades = client.from("modalidade")
                 .select()
                 .decodeList<JsonObject>()
 
             equipas.map { equipa ->
                 val id = equipa.text("id")
+                val equipaId = id.toLongOrNull() ?: 0L
 
                 val idModalidade = equipa.intValue("id_modalidade", "modalidade_id")
 
@@ -38,22 +54,34 @@ class AdminTeamRepository {
                 val divisao = equipa.text("divisao", "division", "categoria", "nivel")
                     .ifBlank { modalidadeNome }
 
+                val nomeEquipa = equipa.text("nome", "name")
+                    .ifBlank { "Equipa sem nome" }
+
                 AdminTeam(
                     id = id,
-                    nome = equipa.text("nome", "name").ifBlank { "Equipa sem nome" },
+                    nome = nomeEquipa,
                     modalidade = modalidadeNome,
                     divisao = divisao,
-                    playersCount = equipa.intValue(
-                        "players_count",
-                        "num_jogadores",
-                        "numero_jogadores",
-                        "total_jogadores"
-                    ) ?: 0,
+                    playersCount = jogadoresPorEquipa[equipaId] ?: 0,
                     wins = equipa.nestedIntValue("dados_equipa", "wins", "vitorias") ?: 0,
                     losses = equipa.nestedIntValue("dados_equipa", "losses", "derrotas") ?: 0,
                     streak = equipa.nestedTextValue("dados_equipa", "streak", "serie").ifBlank { "W0" }
                 )
             }.sortedBy { it.nome.lowercase() }
+        }
+    }
+
+    suspend fun apagarEquipa(teamId: String): Result<Unit> {
+        return runCatching {
+            val id = teamId.toLongOrNull()
+                ?: throw Exception("ID da equipa inválido.")
+
+            client.from("equipa")
+                .delete {
+                    filter {
+                        eq("id", id)
+                    }
+                }
         }
     }
 
@@ -92,20 +120,6 @@ class AdminTeamRepository {
         return null
     }
 
-    suspend fun apagarEquipa(teamId: String): Result<Unit> {
-        return runCatching {
-            val id = teamId.toLongOrNull()
-                ?: throw Exception("ID da equipa inválido.")
-
-            client.from("equipa")
-                .delete {
-                    filter {
-                        eq("id", id)
-                    }
-                }
-        }
-    }
-
     private fun JsonObject.nestedIntValue(objectKey: String, vararg keys: String): Int? {
         val obj = this[objectKey]?.jsonObject ?: return null
 
@@ -113,10 +127,17 @@ class AdminTeamRepository {
             val primitive = obj[key]?.jsonPrimitive
 
             val direct = primitive?.intOrNull
-            if (direct != null) return direct
+            if (direct != null) {
+                return direct
+            }
 
-            val fromText = primitive?.contentOrNull?.toIntOrNull()
-            if (fromText != null) return fromText
+            val fromText = primitive
+                ?.contentOrNull
+                ?.toIntOrNull()
+
+            if (fromText != null) {
+                return fromText
+            }
         }
 
         return null
@@ -126,7 +147,9 @@ class AdminTeamRepository {
         val obj = this[objectKey]?.jsonObject ?: return ""
 
         keys.forEach { key ->
-            val value = obj[key]?.jsonPrimitive?.contentOrNull
+            val value = obj[key]
+                ?.jsonPrimitive
+                ?.contentOrNull
 
             if (!value.isNullOrBlank()) {
                 return value

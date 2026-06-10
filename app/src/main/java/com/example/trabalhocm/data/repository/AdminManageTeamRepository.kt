@@ -97,6 +97,24 @@ class AdminManageTeamRepository {
         }
     }
 
+    suspend fun removerJogadorDaEquipa(
+        teamId: String,
+        playerId: String
+    ): Result<Unit> {
+        return runCatching {
+            val idEquipa = teamId.toLongOrNull()
+                ?: throw Exception("ID da equipa inválido.")
+
+            client.from("membro_equipa")
+                .delete {
+                    filter {
+                        eq("id_equipa", idEquipa)
+                        eq("id_utilizador", playerId)
+                    }
+                }
+        }
+    }
+
     private fun JsonObject.text(vararg keys: String): String {
         keys.forEach { key ->
             val value = this[key]

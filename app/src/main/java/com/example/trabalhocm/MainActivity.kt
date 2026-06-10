@@ -90,6 +90,8 @@ import com.example.trabalhocm.ui.screens.admin.AdminInviteTeamsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminTeamDetailsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminPlayerDetailsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminManageTeamScreen
+import com.example.trabalhocm.ui.screens.admin.AdminInvitePlayerScreen
+import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchesScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,7 +118,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "admin_home"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -1261,7 +1263,7 @@ fun MatchLeagueApp() {
                 onReviewRequestsClick = { navController.navigate("admin_organizer_requests") },
                 onHomeClick = {},
                 onTournamentsClick = { navController.navigate("admin_tournaments") },
-                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onMatchesClick = { navController.navigate("admin_casual_matches") },
                 onTeamsClick = { navController.navigate("admin_teams") },
                 onProfileClick = { navController.navigate("admin_profile") }
             )
@@ -1293,7 +1295,7 @@ fun MatchLeagueApp() {
                     }
                 },
                 onTournamentsClick = { navController.navigate("torneios") },
-                onMatchesClick = { navController.navigate("organizador_match_center") },
+                onMatchesClick = { navController.navigate("admin_casual_matches") },
                 onTeamsClick = {},
                 onProfileClick = {}
             )
@@ -1313,7 +1315,9 @@ fun MatchLeagueApp() {
                 onTournamentsClick = {
                     navController.navigate("torneios")
                 },
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {},
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -1332,7 +1336,9 @@ fun MatchLeagueApp() {
                 onTournamentsClick = {
                     navController.navigate("torneios")
                 },
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {},
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -1355,7 +1361,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
-                    navController.navigate("organizador_match_center")
+                    navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
                     navController.navigate("teams")
@@ -1375,7 +1381,9 @@ fun MatchLeagueApp() {
                 onManageRegistrationClick = { id -> navController.navigate("admin_manage_registration/$id") },
                 onHomeClick = { navController.navigate("admin_home") },
                 onTournamentsClick = {},
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {},
                 onProfileClick = { navController.navigate("admin_profile") }
             )
@@ -1395,7 +1403,9 @@ fun MatchLeagueApp() {
                 onTournamentsClick = {
                     navController.navigate("admin_tournaments")
                 },
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {},
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -1441,7 +1451,9 @@ fun MatchLeagueApp() {
                 onTournamentsClick = {
                     navController.navigate("admin_tournaments")
                 },
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {},
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -1491,7 +1503,9 @@ fun MatchLeagueApp() {
                 onTournamentsClick = {
                     navController.navigate("admin_tournaments")
                 },
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {},
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -1519,7 +1533,9 @@ fun MatchLeagueApp() {
                 onTournamentsClick = {
                     navController.navigate("admin_tournaments")
                 },
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {},
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -1633,7 +1649,9 @@ fun MatchLeagueApp() {
                 onTournamentsClick = {
                     navController.navigate("admin_tournaments")
                 },
-                onMatchesClick = {},
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
                 onTeamsClick = {
                     navController.navigate("admin_teams")
                 },
@@ -1705,9 +1723,9 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onInvitePlayerClick = { id ->
-                    // criar a página admin_invite_players/$id
+                    navController.navigate("admin_invite_player/$id")
                 },
-                onPlayerOptionsClick = { playerId ->
+                onPlayerClick = { playerId ->
                     navController.navigate("admin_player_details/$playerId?teamId=$teamId")
                 },
                 onHomeClick = {
@@ -1718,6 +1736,82 @@ fun MatchLeagueApp() {
                 },
                 onMatchesClick = {
                     // ecrã admin de matches
+                },
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "admin_invite_player/{teamId}",
+            arguments = listOf(
+                navArgument("teamId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val teamId = backStackEntry.arguments?.getString("teamId") ?: ""
+
+            AdminInvitePlayerScreen(
+                teamId = teamId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onInviteSent = {
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {
+                    // Ainda não temos ecrã admin de matches
+                },
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable("admin_casual_matches") {
+            AdminCasualMatchesScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onCalendarClick = {
+                    // ligar ao calendário de jogos
+                },
+                onViewDetailsClick = { matchId ->
+                    // ligar aos detalhes da peladinha
+                },
+                onEditClick = { matchId ->
+                    // ligar ao editar peladinha
+                },
+                onWatchLiveClick = { matchId ->
+                    // ligar ao live match
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
                     navController.navigate("admin_teams")
