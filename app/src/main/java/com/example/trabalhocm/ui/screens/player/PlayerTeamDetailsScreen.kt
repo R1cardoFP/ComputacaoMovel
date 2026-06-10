@@ -20,8 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -167,37 +165,12 @@ fun PlayerTeamDetailsScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Active Roster",
-                                color = Color(0xFF20242D),
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            if (info.equipaInfo.utilizadorPertence) {
-                                Button(
-                                    onClick = onInvitePlayerClick,
-                                    modifier = Modifier.height(36.dp),
-                                    shape = RoundedCornerShape(4.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF062B67),
-                                        contentColor = BrandWhite
-                                    )
-                                ) {
-                                    Text(
-                                        text = "♙+  Invite Player",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
+                        Text(
+                            text = "Active Roster",
+                            color = Color(0xFF20242D),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Medium
+                        )
 
                         Spacer(modifier = Modifier.height(14.dp))
 
@@ -209,7 +182,9 @@ fun PlayerTeamDetailsScreen(
                             info.membros.forEach { membro ->
                                 TeamPlayerRosterCard(
                                     membro = membro,
-                                    onViewProfileClick = { onViewPlayerProfileClick(membro.utilizador.id) }
+                                    onViewProfileClick = {
+                                        onViewPlayerProfileClick(membro.utilizador.id)
+                                    }
                                 )
 
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -472,7 +447,12 @@ fun TeamPlayerRosterCard(
     onViewProfileClick: () -> Unit
 ) {
     val nome = membro.utilizador.nome
-    val role = formatarPapelMembroEquipa(membro.papel)
+    val role = if (membro.isCaptain) {
+        "Captain"
+    } else {
+        formatarPapelMembroEquipa(membro.papel)
+    }
+    val posicao = formatarPosicaoMembroEquipa(membro.posicao)
 
     Card(
         modifier = Modifier
@@ -562,7 +542,7 @@ fun TeamPlayerRosterCard(
                     }
 
                     Text(
-                        text = role,
+                        text = "$role · $posicao",
                         color = Color(0xFF7D8497),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
@@ -572,12 +552,12 @@ fun TeamPlayerRosterCard(
                 OutlinedButton(
                     onClick = onViewProfileClick,
                     modifier = Modifier
-                        .width(94.dp)
+                        .width(82.dp)
                         .height(36.dp),
                     shape = RoundedCornerShape(5.dp)
                 ) {
                     Text(
-                        text = "View Profile",
+                        text = "View",
                         color = Color(0xFF062B67),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -656,11 +636,41 @@ fun teamDetailsInitials(nome: String): String {
 }
 
 fun formatarPapelMembroEquipa(papel: String): String {
-    return when (papel.lowercase()) {
+    val papelLimpo = papel
+        .replace("'", "")
+        .replace("\"", "")
+        .trim()
+        .lowercase()
+
+    return when (papelLimpo) {
         "capitao", "captain" -> "Captain"
         "jogador", "player" -> "Player"
         "treinador", "coach" -> "Coach"
-        else -> papel.replace("_", " ").uppercase()
+        else -> papelLimpo
+            .replace("_", " ")
+            .replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase() else it.toString()
+            }
+    }
+}
+
+fun formatarPosicaoMembroEquipa(posicao: String): String {
+    val posicaoLimpa = posicao
+        .replace("'", "")
+        .replace("\"", "")
+        .trim()
+        .lowercase()
+
+    return when (posicaoLimpa) {
+        "forward", "foward", "avancado", "avançado" -> "Forward"
+        "midfielder", "medio", "médio" -> "Midfielder"
+        "defender", "defesa" -> "Defender"
+        "goalkeeper", "guarda-redes", "guarda redes" -> "Goalkeeper"
+        else -> posicaoLimpa
+            .replace("_", " ")
+            .replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase() else it.toString()
+            }
     }
 }
 

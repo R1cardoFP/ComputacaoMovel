@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,11 +42,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.repository.AuthRepository
+import com.example.trabalhocm.data.repository.ConviteEquipaInfo
+import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.data.repository.Notificacao
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.OffsetDateTime
 
@@ -60,23 +64,69 @@ fun PlayerNotificationsScreen(
 ) {
     var selectedTab by remember { mutableStateOf("ALL") }
 
-    // Estados para carregar as notificações da BD
     val authRepository = remember { AuthRepository() }
-    var notificacoes by remember { mutableStateOf<List<Notificacao>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+    val equipaRepository = remember { EquipaRepository() }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
-            authRepository.obterNotificacoes(utilizador.id).onSuccess { lista ->
-                notificacoes = lista
-                isLoading = false
-            }.onFailure {
-                isLoading = false
-            }
-        }.onFailure {
+    var notificacoes by remember { mutableStateOf<List<Notificacao>>(emptyList()) }
+    var convitesEquipa by remember { mutableStateOf<List<ConviteEquipaInfo>>(emptyList()) }
+
+    var isLoading by remember { mutableStateOf(true) }
+    var isActionLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    var successMessage by remember { mutableStateOf("") }
+
+    fun carregarDados() {
+        scope.launch {
+            isLoading = true
+            errorMessage = ""
+
+            authRepository.obterUtilizadorAtual()
+                .onSuccess { utilizador ->
+                    authRepository.obterNotificacoes(utilizador.id)
+                        .onSuccess { lista ->
+                            notificacoes = lista
+                        }
+                        .onFailure {
+                            notificacoes = emptyList()
+                        }
+                }
+                .onFailure {
+                    notificacoes = emptyList()
+                }
+
+            equipaRepository.listarConvitesPendentesDoUtilizador()
+                .onSuccess { lista ->
+                    convitesEquipa = lista
+                }
+                .onFailure {
+                    errorMessage = it.message ?: "Erro ao carregar convites de equipa."
+                    convitesEquipa = emptyList()
+                }
+
             isLoading = false
         }
     }
+
+    LaunchedEffect(Unit) {
+        carregarDados()
+    }
+
+    val notificacoesFiltradas = notificacoes.filter { notif ->
+        when (selectedTab) {
+            "MATCHES" -> notif.tipo.uppercase() == "MATCH" || notif.tipo.uppercase() == "RESULT"
+            "TEAMS" -> notif.tipo.uppercase() == "TEAM_INVITE"
+            "SYSTEM" -> notif.tipo.uppercase() == "SYSTEM"
+            else -> true
+        }
+    }
+
+    val mostrarConvitesEquipa =
+        selectedTab == "ALL" || selectedTab == "TEAMS"
+
+    val existemItens =
+        (mostrarConvitesEquipa && convitesEquipa.isNotEmpty()) ||
+                notificacoesFiltradas.isNotEmpty()
 
     Column(
         modifier = Modifier
@@ -118,32 +168,108 @@ fun PlayerNotificationsScreen(
                 onTabSelected = { selectedTab = it }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = BrandGreen)
-                }
-            } else if (notificacoes.isEmpty()) {
-                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                    Text("Sem notificações de momento.", color = Color.Gray)
-                }
-            } else {
-                // Filtra as notificações com base na aba escolhida
-                val listaFiltrada = notificacoes.filter { notif ->
-                    when (selectedTab) {
-                        "MATCHES" -> notif.tipo.uppercase() == "MATCH" || notif.tipo.uppercase() == "RESULT"
-                        "SYSTEM" -> notif.tipo.uppercase() == "SYSTEM"
-                        else -> true // "ALL" mostra tudo
+            if (errorMessage.isNotBlank()) {
+                NotificationsMessageCard(
+                    text = errorMessage,
+                    isError = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            if (successMessage.isNotBlank()) {
+                NotificationsMessageCard(
+                    text = successMessage,
+                    isError = false
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = BrandGreen)
                     }
                 }
 
-                if (listaFiltrada.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                        Text("Sem notificações para esta categoria.", color = Color.Gray)
+                !existemItens -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Sem notificações de momento.",
+                            color = Color.Gray
+                        )
                     }
-                } else {
-                    listaFiltrada.forEach { notif ->
+                }
+
+                else -> {
+                    if (mostrarConvitesEquipa) {
+                        convitesEquipa.forEach { convite ->
+                            TeamInvitationNotificationCard(
+                                title = "Team Invitation",
+                                description = "Foste convidado para entrar na equipa ${convite.nomeEquipa} como ${convite.posicao}.",
+                                time = "PENDING",
+                                equipaNome = convite.nomeEquipa,
+                                equipaInfo = "${convite.modalidadeNome} · ${convite.divisao}",
+                                message = convite.mensagem,
+                                isActionLoading = isActionLoading,
+                                onAcceptClick = {
+                                    scope.launch {
+                                        isActionLoading = true
+                                        errorMessage = ""
+                                        successMessage = ""
+
+                                        equipaRepository.aceitarConviteEquipa(convite.idEquipa)
+                                            .onSuccess {
+                                                successMessage = "Convite da equipa ${convite.nomeEquipa} aceite."
+                                                carregarDados()
+                                            }
+                                            .onFailure {
+                                                errorMessage = it.message ?: "Erro ao aceitar convite."
+                                            }
+
+                                        isActionLoading = false
+                                    }
+                                },
+                                onDeclineClick = {
+                                    scope.launch {
+                                        isActionLoading = true
+                                        errorMessage = ""
+                                        successMessage = ""
+
+                                        equipaRepository.recusarConviteEquipa(convite.idEquipa)
+                                            .onSuccess {
+                                                successMessage = "Convite da equipa ${convite.nomeEquipa} recusado."
+                                                carregarDados()
+                                            }
+                                            .onFailure {
+                                                errorMessage = it.message ?: "Erro ao recusar convite."
+                                            }
+
+                                        isActionLoading = false
+                                    }
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+                        }
+                    }
+
+                    notificacoesFiltradas.forEach { notif ->
                         DesenharNotificacao(notificacao = notif)
                         Spacer(modifier = Modifier.height(14.dp))
                     }
@@ -156,7 +282,7 @@ fun PlayerNotificationsScreen(
         }
 
         MatchLeagueBottomBar(
-            selectedTab = "PROFILE", // O sino das notificações costuma estar no perfil ou nav superior
+            selectedTab = "PROFILE",
             onHomeClick = onHomeClick,
             onTournamentsClick = onTournamentsClick,
             onMatchesClick = onMatchesClick,
@@ -166,7 +292,6 @@ fun PlayerNotificationsScreen(
     }
 }
 
-// --- FUNÇÃO INTELIGENTE QUE DECIDE QUAL CARTÃO DESENHAR ---
 @Composable
 fun DesenharNotificacao(notificacao: Notificacao) {
     val tempoCalculado = calcularTempoAtras(notificacao.data)
@@ -180,6 +305,7 @@ fun DesenharNotificacao(notificacao: Notificacao) {
                 time = tempoCalculado
             )
         }
+
         "MATCH" -> {
             NotificationCard(
                 icon = "⏱",
@@ -191,6 +317,7 @@ fun DesenharNotificacao(notificacao: Notificacao) {
                 unread = !notificacao.lida
             )
         }
+
         "SYSTEM" -> {
             NotificationCard(
                 icon = "☁",
@@ -202,6 +329,7 @@ fun DesenharNotificacao(notificacao: Notificacao) {
                 unread = !notificacao.lida
             )
         }
+
         "RESULT" -> {
             NotificationCard(
                 icon = "◎",
@@ -213,8 +341,8 @@ fun DesenharNotificacao(notificacao: Notificacao) {
                 unread = !notificacao.lida
             )
         }
+
         else -> {
-            // Cartão Genérico de fallback
             NotificationCard(
                 icon = "🔔",
                 iconColor = BrandGreen,
@@ -228,7 +356,6 @@ fun DesenharNotificacao(notificacao: Notificacao) {
     }
 }
 
-// --- FUNÇÃO PARA CALCULAR "X MIN AGO" ---
 fun calcularTempoAtras(dataCriacao: String): String {
     return try {
         val dataPassada = OffsetDateTime.parse(dataCriacao)
@@ -238,9 +365,9 @@ fun calcularTempoAtras(dataCriacao: String): String {
         when {
             minutos < 1 -> "JUST NOW"
             minutos < 60 -> "${minutos}M AGO"
-            minutos < 1440 -> "${minutos / 60}H AGO" // Menos de 24h
-            minutos < 2880 -> "YESTERDAY" // Entre 24h e 48h
-            else -> "${minutos / 1440}D AGO" // Mais de 2 dias
+            minutos < 1440 -> "${minutos / 60}H AGO"
+            minutos < 2880 -> "YESTERDAY"
+            else -> "${minutos / 1440}D AGO"
         }
     } catch (e: Exception) {
         "RECENTLY"
@@ -319,6 +446,13 @@ fun NotificationsTabs(
         )
 
         NotificationTabButton(
+            text = "TEAMS",
+            selected = selectedTab == "TEAMS",
+            onClick = { onTabSelected("TEAMS") },
+            modifier = Modifier.weight(1f)
+        )
+
+        NotificationTabButton(
             text = "SYSTEM",
             selected = selectedTab == "SYSTEM",
             onClick = { onTabSelected("SYSTEM") },
@@ -345,9 +479,9 @@ fun NotificationTabButton(
         Text(
             text = text,
             color = if (selected) BrandWhite else Color(0xFF7D8497),
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
+            letterSpacing = 0.6.sp
         )
     }
 }
@@ -455,7 +589,13 @@ fun NotificationCard(
 fun TeamInvitationNotificationCard(
     title: String,
     description: String,
-    time: String
+    time: String,
+    equipaNome: String? = null,
+    equipaInfo: String? = null,
+    message: String? = null,
+    isActionLoading: Boolean = false,
+    onAcceptClick: (() -> Unit)? = null,
+    onDeclineClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -508,6 +648,28 @@ fun TeamInvitationNotificationCard(
                     )
                 }
 
+                if (!equipaNome.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = equipaNome,
+                        color = BrandBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                if (!equipaInfo.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(3.dp))
+
+                    Text(
+                        text = equipaInfo,
+                        color = BrandGreen,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
@@ -518,48 +680,93 @@ fun TeamInvitationNotificationCard(
                     fontWeight = FontWeight.Medium
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                if (!message.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Button(
-                        onClick = {},
-                        modifier = Modifier
-                            .width(82.dp)
-                            .height(34.dp),
-                        shape = RoundedCornerShape(2.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandGreen,
-                            contentColor = BrandWhite
-                        )
-                    ) {
-                        Text(
-                            text = "ACCEPT",
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = message,
+                        color = Color(0xFF7D8497),
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
 
-                    OutlinedButton(
-                        onClick = {},
-                        modifier = Modifier
-                            .width(82.dp)
-                            .height(34.dp),
-                        shape = RoundedCornerShape(2.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFF7D8497)
-                        )
+                val acceptAction = onAcceptClick
+                val declineAction = onDeclineClick
+
+                if (acceptAction != null && declineAction != null) {
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text(
-                            text = "DECLINE",
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Button(
+                            onClick = acceptAction,
+                            enabled = !isActionLoading,
+                            modifier = Modifier
+                                .width(82.dp)
+                                .height(34.dp),
+                            shape = RoundedCornerShape(2.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BrandGreen,
+                                contentColor = BrandWhite,
+                                disabledContainerColor = Color(0xFFD4D9E3),
+                                disabledContentColor = Color(0xFF7D8497)
+                            )
+                        ) {
+                            Text(
+                                text = "ACCEPT",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        OutlinedButton(
+                            onClick = declineAction,
+                            enabled = !isActionLoading,
+                            modifier = Modifier
+                                .width(92.dp)
+                                .height(34.dp),
+                            shape = RoundedCornerShape(2.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF7D8497),
+                                disabledContentColor = Color(0xFFB8C2D3)
+                            )
+                        ) {
+                            Text(
+                                text = "DECLINE",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun NotificationsMessageCard(
+    text: String,
+    isError: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(5.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFFFF0F0) else Color(0xFFEAF7F5)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = text,
+            color = if (isError) Color(0xFFD01818) else BrandGreen,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(12.dp)
+        )
     }
 }
 
