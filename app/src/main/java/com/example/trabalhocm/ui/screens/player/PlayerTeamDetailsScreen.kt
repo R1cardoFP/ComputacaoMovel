@@ -56,7 +56,7 @@ fun PlayerTeamDetailsScreen(
     idEquipa: Long = 0L,
     onBackClick: () -> Unit = {},
     onInvitePlayerClick: () -> Unit = {},
-    onViewPlayerProfileClick: () -> Unit = {},
+    onViewPlayerProfileClick: (String) -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -209,7 +209,7 @@ fun PlayerTeamDetailsScreen(
                             info.membros.forEach { membro ->
                                 TeamPlayerRosterCard(
                                     membro = membro,
-                                    onViewProfileClick = onViewPlayerProfileClick
+                                    onViewProfileClick = { onViewPlayerProfileClick(membro.utilizador.id) }
                                 )
 
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -501,19 +501,30 @@ fun TeamPlayerRosterCard(
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(46.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFF0F2FA)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = teamDetailsInitials(nome),
-                        color = BrandBlue,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
+                if (!membro.utilizador.fotoUrl.isNullOrEmpty()) {
+                    coil.compose.AsyncImage(
+                        model = membro.utilizador.fotoUrl,
+                        contentDescription = "Foto do Jogador",
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFF0F2FA)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = teamDetailsInitials(nome),
+                            color = BrandBlue,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(14.dp))
