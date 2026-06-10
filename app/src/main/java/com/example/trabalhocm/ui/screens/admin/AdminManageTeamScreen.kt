@@ -25,17 +25,20 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,9 +59,9 @@ import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import com.example.trabalhocm.ui.theme.CardBg
 import com.example.trabalhocm.ui.theme.ErrorRed
-import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminManageTeamScreen(
@@ -66,7 +69,7 @@ fun AdminManageTeamScreen(
     onBackClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onInvitePlayerClick: (String) -> Unit = {},
-    onPlayerOptionsClick: (String) -> Unit = {},
+    onPlayerClick: (String) -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -74,13 +77,16 @@ fun AdminManageTeamScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val repository = remember { AdminManageTeamRepository() }
+    val scope = rememberCoroutineScope()
 
     var team by remember { mutableStateOf<AdminManageTeam?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
     var searchText by remember { mutableStateOf("") }
+    var actionMessage by remember { mutableStateOf("") }
+    var refreshKey by remember { mutableStateOf(0) }
 
-    LaunchedEffect(teamId) {
+    LaunchedEffect(teamId, refreshKey) {
         isLoading = true
         errorMessage = ""
 
@@ -144,13 +150,28 @@ fun AdminManageTeamScreen(
             }
 
             team != null -> {
+                val currentTeam = team!!
+
                 AdminManageTeamContent(
-                    team = team!!,
+                    team = currentTeam,
                     searchText = searchText,
                     onSearchChange = { searchText = it },
                     innerPadding = innerPadding,
+                    actionMessage = actionMessage,
                     onInvitePlayerClick = onInvitePlayerClick,
-                    onPlayerOptionsClick = onPlayerOptionsClick
+                    onPlayerClick = onPlayerClick,
+                    onRemovePlayerClick = { playerId ->
+                        scope.launch {
+                            repository.removerJogadorDaEquipa(currentTeam.id, playerId)
+                                .onSuccess {
+                                    actionMessage = "Player removed from team successfully."
+                                    refreshKey++
+                                }
+                                .onFailure {
+                                    actionMessage = "Error removing player: ${it.message}"
+                                }
+                        }
+                    }
                 )
             }
         }
@@ -163,8 +184,10 @@ private fun AdminManageTeamContent(
     searchText: String,
     onSearchChange: (String) -> Unit,
     innerPadding: PaddingValues,
+    actionMessage: String,
     onInvitePlayerClick: (String) -> Unit,
-    onPlayerOptionsClick: (String) -> Unit
+    onPlayerClick: (String) -> Unit,
+    onRemovePlayerClick: (String) -> Unit
 ) {
     val filteredPlayers = team.players.filter { player ->
         val query = searchText.trim()
@@ -290,6 +313,17 @@ private fun AdminManageTeamContent(
             )
         }
 
+        if (actionMessage.isNotBlank()) {
+            item {
+                Text(
+                    text = actionMessage,
+                    color = if (actionMessage.startsWith("Error")) ErrorRed else BrandGreen,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
         if (filteredPlayers.isEmpty()) {
             item {
                 Card(
@@ -310,7 +344,8 @@ private fun AdminManageTeamContent(
             items(filteredPlayers) { player ->
                 RosterPlayerCard(
                     player = player,
-                    onPlayerOptionsClick = onPlayerOptionsClick
+                    onPlayerClick = onPlayerClick,
+                    onRemovePlayerClick = onRemovePlayerClick
                 )
             }
         }
@@ -393,10 +428,17 @@ private fun TeamManageHeroCard(team: AdminManageTeam) {
 @Composable
 private fun RosterPlayerCard(
     player: AdminManageTeamPlayer,
-    onPlayerOptionsClick: (String) -> Unit
+    onPlayerClick: (String) -> Unit,
+    onRemovePlayerClick: (String) -> Unit
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onPlayerClick(player.id)
+            },
         shape = RoundedCornerShape(9.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -447,17 +489,49 @@ private fun RosterPlayerCard(
                 )
             }
 
-            IconButton(
-                onClick = {
-                    onPlayerOptionsClick(player.id)
+            Box {
+                IconButton(
+                    onClick = {
+                        menuExpanded = true
+                    }
+                ) {
+                    Icon(
+                        imageVector = AppIcons.MoreVert,
+                        contentDescription = "Player options",
+                        tint = BrandBlue,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
-            ) {
-                Icon(
-                    imageVector = AppIcons.MoreVert,
-                    contentDescription = "Player options",
-                    tint = BrandBlue,
-                    modifier = Modifier.size(20.dp)
-                )
+
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = {
+                        menuExpanded = false
+                    }
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = "Remove from team",
+                                color = ErrorRed,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = AppIcons.Delete,
+                                contentDescription = "Remove",
+                                tint = ErrorRed,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onRemovePlayerClick(player.id)
+                        }
+                    )
+                }
             }
         }
     }
