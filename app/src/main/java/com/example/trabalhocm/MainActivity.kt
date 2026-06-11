@@ -94,6 +94,8 @@ import com.example.trabalhocm.ui.screens.admin.AdminInvitePlayerScreen
 import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchesScreen
 import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchDetailsScreen
 import com.example.trabalhocm.ui.screens.admin.AdminEditCasualMatchScreen
+import com.example.trabalhocm.ui.screens.admin.AdminLiveCasualMatchScreen
+import com.example.trabalhocm.ui.screens.admin.AdminMatchesCalendarScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1611,7 +1613,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
-                    // ecrã admin de matches
+                    navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
                     navController.navigate("admin_teams")
@@ -1647,7 +1649,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
-                    // ecrã admin de matches
+                    navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
                     navController.navigate("admin_teams")
@@ -1730,7 +1732,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
-                    // ecrã admin de matches
+                    navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
                     navController.navigate("admin_teams")
@@ -1772,7 +1774,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
-                    // ecrã admin de matches
+                    navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
                     navController.navigate("admin_teams")
@@ -1810,7 +1812,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
-                    // Ainda não temos ecrã admin de matches
+                    navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
                     navController.navigate("admin_teams")
@@ -1830,7 +1832,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onCalendarClick = {
-                    // ligar ao calendário de jogos
+                    navController.navigate("admin_matches_calendar")
                 },
                 onViewDetailsClick = { matchId ->
                     navController.navigate("admin_casual_match_details/$matchId")
@@ -1839,7 +1841,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_edit_casual_match/$matchId")
                 },
                 onWatchLiveClick = { matchId ->
-                    // ligar ao live match
+                    navController.navigate("admin_live_casual_match/$matchId")
                 },
                 onHomeClick = {
                     navController.navigate("admin_home")
@@ -1924,6 +1926,83 @@ fun MatchLeagueApp() {
                 },
                 onCanceled = {
                     // fica na página e bloqueia edição
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable(
+            route = "admin_live_casual_match/{matchId}",
+            arguments = listOf(
+                navArgument("matchId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+
+            AdminLiveCasualMatchScreen(
+                matchId = matchId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onEditMatchClick = { id ->
+                    navController.navigate("admin_edit_casual_match/$id")
+                },
+                onMatchCancelled = {
+                    // fica na página e atualiza
+                },
+                onHomeClick = {
+                    navController.navigate("admin_home")
+                },
+                onTournamentsClick = {
+                    navController.navigate("admin_tournaments")
+                },
+                onMatchesClick = {
+                    navController.navigate("admin_casual_matches")
+                },
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
+                onProfileClick = {
+                    navController.navigate("admin_profile")
+                }
+            )
+        }
+
+        composable("admin_matches_calendar") {
+            AdminMatchesCalendarScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onViewDetailsClick = { matchId ->
+                    navController.navigate("admin_casual_match_details/$matchId")
+                },
+                onEditClick = { matchId ->
+                    navController.navigate("admin_edit_casual_match/$matchId")
+                },
+                onWatchLiveClick = { matchId ->
+                    navController.navigate("admin_live_casual_match/$matchId")
                 },
                 onHomeClick = {
                     navController.navigate("admin_home")

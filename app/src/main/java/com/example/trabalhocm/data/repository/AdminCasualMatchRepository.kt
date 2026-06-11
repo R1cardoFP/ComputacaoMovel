@@ -8,12 +8,16 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 class AdminCasualMatchRepository {
 
     private val client = SupabaseClient.client
+    private val lisbonZone = ZoneId.of("Europe/Lisbon")
 
     suspend fun listarPeladinhasAdmin(): Result<List<AdminCasualMatch>> {
         return runCatching {
@@ -40,6 +44,14 @@ class AdminCasualMatchRepository {
                 .groupingBy { it }
                 .eachCount()
 
+            val pontosPeladinha = client.from("peladinha_ponto")
+                .select()
+                .decodeList<JsonObject>()
+
+            val pontosPorPeladinha = pontosPeladinha.groupBy { ponto ->
+                ponto.text("id_peladinha").toLongOrNull() ?: 0L
+            }
+
             peladinhas.map { peladinha ->
                 val id = peladinha.text("id")
                 val idLong = id.toLongOrNull() ?: 0L
@@ -59,17 +71,24 @@ class AdminCasualMatchRepository {
                 val parsedDate = parseDate(dateText)
                 val parsedTime = parseTime(timeText)
 
-                val estado = peladinha.text("estado").lowercase()
+                val estado = peladinha.text("estado").lowercase().ifBlank { "aberta" }
                 val maxPlayers = peladinha.intValue("max_jogadores") ?: 0
                 val acceptedPlayers = jogadoresPorPeladinha[idLong] ?: 0
 
-                val isLive = isLiveNow(parsedDate, parsedTime, estado)
+                val isLive = isLiveNow(
+                    date = parsedDate,
+                    time = parsedTime,
+                    estado = estado
+                )
+
                 val status = buildStatus(
                     estado = estado,
-                    acceptedPlayers = acceptedPlayers,
-                    maxPlayers = maxPlayers,
                     isLive = isLive
                 )
+
+                val pontos = pontosPorPeladinha[idLong].orEmpty()
+                val homeScore = pontos.count { it.text("equipa_lado") == "casa" }
+                val awayScore = pontos.count { it.text("equipa_lado") == "fora" }
 
                 AdminCasualMatch(
                     id = id,
@@ -77,7 +96,7 @@ class AdminCasualMatchRepository {
                     modalidade = modalidadeNome,
                     local = peladinha.text("local").ifBlank { "Location not defined" },
                     date = dateText,
-                    time = timeText,
+                    time = timeText.take(5),
                     status = status,
                     statusFilter = status,
                     acceptedPlayers = acceptedPlayers,
@@ -87,7 +106,11 @@ class AdminCasualMatchRepository {
                     } else {
                         buildSectionTitle(parsedDate, isLive)
                     },
-                    isLive = isLive
+                    isLive = isLive,
+                    homeTeamName = peladinha.text("equipa_casa_nome").ifBlank { "Team A" },
+                    awayTeamName = peladinha.text("equipa_fora_nome").ifBlank { "Team B" },
+                    homeScore = homeScore,
+                    awayScore = awayScore
                 )
             }.sortedWith(
                 compareBy<AdminCasualMatch> { statusPriority(it.status) }
@@ -99,8 +122,6 @@ class AdminCasualMatchRepository {
 
     private fun buildStatus(
         estado: String,
-        acceptedPlayers: Int,
-        maxPlayers: Int,
         isLive: Boolean
     ): String {
         if (estado == "cancelada") {
@@ -122,7 +143,7 @@ class AdminCasualMatchRepository {
         date: LocalDate?,
         isLive: Boolean
     ): String {
-        val today = LocalDate.now()
+        val today = LocalDate.now(lisbonZone)
 
         if (isLive) {
             return "LIVE NOW"
@@ -151,16 +172,19 @@ class AdminCasualMatchRepository {
             return false
         }
 
-        if (estado != "aberta") {
+        if (estado == "cancelada") {
             return false
         }
 
-        val today = LocalDate.now()
-        val now = LocalTime.now()
+        return try {
+            val start = LocalDateTime.of(date, time)
+            val now = LocalDateTime.now(lisbonZone)
+            val minutes = ChronoUnit.MINUTES.between(start, now)
 
-        return date == today &&
-                !now.isBefore(time) &&
-                now.isBefore(time.plusHours(2))
+            minutes in 0..90
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun statusPriority(status: String): Int {
@@ -183,7 +207,13 @@ class AdminCasualMatchRepository {
 
     private fun parseTime(value: String): LocalTime? {
         return try {
-            LocalTime.parse(value.take(8))
+            val cleanValue = value.take(8)
+
+            if (cleanValue.length >= 8) {
+                LocalTime.parse(cleanValue)
+            } else {
+                LocalTime.parse(cleanValue.take(5))
+            }
         } catch (e: Exception) {
             null
         }
