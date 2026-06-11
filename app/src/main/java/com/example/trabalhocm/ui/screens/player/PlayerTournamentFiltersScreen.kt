@@ -20,14 +20,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -39,12 +44,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 object PlayerTournamentFiltersState {
     var updateTrigger by mutableIntStateOf(0)
@@ -53,6 +63,8 @@ object PlayerTournamentFiltersState {
     var selectedStatus by mutableStateOf<String?>(null)
     var selectedRegion by mutableStateOf<String?>(null)
     var cityOrRegion by mutableStateOf("")
+    var fromDate by mutableStateOf("01/01/2024")
+    var toDate by mutableStateOf("31/12/2030")
 
     fun reset() {
         selectedSport = null
@@ -60,6 +72,8 @@ object PlayerTournamentFiltersState {
         selectedStatus = null
         selectedRegion = null
         cityOrRegion = ""
+        fromDate = "01/01/2024"
+        toDate = "31/12/2030"
         updateTrigger++
     }
 }
@@ -74,6 +88,8 @@ fun PlayerTournamentFiltersScreen(
     var status by remember { mutableStateOf(PlayerTournamentFiltersState.selectedStatus) }
     var region by remember { mutableStateOf(PlayerTournamentFiltersState.cityOrRegion) }
     var regionQuick by remember { mutableStateOf(PlayerTournamentFiltersState.selectedRegion) }
+    var fromDate by remember { mutableStateOf(PlayerTournamentFiltersState.fromDate) }
+    var toDate by remember { mutableStateOf(PlayerTournamentFiltersState.toDate) }
 
     Column(
         modifier = Modifier
@@ -124,6 +140,8 @@ fun PlayerTournamentFiltersScreen(
                     status = null
                     region = ""
                     regionQuick = null
+                    fromDate = "01/01/2024"
+                    toDate = "31/12/2030"
                 }
             )
         }
@@ -311,13 +329,15 @@ fun PlayerTournamentFiltersScreen(
                 DateInputBox(
                     modifier = Modifier.weight(1f),
                     label = "FROM",
-                    value = "01/06/2026"
+                    value = fromDate,
+                    onValueChange = { fromDate = it }
                 )
 
                 DateInputBox(
                     modifier = Modifier.weight(1f),
                     label = "TO",
-                    value = "30/09/2026"
+                    value = toDate,
+                    onValueChange = { toDate = it }
                 )
             }
 
@@ -346,6 +366,8 @@ fun PlayerTournamentFiltersScreen(
                     PlayerTournamentFiltersState.selectedStatus = status
                     PlayerTournamentFiltersState.cityOrRegion = region
                     PlayerTournamentFiltersState.selectedRegion = regionQuick
+                    PlayerTournamentFiltersState.fromDate = fromDate
+                    PlayerTournamentFiltersState.toDate = toDate
 
                     PlayerTournamentFiltersState.updateTrigger++ // Dispara atualização!
                     onApplyClick()
@@ -423,12 +445,58 @@ fun FilterChipOption(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateInputBox(
     modifier: Modifier = Modifier,
     label: String,
-    value: String
+    value: String,
+    onValueChange: (String) -> Unit
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    // O calendário popup do Compose
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            // Formata a data para "dd/MM/yyyy", corrigindo o timezone do picker
+                            val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            formatter.timeZone = TimeZone.getTimeZone("UTC")
+                            onValueChange(formatter.format(Date(millis)))
+                        }
+                    }
+                ) {
+                    Text("OK", color = BrandGreen, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDatePicker = false }
+                ) {
+                    Text("CANCEL", color = Color(0xFF7D8497), fontWeight = FontWeight.Bold)
+                }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = BrandWhite
+            )
+        ) {
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = BrandGreen,
+                    todayDateBorderColor = BrandGreen,
+                    todayContentColor = BrandGreen
+                )
+            )
+        }
+    }
+
     Column(
         modifier = modifier
     ) {
@@ -441,27 +509,32 @@ fun DateInputBox(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp),
-            shape = RoundedCornerShape(9.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
+        Box {
+            OutlinedTextField(
+                value = value,
+                onValueChange = {},
+                readOnly = true, // Não deixa escrever, apenas clicar
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(9.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = BrandWhite,
+                    focusedContainerColor = BrandWhite,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedTextColor = Color(0xFF303646),
+                    focusedTextColor = Color(0xFF303646)
+                )
+            )
+
+            // Caixa invisível por cima do texto que capta o toque e mostra o calendário
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 18.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Text(
-                    text = value,
-                    color = Color(0xFF303646),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+                    .matchParentSize()
+                    .clickable { showDatePicker = true }
+            )
         }
     }
 }
