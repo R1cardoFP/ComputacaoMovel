@@ -67,6 +67,7 @@ fun PlayerCreateTeamScreen(
     var initials by remember { mutableStateOf("") }
     var homeCity by remember { mutableStateOf("") }
     var selectedSport by remember { mutableStateOf("Football") }
+    var selectedPrivacy by remember { mutableStateOf("privada") }
 
     var isSaving by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -116,7 +117,13 @@ fun PlayerCreateTeamScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            UploadTeamLogoCard()
+            TeamPrivacyCard(
+                selectedPrivacy = selectedPrivacy,
+                onPrivacySelected = {
+                    selectedPrivacy = it
+                    errorMessage = ""
+                }
+            )
 
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -179,7 +186,8 @@ fun PlayerCreateTeamScreen(
                             nome = teamName,
                             iniciais = initials,
                             cidade = homeCity,
-                            modalidadeNome = selectedSport
+                            modalidadeNome = selectedSport,
+                            tipoEntrada = selectedPrivacy
                         )
                             .onSuccess {
                                 isSaving = false
@@ -277,7 +285,10 @@ fun CreateTeamTopBar(
 }
 
 @Composable
-fun UploadTeamLogoCard() {
+fun TeamPrivacyCard(
+    selectedPrivacy: String,
+    onPrivacySelected: (String) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(7.dp),
@@ -288,7 +299,7 @@ fun UploadTeamLogoCard() {
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)
         ) {
             Text(
-                text = "TEAM LOGO / PHOTO",
+                text = "TEAM PRIVACY",
                 color = Color(0xFF7D8497),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -297,48 +308,67 @@ fun UploadTeamLogoCard() {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(126.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .border(
-                        BorderStroke(1.dp, Color(0xFFD3D8E4)),
-                        RoundedCornerShape(8.dp)
-                    )
-                    .background(Color(0xFFFAFBFD)),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "▧",
-                        color = Color(0xFF6D7486),
-                        fontSize = 38.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                PrivacySelectionBox(
+                    modifier = Modifier.weight(1f),
+                    title = "Private",
+                    description = "Join by request",
+                    selected = selectedPrivacy == "privada",
+                    onClick = { onPrivacySelected("privada") }
+                )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Upload Team Logo",
-                        color = BrandBlue,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(3.dp))
-
-                    Text(
-                        text = "PNG or JPG · Max 5 MB",
-                        color = Color(0xFF7D8497),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                PrivacySelectionBox(
+                    modifier = Modifier.weight(1f),
+                    title = "Public",
+                    description = "Anyone can join",
+                    selected = selectedPrivacy == "publica",
+                    onClick = { onPrivacySelected("publica") }
+                )
             }
         }
+    }
+}
+
+@Composable
+fun PrivacySelectionBox(
+    modifier: Modifier = Modifier,
+    title: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val borderColor = if (selected) BrandGreen else Color(0xFFE8EAF2)
+    val bgColor = if (selected) BrandGreen.copy(alpha = 0.05f) else BrandWhite
+
+    Column(
+        modifier = modifier
+            .height(70.dp)
+            .clip(RoundedCornerShape(5.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(5.dp))
+            .background(bgColor)
+            .clickable { onClick() }
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = title,
+            color = BrandBlue,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = description,
+            color = Color(0xFF7D8497),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 

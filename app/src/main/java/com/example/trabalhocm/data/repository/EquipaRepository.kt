@@ -28,7 +28,9 @@ data class EquipaComInfo(
     val streak: String,
     val streakGood: Boolean,
     val utilizadorPertence: Boolean,
-    val utilizadorCapitao: Boolean = false
+    val utilizadorCapitao: Boolean = false,
+    val tipoEntrada: String = "privada",
+    val estadoConviteAtual: String? = null
 )
 
 data class EquipaDetalhesInfo(
@@ -79,6 +81,15 @@ data class ConviteEquipaInfo(
     val estadoConvite: String
 )
 
+data class PedidoEntradaEquipaInfo(
+    val idEquipa: Long,
+    val idUtilizador: String,
+    val nomeEquipa: String,
+    val nomeJogador: String,
+    val mensagem: String?,
+    val dataPedido: String?
+)
+
 class EquipaRepository {
     private val client = SupabaseClient.client
     private val authRepository = AuthRepository()
@@ -118,11 +129,10 @@ class EquipaRepository {
             val modalidadesPorId = modalidades.associateBy { it.id }
             val estatisticasPorEquipa = estatisticas.groupBy { it.longValue("id_equipa") }
 
-            val membrosAceitesDoUtilizador = membros.filter { membro ->
-                val mesmoUtilizador = membro.stringValue("id_utilizador") == utilizadorAtualId
-                val estado = membro.stringValue("estado_convite") ?: "pendente"
+            val membrosDoUtilizador = membros.filter { it.stringValue("id_utilizador") == utilizadorAtualId }
 
-                mesmoUtilizador && estado.lowercase() == "aceite"
+            val membrosAceitesDoUtilizador = membrosDoUtilizador.filter {
+                (it.stringValue("estado_convite") ?: "pendente").lowercase() == "aceite"
             }
 
             val idsEquipasDoUtilizador = membrosAceitesDoUtilizador
@@ -141,6 +151,7 @@ class EquipaRepository {
                 val nome = equipaJson.stringValue("nome") ?: "Equipa"
                 val logoUrl = equipaJson.stringValue("logo_url")
                 val idModalidade = equipaJson.longValue("id_modalidade")
+                val tipoEntrada = equipaJson.stringValue("tipo_entrada") ?: "privada"
 
                 val dadosEquipa = runCatching {
                     equipaJson["dados_equipa"]?.jsonObject
@@ -162,6 +173,8 @@ class EquipaRepository {
                     else -> "L${(derrotas - vitorias).coerceAtLeast(1)}"
                 }
 
+                val estadoConviteAtual = membrosDoUtilizador.firstOrNull { it.longValue("id_equipa") == id }?.stringValue("estado_convite")
+
                 EquipaComInfo(
                     equipa = Equipa(
                         id = id,
@@ -178,7 +191,9 @@ class EquipaRepository {
                     streak = streak,
                     streakGood = streakGood,
                     utilizadorPertence = id in idsEquipasDoUtilizador,
-                    utilizadorCapitao = id in idsEquipasOndeUtilizadorECapitao
+                    utilizadorCapitao = id in idsEquipasOndeUtilizadorECapitao,
+                    tipoEntrada = tipoEntrada,
+                    estadoConviteAtual = estadoConviteAtual
                 )
             }.sortedWith(
                 compareByDescending<EquipaComInfo> {
@@ -209,6 +224,7 @@ class EquipaRepository {
                 it.longValue("id_equipa") == idEquipa
             }
 
+            // Apenas lista membros que estão aceites na equipa para visualização pública
             val membrosGestao = listarMembrosGestaoDaEquipa(
                 idEquipa = idEquipa,
                 incluirPendentes = false
@@ -281,6 +297,27 @@ class EquipaRepository {
         }
     }
 
+    suspend fun solicitarEntradaEquipa(idEquipa: Long, tipoEntrada: String): Result<Unit> {
+        return runCatching {
+            val idUtilizador = obterIdUtilizadorAtualOuPrimeiroTeste()
+
+            // Se for pública entra logo, se for privada fica pendente aguardando aprovação
+            val estado = if (tipoEntrada.lowercase() == "publica") "aceite" else "pendente"
+
+            val novoMembro = NovoMembroEquipaRequest(
+                idEquipa = idEquipa,
+                idUtilizador = idUtilizador,
+                papel = "player",
+                estadoConvite = estado,
+                posicao = "Forward",
+                isCapitao = false,
+                mensagem = null
+            )
+
+            client.from("membro_equipa").insert(novoMembro)
+        }
+    }
+
     suspend fun listarConvitesPendentesDoUtilizador(): Result<List<ConviteEquipaInfo>> {
         return runCatching {
             val idUtilizador = obterIdUtilizadorAtualOuPrimeiroTeste()
@@ -294,8 +331,10 @@ class EquipaRepository {
             val convitesPendentes = membros.filter { membro ->
                 val mesmoUtilizador = membro.stringValue("id_utilizador") == idUtilizador
                 val estado = membro.stringValue("estado_convite") ?: ""
+                val mensagem = membro.stringValue("mensagem") ?: ""
 
-                mesmoUtilizador && estado.lowercase() == "pendente"
+                // Aqui consideramos que um "convite de equipa" tem mensagem preenchida (convidado pelo capitão)
+                mesmoUtilizador && estado.lowercase() == "pendente" && mensagem.isNotBlank()
             }
 
             val equipasInfo = listarEquipasComInfo().getOrThrow()
@@ -320,18 +359,104 @@ class EquipaRepository {
         }
     }
 
+    suspend fun listarPedidosDeEntradaParaCapitao(): Result<List<PedidoEntradaEquipaInfo>> {
+        return runCatching {
+            val idUtilizador = obterIdUtilizadorAtualOuPrimeiroTeste()
+
+            val membros = runCatching {
+                client.from("membro_equipa")
+                    .select()
+                    .decodeList<JsonObject>()
+            }.getOrDefault(emptyList())
+
+            // 1. Descobrir as equipas onde o utilizador logado é capitão
+            val equipasOndeSouCapitao = membros.filter {
+                it.stringValue("id_utilizador") == idUtilizador &&
+                        it.stringValue("estado_convite")?.lowercase() == "aceite" &&
+                        membroEhCapitao(it)
+            }.map { it.longValue("id_equipa") }.toSet()
+
+            if (equipasOndeSouCapitao.isEmpty()) return@runCatching emptyList()
+
+            // 2. Filtrar os pedidos pendentes para essas equipas (sem mensagem = pedido do jogador)
+            val pedidosPendentes = membros.filter { membro ->
+                val idEquipa = membro.longValue("id_equipa")
+                val estado = membro.stringValue("estado_convite") ?: ""
+                val mensagem = membro.stringValue("mensagem") ?: ""
+
+                idEquipa in equipasOndeSouCapitao && estado.lowercase() == "pendente" && mensagem.isBlank()
+            }
+
+            val utilizadoresIds = pedidosPendentes.mapNotNull { it.stringValue("id_utilizador") }.toSet()
+
+            val utilizadores = client.from("utilizador")
+                .select {
+                    filter {
+                        isIn("id", utilizadoresIds.toList())
+                    }
+                }
+                .decodeList<Utilizador>()
+                .associateBy { it.id }
+
+            val equipasInfo = listarEquipasComInfo().getOrThrow().associateBy { it.equipa.id }
+
+            pedidosPendentes.mapNotNull { pedido ->
+                val idEquipa = pedido.longValue("id_equipa")
+                val idRequerente = pedido.stringValue("id_utilizador") ?: return@mapNotNull null
+
+                val utilizador = utilizadores[idRequerente] ?: return@mapNotNull null
+                val equipaInfo = equipasInfo[idEquipa] ?: return@mapNotNull null
+
+                PedidoEntradaEquipaInfo(
+                    idEquipa = idEquipa,
+                    idUtilizador = idRequerente,
+                    nomeEquipa = equipaInfo.equipa.nome,
+                    nomeJogador = utilizador.nome,
+                    mensagem = pedido.stringValue("mensagem"),
+                    dataPedido = pedido.stringValue("data_entrada")
+                )
+            }
+        }
+    }
+
+    suspend fun aceitarPedidoDeEntrada(idEquipa: Long, idUtilizador: String): Result<Unit> {
+        return runCatching {
+            client.from("membro_equipa")
+                .update(
+                    JsonObject(
+                        mapOf(
+                            "estado_convite" to JsonPrimitive("aceite"),
+                            "papel" to JsonPrimitive("player")
+                        )
+                    )
+                ) {
+                    filter {
+                        eq("id_equipa", idEquipa)
+                        eq("id_utilizador", idUtilizador)
+                    }
+                }
+        }
+    }
+
+    suspend fun recusarPedidoDeEntrada(idEquipa: Long, idUtilizador: String): Result<Unit> {
+        return runCatching {
+            // Em caso de recusa de um pedido, podemos apagar a linha ou meter como 'recusado'
+            client.from("membro_equipa")
+                .delete {
+                    filter {
+                        eq("id_equipa", idEquipa)
+                        eq("id_utilizador", idUtilizador)
+                    }
+                }
+        }
+    }
+
     suspend fun aceitarConviteEquipa(idEquipa: Long): Result<Unit> {
-        return responderConviteEquipa(
-            idEquipa = idEquipa,
-            novoEstado = "aceite"
-        )
+        return responderConviteEquipa(idEquipa = idEquipa, novoEstado = "aceite")
     }
 
     suspend fun recusarConviteEquipa(idEquipa: Long): Result<Unit> {
-        return responderConviteEquipa(
-            idEquipa = idEquipa,
-            novoEstado = "recusado"
-        )
+        return responderConviteEquipa(idEquipa = idEquipa, novoEstado = "recusado")
     }
 
     private suspend fun responderConviteEquipa(
@@ -456,7 +581,7 @@ class EquipaRepository {
                                 "papel" to JsonPrimitive("player"),
                                 "posicao" to JsonPrimitive(posicao),
                                 "is_capitao" to JsonPrimitive(false),
-                                "mensagem" to JsonPrimitive(mensagem ?: "")
+                                "mensagem" to JsonPrimitive(mensagem ?: "Convite do Capitão")
                             )
                         )
                     ) {
@@ -473,7 +598,7 @@ class EquipaRepository {
                     estadoConvite = "pendente",
                     posicao = posicao,
                     isCapitao = false,
-                    mensagem = mensagem
+                    mensagem = mensagem ?: "Convite do Capitão"
                 )
 
                 client.from("membro_equipa")
@@ -560,7 +685,8 @@ class EquipaRepository {
         nome: String,
         iniciais: String,
         cidade: String,
-        modalidadeNome: String
+        modalidadeNome: String,
+        tipoEntrada: String
     ): Result<Unit> {
         return runCatching {
             val nomeLimpo = nome.trim()
@@ -594,7 +720,8 @@ class EquipaRepository {
                 nome = nomeLimpo,
                 dadosEquipa = dadosEquipa,
                 logoUrl = null,
-                idModalidade = idModalidade
+                idModalidade = idModalidade,
+                tipoEntrada = tipoEntrada
             )
 
             client.from("equipa")
@@ -782,7 +909,10 @@ private data class NovaEquipaRequest(
     val logoUrl: String? = null,
 
     @SerialName("id_modalidade")
-    val idModalidade: Long
+    val idModalidade: Long,
+
+    @SerialName("tipo_entrada")
+    val tipoEntrada: String
 )
 
 @Serializable
