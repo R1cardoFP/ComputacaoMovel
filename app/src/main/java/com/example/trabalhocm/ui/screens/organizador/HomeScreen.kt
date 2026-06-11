@@ -3,28 +3,66 @@ package com.example.trabalhocm.ui.screens.organizador
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clipScrollableContainer
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.trabalhocm.data.model.Torneio
+import com.example.trabalhocm.data.repository.OrganizerHomeFixture
+import com.example.trabalhocm.data.repository.OrganizerHomeLiveMatch
+import com.example.trabalhocm.data.repository.OrganizerHomePlayerStats
+import com.example.trabalhocm.data.repository.OrganizerHomeTournament
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
+import kotlin.math.roundToInt
 
 private val DarkBlue = Color(0xFF152238)
 private val EmeraldGreen = Color(0xFF0E8A6F)
@@ -37,6 +75,9 @@ fun HomeScreen(
     viewModel: OrganizerHomeViewModel = viewModel(),
     onVerTorneios: () -> Unit = {},
     onCreateTournamentClick: () -> Unit = {},
+    onCreateCasualMatchClick: () -> Unit = {},
+    onLiveMatchesClick: () -> Unit = {},
+    onCreateTeamClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -46,13 +87,29 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Home", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Home",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 actions = {
-                    IconButton(onClick = { viewModel.carregarDashboard() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notificações", tint = Color.White)
+                    IconButton(
+                        onClick = {
+                            viewModel.carregarDashboard()
+                        }
+                    ) {
+                        Icon(
+                            Icons.Outlined.Notifications,
+                            contentDescription = "Atualizar dashboard",
+                            tint = Color.White
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = DarkBlue
+                )
             )
         },
         bottomBar = {
@@ -75,8 +132,23 @@ fun HomeScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            LiveMatchSection()
-            QuickActionsSection(onCreateTournamentClick = onCreateTournamentClick)
+            if (viewModel.errorMessage.isNotBlank()) {
+                DashboardErrorCard(
+                    message = viewModel.errorMessage
+                )
+            }
+
+            LiveMatchSection(
+                liveMatch = viewModel.liveMatch,
+                isLoading = viewModel.isLoading
+            )
+
+            QuickActionsSection(
+                onCreateTournamentClick = onCreateTournamentClick,
+                onCreateCasualMatchClick = onCreateCasualMatchClick,
+                onLiveMatchesClick = onLiveMatchesClick,
+                onCreateTeamClick = onCreateTeamClick
+            )
 
             ActiveTournamentsSection(
                 tournaments = viewModel.activeTournaments,
@@ -84,78 +156,197 @@ fun HomeScreen(
                 onViewAllClick = onTournamentsClick
             )
 
-            UpcomingFixturesSection()
-            PerformanceInsightsSection()
+            UpcomingFixturesSection(
+                fixtures = viewModel.upcomingFixtures,
+                isLoading = viewModel.isLoading
+            )
+
+            PerformanceInsightsSection(
+                playerOfWeek = viewModel.playerOfWeek,
+                isLoading = viewModel.isLoading
+            )
         }
+    }
+}
+
+@Composable
+fun DashboardErrorCard(
+    message: String
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Erro: $message",
+            color = Color(0xFFD01818),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
 
 @Composable
 fun ActiveTournamentsSection(
-    tournaments: List<Torneio>,
+    tournaments: List<OrganizerHomeTournament>,
     isLoading: Boolean,
     onViewAllClick: () -> Unit
 ) {
     Column {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             SectionTitle("MY ACTIVE TOURNAMENTS")
+
             Text(
-                "VIEW ALL",
+                text = "VIEW ALL",
                 color = Color(0xFF2B5BFE),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onViewAllClick() }
+                modifier = Modifier.clickable {
+                    onViewAllClick()
+                }
             )
         }
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = EmeraldGreen)
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = EmeraldGreen
+                    )
+                }
             }
-        } else if (tournaments.isEmpty()) {
-            Card(colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth()) {
-                Text("No active tournaments at the moment.", color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(16.dp))
+
+            tournaments.isEmpty() -> {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "No active tournaments at the moment.",
+                        color = TextGray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
-        } else {
-            tournaments.forEach { torneio ->
-                TournamentCard(
-                    title = torneio.nome,
-                    role = "ORGANIZER",
-                    progress = if (torneio.estado == "aberto") 25 else 75,
-                    color = if (torneio.estado == "aberto") EmeraldGreen else Color(0xFF2B5BFE)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+
+            else -> {
+                tournaments.forEach { torneio ->
+                    val progress = (torneio.progresso * 100).roundToInt()
+                    val color = when (torneio.estado.lowercase()) {
+                        "aberto" -> EmeraldGreen
+                        "em_decorrer", "ativo" -> Color(0xFF2B5BFE)
+                        else -> EmeraldGreen
+                    }
+
+                    TournamentCard(
+                        title = torneio.nome,
+                        role = "ORGANIZER",
+                        progress = progress,
+                        color = color
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
         }
     }
 }
 
 @Composable
-fun QuickActionsSection(onCreateTournamentClick: () -> Unit) {
+fun QuickActionsSection(
+    onCreateTournamentClick: () -> Unit,
+    onCreateCasualMatchClick: () -> Unit,
+    onLiveMatchesClick: () -> Unit,
+    onCreateTeamClick: () -> Unit
+) {
     Column {
         SectionTitle("QUICK ACTIONS")
+
         Spacer(modifier = Modifier.height(12.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            QuickActionCard(modifier = Modifier.weight(1f), icon = Icons.Default.Star, title = "CREATE TOURNAMENT", tint = EmeraldGreen, onClick = onCreateTournamentClick)
-            QuickActionCard(modifier = Modifier.weight(1f), icon = Icons.Default.Add, title = "CREATE CASUAL\nMATCH", tint = EmeraldGreen)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            QuickActionCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Star,
+                title = "CREATE TOURNAMENT",
+                tint = EmeraldGreen,
+                onClick = onCreateTournamentClick
+            )
+
+            QuickActionCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Add,
+                title = "CREATE CASUAL\nMATCH",
+                tint = EmeraldGreen,
+                onClick = onCreateCasualMatchClick
+            )
         }
+
         Spacer(modifier = Modifier.height(12.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            QuickActionCard(modifier = Modifier.weight(1f), icon = Icons.Default.Share, title = "LIVE MATCHS", tint = Color(0xFF6366F1))
-            QuickActionCard(modifier = Modifier.weight(1f), icon = Icons.Default.Person, title = "CREATE TEAM", tint = EmeraldGreen)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            QuickActionCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Share,
+                title = "LIVE MATCHS",
+                tint = Color(0xFF6366F1),
+                onClick = onLiveMatchesClick
+            )
+
+            QuickActionCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Person,
+                title = "CREATE TEAM",
+                tint = EmeraldGreen,
+                onClick = onCreateTeamClick
+            )
         }
     }
 }
 
 @Composable
-fun QuickActionCard(modifier: Modifier = Modifier, icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, tint: Color, onClick: () -> Unit = {}) {
+fun QuickActionCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    title: String,
+    tint: Color,
+    onClick: () -> Unit = {}
+) {
     Card(
         modifier = modifier
             .height(120.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            .clickable {
+                onClick()
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -166,110 +357,322 @@ fun QuickActionCard(modifier: Modifier = Modifier, icon: androidx.compose.ui.gra
                 color = tint.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.padding(12.dp))
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = tint,
+                    modifier = Modifier.padding(12.dp)
+                )
             }
+
             Spacer(modifier = Modifier.height(12.dp))
-            Text(title, fontSize = 11.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+
+            Text(
+                text = title,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
 
 @Composable
-fun LiveMatchSection() {
+fun LiveMatchSection(
+    liveMatch: OrganizerHomeLiveMatch?,
+    isLoading: Boolean
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkBlue),
+        colors = CardDefaults.cardColors(
+            containerColor = DarkBlue
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    color = Color.White.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, EmeraldGreen.copy(alpha = 0.5f))
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = EmeraldGreen
+                    )
+                }
+            }
+
+            liveMatch == null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Surface(
+                        color = Color.White.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            EmeraldGreen.copy(alpha = 0.5f)
+                        )
+                    ) {
+                        Text(
+                            text = "NO LIVE MATCH",
+                            color = EmeraldGreen,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "There are no live matches from your tournaments.",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "Live matches will appear here automatically.",
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            else -> {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(EmeraldGreen))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("LIVE NOW", color = EmeraldGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Surface(
+                            color = Color.White.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(
+                                1.dp,
+                                EmeraldGreen.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(EmeraldGreen)
+                                )
+
+                                Spacer(modifier = Modifier.width(6.dp))
+
+                                Text(
+                                    text = "LIVE NOW",
+                                    color = EmeraldGreen,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = liveMatch.torneioNome.uppercase(),
+                            color = Color.Gray,
+                            fontSize = 10.sp,
+                            letterSpacing = 1.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        TeamIconCircle(
+                            text = getTeamInitials(liveMatch.equipaCasa),
+                            color = EmeraldGreen
+                        )
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "${liveMatch.pontosCasa} - ${liveMatch.pontosFora}",
+                                color = Color.White,
+                                fontSize = 48.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = "${liveMatch.minuto}'",
+                                color = EmeraldGreen,
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        TeamIconCircle(
+                            text = getTeamInitials(liveMatch.equipaFora),
+                            color = Color.Yellow
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        Text(
+                            text = liveMatch.equipaCasa,
+                            color = Color.White,
+                            fontSize = 13.sp
+                        )
+
+                        Text(
+                            text = liveMatch.equipaFora,
+                            color = Color.White,
+                            fontSize = 13.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = EmeraldGreen
+                        ),
+                        modifier = Modifier.fillMaxWidth(0.6f)
+                    ) {
+                        Text("WATCH STREAM")
                     }
                 }
-                Text("PREMIER LEAGUE • GW 26", color = Color.Gray, fontSize = 10.sp, letterSpacing = 1.sp)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = EmeraldGreen, modifier = Modifier.size(64.dp))
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("1 - 2", color = Color.White, fontSize = 48.sp, fontWeight = FontWeight.Bold)
-                    Text("83'", color = EmeraldGreen, fontSize = 14.sp)
-                }
-
-                Icon(Icons.Default.Check, contentDescription = null, tint = Color.Yellow, modifier = Modifier.size(64.dp))
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                Text("Sporting", color = Color.White)
-                Text("Vianense", color = Color.White)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen),
-                modifier = Modifier.fillMaxWidth(0.6f)
-            ) {
-                Text("WATCH STREAM")
             }
         }
     }
 }
 
 @Composable
-fun TournamentCard(title: String, role: String, progress: Int, color: Color) {
+fun TeamIconCircle(
+    text: String,
+    color: Color
+) {
+    Box(
+        modifier = Modifier
+            .size(64.dp)
+            .clip(CircleShape)
+            .background(color.copy(alpha = 0.18f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = color,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun TournamentCard(
+    title: String,
+    role: String,
+    progress: Int,
+    color: Color
+) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-            Box(modifier = Modifier.width(4.dp).fillMaxHeight().background(color))
-            Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min)
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(color)
+            )
+
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Column {
-                        Text(title, fontSize = 18.sp, color = DarkBlue)
-                        Text(role, fontSize = 10.sp, color = color, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                        Text(
+                            text = title,
+                            fontSize = 18.sp,
+                            color = DarkBlue
+                        )
+
+                        Text(
+                            text = role,
+                            fontSize = 10.sp,
+                            color = color,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
                     }
-                    Icon(Icons.Default.Star, contentDescription = null, tint = color.copy(alpha = 0.3f))
+
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = color.copy(alpha = 0.3f)
+                    )
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("PROGRESS", fontSize = 10.sp, color = TextGray, fontWeight = FontWeight.Bold)
-                    Text("$progress%", fontSize = 10.sp, color = TextGray, fontWeight = FontWeight.Bold)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "PROGRESS",
+                        fontSize = 10.sp,
+                        color = TextGray,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "$progress%",
+                        fontSize = 10.sp,
+                        color = TextGray,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+
                 Spacer(modifier = Modifier.height(4.dp))
+
                 LinearProgressIndicator(
-                    progress = progress / 100f,
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(4.dp)),
+                    progress = {
+                        progress / 100f
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp)),
                     color = color,
                     trackColor = color.copy(alpha = 0.1f)
                 )
@@ -279,77 +682,297 @@ fun TournamentCard(title: String, role: String, progress: Int, color: Color) {
 }
 
 @Composable
-fun UpcomingFixturesSection() {
+fun UpcomingFixturesSection(
+    fixtures: List<OrganizerHomeFixture>,
+    isLoading: Boolean
+) {
     Column {
         SectionTitle("UPCOMING FIXTURES")
+
         Spacer(modifier = Modifier.height(12.dp))
-        Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
-            Column {
-                FixtureItem("SEP 22", "19:45")
-                HorizontalDivider(color = BgLight, thickness = 1.dp)
-                FixtureItem("SEP 24", "21:00")
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = EmeraldGreen
+                        )
+                    }
+                }
+
+                fixtures.isEmpty() -> {
+                    Text(
+                        text = "No upcoming fixtures scheduled.",
+                        color = TextGray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                else -> {
+                    Column {
+                        fixtures.forEachIndexed { index, fixture ->
+                            FixtureItem(
+                                fixture = fixture
+                            )
+
+                            if (index < fixtures.lastIndex) {
+                                HorizontalDivider(
+                                    color = BgLight,
+                                    thickness = 1.dp
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun FixtureItem(date: String, time: String) {
+fun FixtureItem(
+    fixture: OrganizerHomeFixture
+) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column {
-            Text(date, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text(time, color = TextGray, fontSize = 12.sp)
+            Text(
+                text = formatDateForHome(fixture.data),
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = formatTimeForHome(fixture.hora),
+                color = TextGray,
+                fontSize = 12.sp
+            )
         }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(Icons.Default.Star, contentDescription = null, tint = EmeraldGreen)
-            Text("VS", color = Color(0xFFC3C6CF), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            Icon(Icons.Default.Star, contentDescription = null, tint = Color.Blue)
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TeamFixtureIcon(
+                text = getTeamInitials(fixture.equipaCasa),
+                color = EmeraldGreen
+            )
+
+            Text(
+                text = "VS",
+                color = Color(0xFFC3C6CF),
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp
+            )
+
+            TeamFixtureIcon(
+                text = getTeamInitials(fixture.equipaFora),
+                color = Color(0xFF2B5BFE)
+            )
         }
-        Surface(color = BgLight, shape = RoundedCornerShape(8.dp)) {
-            Icon(Icons.Outlined.Notifications, contentDescription = null, tint = DarkBlue, modifier = Modifier.padding(8.dp))
+
+        Surface(
+            color = BgLight,
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Icon(
+                Icons.Outlined.Notifications,
+                contentDescription = null,
+                tint = DarkBlue,
+                modifier = Modifier.padding(8.dp)
+            )
         }
     }
 }
 
 @Composable
-fun PerformanceInsightsSection() {
+fun TeamFixtureIcon(
+    text: String,
+    color: Color
+) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(color.copy(alpha = 0.15f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = color,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun PerformanceInsightsSection(
+    playerOfWeek: OrganizerHomePlayerStats?,
+    isLoading: Boolean
+) {
     Column {
         SectionTitle("PERFORMANCE INSIGHTS")
+
         Spacer(modifier = Modifier.height(12.dp))
+
         Card(
-            colors = CardDefaults.cardColors(containerColor = DarkBlue),
+            colors = CardDefaults.cardColors(
+                containerColor = DarkBlue
+            ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("PLAYER OF THE WEEK", color = EmeraldGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(3.dp, EmeraldGreen.copy(alpha = 0.3f)),
-                    color = Color.Gray,
-                    modifier = Modifier.size(100.dp)
-                ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.padding(24.dp))
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(270.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = EmeraldGreen
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("CRISTIANO RONALDO", color = Color.White, fontSize = 20.sp)
-                Text("Arabias • ATTK", color = EmeraldGreen, fontSize = 12.sp)
 
-                Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-                Spacer(modifier = Modifier.height(16.dp))
+                playerOfWeek == null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "PLAYER OF THE WEEK",
+                            color = EmeraldGreen,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    StatColumn("04", "GOALS")
-                    StatColumn("02", "ASSISTS")
-                    StatColumn("9.4", "RATING")
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(72.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "No player stats yet",
+                            color = Color.White,
+                            fontSize = 18.sp
+                        )
+
+                        Text(
+                            text = "Stats will appear after matches are played.",
+                            color = EmeraldGreen,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                else -> {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "PLAYER OF THE WEEK",
+                            color = EmeraldGreen,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(
+                                3.dp,
+                                EmeraldGreen.copy(alpha = 0.3f)
+                            ),
+                            color = Color.Gray,
+                            modifier = Modifier.size(100.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = getPlayerInitials(playerOfWeek.nome),
+                                    color = Color.White,
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = playerOfWeek.nome.uppercase(),
+                            color = Color.White,
+                            fontSize = 20.sp
+                        )
+
+                        Text(
+                            text = "@${playerOfWeek.username}",
+                            color = EmeraldGreen,
+                            fontSize = 12.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        HorizontalDivider(
+                            color = Color.White.copy(alpha = 0.1f)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            StatColumn(
+                                value = playerOfWeek.vitorias.toString().padStart(2, '0'),
+                                label = "WINS"
+                            )
+
+                            StatColumn(
+                                value = playerOfWeek.pontuacao.toString().padStart(2, '0'),
+                                label = "POINTS"
+                            )
+
+                            StatColumn(
+                                value = String.format("%.1f", playerOfWeek.rating),
+                                label = "RATING"
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -357,15 +980,34 @@ fun PerformanceInsightsSection() {
 }
 
 @Composable
-fun StatColumn(value: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text(label, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+fun StatColumn(
+    value: String,
+    label: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = label,
+            color = TextGray,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
     }
 }
 
 @Composable
-fun SectionTitle(title: String) {
+fun SectionTitle(
+    title: String
+) {
     Text(
         text = title,
         color = Color(0xFF6B7280),
@@ -373,4 +1015,68 @@ fun SectionTitle(title: String) {
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp
     )
+}
+
+fun getTeamInitials(
+    name: String
+): String {
+    val words = name
+        .split(" ")
+        .filter { it.isNotBlank() }
+
+    return when {
+        words.isEmpty() -> "?"
+        words.size == 1 -> words.first().take(2).uppercase()
+        else -> words.take(2).joinToString("") {
+            it.first().uppercaseChar().toString()
+        }
+    }
+}
+
+fun getPlayerInitials(
+    name: String
+): String {
+    val words = name
+        .split(" ")
+        .filter { it.isNotBlank() }
+
+    return when {
+        words.isEmpty() -> "?"
+        words.size == 1 -> words.first().take(2).uppercase()
+        else -> words.take(2).joinToString("") {
+            it.first().uppercaseChar().toString()
+        }
+    }
+}
+
+fun formatDateForHome(
+    value: String
+): String {
+    if (value.isBlank()) {
+        return "--"
+    }
+
+    val parts = value.take(10).split("-")
+
+    if (parts.size != 3) {
+        return value
+    }
+
+    return "${parts[2]}/${parts[1]}"
+}
+
+fun formatTimeForHome(
+    value: String
+): String {
+    if (value.isBlank()) {
+        return "--:--"
+    }
+
+    return value.take(5)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen()
 }
