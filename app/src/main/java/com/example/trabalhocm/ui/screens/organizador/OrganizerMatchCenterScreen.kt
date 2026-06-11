@@ -27,9 +27,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.PeladinhaComInfo
+import com.example.trabalhocm.data.repository.PeladinhaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
+import kotlinx.coroutines.launch
 
 private val WarningYellow = Color(0xFFF59E0B)
 
@@ -48,16 +50,52 @@ fun OrganizerMatchCenterScreen(
     onProfileClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
-
     var showFiltersSheet by remember { mutableStateOf(false) }
+
+    val repository = remember { PeladinhaRepository() }
+    val scope = rememberCoroutineScope()
+
+    var peladinhas by remember { mutableStateOf<List<PeladinhaComInfo>>(emptyList()) }
+    var isLoadingPeladinhas by remember { mutableStateOf(true) }
+    var errorPeladinhas by remember { mutableStateOf("") }
+
+    fun carregarPeladinhas() {
+        scope.launch {
+            isLoadingPeladinhas = true
+            errorPeladinhas = ""
+
+            repository.listarPeladinhasComInfo()
+                .onSuccess { lista ->
+                    peladinhas = lista.sortedByDescending { it.peladinha.id }
+                }
+                .onFailure { erro ->
+                    errorPeladinhas = erro.message ?: "Erro ao carregar partidas casuais."
+                }
+
+            isLoadingPeladinhas = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        carregarPeladinhas()
+    }
+
+    val peladinhasFiltradas = peladinhas.filter { info ->
+        val query = searchQuery.trim()
+
+        query.isBlank() ||
+                info.modalidadeNome.contains(query, ignoreCase = true) ||
+                info.peladinha.local.orEmpty().contains(query, ignoreCase = true) ||
+                info.peladinha.descricao.orEmpty().contains(query, ignoreCase = true)
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Matches", color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                    IconButton(onClick = { carregarPeladinhas() }) {
+                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -85,7 +123,6 @@ fun OrganizerMatchCenterScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // HEADER
             Text("Match Center", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
             Text(
                 "Track live games, follow your team and join casual pickup matches.",
@@ -96,7 +133,6 @@ fun OrganizerMatchCenterScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // BUTTONS ROW
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -106,9 +142,16 @@ fun OrganizerMatchCenterScreen(
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, InputBg),
                     colors = ButtonDefaults.outlinedButtonColors(containerColor = CardBg),
-                    modifier = Modifier.weight(1f).height(48.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
                 ) {
-                    Icon(Icons.Outlined.DateRange, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
+                    Icon(
+                        Icons.Outlined.DateRange,
+                        contentDescription = null,
+                        tint = DarkBlue,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("CALENDAR", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
@@ -118,15 +161,21 @@ fun OrganizerMatchCenterScreen(
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, InputBg),
                     colors = ButtonDefaults.outlinedButtonColors(containerColor = CardBg),
-                    modifier = Modifier.weight(1f).height(48.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
                 ) {
-                    Icon(Icons.Outlined.Refresh, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
+                    Icon(
+                        Icons.Outlined.Refresh,
+                        contentDescription = null,
+                        tint = DarkBlue,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("HISTORY", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
 
-            // SEARCH & FILTERS
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -135,12 +184,21 @@ fun OrganizerMatchCenterScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Search, contentDescription = null, tint = TextGray, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = TextGray,
+                            modifier = Modifier.size(20.dp)
+                        )
+
                         Spacer(modifier = Modifier.width(8.dp))
+
                         TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search tournaments...", color = TextGray, fontSize = 14.sp) },
+                            placeholder = {
+                                Text("Search matches...", color = TextGray, fontSize = 14.sp)
+                            },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -152,71 +210,40 @@ fun OrganizerMatchCenterScreen(
                     }
 
                     HorizontalDivider(color = InputBg)
+
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedButton(
                         onClick = { showFiltersSheet = true },
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, InputBg),
-                        modifier = Modifier.fillMaxWidth().height(40.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
                     ) {
-                        Icon(Icons.Default.Menu, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = null,
+                            tint = DarkBlue,
+                            modifier = Modifier.size(16.dp)
+                        )
+
                         Spacer(modifier = Modifier.width(8.dp))
+
                         Text("FILTERS", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
 
-            // LIVE MATCH CARD
             LiveMatchCenterCard(onViewDetailsClick = onLiveMatchClick)
 
-            // PICKUP MATCHES
-            PickupMatchCard(
-                status = "OPEN",
-                statusColor = TealGreen,
-                sport = "VOLLEYBALL",
-                title = "Beach Volley Mix",
-                timeLocation = "Tonight 19:30 • Riverside Courts",
-                playersJoined = 8,
-                maxPlayers = 10,
-                onViewDetailsClick = onCasualMatchClick,
-                onActionClick = { },
-                actionText = "JOIN MATCH",
-                actionEnabled = true,
-                isInviteOnly = false
+            PickupMatchesFromDatabaseSection(
+                peladinhas = peladinhasFiltradas,
+                isLoading = isLoadingPeladinhas,
+                errorMessage = errorPeladinhas,
+                onCasualMatchClick = onCasualMatchClick
             )
 
-            PickupMatchCard(
-                status = "FULL",
-                statusColor = WarningYellow,
-                sport = "FOOTBALL",
-                title = "Friday Night Football",
-                timeLocation = "Tomorrow 20:00 • Sports Pavilion",
-                playersJoined = 22,
-                maxPlayers = 22,
-                onViewDetailsClick = { },
-                onActionClick = { },
-                actionText = "JOIN WAITING LIST",
-                actionEnabled = false,
-                isInviteOnly = false
-            )
-
-            PickupMatchCard(
-                status = "INVITE ONLY",
-                statusColor = PrimaryBlue,
-                sport = "BASKETBALL",
-                title = "Elite 5v5 Pickup",
-                timeLocation = "Saturday 10:00 • Court 3",
-                playersJoined = 10,
-                maxPlayers = 10,
-                onViewDetailsClick = { },
-                onActionClick = { },
-                actionText = "INVITE ONLY — LOCKED",
-                actionEnabled = false,
-                isInviteOnly = true
-            )
-
-            // HOST A MATCH CARD
             HostMatchCard(onCreateClick = onCreateCasualMatchClick)
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -234,7 +261,6 @@ fun OrganizerMatchCenterScreen(
         }
     }
 }
-
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -257,19 +283,21 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     tint = Color.White,
                     modifier = Modifier.clickable { onCloseClick() }
                 )
+
                 Spacer(modifier = Modifier.width(16.dp))
+
                 Text("Filters", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
+
             Text(
                 "RESET",
                 color = TealGreen,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { /* Reset states */ }
+                modifier = Modifier.clickable { }
             )
         }
 
-        // Conteúdo Scrollable
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -277,34 +305,45 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-
-            // Sport Category
             Column {
                 FilterSectionLabel("Sport Category")
+
                 Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     FilterChipCustom("⚽ Football", isSelected = true)
                     FilterChipCustom("🏐 Volleyball", isSelected = false)
                     FilterChipCustom("🏀 Basketball", isSelected = false)
                 }
             }
 
-            // Competition Format
             Column {
                 FilterSectionLabel("Competition Format")
+
                 Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     FilterChipCustom("League", isSelected = true)
                     FilterChipCustom("Knockout", isSelected = true)
                     FilterChipCustom("Group Stage", isSelected = false)
                 }
             }
 
-            // Status
             Column {
                 FilterSectionLabel("Status")
+
                 Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     FilterChipCustom("Upcoming", isSelected = false)
 
                     Surface(
@@ -312,7 +351,13 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                         shape = RoundedCornerShape(6.dp),
                         border = BorderStroke(1.dp, TealGreen)
                     ) {
-                        Text("Live", color = TealGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                        Text(
+                            "Live",
+                            color = TealGreen,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
                     }
 
                     FilterChipCustom("Registration Open", isSelected = true)
@@ -320,23 +365,39 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                 }
             }
 
-            // Region
             Column {
                 FilterSectionLabel("Region")
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 TextField(
                     value = "",
                     onValueChange = { },
                     placeholder = { Text("City or region...", color = TextGray) },
-                    leadingIcon = { Icon(Icons.Outlined.Place, contentDescription = null, tint = TextGray) },
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                    leadingIcon = {
+                        Icon(
+                            Icons.Outlined.Place,
+                            contentDescription = null,
+                            tint = TextGray
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp)),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = CardBg, unfocusedContainerColor = CardBg,
-                        focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                        focusedContainerColor = CardBg,
+                        unfocusedContainerColor = CardBg,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
                     )
                 )
+
                 Spacer(modifier = Modifier.height(12.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     FilterChipCustom("📍 Lisbon", isSelected = true)
                     FilterChipCustom("Porto", isSelected = false)
                     FilterChipCustom("Coimbra", isSelected = false)
@@ -344,42 +405,59 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                 }
             }
 
-            // Date Range
             Column {
                 FilterSectionLabel("Date Range")
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("FROM", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+
                         Spacer(modifier = Modifier.height(4.dp))
+
                         TextField(
-                            value = "01/06/2026", onValueChange = {},
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                            value = "01/06/2026",
+                            onValueChange = {},
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp)),
                             colors = TextFieldDefaults.colors(
-                                focusedContainerColor = CardBg, unfocusedContainerColor = CardBg,
-                                focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                                focusedContainerColor = CardBg,
+                                unfocusedContainerColor = CardBg,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
                             )
                         )
                     }
+
                     Column(modifier = Modifier.weight(1f)) {
                         Text("TO", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+
                         Spacer(modifier = Modifier.height(4.dp))
+
                         TextField(
-                            value = "30/09/2026", onValueChange = {},
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                            value = "30/09/2026",
+                            onValueChange = {},
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp)),
                             colors = TextFieldDefaults.colors(
-                                focusedContainerColor = CardBg, unfocusedContainerColor = CardBg,
-                                focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                                focusedContainerColor = CardBg,
+                                unfocusedContainerColor = CardBg,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
                             )
                         )
                     }
                 }
             }
 
-            // Entry Fee Range
             Column {
                 FilterSectionLabel("Entry Fee Range")
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 RangeSlider(
                     value = feeRange,
                     onValueChange = { feeRange = it },
@@ -391,21 +469,31 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     ),
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text("€10", color = TextGray, fontSize = 12.sp)
-                    Text("€${feeRange.start.toInt()} — €${feeRange.endInclusive.toInt()}", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "€${feeRange.start.toInt()} — €${feeRange.endInclusive.toInt()}",
+                        color = DarkBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Text("€100+", color = TextGray, fontSize = 12.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Botão Aplicar
             Button(
                 onClick = onCloseClick,
                 colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
                 Text("APPLY FILTERS (24)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
@@ -425,7 +513,7 @@ fun FilterChipCustom(text: String, isSelected: Boolean) {
         color = bgColor,
         shape = RoundedCornerShape(6.dp),
         border = BorderStroke(1.dp, borderColor),
-        modifier = Modifier.clickable { /* Lógica de selecionar/deselecionar */ }
+        modifier = Modifier.clickable { }
     ) {
         Text(
             text = text,
@@ -447,7 +535,6 @@ fun FilterSectionLabel(text: String) {
     )
 }
 
-
 @Composable
 fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
     Card(
@@ -460,7 +547,12 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .drawBehind {
-                    drawLine(color = TealGreen, start = Offset(0f, 0f), end = Offset(0f, size.height), strokeWidth = 16f)
+                    drawLine(
+                        color = TealGreen,
+                        start = Offset(0f, 0f),
+                        end = Offset(0f, size.height),
+                        strokeWidth = 16f
+                    )
                 }
                 .padding(16.dp)
                 .padding(start = 8.dp)
@@ -470,49 +562,182 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                 TagBadge("CASUAL", TextGray, InputBg)
                 TagBadge("FOOTBALL", TextGray, InputBg)
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                    Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text("SLB", color = ErrorRed, fontWeight = FontWeight.Bold)
                     }
+
                     Spacer(modifier = Modifier.height(4.dp))
+
                     Text("Benfica", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("2 - 1", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                     Text("75'", color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                    Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text("FCP", color = PrimaryBlue, fontWeight = FontWeight.Bold)
                     }
+
                     Spacer(modifier = Modifier.height(4.dp))
+
                     Text("Porto", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Place, contentDescription = null, tint = TextGray, modifier = Modifier.size(14.dp))
+                Icon(
+                    Icons.Outlined.Place,
+                    contentDescription = null,
+                    tint = TextGray,
+                    modifier = Modifier.size(14.dp)
+                )
+
                 Spacer(modifier = Modifier.width(4.dp))
+
                 Text("Estádio da Luz - Atlantic Cup 2026", color = TextGray, fontSize = 12.sp)
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(
                     onClick = onViewDetailsClick,
-                    shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, PrimaryBlue),
-                    modifier = Modifier.weight(1f).height(40.dp)
-                ) { Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp) }
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, PrimaryBlue),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                ) {
+                    Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+
                 Button(
                     onClick = onViewDetailsClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen), shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.weight(1f).height(40.dp)
-                ) { Text("WATCH LIVE", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
+                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                ) {
+                    Text("WATCH LIVE", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PickupMatchesFromDatabaseSection(
+    peladinhas: List<PeladinhaComInfo>,
+    isLoading: Boolean,
+    errorMessage: String,
+    onCasualMatchClick: () -> Unit
+) {
+    when {
+        isLoading -> {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardBg),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = TealGreen)
+                }
+            }
+        }
+
+        errorMessage.isNotBlank() -> {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardBg),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = errorMessage,
+                    color = ErrorRed,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
+        peladinhas.isEmpty() -> {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardBg),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "No casual matches found.",
+                    color = TextGray,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
+        else -> {
+            peladinhas.forEach { info ->
+                val status = obterStatusPeladinha(info)
+                val statusColor = obterCorStatusPeladinha(status)
+                val inviteOnly = info.peladinha.descricao
+                    .orEmpty()
+                    .contains("Invite Only", ignoreCase = true)
+
+                val maxJogadores = info.peladinha.maxJogadores.coerceAtLeast(1)
+                val actionEnabled = !inviteOnly && status != "FULL"
+
+                PickupMatchCard(
+                    status = status,
+                    statusColor = statusColor,
+                    sport = info.modalidadeNome.uppercase(),
+                    title = obterTituloPeladinha(info),
+                    timeLocation = obterDataHoraLocalPeladinha(info),
+                    playersJoined = info.jogadoresInscritos,
+                    maxPlayers = maxJogadores,
+                    onViewDetailsClick = onCasualMatchClick,
+                    onActionClick = onCasualMatchClick,
+                    actionText = when {
+                        inviteOnly -> "INVITE ONLY — LOCKED"
+                        status == "FULL" -> "FULL"
+                        else -> "VIEW DETAILS"
+                    },
+                    actionEnabled = actionEnabled,
+                    isInviteOnly = inviteOnly
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -520,13 +745,23 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
 
 @Composable
 fun PickupMatchCard(
-    status: String, statusColor: Color, sport: String, title: String, timeLocation: String,
-    playersJoined: Int, maxPlayers: Int, onViewDetailsClick: () -> Unit, onActionClick: () -> Unit,
-    actionText: String, actionEnabled: Boolean, isInviteOnly: Boolean
+    status: String,
+    statusColor: Color,
+    sport: String,
+    title: String,
+    timeLocation: String,
+    playersJoined: Int,
+    maxPlayers: Int,
+    onViewDetailsClick: () -> Unit,
+    onActionClick: () -> Unit,
+    actionText: String,
+    actionEnabled: Boolean,
+    isInviteOnly: Boolean
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -535,45 +770,106 @@ fun PickupMatchCard(
                 TagBadge("CASUAL", TextGray, InputBg)
                 TagBadge(sport, TextGray, InputBg)
             }
+
             Spacer(modifier = Modifier.height(12.dp))
+
             Text(title, color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
             Spacer(modifier = Modifier.height(4.dp))
+
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Info, contentDescription = null, tint = TextGray, modifier = Modifier.size(14.dp))
+                Icon(
+                    Icons.Outlined.Info,
+                    contentDescription = null,
+                    tint = TextGray,
+                    modifier = Modifier.size(14.dp)
+                )
+
                 Spacer(modifier = Modifier.width(4.dp))
+
                 Text(timeLocation, color = TextGray, fontSize = 12.sp)
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             if (!isInviteOnly) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("PLAYERS JOINED", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    Text("$playersJoined/$maxPlayers", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "PLAYERS JOINED",
+                        color = DarkBlue,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+
+                    Text(
+                        "$playersJoined/$maxPlayers",
+                        color = DarkBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 LinearProgressIndicator(
                     progress = { playersJoined.toFloat() / maxPlayers.toFloat() },
-                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-                    color = statusColor, trackColor = InputBg,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = statusColor,
+                    trackColor = InputBg,
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
+
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(
-                    onClick = onViewDetailsClick, shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, PrimaryBlue), modifier = Modifier.weight(1f).height(40.dp)
-                ) { Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp) }
+                    onClick = onViewDetailsClick,
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, PrimaryBlue),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                ) {
+                    Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
 
                 Button(
-                    onClick = onActionClick, enabled = actionEnabled,
-                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen, disabledContainerColor = Color(0xFFCBD5E1)),
-                    shape = RoundedCornerShape(8.dp), modifier = Modifier.weight(1f).height(40.dp)
+                    onClick = onActionClick,
+                    enabled = actionEnabled,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TealGreen,
+                        disabledContainerColor = Color(0xFFCBD5E1)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
                 ) {
                     if (isInviteOnly) {
-                        Icon(Icons.Outlined.Lock, contentDescription = null, tint = TextGray, modifier = Modifier.size(14.dp))
+                        Icon(
+                            Icons.Outlined.Lock,
+                            contentDescription = null,
+                            tint = TextGray,
+                            modifier = Modifier.size(14.dp)
+                        )
+
                         Spacer(modifier = Modifier.width(4.dp))
+
                         Text(actionText, color = TextGray, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                     } else {
-                        Text(actionText, color = if (actionEnabled) Color.White else TextGray, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                        Text(
+                            actionText,
+                            color = if (actionEnabled) Color.White else TextGray,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
                     }
                 }
             }
@@ -584,25 +880,67 @@ fun PickupMatchCard(
 @Composable
 fun HostMatchCard(onCreateClick: () -> Unit) {
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .drawBehind {
-                val stroke = Stroke(width = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f))
-                drawRoundRect(color = Color(0xFFCBD5E1), style = stroke, cornerRadius = CornerRadius(12.dp.toPx()))
+                val stroke = Stroke(
+                    width = 2.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
+                )
+                drawRoundRect(
+                    color = Color(0xFFCBD5E1),
+                    style = stroke,
+                    cornerRadius = CornerRadius(12.dp.toPx())
+                )
             }
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Surface(shape = CircleShape, border = BorderStroke(2.dp, DarkBlue), color = Color.Transparent, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = DarkBlue, modifier = Modifier.padding(4.dp))
+            Surface(
+                shape = CircleShape,
+                border = BorderStroke(2.dp, DarkBlue),
+                color = Color.Transparent,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    tint = DarkBlue,
+                    modifier = Modifier.padding(4.dp)
+                )
             }
+
             Spacer(modifier = Modifier.height(12.dp))
+
             Text("Host a Match?", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Can't find what you're looking for? Create your own casual match.", color = TextGray, fontSize = 12.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp))
+
+            Text(
+                "Can't find what you're looking for? Create your own casual match.",
+                color = TextGray,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onCreateClick, colors = ButtonDefaults.buttonColors(containerColor = DarkBlue), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth(0.9f).height(48.dp)) {
-                Text("CREATE CASUAL MATCH", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+
+            Button(
+                onClick = onCreateClick,
+                colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(48.dp)
+            ) {
+                Text(
+                    "CREATE CASUAL MATCH",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.sp
+                )
             }
         }
     }
@@ -611,8 +949,79 @@ fun HostMatchCard(onCreateClick: () -> Unit) {
 @Composable
 fun TagBadge(text: String, textColor: Color, bgColor: Color) {
     Surface(color = bgColor, shape = RoundedCornerShape(12.dp)) {
-        Text(text, color = textColor, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+        )
     }
+}
+
+fun obterStatusPeladinha(info: PeladinhaComInfo): String {
+    val estado = info.peladinha.estado.lowercase()
+    val maxJogadores = info.peladinha.maxJogadores
+
+    if (maxJogadores > 0 && info.jogadoresInscritos >= maxJogadores) {
+        return "FULL"
+    }
+
+    return when (estado) {
+        "aberta" -> "OPEN"
+        "em_direto", "live" -> "LIVE NOW"
+        "fechada" -> "FULL"
+        else -> estado.uppercase()
+    }
+}
+
+fun obterCorStatusPeladinha(status: String): Color {
+    return when (status) {
+        "OPEN" -> TealGreen
+        "LIVE NOW" -> ErrorRed
+        "FULL" -> WarningYellow
+        else -> PrimaryBlue
+    }
+}
+
+fun obterTituloPeladinha(info: PeladinhaComInfo): String {
+    val descricao = info.peladinha.descricao.orEmpty().trim()
+
+    return if (descricao.isNotBlank() && !descricao.startsWith("Nível:", ignoreCase = true)) {
+        descricao
+    } else {
+        "${info.modalidadeNome} Casual Match"
+    }
+}
+
+fun obterDataHoraLocalPeladinha(info: PeladinhaComInfo): String {
+    val data = formatarDataPeladinha(info.peladinha.data)
+    val hora = formatarHoraPeladinha(info.peladinha.hora)
+    val local = info.peladinha.local ?: "Local por definir"
+
+    return "$data $hora • $local"
+}
+
+fun formatarDataPeladinha(data: String?): String {
+    if (data.isNullOrBlank()) {
+        return "Date TBD"
+    }
+
+    val partes = data.take(10).split("-")
+
+    return if (partes.size == 3) {
+        "${partes[2]}/${partes[1]}/${partes[0]}"
+    } else {
+        data
+    }
+}
+
+fun formatarHoraPeladinha(hora: String?): String {
+    if (hora.isNullOrBlank()) {
+        return "--:--"
+    }
+
+    return hora.take(5)
 }
 
 @Preview(showBackground = true)

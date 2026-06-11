@@ -6,6 +6,8 @@ import com.example.trabalhocm.data.model.PeladinhaParticipante
 import com.example.trabalhocm.data.model.Utilizador
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 data class PeladinhaComInfo(
     val peladinha: Peladinha,
@@ -67,6 +69,53 @@ class PeladinhaRepository {
                     utilizadorJaInscrito = utilizadorJaInscrito
                 )
             }
+        }
+    }
+
+    suspend fun criarPeladinha(
+        idModalidade: Long,
+        data: String?,
+        hora: String?,
+        local: String?,
+        maxJogadores: Int,
+        nivel: String,
+        tipoInscricao: String
+    ): Result<Unit> {
+        return runCatching {
+            val idOrganizador = obterIdUtilizadorAtualOuPrimeiroTeste()
+
+            if (data.isNullOrBlank()) {
+                error("Indica a data da partida.")
+            }
+
+            if (hora.isNullOrBlank()) {
+                error("Indica a hora da partida.")
+            }
+
+            if (local.isNullOrBlank()) {
+                error("Indica o local da partida.")
+            }
+
+            if (maxJogadores <= 0) {
+                error("Indica um número válido de jogadores.")
+            }
+
+            val descricaoGerada = "Nível: $nivel | Inscrição: $tipoInscricao"
+
+            val novaPeladinha = CriarPeladinhaRequest(
+                idModalidade = idModalidade,
+                idOrganizador = idOrganizador,
+                data = data,
+                hora = hora,
+                preco = 0.0,
+                descricao = descricaoGerada,
+                maxJogadores = maxJogadores,
+                estado = "aberta",
+                local = local
+            )
+
+            client.from("peladinha")
+                .insert(novaPeladinha)
         }
     }
 
@@ -212,3 +261,23 @@ class PeladinhaRepository {
             ?: error("Não foi possível identificar o utilizador.")
     }
 }
+
+@Serializable
+private data class CriarPeladinhaRequest(
+    @SerialName("id_modalidade")
+    val idModalidade: Long,
+
+    @SerialName("id_organizador")
+    val idOrganizador: String,
+
+    val data: String? = null,
+    val hora: String? = null,
+    val preco: Double? = null,
+    val descricao: String? = null,
+
+    @SerialName("max_jogadores")
+    val maxJogadores: Int = 0,
+
+    val estado: String = "aberta",
+    val local: String? = null
+)
