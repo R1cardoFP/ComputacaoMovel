@@ -20,11 +20,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.RssFeed
+import androidx.compose.material.icons.outlined.AddCircleOutline
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -143,14 +150,14 @@ fun PlayerHomeScreen(
                     ) {
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
-                            icon = "♕",
+                            icon = Icons.Outlined.EmojiEvents,
                             title = "TOURNAMENTS",
                             onClick = onTournamentsClick
                         )
 
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
-                            icon = "⊕",
+                            icon = Icons.Outlined.AddCircleOutline,
                             title = "CASUAL MATCHES",
                             onClick = onCasualMatchesClick
                         )
@@ -164,14 +171,14 @@ fun PlayerHomeScreen(
                     ) {
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
-                            icon = "⌁",
-                            title = "LIVE MATCHS",
+                            icon = Icons.Default.RssFeed,
+                            title = "LIVE MATCHES",
                             onClick = onLiveMatchesClick
                         )
 
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
-                            icon = "♟",
+                            icon = Icons.Outlined.Groups,
                             title = "TEAMS",
                             onClick = onTeamsClick
                         )
@@ -490,15 +497,15 @@ fun SectionTitle(title: String) {
 @Composable
 fun QuickActionCard(
     modifier: Modifier = Modifier,
-    icon: String,
+    icon: ImageVector,
     title: String,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
-            .height(112.dp)
+            .height(120.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(7.dp),
+        shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -509,26 +516,27 @@ fun QuickActionCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(Color(0xFFF0F2FA)),
+                    .size(54.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFEAF4F2)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = icon,
-                    color = BrandGreen,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = BrandGreen,
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = title,
                 color = Color(0xFF303646),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp
             )
         }
     }

@@ -49,6 +49,8 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun PlayerTournamentManagementScreen(
@@ -58,7 +60,7 @@ fun PlayerTournamentManagementScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onDetailsClick: (Long) -> Unit = {},
-    onRegisterClick: () -> Unit = {},
+    onRegisterClick: (Long) -> Unit = {},
     onAskOrganizerClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     onFiltersClick: () -> Unit = {},
@@ -86,6 +88,8 @@ fun PlayerTournamentManagementScreen(
     val selectedStatus = PlayerTournamentFiltersState.selectedStatus
     val selectedRegion = PlayerTournamentFiltersState.selectedRegion
     val cityOrRegion = PlayerTournamentFiltersState.cityOrRegion
+    val fromDate = PlayerTournamentFiltersState.fromDate
+    val toDate = PlayerTournamentFiltersState.toDate
 
     Column(
         modifier = Modifier
@@ -169,8 +173,9 @@ fun PlayerTournamentManagementScreen(
                     val formatoOk = torneioCorrespondeFormato(selectedFormat, torneio.formato)
                     val estadoOk = torneioCorrespondeEstado(selectedStatus, torneio.estado)
                     val regiaoOk = torneioCorrespondeRegiao(selectedRegion, cityOrRegion, torneio.local)
+                    val dataOk = torneioCorrespondeData(torneio.dataInicio, fromDate, toDate)
 
-                    nomeOk && modalidadeOk && formatoOk && estadoOk && regiaoOk
+                    nomeOk && modalidadeOk && formatoOk && estadoOk && regiaoOk && dataOk
                 }
 
                 if (torneiosFiltrados.isEmpty()) {
@@ -208,7 +213,7 @@ fun PlayerTournamentManagementScreen(
                             secondaryButtonText = "DETAILS",
                             disabledButton = !estadoAberto,
                             onDetailsClick = { onDetailsClick(torneio.id) },
-                            onPrimaryClick = onRegisterClick
+                            onPrimaryClick = { onRegisterClick(torneio.id) }
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -686,6 +691,23 @@ fun torneioCorrespondeRegiao(selectedRegion: String?, cityOrRegion: String, loca
     val regiaoOk = selectedRegion.isNullOrBlank() || localNormalizado.contains(selectedRegion.lowercase())
     val pesquisaRegiaoOk = cityOrRegion.isBlank() || localNormalizado.contains(cityOrRegion.lowercase())
     return regiaoOk && pesquisaRegiaoOk
+}
+
+fun torneioCorrespondeData(dataTorneio: String?, fromDate: String, toDate: String): Boolean {
+    val dataDaBaseDeDados = dataTorneio?.take(10) ?: return true
+    val formatterFiltro = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    val dataDoTorneioParsed = runCatching {
+        LocalDate.parse(dataDaBaseDeDados)
+    }.getOrNull() ?: return true
+
+    val dataInicio = runCatching { LocalDate.parse(fromDate, formatterFiltro) }.getOrNull()
+    val dataFim = runCatching { LocalDate.parse(toDate, formatterFiltro) }.getOrNull()
+
+    val depoisDoInicio = dataInicio == null || !dataDoTorneioParsed.isBefore(dataInicio)
+    val antesDoFim = dataFim == null || !dataDoTorneioParsed.isAfter(dataFim)
+
+    return depoisDoInicio && antesDoFim
 }
 
 @Preview(showBackground = true, name = "Player Tournament Management Screen")

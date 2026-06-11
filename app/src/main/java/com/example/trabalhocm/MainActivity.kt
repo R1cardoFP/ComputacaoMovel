@@ -691,7 +691,7 @@ fun MatchLeagueApp() {
                 onDetailsClick = { idTorneio ->
                     navController.navigate("player_tournament_details/$idTorneio")
                 },
-                onRegisterClick = { navController.navigate("player_tournament_registration") },
+                onRegisterClick = { idTorneio -> navController.navigate("player_tournament_registration/$idTorneio") },
                 onAskOrganizerClick = { navController.navigate("player_become_organizer") },
                 onHistoryClick = { navController.navigate("player_tournament_history") },
                 onFiltersClick = { navController.navigate("player_tournament_filters") }
@@ -744,8 +744,14 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("player_tournament_registration") {
+        composable(
+            route = "player_tournament_registration/{idTorneio}",
+            arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idTorneio = backStackEntry.arguments?.getLong("idTorneio") ?: 0L
+
             PlayerTournamentRegistrationScreen(
+                idTorneio = idTorneio,
                 onBackClick = { navController.popBackStack() },
                 onSubmitClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
