@@ -118,7 +118,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "player_home"
+        startDestination = "splash"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -929,6 +929,9 @@ fun MatchLeagueApp() {
             HomeScreen(
                 onVerTorneios = { navController.navigate("torneios") },
                 onCreateTournamentClick = { navController.navigate("create_tournament") },
+                onCreateCasualMatchClick = { navController.navigate("organizador_create_casual") },
+                onLiveMatchesClick = { navController.navigate("organizador_live_match") },
+                onCreateTeamClick = { navController.navigate("create_team") },
                 onHomeClick = { },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },

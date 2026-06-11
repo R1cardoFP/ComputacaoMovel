@@ -5,17 +5,34 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.trabalhocm.data.model.Torneio
-import com.example.trabalhocm.data.repository.TorneioRepository
-import com.example.trabalhocm.data.remote.SupabaseClient
-import io.github.jan.supabase.auth.auth
+import com.example.trabalhocm.data.repository.OrganizerHomeFixture
+import com.example.trabalhocm.data.repository.OrganizerHomeLiveMatch
+import com.example.trabalhocm.data.repository.OrganizerHomePlayerStats
+import com.example.trabalhocm.data.repository.OrganizerHomeRepository
+import com.example.trabalhocm.data.repository.OrganizerHomeTournament
 import kotlinx.coroutines.launch
 
 class OrganizerHomeViewModel : ViewModel() {
-    private val repository = TorneioRepository()
 
-    var activeTournaments by mutableStateOf<List<Torneio>>(emptyList())
+    private val repository = OrganizerHomeRepository()
+
+    var liveMatch by mutableStateOf<OrganizerHomeLiveMatch?>(null)
+        private set
+
+    var activeTournaments by mutableStateOf<List<OrganizerHomeTournament>>(emptyList())
+        private set
+
+    var upcomingFixtures by mutableStateOf<List<OrganizerHomeFixture>>(emptyList())
+        private set
+
+    var playerOfWeek by mutableStateOf<OrganizerHomePlayerStats?>(null)
+        private set
+
     var isLoading by mutableStateOf(true)
+        private set
+
+    var errorMessage by mutableStateOf("")
+        private set
 
     init {
         carregarDashboard()
@@ -24,20 +41,24 @@ class OrganizerHomeViewModel : ViewModel() {
     fun carregarDashboard() {
         viewModelScope.launch {
             isLoading = true
-            val currentUserId = SupabaseClient.client.auth.currentUserOrNull()?.id
+            errorMessage = ""
 
-            repository.listarTorneios()
-                .onSuccess { lista ->
-                    activeTournaments = lista.filter {
-                        it.idOrganizador == currentUserId &&
-                                (it.estado == "aberto" || it.estado == "em_decorrer")
-                    }.take(3)
+            repository.carregarDadosHome()
+                .onSuccess { dados ->
+                    liveMatch = dados.liveMatch
+                    activeTournaments = dados.activeTournaments
+                    upcomingFixtures = dados.upcomingFixtures
+                    playerOfWeek = dados.playerOfWeek
+                }
+                .onFailure { erro ->
+                    liveMatch = null
+                    activeTournaments = emptyList()
+                    upcomingFixtures = emptyList()
+                    playerOfWeek = null
+                    errorMessage = erro.message ?: "Erro ao carregar dashboard do organizador."
+                }
 
-                    isLoading = false
-                }
-                .onFailure {
-                    isLoading = false
-                }
+            isLoading = false
         }
     }
 }
