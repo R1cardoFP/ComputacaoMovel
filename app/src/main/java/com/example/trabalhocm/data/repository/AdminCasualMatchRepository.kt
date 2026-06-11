@@ -82,7 +82,11 @@ class AdminCasualMatchRepository {
                     statusFilter = status,
                     acceptedPlayers = acceptedPlayers,
                     maxPlayers = maxPlayers,
-                    sectionTitle = buildSectionTitle(parsedDate, isLive),
+                    sectionTitle = if (status == "CANCELED") {
+                        "CANCELED MATCHES"
+                    } else {
+                        buildSectionTitle(parsedDate, isLive)
+                    },
                     isLive = isLive
                 )
             }.sortedWith(
@@ -99,19 +103,17 @@ class AdminCasualMatchRepository {
         maxPlayers: Int,
         isLive: Boolean
     ): String {
+        if (estado == "cancelada") {
+            return "CANCELED"
+        }
+
         if (isLive) {
             return "LIVE"
         }
 
-        if (maxPlayers > 0 && acceptedPlayers >= maxPlayers) {
-            return "FULL"
-        }
-
         return when (estado) {
             "aberta" -> "OPEN"
-            "fechada" -> "FULL"
-            "convite" -> "INVITE ONLY"
-            "invite_only" -> "INVITE ONLY"
+            "fechada" -> "CLOSED"
             else -> estado.uppercase().ifBlank { "OPEN" }
         }
     }
@@ -165,8 +167,8 @@ class AdminCasualMatchRepository {
         return when (status) {
             "LIVE" -> 0
             "OPEN" -> 1
-            "INVITE ONLY" -> 2
-            "FULL" -> 3
+            "CLOSED" -> 2
+            "CANCELED" -> 3
             else -> 4
         }
     }
