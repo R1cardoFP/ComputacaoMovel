@@ -12,5 +12,9 @@ data class AdminCasualMatch(
     val acceptedPlayers: Int,
     val maxPlayers: Int,
     val sectionTitle: String,
-    val isLive: Boolean
+    val isLive: Boolean,
+    val homeTeamName: String = "Team A",
+    val awayTeamName: String = "Team B",
+    val homeScore: Int = 0,
+    val awayScore: Int = 0
 )
