@@ -76,7 +76,7 @@ fun PlayerHomeScreen(
     onLiveMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {}, // <-- AQUI ESTÁ O NOVO CALLBACK
+    onNotificationsClick: () -> Unit = {},
     onWatchStreamClick: (Long) -> Unit = {},
     onFixtureDetailsClick: (Long) -> Unit = {}
 ) {
@@ -109,7 +109,7 @@ fun PlayerHomeScreen(
             .navigationBarsPadding()
     ) {
         PlayerHomeTopBar(
-            onNotificationsClick = onNotificationsClick // <-- PASSADO PARA A TOP BAR
+            onNotificationsClick = onNotificationsClick // <-- AGORA SIM! Passado corretamente para a barra
         )
 
         Column(
@@ -270,7 +270,7 @@ fun PlayerHomeScreen(
 
 @Composable
 fun PlayerHomeTopBar(
-    onNotificationsClick: () -> Unit // <-- NOVO AQUI
+    onNotificationsClick: () -> Unit
 ) {
     Row(
         modifier = Modifier

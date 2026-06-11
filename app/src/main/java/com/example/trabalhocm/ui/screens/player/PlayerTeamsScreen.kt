@@ -34,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +51,7 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerTeamsScreen(
@@ -58,11 +60,13 @@ fun PlayerTeamsScreen(
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTeamDetailsClick: (Long) -> Unit = {},
     onManageTeamClick: (Long) -> Unit = {},
     onCreateTeamClick: () -> Unit = {}
 ) {
     val repository = remember { EquipaRepository() }
+    val scope = rememberCoroutineScope()
 
     var selectedDivision by remember { mutableStateOf("All Teams") }
     var search by remember { mutableStateOf("") }
@@ -71,19 +75,22 @@ fun PlayerTeamsScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
+    // Serve para saber qual botão de "JOIN" tem a rodinha de loading a girar
+    var actionLoadingId by remember { mutableStateOf<Long?>(null) }
+
+    fun carregarEquipas() {
+        scope.launch {
+            isLoading = true
+            errorMessage = ""
+            repository.listarEquipasComInfo()
+                .onSuccess { teams = it }
+                .onFailure { errorMessage = it.message ?: "Erro ao carregar equipas." }
+            isLoading = false
+        }
+    }
+
     LaunchedEffect(Unit) {
-        isLoading = true
-        errorMessage = ""
-
-        repository.listarEquipasComInfo()
-            .onSuccess {
-                teams = it
-            }
-            .onFailure {
-                errorMessage = it.message ?: "Erro ao carregar equipas."
-            }
-
-        isLoading = false
+        carregarEquipas()
     }
 
     val filteredTeams = teams.filter { team ->
@@ -243,11 +250,20 @@ fun PlayerTeamsScreen(
                     filteredTeams.forEach { team ->
                         PlayerTeamCard(
                             team = team,
+                            isSubmitting = actionLoadingId == team.equipa.id,
                             onDetailsClick = {
                                 onTeamDetailsClick(team.equipa.id)
                             },
                             onManageTeamClick = {
                                 onManageTeamClick(team.equipa.id)
+                            },
+                            onJoinClick = {
+                                scope.launch {
+                                    actionLoadingId = team.equipa.id
+                                    repository.solicitarEntradaEquipa(team.equipa.id, team.tipoEntrada)
+                                        .onSuccess { carregarEquipas() }
+                                    actionLoadingId = null
+                                }
                             }
                         )
 
@@ -373,11 +389,14 @@ fun TeamDivisionButton(
 @Composable
 fun PlayerTeamCard(
     team: EquipaComInfo,
+    isSubmitting: Boolean,
     onDetailsClick: () -> Unit,
-    onManageTeamClick: () -> Unit
+    onManageTeamClick: () -> Unit,
+    onJoinClick: () -> Unit
 ) {
     val logoColor = teamColorFromName(team.equipa.nome)
     val isPublic = team.tipoEntrada.lowercase() == "publica"
+    val estadoConvite = team.estadoConviteAtual?.lowercase()
 
     Card(
         modifier = Modifier
@@ -494,7 +513,7 @@ fun PlayerTeamCard(
                     )
                 ) {
                     Text(
-                        text = "VIEW DETAILS  →",
+                        text = "VIEW DETAILS",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -517,6 +536,54 @@ fun PlayerTeamCard(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                } else if (!team.utilizadorPertence && estadoConvite != "aceite") {
+                    if (estadoConvite == "pendente") {
+                        Button(
+                            onClick = { },
+                            enabled = false,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(42.dp),
+                            shape = RoundedCornerShape(2.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                disabledContainerColor = Color(0xFFDDE1EA),
+                                disabledContentColor = Color(0xFF7D8497)
+                            )
+                        ) {
+                            Text(
+                                text = "PENDING",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    } else {
+                        Button(
+                            onClick = onJoinClick,
+                            enabled = !isSubmitting,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(42.dp),
+                            shape = RoundedCornerShape(2.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BrandGreen,
+                                contentColor = BrandWhite
+                            )
+                        ) {
+                            if (isSubmitting) {
+                                CircularProgressIndicator(
+                                    color = BrandWhite,
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = if (isPublic) "JOIN TEAM" else "REQUEST",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
             }

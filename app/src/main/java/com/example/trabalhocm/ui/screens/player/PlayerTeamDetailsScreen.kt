@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +49,6 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
-import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
@@ -66,13 +64,10 @@ fun PlayerTeamDetailsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val repository = remember { EquipaRepository() }
-    val scope = rememberCoroutineScope()
 
     var detalhes by remember { mutableStateOf<EquipaDetalhesInfo?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
-
-    var isSubmitting by remember { mutableStateOf(false) }
 
     LaunchedEffect(idEquipa) {
         isLoading = true
@@ -129,8 +124,6 @@ fun PlayerTeamDetailsScreen(
             detalhes != null -> {
                 val info = detalhes!!
                 val isPublic = info.equipaInfo.tipoEntrada.lowercase() == "publica"
-                val estadoConvite = info.equipaInfo.estadoConviteAtual?.lowercase()
-                val utilizadorPertence = info.equipaInfo.utilizadorPertence
 
                 Column(
                     modifier = Modifier
@@ -147,68 +140,6 @@ fun PlayerTeamDetailsScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 22.dp, vertical = 18.dp)
                     ) {
-
-                        // Lógica de Entrada na Equipa
-                        if (!utilizadorPertence && estadoConvite != "aceite") {
-                            if (estadoConvite == null || estadoConvite == "recusado") {
-                                Button(
-                                    onClick = {
-                                        scope.launch {
-                                            isSubmitting = true
-                                            repository.solicitarEntradaEquipa(idEquipa, info.equipaInfo.tipoEntrada)
-                                                .onSuccess {
-                                                    // Atualiza o UI
-                                                    repository.obterDetalhesEquipa(idEquipa).onSuccess { detalhes = it }
-                                                }
-                                            isSubmitting = false
-                                        }
-                                    },
-                                    enabled = !isSubmitting,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(52.dp),
-                                    shape = RoundedCornerShape(7.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = BrandGreen,
-                                        contentColor = BrandWhite
-                                    )
-                                ) {
-                                    if (isSubmitting) {
-                                        CircularProgressIndicator(color = BrandWhite, modifier = Modifier.size(24.dp))
-                                    } else {
-                                        Text(
-                                            text = if (isPublic) "JOIN TEAM NOW" else "REQUEST TO JOIN",
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            letterSpacing = 1.2.sp
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(14.dp))
-                            } else if (estadoConvite == "pendente") {
-                                Button(
-                                    onClick = { },
-                                    enabled = false,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(52.dp),
-                                    shape = RoundedCornerShape(7.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        disabledContainerColor = Color(0xFFDDE1EA),
-                                        disabledContentColor = Color(0xFF7D8497)
-                                    )
-                                ) {
-                                    Text(
-                                        text = "REQUEST PENDING",
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        letterSpacing = 1.2.sp
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(14.dp))
-                            }
-                        }
-
                         TeamWinRateCard(
                             winRate = info.winRate
                         )
