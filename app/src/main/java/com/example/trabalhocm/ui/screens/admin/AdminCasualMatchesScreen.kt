@@ -54,6 +54,7 @@ import com.example.trabalhocm.ui.theme.CardBg
 import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
+import androidx.compose.foundation.BorderStroke
 
 @Composable
 fun AdminCasualMatchesScreen(
@@ -182,8 +183,7 @@ private fun AdminCasualMatchesContent(
         val matchesFilter = when (selectedFilter) {
             "Live" -> match.status == "LIVE"
             "Open" -> match.status == "OPEN"
-            "Full" -> match.status == "FULL"
-            "Invite Only" -> match.status == "INVITE ONLY"
+            "Canceled" -> match.status == "CANCELED"
             else -> true
         }
 
@@ -297,7 +297,7 @@ private fun AdminCasualMatchesContent(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("All", "Live", "Open", "Full", "Invite Only").forEach { filter ->
+                listOf("All", "Live", "Open", "Canceled").forEach { filter ->
                     MatchFilterChip(
                         text = filter,
                         selected = selectedFilter == filter,
@@ -492,10 +492,16 @@ private fun CasualMatchCard(
                         .weight(1f)
                         .height(38.dp),
                     shape = RoundedCornerShape(5.dp),
+                    border = if (match.isLive) {
+                        null
+                    } else {
+                        BorderStroke(1.dp, PrimaryBlue)
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (match.isLive) BrandGreen else BrandWhite,
                         contentColor = if (match.isLive) BrandWhite else PrimaryBlue
-                    )
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
                         text = if (match.isLive) "WATCH LIVE" else "VIEW DETAILS",
@@ -533,17 +539,25 @@ private fun StatusBadge(status: String) {
     val background = when (status) {
         "LIVE" -> Color(0xFFEAF8F5)
         "OPEN" -> Color(0xFFEAF8F5)
-        "FULL" -> Color(0xFFFEF3C7)
-        "INVITE ONLY" -> Color(0xFFE0E7FF)
+        "CLOSED" -> Color(0xFFFEF3C7)
+        "CANCELED" -> Color(0xFFFEE2E2)
         else -> Color(0xFFE5E7EB)
     }
 
     val textColor = when (status) {
         "LIVE" -> BrandGreen
         "OPEN" -> BrandGreen
-        "FULL" -> Color(0xFFEAB308)
-        "INVITE ONLY" -> PrimaryBlue
+        "CLOSED" -> Color(0xFFEAB308)
+        "CANCELED" -> ErrorRed
         else -> TextGray
+    }
+
+    val text = when (status) {
+        "LIVE" -> "LIVE NOW"
+        "OPEN" -> "OPEN"
+        "CLOSED" -> "CLOSED"
+        "CANCELED" -> "CANCELED"
+        else -> status
     }
 
     Box(
@@ -556,7 +570,7 @@ private fun StatusBadge(status: String) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = if (status == "LIVE") "LIVE NOW" else status,
+            text = text,
             color = textColor,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold
