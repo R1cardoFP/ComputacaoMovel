@@ -116,13 +116,13 @@ class EquipaRepository {
                 client.from("estatistica_equipa")
                     .select()
                     .decodeList<JsonObject>()
-            }.getOrDefault(emptyList())
+            }.getOrDefault(emptyList<JsonObject>())
 
             val membros = runCatching {
                 client.from("membro_equipa")
                     .select()
                     .decodeList<JsonObject>()
-            }.getOrDefault(emptyList())
+            }.getOrDefault(emptyList<JsonObject>())
 
             val utilizadorAtualId = obterIdUtilizadorAtualOuNull()
 
@@ -148,7 +148,7 @@ class EquipaRepository {
 
             equipasJson.map { equipaJson ->
                 val id = equipaJson.longValue("id")
-                val nome = equipaJson.stringValue("nome") ?: "Equipa"
+                val nome = equipaJson.stringValue("nome") ?: "Team"
                 val logoUrl = equipaJson.stringValue("logo_url")
                 val idModalidade = equipaJson.longValue("id_modalidade")
                 val tipoEntrada = equipaJson.stringValue("tipo_entrada") ?: "privada"
@@ -158,7 +158,7 @@ class EquipaRepository {
                 }.getOrNull()
 
                 val divisao = dadosEquipa?.stringValue("divisao") ?: "Division A"
-                val cidade = dadosEquipa?.stringValue("cidade") ?: "Cidade por definir"
+                val cidade = dadosEquipa?.stringValue("cidade") ?: "TBD"
                 val iniciais = dadosEquipa?.stringValue("sigla") ?: gerarIniciaisEquipa(nome)
 
                 val estatistica = estatisticasPorEquipa[id]?.firstOrNull()
@@ -182,7 +182,7 @@ class EquipaRepository {
                         logoUrl = logoUrl,
                         idModalidade = idModalidade
                     ),
-                    modalidadeNome = modalidadesPorId[idModalidade]?.nome ?: "Modalidade",
+                    modalidadeNome = modalidadesPorId[idModalidade]?.nome ?: "Sport",
                     divisao = divisao,
                     iniciais = iniciais,
                     cidade = cidade,
@@ -212,19 +212,18 @@ class EquipaRepository {
             val equipaInfo = listarEquipasComInfo()
                 .getOrThrow()
                 .firstOrNull { it.equipa.id == idEquipa }
-                ?: error("Equipa não encontrada.")
+                ?: error("Team not found.")
 
             val estatisticas = runCatching {
                 client.from("estatistica_equipa")
                     .select()
                     .decodeList<JsonObject>()
-            }.getOrDefault(emptyList())
+            }.getOrDefault(emptyList<JsonObject>())
 
             val estatistica = estatisticas.firstOrNull {
                 it.longValue("id_equipa") == idEquipa
             }
 
-            // Apenas lista membros que estão aceites na equipa para visualização pública
             val membrosGestao = listarMembrosGestaoDaEquipa(
                 idEquipa = idEquipa,
                 incluirPendentes = false
@@ -279,10 +278,10 @@ class EquipaRepository {
             val equipaInfo = listarEquipasComInfo()
                 .getOrThrow()
                 .firstOrNull { it.equipa.id == idEquipa }
-                ?: error("Equipa não encontrada.")
+                ?: error("Team not found.")
 
             if (!equipaInfo.utilizadorCapitao) {
-                error("Apenas o capitão pode gerir esta equipa.")
+                error("Only the captain can manage this team.")
             }
 
             val membros = listarMembrosGestaoDaEquipa(
@@ -300,8 +299,6 @@ class EquipaRepository {
     suspend fun solicitarEntradaEquipa(idEquipa: Long, tipoEntrada: String): Result<Unit> {
         return runCatching {
             val idUtilizador = obterIdUtilizadorAtualOuPrimeiroTeste()
-
-            // Se for pública entra logo, se for privada fica pendente aguardando aprovação
             val estado = if (tipoEntrada.lowercase() == "publica") "aceite" else "pendente"
 
             val novoMembro = NovoMembroEquipaRequest(
@@ -318,6 +315,15 @@ class EquipaRepository {
         }
     }
 
+    suspend fun atualizarPrivacidadeEquipa(idEquipa: Long, tipoEntrada: String): Result<Unit> {
+        return runCatching {
+            client.from("equipa")
+                .update(JsonObject(mapOf("tipo_entrada" to JsonPrimitive(tipoEntrada)))) {
+                    filter { eq("id", idEquipa) }
+                }
+        }
+    }
+
     suspend fun listarConvitesPendentesDoUtilizador(): Result<List<ConviteEquipaInfo>> {
         return runCatching {
             val idUtilizador = obterIdUtilizadorAtualOuPrimeiroTeste()
@@ -326,14 +332,13 @@ class EquipaRepository {
                 client.from("membro_equipa")
                     .select()
                     .decodeList<JsonObject>()
-            }.getOrDefault(emptyList())
+            }.getOrDefault(emptyList<JsonObject>())
 
             val convitesPendentes = membros.filter { membro ->
                 val mesmoUtilizador = membro.stringValue("id_utilizador") == idUtilizador
                 val estado = membro.stringValue("estado_convite") ?: ""
                 val mensagem = membro.stringValue("mensagem") ?: ""
 
-                // Aqui consideramos que um "convite de equipa" tem mensagem preenchida (convidado pelo capitão)
                 mesmoUtilizador && estado.lowercase() == "pendente" && mensagem.isNotBlank()
             }
 
@@ -367,18 +372,16 @@ class EquipaRepository {
                 client.from("membro_equipa")
                     .select()
                     .decodeList<JsonObject>()
-            }.getOrDefault(emptyList())
+            }.getOrDefault(emptyList<JsonObject>())
 
-            // 1. Descobrir as equipas onde o utilizador logado é capitão
             val equipasOndeSouCapitao = membros.filter {
                 it.stringValue("id_utilizador") == idUtilizador &&
                         it.stringValue("estado_convite")?.lowercase() == "aceite" &&
                         membroEhCapitao(it)
             }.map { it.longValue("id_equipa") }.toSet()
 
-            if (equipasOndeSouCapitao.isEmpty()) return@runCatching emptyList()
+            if (equipasOndeSouCapitao.isEmpty()) return@runCatching emptyList<PedidoEntradaEquipaInfo>()
 
-            // 2. Filtrar os pedidos pendentes para essas equipas (sem mensagem = pedido do jogador)
             val pedidosPendentes = membros.filter { membro ->
                 val idEquipa = membro.longValue("id_equipa")
                 val estado = membro.stringValue("estado_convite") ?: ""
@@ -390,11 +393,7 @@ class EquipaRepository {
             val utilizadoresIds = pedidosPendentes.mapNotNull { it.stringValue("id_utilizador") }.toSet()
 
             val utilizadores = client.from("utilizador")
-                .select {
-                    filter {
-                        isIn("id", utilizadoresIds.toList())
-                    }
-                }
+                .select { filter { isIn("id", utilizadoresIds.toList()) } }
                 .decodeList<Utilizador>()
                 .associateBy { it.id }
 
@@ -440,7 +439,6 @@ class EquipaRepository {
 
     suspend fun recusarPedidoDeEntrada(idEquipa: Long, idUtilizador: String): Result<Unit> {
         return runCatching {
-            // Em caso de recusa de um pedido, podemos apagar a linha ou meter como 'recusado'
             client.from("membro_equipa")
                 .delete {
                     filter {
@@ -506,7 +504,7 @@ class EquipaRepository {
                 client.from("membro_equipa")
                     .select()
                     .decodeList<JsonObject>()
-            }.getOrDefault(emptyList())
+            }.getOrDefault(emptyList<JsonObject>())
 
             val membrosDaEquipa = membros.filter {
                 it.longValue("id_equipa") == idEquipa
@@ -559,7 +557,7 @@ class EquipaRepository {
                 client.from("membro_equipa")
                     .select()
                     .decodeList<JsonObject>()
-            }.getOrDefault(emptyList())
+            }.getOrDefault(emptyList<JsonObject>())
 
             val membroExistente = membros.firstOrNull {
                 it.longValue("id_equipa") == idEquipa &&
@@ -569,7 +567,7 @@ class EquipaRepository {
             val estadoAtual = membroExistente?.stringValue("estado_convite")
 
             if (estadoAtual != null && estadoAtual.lowercase() in listOf("aceite", "pendente")) {
-                error("Este jogador já pertence à equipa ou já foi convidado.")
+                error("This player is already in the team or has a pending invite.")
             }
 
             if (membroExistente != null && estadoAtual?.lowercase() == "recusado") {
@@ -581,7 +579,7 @@ class EquipaRepository {
                                 "papel" to JsonPrimitive("player"),
                                 "posicao" to JsonPrimitive(posicao),
                                 "is_capitao" to JsonPrimitive(false),
-                                "mensagem" to JsonPrimitive(mensagem ?: "Convite do Capitão")
+                                "mensagem" to JsonPrimitive(mensagem ?: "Team Invitation")
                             )
                         )
                     ) {
@@ -598,7 +596,7 @@ class EquipaRepository {
                     estadoConvite = "pendente",
                     posicao = posicao,
                     isCapitao = false,
-                    mensagem = mensagem ?: "Convite do Capitão"
+                    mensagem = mensagem ?: "Team Invitation"
                 )
 
                 client.from("membro_equipa")
@@ -694,15 +692,15 @@ class EquipaRepository {
             val cidadeLimpa = cidade.trim()
 
             if (nomeLimpo.isBlank()) {
-                error("Indica o nome da equipa.")
+                error("Please provide a team name.")
             }
 
             if (iniciaisLimpas.isBlank()) {
-                error("Indica as iniciais da equipa.")
+                error("Please provide team initials.")
             }
 
             if (cidadeLimpa.isBlank()) {
-                error("Indica a cidade da equipa.")
+                error("Please provide the home city.")
             }
 
             val idUtilizador = obterIdUtilizadorAtualOuPrimeiroTeste()
@@ -735,7 +733,7 @@ class EquipaRepository {
                 }
                 .decodeList<Equipa>()
                 .maxByOrNull { it.id }
-                ?: error("A equipa foi criada, mas não foi possível obter o ID.")
+                ?: error("Team created, but ID could not be retrieved.")
 
             val novoMembro = NovoMembroEquipaRequest(
                 idEquipa = equipaCriada.id,
@@ -772,7 +770,7 @@ class EquipaRepository {
             client.from("membro_equipa")
                 .select()
                 .decodeList<JsonObject>()
-        }.getOrDefault(emptyList())
+        }.getOrDefault(emptyList<JsonObject>())
 
         val utilizadores = client.from("utilizador")
             .select()
@@ -859,7 +857,7 @@ class EquipaRepository {
 
         return modalidade?.id
             ?: modalidades.firstOrNull()?.id
-            ?: error("Não existem modalidades na base de dados.")
+            ?: error("No sports found in the database.")
     }
 
     private suspend fun obterIdUtilizadorAtualOuNull(): String? {
@@ -880,7 +878,7 @@ class EquipaRepository {
             .decodeList<Utilizador>()
 
         return utilizadores.firstOrNull()?.id
-            ?: error("Não foi possível identificar o utilizador.")
+            ?: error("Could not identify user.")
     }
 
     private fun gerarIniciaisEquipa(nome: String): String {

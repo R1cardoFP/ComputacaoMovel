@@ -7,46 +7,104 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
+import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.ui.screens.BrowseTeamsScreen
 import com.example.trabalhocm.ui.screens.CreateTeamScreen
-import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
-import com.example.trabalhocm.ui.screens.organizador.HomeScreen
-import com.example.trabalhocm.ui.screens.organizador.CreateTournamentScreen
-import com.example.trabalhocm.ui.screens.auth.LoginScreen
+import com.example.trabalhocm.ui.screens.TeamManagementScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
+import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchDetailsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchesScreen
+import com.example.trabalhocm.ui.screens.admin.AdminEditCasualMatchScreen
+import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
+import com.example.trabalhocm.ui.screens.admin.AdminInvitePlayerScreen
+import com.example.trabalhocm.ui.screens.admin.AdminInviteTeamsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminLiveCasualMatchScreen
+import com.example.trabalhocm.ui.screens.admin.AdminManageRegistrationScreen
+import com.example.trabalhocm.ui.screens.admin.AdminManageTeamScreen
+import com.example.trabalhocm.ui.screens.admin.AdminMatchesCalendarScreen
+import com.example.trabalhocm.ui.screens.admin.AdminNotificationsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminOrganizerRequestsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminPlayerDetailsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTeamDetailsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTeamsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentArchiveScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentDetailsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentEditScreen
+import com.example.trabalhocm.ui.screens.admin.AdminTournamentsScreen
+import com.example.trabalhocm.ui.screens.admin.AdminUserManagementScreen
+import com.example.trabalhocm.ui.screens.auth.ChangePasswordScreen
+import com.example.trabalhocm.ui.screens.auth.LoginScreen
+import com.example.trabalhocm.ui.screens.auth.RecoverPasswordScreen
+import com.example.trabalhocm.ui.screens.auth.RegisterScreen
+import com.example.trabalhocm.ui.screens.auth.VerifyAccountScreen
 import com.example.trabalhocm.ui.screens.onboarding.OnboardingFlow
+import com.example.trabalhocm.ui.screens.onboarding.SplashScreen
+import com.example.trabalhocm.ui.screens.organizador.CasualMatchDetailsScreen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentScreen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
+import com.example.trabalhocm.ui.screens.organizador.CreateTournamentViewModel
+import com.example.trabalhocm.ui.screens.organizador.EditTournamentScreen
+import com.example.trabalhocm.ui.screens.organizador.HomeScreen
+import com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen
+import com.example.trabalhocm.ui.screens.organizador.InviteTeamsScreen
+import com.example.trabalhocm.ui.screens.organizador.ManageRegistrationScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerCreateCasualMatchScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerLiveMatchScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchCenterScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesViewModel
+import com.example.trabalhocm.ui.screens.organizador.OrganizerProfileScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentDetailsScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentFiltersScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentHistoryScreen
+import com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentsScreen
+import com.example.trabalhocm.ui.screens.organizador.TeamDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerBecomeOrganizerScreen
+import com.example.trabalhocm.ui.screens.player.PlayerCalendarMatchDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerCasualMatchDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerCreateTeamScreen
 import com.example.trabalhocm.ui.screens.player.PlayerHomeScreen
+import com.example.trabalhocm.ui.screens.player.PlayerInvitePlayerScreen
 import com.example.trabalhocm.ui.screens.player.PlayerLiveMatchScreen
+import com.example.trabalhocm.ui.screens.player.PlayerLiveMatchesScreen
 import com.example.trabalhocm.ui.screens.player.PlayerManageTeamScreen
 import com.example.trabalhocm.ui.screens.player.PlayerMatchCalendarScreen
 import com.example.trabalhocm.ui.screens.player.PlayerMatchFiltersScreen
+import com.example.trabalhocm.ui.screens.player.PlayerMatchHistoryScreen
 import com.example.trabalhocm.ui.screens.player.PlayerMatchesScreen
 import com.example.trabalhocm.ui.screens.player.PlayerNotificationsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerProfileScreen
 import com.example.trabalhocm.ui.screens.player.PlayerStatsScreen
+import com.example.trabalhocm.ui.screens.player.PlayerTeamDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamPlayerDetailsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTeamsScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentDetailsScreen
@@ -54,48 +112,8 @@ import com.example.trabalhocm.ui.screens.player.PlayerTournamentFiltersScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentHistoryScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentManagementScreen
 import com.example.trabalhocm.ui.screens.player.PlayerTournamentRegistrationScreen
-import com.example.trabalhocm.ui.screens.auth.RecoverPasswordScreen
-import com.example.trabalhocm.ui.screens.auth.RegisterScreen
-import com.example.trabalhocm.ui.screens.auth.VerifyAccountScreen
-import com.example.trabalhocm.ui.screens.onboarding.SplashScreen
-import com.example.trabalhocm.ui.screens.TorneiosScreen
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
-import com.example.trabalhocm.ui.screens.admin.AdminHomeScreen
-import com.example.trabalhocm.ui.screens.admin.AdminProfileScreen
-import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
-import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
-import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
-import com.example.trabalhocm.ui.screens.organizador.TeamDetailsScreen
-import com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen
-import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesScreen
-import com.example.trabalhocm.ui.screens.organizador.OrganizerProfileScreen
-import com.example.trabalhocm.ui.screens.admin.AdminUserManagementScreen
-import com.example.trabalhocm.ui.screens.admin.AdminNotificationsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminOrganizerRequestsScreen
-import com.example.trabalhocm.ui.screens.player.PlayerMatchHistoryScreen
-import com.example.trabalhocm.ui.screens.admin.AdminTournamentArchiveScreen
-import com.example.trabalhocm.ui.screens.admin.AdminTournamentsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminTournamentDetailsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminTournamentEditScreen
-import com.example.trabalhocm.ui.screens.admin.AdminTeamsScreen
 import kotlinx.coroutines.launch
-import com.example.trabalhocm.ui.screens.player.PlayerCalendarMatchDetailsScreen
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.trabalhocm.ui.screens.organizador.CreateTournamentViewModel
-import com.example.trabalhocm.ui.screens.organizador.OrganizerMatchesViewModel
-import com.example.trabalhocm.ui.screens.player.PlayerLiveMatchesScreen
-import com.example.trabalhocm.ui.screens.player.PlayerTeamDetailsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminManageRegistrationScreen
-import com.example.trabalhocm.ui.screens.admin.AdminInviteTeamsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminTeamDetailsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminPlayerDetailsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminManageTeamScreen
-import com.example.trabalhocm.ui.screens.admin.AdminInvitePlayerScreen
-import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchesScreen
-import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchDetailsScreen
-import com.example.trabalhocm.ui.screens.admin.AdminEditCasualMatchScreen
-import com.example.trabalhocm.ui.screens.admin.AdminLiveCasualMatchScreen
-import com.example.trabalhocm.ui.screens.admin.AdminMatchesCalendarScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,7 +140,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "admin_home"
+        startDestination = "splash"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -200,7 +218,7 @@ fun MatchLeagueApp() {
         }
 
         composable("user_type") {
-            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            val authRepository = remember { AuthRepository() }
 
             LaunchedEffect(Unit) {
                 authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
@@ -226,14 +244,14 @@ fun MatchLeagueApp() {
                 }
             }
 
-            androidx.compose.foundation.layout.Box(
-                modifier = androidx.compose.ui.Modifier
+            Box(
+                modifier = Modifier
                     .fillMaxSize()
-                    .background(androidx.compose.ui.graphics.Color(0xFFF4F5FA)),
-                contentAlignment = androidx.compose.ui.Alignment.Center
+                    .background(Color(0xFFF4F5FA)),
+                contentAlignment = Alignment.Center
             ) {
-                androidx.compose.material3.CircularProgressIndicator(
-                    color = androidx.compose.ui.graphics.Color(0xFF008D7D)
+                CircularProgressIndicator(
+                    color = Color(0xFF008D7D)
                 )
             }
         }
@@ -248,6 +266,7 @@ fun MatchLeagueApp() {
                 onLiveMatchesClick = { navController.navigate("player_live_matches") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = { navController.navigate("player_profile") },
+                onNotificationsClick = { navController.navigate("player_notifications") },
                 onWatchStreamClick = { idJogo ->
                     navController.navigate("player_live_match/$idJogo")
                 },
@@ -480,7 +499,7 @@ fun MatchLeagueApp() {
         composable("player_profile") {
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
-            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            val authRepository = remember { AuthRepository() }
 
             var usernameUtilizador by remember { mutableStateOf("A carregar...") }
             var nomeUtilizador by remember { mutableStateOf("A carregar...") }
@@ -489,7 +508,6 @@ fun MatchLeagueApp() {
             var photoUri by remember { mutableStateOf<Uri?>(null) }
             var userId by remember { mutableStateOf("") }
             var rolesUtilizador by remember { mutableStateOf(listOf("A carregar...")) }
-
             var anoMembro by remember { mutableStateOf("...") }
 
             val sharedPrefs = remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
@@ -502,10 +520,10 @@ fun MatchLeagueApp() {
                     userId = utilizador.id
 
                     val dataCriacaoBD = utilizador.dataCriacao
-                    if (!dataCriacaoBD.isNullOrEmpty() && dataCriacaoBD.length >= 4) {
-                        anoMembro = dataCriacaoBD.substring(0, 4)
+                    anoMembro = if (!dataCriacaoBD.isNullOrEmpty() && dataCriacaoBD.length >= 4) {
+                        dataCriacaoBD.substring(0, 4)
                     } else {
-                        anoMembro = "2026"
+                        "2026"
                     }
 
                     if (!utilizador.fotoUrl.isNullOrEmpty()) {
@@ -606,7 +624,7 @@ fun MatchLeagueApp() {
         }
 
         composable("player_stats") {
-            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            val authRepository = remember { AuthRepository() }
 
             var nomeUtilizador by remember { mutableStateOf("A carregar...") }
             var usernameUtilizador by remember { mutableStateOf("") }
@@ -862,7 +880,7 @@ fun MatchLeagueApp() {
         }
 
         composable("player_invite_player") {
-            com.example.trabalhocm.ui.screens.player.PlayerInvitePlayerScreen(
+            PlayerInvitePlayerScreen(
                 onBackClick = { navController.popBackStack() },
                 onSendInviteClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("player_home") },
@@ -888,14 +906,9 @@ fun MatchLeagueApp() {
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onInvitePlayerClick = {
-                    navController.navigate("player_invite_player")
-                },
                 onViewPlayerProfileClick = { playerId ->
                     navController.navigate("player_team_player_details/$playerId")
                 },
-                onMakeCaptainClick = {},
-                onRemoveFromTeamClick = {},
                 onHomeClick = {
                     navController.navigate("player_home")
                 },
@@ -945,7 +958,7 @@ fun MatchLeagueApp() {
         }
 
         composable("torneios") {
-            com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentsScreen(
+            OrganizerTournamentsScreen(
                 onHistoryClick = { navController.navigate("organizador_tournament_history") },
                 onFiltersClick = { navController.navigate("organizador_tournament_filters") },
                 onCreateNewClick = { navController.navigate("create_tournament") },
@@ -962,7 +975,7 @@ fun MatchLeagueApp() {
         }
 
         composable("invite_teams") {
-            com.example.trabalhocm.ui.screens.organizador.InviteTeamsScreen(
+            InviteTeamsScreen(
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
@@ -973,7 +986,7 @@ fun MatchLeagueApp() {
         }
 
         composable("manage_registration") {
-            com.example.trabalhocm.ui.screens.organizador.ManageRegistrationScreen(
+            ManageRegistrationScreen(
                 onBackClick = { navController.popBackStack() },
                 onInviteTeamClick = { navController.navigate("invite_teams") },
                 onHomeClick = { navController.navigate("home") },
@@ -985,7 +998,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_tournament_details") {
-            com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentDetailsScreen(
+            OrganizerTournamentDetailsScreen(
                 onBackClick = { navController.popBackStack() },
                 onEditClick = { navController.navigate("edit_tournament") },
                 onHomeClick = { navController.navigate("home") },
@@ -997,18 +1010,18 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_profile") {
-            val context = androidx.compose.ui.platform.LocalContext.current
+            val context = LocalContext.current
             val scope = rememberCoroutineScope()
-            val authRepository = remember { com.example.trabalhocm.data.repository.AuthRepository() }
+            val authRepository = remember { AuthRepository() }
 
             var nomeUtilizador by remember { mutableStateOf("") }
             var emailUtilizador by remember { mutableStateOf("") }
             var bioUtilizador by remember { mutableStateOf("") }
             var anoMembro by remember { mutableStateOf("2026") }
             var userId by remember { mutableStateOf("") }
-            var photoUri by remember { mutableStateOf<Uri?>(null) } // <-- DECLARAÇÃO DA FOTO
+            var photoUri by remember { mutableStateOf<Uri?>(null) }
 
-            val sharedPrefs = remember { context.getSharedPreferences("user_prefs", android.content.Context.MODE_PRIVATE) }
+            val sharedPrefs = remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
 
             LaunchedEffect(Unit) {
                 authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
@@ -1017,14 +1030,15 @@ fun MatchLeagueApp() {
                     userId = utilizador.id
 
                     val dataCriacao = utilizador.dataCriacao
-                    if (!dataCriacao.isNullOrEmpty() && dataCriacao.length >= 4) {
-                        anoMembro = dataCriacao.substring(0, 4)
+                    anoMembro = if (!dataCriacao.isNullOrEmpty() && dataCriacao.length >= 4) {
+                        dataCriacao.substring(0, 4)
+                    } else {
+                        "2026"
                     }
 
                     val savedBio = sharedPrefs.getString("bio_$userId", null)
                     if (savedBio != null) bioUtilizador = savedBio
 
-                    // <-- CARREGAMENTO DA FOTO
                     if (!utilizador.fotoUrl.isNullOrEmpty()) {
                         val urlAtualizada = "${utilizador.fotoUrl}?v=${System.currentTimeMillis()}"
                         photoUri = urlAtualizada.toUri()
@@ -1037,7 +1051,7 @@ fun MatchLeagueApp() {
                 initialEmail = emailUtilizador,
                 initialBio = bioUtilizador,
                 memberSinceYear = anoMembro,
-                photoUri = photoUri, // <-- PASSAGEM DA FOTO PARA O ECRÃ
+                photoUri = photoUri,
                 onLogoutClick = {
                     scope.launch {
                         authRepository.logout()
@@ -1046,7 +1060,7 @@ fun MatchLeagueApp() {
                         }
                     }
                 },
-                onSaveChanges = { novoNome, novoEmail, novaBio ->
+                onSaveChanges = { novoNome, _, novaBio ->
                     scope.launch {
                         sharedPrefs.edit {
                             putString("bio_$userId", novaBio)
@@ -1135,7 +1149,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_match_center") {
-            com.example.trabalhocm.ui.screens.organizador.OrganizerMatchCenterScreen(
+            OrganizerMatchCenterScreen(
                 onLiveMatchClick = { navController.navigate("organizador_live_match") },
                 onHistoryClick = { navController.navigate("organizador_matches") },
                 onHomeClick = { navController.navigate("home") },
@@ -1148,7 +1162,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_live_match") {
-            com.example.trabalhocm.ui.screens.organizador.OrganizerLiveMatchScreen(
+            OrganizerLiveMatchScreen(
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
@@ -1162,7 +1176,7 @@ fun MatchLeagueApp() {
             val matchesViewModel: OrganizerMatchesViewModel = viewModel()
 
             OrganizerMatchesScreen(
-                viewModel = matchesViewModel, // <-- Passamos a mochila
+                viewModel = matchesViewModel,
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 onTournamentsClick = { navController.navigate("torneios") },
@@ -1173,7 +1187,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_casual_details") {
-            com.example.trabalhocm.ui.screens.organizador.CasualMatchDetailsScreen(
+            CasualMatchDetailsScreen(
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
@@ -1184,7 +1198,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_create_casual") {
-            com.example.trabalhocm.ui.screens.organizador.OrganizerCreateCasualMatchScreen(
+            OrganizerCreateCasualMatchScreen(
                 onBackClick = { navController.popBackStack() },
                 onPublishClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
@@ -1209,7 +1223,7 @@ fun MatchLeagueApp() {
         }
 
         composable("manage_team") {
-            com.example.trabalhocm.ui.screens.TeamManagementScreen(
+            TeamManagementScreen(
                 onBackClick = { navController.popBackStack() },
                 onInviteClick = { navController.navigate("organizador_invite_player") }
             )
@@ -1249,7 +1263,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_invite_player") {
-            com.example.trabalhocm.ui.screens.organizador.InvitePlayerScreen(
+            InvitePlayerScreen(
                 onBackClick = { navController.popBackStack() },
                 onSendInviteClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
@@ -1261,7 +1275,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_tournament_history") {
-            com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentHistoryScreen(
+            OrganizerTournamentHistoryScreen(
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
@@ -1272,7 +1286,7 @@ fun MatchLeagueApp() {
         }
 
         composable("edit_tournament") {
-            com.example.trabalhocm.ui.screens.organizador.EditTournamentScreen(
+            EditTournamentScreen(
                 onBackClick = { navController.popBackStack() },
                 onCancelClick = { navController.popBackStack() },
                 onSaveClick = { navController.popBackStack() },
@@ -1283,7 +1297,7 @@ fun MatchLeagueApp() {
         }
 
         composable("organizador_tournament_filters") {
-            com.example.trabalhocm.ui.screens.organizador.OrganizerTournamentFiltersScreen(
+            OrganizerTournamentFiltersScreen(
                 onCloseClick = { navController.popBackStack() },
                 onApplyClick = { navController.popBackStack() }
             )

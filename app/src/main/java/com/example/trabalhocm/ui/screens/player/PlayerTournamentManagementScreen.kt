@@ -60,6 +60,7 @@ fun PlayerTournamentManagementScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onDetailsClick: (Long) -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onRegisterClick: (Long) -> Unit = {},
     onAskOrganizerClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},

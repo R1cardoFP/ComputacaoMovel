@@ -1,6 +1,7 @@
 package com.example.trabalhocm.ui.screens.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,12 +21,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -68,15 +71,13 @@ import kotlinx.coroutines.launch
 fun PlayerManageTeamScreen(
     idEquipa: Long = 0L,
     onBackClick: () -> Unit = {},
-    onInvitePlayerClick: () -> Unit = {},
     onViewPlayerProfileClick: (String) -> Unit = {},
-    onMakeCaptainClick: () -> Unit = {},
-    onRemoveFromTeamClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {}
 ) {
     val repository = remember { EquipaRepository() }
     val scope = rememberCoroutineScope()
@@ -107,20 +108,21 @@ fun PlayerManageTeamScreen(
         val teamId = resolvedTeamId
 
         if (teamId == 0L) {
-            errorMessage = "Não foi possível identificar a equipa."
+            errorMessage = "Could not identify team."
             return
         }
 
         scope.launch {
             isActionLoading = true
             errorMessage = ""
+            successMessage = ""
 
             repository.obterGestaoEquipa(teamId)
                 .onSuccess {
                     gestaoEquipa = it
                 }
                 .onFailure {
-                    errorMessage = it.message ?: "Erro ao atualizar equipa."
+                    errorMessage = it.message ?: "Error updating team."
                 }
 
             isActionLoading = false
@@ -146,7 +148,7 @@ fun PlayerManageTeamScreen(
                     inviteResults = it
                 }
                 .onFailure {
-                    inviteMessage = it.message ?: "Erro ao pesquisar jogadores."
+                    inviteMessage = it.message ?: "Error searching players."
                 }
 
             inviteLoading = false
@@ -179,10 +181,10 @@ fun PlayerManageTeamScreen(
                     gestaoEquipa = it
                 }
                 .onFailure {
-                    errorMessage = it.message ?: "Erro ao carregar plantel."
+                    errorMessage = it.message ?: "Error loading roster."
                 }
         } else {
-            errorMessage = "Não estás associado a nenhuma equipa."
+            errorMessage = "You are not associated with any team."
         }
 
         isLoading = false
@@ -224,7 +226,8 @@ fun PlayerManageTeamScreen(
             .navigationBarsPadding()
     ) {
         ManageTeamTopBar(
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onNotificationsClick = onNotificationsClick
         )
 
         when {
@@ -290,38 +293,61 @@ fun PlayerManageTeamScreen(
                             divisao = info.equipaInfo.divisao,
                             numeroJogadores = rosterList.size
                         )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (isCurrentUserCaptain) {
-                        Button(
-                            onClick = {
-                                showInviteDialog = true
-                                inviteSearch = ""
-                                inviteMessage = ""
-                            },
-                            enabled = !isActionLoading,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                            shape = RoundedCornerShape(5.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF0757C8),
-                                contentColor = BrandWhite,
-                                disabledContainerColor = Color(0xFFD4D9E3),
-                                disabledContentColor = Color(0xFF7D8497)
-                            )
-                        ) {
-                            Text(
-                                text = "♙+  INVITE PLAYER",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
-                        }
 
                         Spacer(modifier = Modifier.height(16.dp))
+
+                        if (isCurrentUserCaptain) {
+                            ManageTeamPrivacyCard(
+                                isPublic = info.equipaInfo.tipoEntrada.lowercase() == "publica",
+                                onPrivacyChange = { newPrivacy ->
+                                    scope.launch {
+                                        isActionLoading = true
+                                        errorMessage = ""
+                                        successMessage = ""
+                                        repository.atualizarPrivacidadeEquipa(resolvedTeamId, newPrivacy)
+                                            .onSuccess {
+                                                successMessage = "Team privacy updated to ${newPrivacy.uppercase()}"
+                                                repository.obterGestaoEquipa(resolvedTeamId)
+                                                    .onSuccess { gestaoEquipa = it }
+                                            }
+                                            .onFailure {
+                                                errorMessage = "Error updating privacy."
+                                            }
+                                        isActionLoading = false
+                                    }
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                onClick = {
+                                    showInviteDialog = true
+                                    inviteSearch = ""
+                                    inviteMessage = ""
+                                },
+                                enabled = !isActionLoading,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                shape = RoundedCornerShape(5.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF0757C8),
+                                    contentColor = BrandWhite,
+                                    disabledContainerColor = Color(0xFFD4D9E3),
+                                    disabledContentColor = Color(0xFF7D8497)
+                                )
+                            ) {
+                                Text(
+                                    text = "♙+  INVITE PLAYER",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
 
                     OutlinedTextField(
@@ -399,7 +425,7 @@ fun PlayerManageTeamScreen(
 
                     if (filteredPlayers.isEmpty()) {
                         ManageTeamEmptyCard(
-                            text = "Não existem jogadores com estes filtros."
+                            text = "No players found with these filters."
                         )
                     } else {
                         filteredPlayers.forEach { membro ->
@@ -469,15 +495,13 @@ fun PlayerManageTeamScreen(
                         idUtilizador = member.utilizador.id
                     )
                         .onSuccess {
-                            successMessage = "${member.utilizador.nome} agora é capitão."
-                            repository.obterGestaoEquipa(resolvedTeamId)
-                                .onSuccess { gestaoEquipa = it }
+                            // Sucesso! Vamos direcionar o utilizador para a página das Equipas
+                            onTeamsClick()
                         }
                         .onFailure {
-                            errorMessage = it.message ?: "Erro ao tornar jogador capitão."
+                            errorMessage = it.message ?: "Error updating team."
+                            isActionLoading = false // Só paramos o loading se der erro.
                         }
-
-                    isActionLoading = false
                 }
             },
             onRemoveFromTeamClick = {
@@ -492,12 +516,12 @@ fun PlayerManageTeamScreen(
                         idUtilizador = member.utilizador.id
                     )
                         .onSuccess {
-                            successMessage = "${member.utilizador.nome} foi removido da equipa."
+                            successMessage = "${member.utilizador.nome} was removed from the team."
                             repository.obterGestaoEquipa(resolvedTeamId)
                                 .onSuccess { gestaoEquipa = it }
                         }
                         .onFailure {
-                            errorMessage = it.message ?: "Erro ao remover jogador."
+                            errorMessage = it.message ?: "Error updating team."
                         }
 
                     isActionLoading = false
@@ -530,11 +554,11 @@ fun PlayerManageTeamScreen(
                     repository.convidarJogadorParaEquipa(
                         idEquipa = resolvedTeamId,
                         idUtilizador = jogador.utilizador.id,
-                        mensagem = "Convite enviado pela gestão da equipa.",
+                        mensagem = "Invitation sent by team management.",
                         posicao = invitePosition
                     )
                         .onSuccess {
-                            inviteMessage = "Convite enviado para ${jogador.utilizador.nome}."
+                            inviteMessage = "Invitation sent to ${jogador.utilizador.nome}."
                             repository.obterGestaoEquipa(resolvedTeamId)
                                 .onSuccess { gestaoEquipa = it }
                             repository.pesquisarJogadoresParaConvite(
@@ -544,7 +568,7 @@ fun PlayerManageTeamScreen(
                                 .onSuccess { inviteResults = it }
                         }
                         .onFailure {
-                            inviteMessage = it.message ?: "Erro ao convidar jogador."
+                            inviteMessage = it.message ?: "Error inviting player."
                         }
 
                     inviteLoading = false
@@ -556,7 +580,8 @@ fun PlayerManageTeamScreen(
 
 @Composable
 fun ManageTeamTopBar(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNotificationsClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -588,12 +613,25 @@ fun ManageTeamTopBar(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Notifications",
+                tint = BrandWhite,
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable { onNotificationsClick() }
+            )
+
+            Spacer(modifier = Modifier.width(18.dp))
+
+            Text(
+                text = "♧",
+                color = BrandWhite,
+                fontSize = 27.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -649,6 +687,83 @@ fun ManageTeamHeaderCard(
                     fontWeight = FontWeight.Medium
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun ManageTeamPrivacyCard(
+    isPublic: Boolean,
+    onPrivacyChange: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(5.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "TEAM PRIVACY",
+                color = Color(0xFF7D8497),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.4.sp
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(42.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(if (!isPublic) BrandGreen.copy(alpha = 0.1f) else Color(0xFFF0F2FA))
+                        .border(1.dp, if (!isPublic) BrandGreen else Color.Transparent, RoundedCornerShape(5.dp))
+                        .clickable { if (isPublic) onPrivacyChange("privada") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "PRIVATE 🔒",
+                        color = if (!isPublic) BrandGreen else Color(0xFF7D8497),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(42.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(if (isPublic) BrandGreen.copy(alpha = 0.1f) else Color(0xFFF0F2FA))
+                        .border(1.dp, if (isPublic) BrandGreen else Color.Transparent, RoundedCornerShape(5.dp))
+                        .clickable { if (!isPublic) onPrivacyChange("publica") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "PUBLIC 🔓",
+                        color = if (isPublic) BrandGreen else Color(0xFF7D8497),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = if (isPublic) "Anyone can instantly join your team." else "Players must request to join, and you can accept them in Notifications.",
+                color = Color(0xFF6D7486),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
@@ -1042,7 +1157,7 @@ fun InvitePlayerDialog(
 
                     ManageTeamMessageCard(
                         text = message,
-                        isError = message.startsWith("Erro", ignoreCase = true)
+                        isError = message.startsWith("Error", ignoreCase = true)
                     )
                 }
 
@@ -1059,7 +1174,7 @@ fun InvitePlayerDialog(
                     }
                 } else if (results.isEmpty()) {
                     ManageTeamEmptyCard(
-                        text = "Não foram encontrados jogadores."
+                        text = "No players found."
                     )
                 } else {
                     Column(
