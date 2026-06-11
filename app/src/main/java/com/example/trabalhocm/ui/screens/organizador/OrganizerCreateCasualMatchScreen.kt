@@ -26,9 +26,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.repository.PeladinhaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +44,9 @@ fun OrganizerCreateCasualMatchScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    // Variáveis de Estado
+    val repository = remember { PeladinhaRepository() }
+    val scope = rememberCoroutineScope()
+
     var selectedSport by remember { mutableStateOf("Volleyball") }
     var date by remember { mutableStateOf("") }
     var time by remember { mutableStateOf("") }
@@ -49,6 +54,9 @@ fun OrganizerCreateCasualMatchScreen(
     var matchLevel by remember { mutableStateOf("Intermediary") }
     var openings by remember { mutableStateOf("10") }
     var registrationType by remember { mutableStateOf("Open Registration") }
+
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -87,37 +95,58 @@ fun OrganizerCreateCasualMatchScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // HEADER
             Column {
-                Text("Create a casual match", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                Text(
+                    text = "Create a casual match",
+                    color = DarkBlue,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Organize a quick game with the community.", color = TextGray, fontSize = 14.sp)
+
+                Text(
+                    text = "Organize a quick game with the community.",
+                    color = TextGray,
+                    fontSize = 14.sp
+                )
             }
 
-            // SPORTS CATEGORY
             Column {
                 CasualSectionLabel("SPORTS CATEGORY")
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     SportSelectionCard(
-                        modifier = Modifier.weight(1f), title = "Football", icon = Icons.Outlined.Star,
-                        isSelected = selectedSport == "Football", onClick = { selectedSport = "Football" }
+                        modifier = Modifier.weight(1f),
+                        title = "Football",
+                        icon = Icons.Outlined.Star,
+                        isSelected = selectedSport == "Football",
+                        onClick = { selectedSport = "Football" }
                     )
+
                     SportSelectionCard(
-                        modifier = Modifier.weight(1f), title = "Volleyball", icon = Icons.Outlined.Star,
-                        isSelected = selectedSport == "Volleyball", onClick = { selectedSport = "Volleyball" }
+                        modifier = Modifier.weight(1f),
+                        title = "Volleyball",
+                        icon = Icons.Outlined.Star,
+                        isSelected = selectedSport == "Volleyball",
+                        onClick = { selectedSport = "Volleyball" }
                     )
+
                     SportSelectionCard(
-                        modifier = Modifier.weight(1f), title = "Basketball", icon = Icons.Outlined.Star,
-                        isSelected = selectedSport == "Basketball", onClick = { selectedSport = "Basketball" }
+                        modifier = Modifier.weight(1f),
+                        title = "Basketball",
+                        icon = Icons.Outlined.Star,
+                        isSelected = selectedSport == "Basketball",
+                        onClick = { selectedSport = "Basketball" }
                     )
                 }
             }
 
-            // DATE & TIME CARDS
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -125,39 +154,72 @@ fun OrganizerCreateCasualMatchScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Date", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Date",
+                        color = DarkBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Spacer(modifier = Modifier.height(8.dp))
+
                     TextField(
                         value = date,
                         onValueChange = { date = it },
                         placeholder = { Text("dd / mm / aaaa", color = TextGray) },
-                        leadingIcon = { Icon(Icons.Outlined.DateRange, contentDescription = null, tint = DarkBlue) },
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.DateRange,
+                                contentDescription = null,
+                                tint = DarkBlue
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp)),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
-                            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                            focusedContainerColor = InputBg,
+                            unfocusedContainerColor = InputBg,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
                         )
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Time", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Time",
+                        color = DarkBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Spacer(modifier = Modifier.height(8.dp))
+
                     TextField(
                         value = time,
                         onValueChange = { time = it },
                         placeholder = { Text("--:--", color = TextGray) },
-                        leadingIcon = { Icon(Icons.Outlined.Face, contentDescription = "Clock", tint = DarkBlue) },
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Face,
+                                contentDescription = "Clock",
+                                tint = DarkBlue
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp)),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
-                            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                            focusedContainerColor = InputBg,
+                            unfocusedContainerColor = InputBg,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
                         )
                     )
                 }
             }
 
-            // LOCALIZATION & MAP
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -165,13 +227,26 @@ fun OrganizerCreateCasualMatchScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Localization", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Localization",
+                        color = DarkBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Spacer(modifier = Modifier.height(8.dp))
+
                     OutlinedTextField(
                         value = location,
                         onValueChange = { location = it },
                         placeholder = { Text("Address, club, etc.", color = TextGray) },
-                        leadingIcon = { Icon(Icons.Outlined.Place, contentDescription = null, tint = DarkBlue) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Place,
+                                contentDescription = null,
+                                tint = DarkBlue
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -179,9 +254,9 @@ fun OrganizerCreateCasualMatchScreen(
                             unfocusedBorderColor = Color(0xFFE2E8F0)
                         )
                     )
+
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Map Placeholder
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -191,14 +266,24 @@ fun OrganizerCreateCasualMatchScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Outlined.Place, contentDescription = null, tint = TextGray, modifier = Modifier.size(32.dp))
-                            Text("Map Preview", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                Icons.Outlined.Place,
+                                contentDescription = null,
+                                tint = TextGray,
+                                modifier = Modifier.size(32.dp)
+                            )
+
+                            Text(
+                                text = "Map Preview",
+                                color = TextGray,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
             }
 
-            // MATCH DETAILS (Level & Openings)
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -206,21 +291,55 @@ fun OrganizerCreateCasualMatchScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Match Level", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Match Level",
+                        color = DarkBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Spacer(modifier = Modifier.height(8.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        LevelChip(modifier = Modifier.weight(1f), title = "Beginner", isSelected = matchLevel == "Beginner") { matchLevel = "Beginner" }
-                        LevelChip(modifier = Modifier.weight(1.2f), title = "Intermediary", isSelected = matchLevel == "Intermediary") { matchLevel = "Intermediary" }
-                        LevelChip(modifier = Modifier.weight(1f), title = "Advanced", isSelected = matchLevel == "Advanced") { matchLevel = "Advanced" }
+                        LevelChip(
+                            modifier = Modifier.weight(1f),
+                            title = "Beginner",
+                            isSelected = matchLevel == "Beginner"
+                        ) {
+                            matchLevel = "Beginner"
+                        }
+
+                        LevelChip(
+                            modifier = Modifier.weight(1.2f),
+                            title = "Intermediary",
+                            isSelected = matchLevel == "Intermediary"
+                        ) {
+                            matchLevel = "Intermediary"
+                        }
+
+                        LevelChip(
+                            modifier = Modifier.weight(1f),
+                            title = "Advanced",
+                            isSelected = matchLevel == "Advanced"
+                        ) {
+                            matchLevel = "Advanced"
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Job Openings Available", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Job Openings Available",
+                        color = DarkBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Spacer(modifier = Modifier.height(8.dp))
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(
                             value = openings,
@@ -234,13 +353,18 @@ fun OrganizerCreateCasualMatchScreen(
                                 unfocusedBorderColor = Color(0xFFE2E8F0)
                             )
                         )
+
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("required players", color = TextGray, fontSize = 12.sp)
+
+                        Text(
+                            text = "required players",
+                            color = TextGray,
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
 
-            // REGISTRATION FORMAT
             Column {
                 CasualRegistrationCard(
                     title = "Open Registration",
@@ -249,7 +373,9 @@ fun OrganizerCreateCasualMatchScreen(
                     isSelected = registrationType == "Open Registration",
                     onClick = { registrationType = "Open Registration" }
                 )
+
                 Spacer(modifier = Modifier.height(12.dp))
+
                 CasualRegistrationCard(
                     title = "Invite Only",
                     description = "You manually invite teams to participate. Add invitees from the tournament card after creation.",
@@ -259,19 +385,93 @@ fun OrganizerCreateCasualMatchScreen(
                 )
             }
 
-            // PUBLISH BUTTON
+            if (errorMessage.isNotBlank()) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
+            }
+
             Button(
-                onClick = onPublishClick,
+                onClick = {
+                    errorMessage = ""
+
+                    val dataFormatada = formatarDataParaSupabase(date)
+                    val horaFormatada = formatarHoraParaSupabase(time)
+                    val maxJogadores = openings.toIntOrNull() ?: 0
+
+                    if (dataFormatada == null) {
+                        errorMessage = "Indica a data no formato dd/mm/aaaa."
+                        return@Button
+                    }
+
+                    if (horaFormatada == null) {
+                        errorMessage = "Indica a hora no formato hh:mm."
+                        return@Button
+                    }
+
+                    scope.launch {
+                        isLoading = true
+
+                        repository.criarPeladinha(
+                            idModalidade = obterIdModalidadeCasual(selectedSport),
+                            data = dataFormatada,
+                            hora = horaFormatada,
+                            local = location,
+                            maxJogadores = maxJogadores,
+                            nivel = matchLevel,
+                            tipoInscricao = registrationType
+                        ).onSuccess {
+                            isLoading = false
+                            onPublishClick()
+                        }.onFailure { erro ->
+                            isLoading = false
+                            errorMessage = erro.message ?: "Erro ao criar partida casual."
+                        }
+                    }
+                },
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.AddCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Publish Match", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Outlined.AddCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "Publish Match",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
             }
 
@@ -279,8 +479,6 @@ fun OrganizerCreateCasualMatchScreen(
         }
     }
 }
-
-// --- SUBCOMPONENTES PRIVADOS ---
 
 private @Composable
 fun CasualSectionLabel(text: String) {
@@ -316,9 +514,20 @@ fun SportSelectionCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(icon, contentDescription = null, tint = if(isSelected) TealGreen else DarkBlue, modifier = Modifier.size(24.dp))
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isSelected) TealGreen else DarkBlue,
+                modifier = Modifier.size(24.dp)
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, color = DarkBlue, fontSize = 12.sp)
+
+            Text(
+                text = title,
+                color = DarkBlue,
+                fontSize = 12.sp
+            )
         }
     }
 }
@@ -376,21 +585,42 @@ fun CasualRegistrationCard(
                 color = if (isSelected) TealGreen.copy(alpha = 0.1f) else InputBg,
                 modifier = Modifier.size(40.dp)
             ) {
-                Icon(icon, contentDescription = null, tint = if (isSelected) TealGreen else PrimaryBlue, modifier = Modifier.padding(8.dp))
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isSelected) TealGreen else PrimaryBlue,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = title,
+                    color = DarkBlue,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(description, color = TextGray, fontSize = 12.sp, lineHeight = 16.sp)
+
+                Text(
+                    text = description,
+                    color = TextGray,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
+                )
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
             if (isSelected) {
-                Icon(Icons.Default.CheckCircle, contentDescription = "Selected", tint = TealGreen)
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = TealGreen
+                )
             } else {
                 Box(
                     modifier = Modifier
@@ -402,6 +632,65 @@ fun CasualRegistrationCard(
             }
         }
     }
+}
+
+private fun obterIdModalidadeCasual(
+    selectedSport: String
+): Long {
+    return when (selectedSport) {
+        "Football" -> 1L
+        "Basketball" -> 2L
+        "Volleyball" -> 3L
+        else -> 1L
+    }
+}
+
+private fun formatarDataParaSupabase(
+    value: String
+): String? {
+    val normalizada = value
+        .trim()
+        .replace(" ", "")
+
+    val formatosEntrada = listOf(
+        "dd/MM/yyyy",
+        "dd-MM-yyyy",
+        "dd/MM/yy",
+        "dd-MM-yy"
+    )
+
+    val output = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+    formatosEntrada.forEach { formato ->
+        val input = SimpleDateFormat(formato, Locale.getDefault())
+        input.isLenient = false
+
+        val data = runCatching {
+            input.parse(normalizada)
+        }.getOrNull()
+
+        if (data != null) {
+            return output.format(data)
+        }
+    }
+
+    return null
+}
+
+private fun formatarHoraParaSupabase(
+    value: String
+): String? {
+    val normalizada = value
+        .trim()
+        .replace(" ", "")
+
+    val regex = Regex("^([01]?\\d|2[0-3]):[0-5]\\d$")
+
+    if (!regex.matches(normalizada)) {
+        return null
+    }
+
+    return normalizada.take(5)
 }
 
 @Preview(showBackground = true)
