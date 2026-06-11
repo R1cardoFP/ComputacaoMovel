@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -75,6 +76,7 @@ fun PlayerHomeScreen(
     onLiveMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {}, // <-- AQUI ESTÁ O NOVO CALLBACK
     onWatchStreamClick: (Long) -> Unit = {},
     onFixtureDetailsClick: (Long) -> Unit = {}
 ) {
@@ -106,7 +108,9 @@ fun PlayerHomeScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        PlayerHomeTopBar()
+        PlayerHomeTopBar(
+            onNotificationsClick = onNotificationsClick // <-- PASSADO PARA A TOP BAR
+        )
 
         Column(
             modifier = Modifier
@@ -265,7 +269,9 @@ fun PlayerHomeScreen(
 }
 
 @Composable
-fun PlayerHomeTopBar() {
+fun PlayerHomeTopBar(
+    onNotificationsClick: () -> Unit // <-- NOVO AQUI
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -282,12 +288,25 @@ fun PlayerHomeTopBar() {
             fontWeight = FontWeight.Bold
         )
 
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Notifications",
+                tint = BrandWhite,
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable { onNotificationsClick() }
+            )
+
+            Spacer(modifier = Modifier.width(18.dp))
+
+            Text(
+                text = "♧",
+                color = BrandWhite,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

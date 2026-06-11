@@ -377,6 +377,7 @@ fun PlayerTeamCard(
     onManageTeamClick: () -> Unit
 ) {
     val logoColor = teamColorFromName(team.equipa.nome)
+    val isPublic = team.tipoEntrada.lowercase() == "publica"
 
     Card(
         modifier = Modifier
@@ -394,7 +395,8 @@ fun PlayerTeamCard(
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
             ) {
                 TeamLogoBox(
                     text = team.iniciais,
@@ -403,7 +405,9 @@ fun PlayerTeamCard(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(
                         text = team.equipa.nome,
                         color = BrandBlue,
@@ -429,6 +433,22 @@ fun PlayerTeamCard(
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
+                    )
+                }
+
+                // Public / Private Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(if (isPublic) BrandGreen.copy(alpha = 0.1f) else Color(0xFFE53935).copy(alpha = 0.1f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (isPublic) "PUBLIC 🔓" else "PRIVATE 🔒",
+                        color = if (isPublic) BrandGreen else Color(0xFFFF8A80),
+                        fontSize = 7.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }

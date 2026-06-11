@@ -20,6 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +50,7 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
@@ -62,10 +66,13 @@ fun PlayerTeamDetailsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val repository = remember { EquipaRepository() }
+    val scope = rememberCoroutineScope()
 
     var detalhes by remember { mutableStateOf<EquipaDetalhesInfo?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
+
+    var isSubmitting by remember { mutableStateOf(false) }
 
     LaunchedEffect(idEquipa) {
         isLoading = true
@@ -121,6 +128,9 @@ fun PlayerTeamDetailsScreen(
 
             detalhes != null -> {
                 val info = detalhes!!
+                val isPublic = info.equipaInfo.tipoEntrada.lowercase() == "publica"
+                val estadoConvite = info.equipaInfo.estadoConviteAtual?.lowercase()
+                val utilizadorPertence = info.equipaInfo.utilizadorPertence
 
                 Column(
                     modifier = Modifier
@@ -128,7 +138,8 @@ fun PlayerTeamDetailsScreen(
                         .verticalScroll(rememberScrollState())
                 ) {
                     TeamDetailsHeroCard(
-                        info = info
+                        info = info,
+                        isPublic = isPublic
                     )
 
                     Column(
@@ -136,6 +147,68 @@ fun PlayerTeamDetailsScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 22.dp, vertical = 18.dp)
                     ) {
+
+                        // Lógica de Entrada na Equipa
+                        if (!utilizadorPertence && estadoConvite != "aceite") {
+                            if (estadoConvite == null || estadoConvite == "recusado") {
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            isSubmitting = true
+                                            repository.solicitarEntradaEquipa(idEquipa, info.equipaInfo.tipoEntrada)
+                                                .onSuccess {
+                                                    // Atualiza o UI
+                                                    repository.obterDetalhesEquipa(idEquipa).onSuccess { detalhes = it }
+                                                }
+                                            isSubmitting = false
+                                        }
+                                    },
+                                    enabled = !isSubmitting,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(52.dp),
+                                    shape = RoundedCornerShape(7.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = BrandGreen,
+                                        contentColor = BrandWhite
+                                    )
+                                ) {
+                                    if (isSubmitting) {
+                                        CircularProgressIndicator(color = BrandWhite, modifier = Modifier.size(24.dp))
+                                    } else {
+                                        Text(
+                                            text = if (isPublic) "JOIN TEAM NOW" else "REQUEST TO JOIN",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 1.2.sp
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(14.dp))
+                            } else if (estadoConvite == "pendente") {
+                                Button(
+                                    onClick = { },
+                                    enabled = false,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(52.dp),
+                                    shape = RoundedCornerShape(7.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        disabledContainerColor = Color(0xFFDDE1EA),
+                                        disabledContentColor = Color(0xFF7D8497)
+                                    )
+                                ) {
+                                    Text(
+                                        text = "REQUEST PENDING",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.2.sp
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
+                        }
+
                         TeamWinRateCard(
                             winRate = info.winRate
                         )
@@ -253,7 +326,8 @@ fun TeamDetailsTopBar(
 
 @Composable
 fun TeamDetailsHeroCard(
-    info: EquipaDetalhesInfo
+    info: EquipaDetalhesInfo,
+    isPublic: Boolean = false
 ) {
     val equipa = info.equipaInfo
 
@@ -283,18 +357,36 @@ fun TeamDetailsHeroCard(
             Spacer(modifier = Modifier.width(18.dp))
 
             Column {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFFEAF0FB))
-                        .padding(horizontal = 9.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = equipa.divisao,
-                        color = Color(0xFF0757C8),
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFFEAF0FB))
+                            .padding(horizontal = 9.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = equipa.divisao,
+                            color = Color(0xFF0757C8),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(if(isPublic) BrandGreen.copy(alpha = 0.2f) else Color(0xFFE53935).copy(alpha = 0.2f))
+                            .padding(horizontal = 9.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = if(isPublic) "PUBLIC 🔓" else "PRIVATE 🔒",
+                            color = if(isPublic) BrandGreen else Color(0xFFFF8A80),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
