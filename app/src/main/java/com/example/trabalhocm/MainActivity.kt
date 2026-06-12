@@ -962,10 +962,10 @@ fun MatchLeagueApp() {
                 onHistoryClick = { navController.navigate("organizador_tournament_history") },
                 onFiltersClick = { navController.navigate("organizador_tournament_filters") },
                 onCreateNewClick = { navController.navigate("create_tournament") },
-                onDetailsClick = { navController.navigate("organizador_tournament_details") },
+                onDetailsClick = { idTorneio -> navController.navigate("organizador_tournament_details/$idTorneio") },
                 onInviteTeamsClick = { navController.navigate("invite_teams") },
                 onManageRegistrationClick = { navController.navigate("manage_registration") },
-                onEditClick = { navController.navigate("edit_tournament") },
+                onEditClick = { idTorneio -> navController.navigate("edit_tournament/$idTorneio") },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
@@ -997,10 +997,16 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("organizador_tournament_details") {
+        composable(
+            route = "organizador_tournament_details/{idTorneio}",
+            arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idTorneio = backStackEntry.arguments?.getLong("idTorneio") ?: 0L
+
             OrganizerTournamentDetailsScreen(
+                idTorneio = idTorneio,
                 onBackClick = { navController.popBackStack() },
-                onEditClick = { navController.navigate("edit_tournament") },
+                onEditClick = { navController.navigate("edit_tournament/$idTorneio") },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
@@ -1285,13 +1291,21 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("edit_tournament") {
+        composable(
+            route = "edit_tournament/{idTorneio}",
+            arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idTorneio = backStackEntry.arguments?.getLong("idTorneio") ?: 0L
+
             EditTournamentScreen(
+                idTorneio = idTorneio,
                 onBackClick = { navController.popBackStack() },
                 onCancelClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() },
-                onDeleteClick = {
-                    navController.navigate("home") { popUpTo(0) }
+                onSaveSuccess = { navController.popBackStack() },
+                onDeleteSuccess = {
+                    navController.navigate("torneios") {
+                        popUpTo("home")
+                    }
                 }
             )
         }

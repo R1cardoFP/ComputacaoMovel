@@ -475,6 +475,11 @@
     <string name="label_visibility">Visibility</string>
     <string name="badge_public">PUBLIC</string>
     <string name="btn_delete_tournament">Delete Tournament</string>
+    <string name="dialog_delete_tournament_title">Delete tournament?</string>
+    <string name="msg_no_standings">No standings yet — they will appear once matches are played.</string>
+    <string name="dialog_delete_tournament_message">This action is permanent and will remove the tournament. Are you sure?</string>
+    <string name="label_description_caps">DESCRIPTION</string>
+    <string name="label_rules_caps">RULES / NOTES</string>
 
     <string name="btn_reset_caps">RESET</string>
     <string name="btn_apply_filters_count">APPLY FILTERS (%1$d)</string>

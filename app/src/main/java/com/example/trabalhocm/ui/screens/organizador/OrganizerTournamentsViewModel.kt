@@ -18,10 +18,6 @@ class OrganizerTournamentsViewModel : ViewModel() {
     var isLoading by mutableStateOf(true)
     var currentUserId by mutableStateOf<String?>(null)
 
-    init {
-        carregarTorneios()
-    }
-
     fun carregarTorneios() {
         viewModelScope.launch {
             isLoading = true
