@@ -21,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 
 private val DarkBlue = Color(0xFF111827)
 private val PrimaryBlue = Color(0xFF0346B8)
@@ -36,7 +38,6 @@ private val LightBlueBadge = Color(0xFFE0E7FF)
 private val ErrorRed = Color(0xFFDC2626)
 private val LightRedBadge = Color(0xFFFEE2E2)
 
-// Modelo de Dados para um Jogador
 data class Player(
     val name: String,
     val position: String,
@@ -52,39 +53,45 @@ fun TeamManagementScreen(
     onInviteClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("All") }
 
-    val filters = listOf("All", "Forward", "Midfielder", "Defender", "Goalkeeper")
+    val filterAll = stringResource(R.string.filter_all)
+    val roleForward = stringResource(R.string.role_forward)
+    val roleMidfielder = stringResource(R.string.role_midfielder)
+    val roleDefender = stringResource(R.string.role_defender)
+    val roleGoalkeeper = stringResource(R.string.role_goalkeeper)
+
+    var selectedFilter by remember(filterAll) { mutableStateOf(filterAll) }
+
+    val filters = listOf(filterAll, roleForward, roleMidfielder, roleDefender, roleGoalkeeper)
 
     val roster = listOf(
-        Player("Bruno Fernandes", "Midfielder", 10, isCaptain = true),
-        Player("Cristiano Ronaldo", "Forward", 9),
-        Player("Rúben Dias", "Defender", 4),
-        Player("Diogo Costa", "Goalkeeper", 1),
-        Player("João Cancelo", "Defender", 20),
-        Player("Bernardo Silva", "Midfielder", 8),
-        Player("João Félix", "Forward", 11)
+        Player("Bruno Fernandes", roleMidfielder, 10, isCaptain = true),
+        Player("Cristiano Ronaldo", roleForward, 9),
+        Player("Rúben Dias", roleDefender, 4),
+        Player("Diogo Costa", roleGoalkeeper, 1),
+        Player("João Cancelo", roleDefender, 20),
+        Player("Bernardo Silva", roleMidfielder, 8),
+        Player("João Félix", roleForward, 11)
     )
 
-    // Lógica mágica de filtragem
     val filteredRoster = roster.filter { player ->
         val matchesSearch = player.name.contains(searchQuery, ignoreCase = true)
-        val matchesPosition = if (selectedFilter == "All") true else player.position == selectedFilter
+        val matchesPosition = if (selectedFilter == filterAll) true else player.position == selectedFilter
         matchesSearch && matchesPosition
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Teams", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_teams), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -102,17 +109,14 @@ fun TeamManagementScreen(
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            // CABEÇALHO
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("TEAM MANAGEMENT", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_team_management), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Manage your roster, invite new players and oversee team composition.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_team_management), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // TEAM INFO CARD
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = DarkBlue),
@@ -123,7 +127,6 @@ fun TeamManagementScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Placeholder do Logo da Equipa
                         Box(
                             modifier = Modifier
                                 .size(56.dp)
@@ -139,13 +142,12 @@ fun TeamManagementScreen(
                         Column {
                             Text("FC Mancos", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("11 players • Premier Tier", color = Color.LightGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.mock_team_subtitle), color = Color.LightGray, fontSize = 12.sp)
                         }
                     }
                 }
             }
 
-            // INVITE PLAYER BUTTON
             item {
                 Button(
                     onClick = onInviteClick,
@@ -158,17 +160,16 @@ fun TeamManagementScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("INVITE PLAYER", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.btn_invite_player_caps), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                     }
                 }
             }
 
-            // SEARCH BAR
             item {
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search roster...", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_search_roster), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
@@ -211,11 +212,10 @@ fun TeamManagementScreen(
                 }
             }
 
-            // TÍTULO DO ROSTER
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "ROSTER (${filteredRoster.size})",
+                    text = stringResource(R.string.format_roster_count, filteredRoster.size),
                     color = TextGray,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -223,7 +223,6 @@ fun TeamManagementScreen(
                 )
             }
 
-            // LISTA DE JOGADORES
             items(filteredRoster) { player ->
                 PlayerCard(player = player)
             }
@@ -286,7 +285,7 @@ fun PlayerCard(player: Player) {
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
-                                "CAPTAIN",
+                                stringResource(R.string.badge_captain_caps),
                                 color = ErrorRed,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
@@ -299,8 +298,8 @@ fun PlayerCard(player: Player) {
                 Text("${player.position} • #${player.number}", color = TextGray, fontSize = 12.sp)
             }
 
-            IconButton(onClick = { /* Abrir menu de opções */ }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Options", tint = TextGray)
+            IconButton(onClick = {  }) {
+                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.desc_options), tint = TextGray)
             }
         }
     }

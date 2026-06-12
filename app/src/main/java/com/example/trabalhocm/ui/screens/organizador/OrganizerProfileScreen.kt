@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.organizador
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,13 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
+import androidx.core.os.LocaleListCompat
 import coil.compose.AsyncImage
-
+import com.example.trabalhocm.R
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,10 +54,10 @@ fun OrganizerProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_profile), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -81,7 +83,6 @@ fun OrganizerProfileScreen(
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-
             Card(
                 colors = CardDefaults.cardColors(containerColor = DarkBlue),
                 shape = RoundedCornerShape(12.dp),
@@ -102,7 +103,7 @@ fun OrganizerProfileScreen(
                         if (photoUri != null) {
                             AsyncImage(
                                 model = photoUri,
-                                contentDescription = "User Photo",
+                                contentDescription = stringResource(R.string.desc_user_photo),
                                 contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )
@@ -112,84 +113,92 @@ fun OrganizerProfileScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("MEMBER SINCE $memberSinceYear", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.label_member_since, memberSinceYear), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(fullName.ifBlank { "A carregar..." }, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(fullName.ifBlank { stringResource(R.string.msg_loading) }, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
 
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Surface(color = TealGreen, shape = RoundedCornerShape(16.dp)) {
-                            Text("ORGANIZER & PLAYER", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
+                            Text(stringResource(R.string.badge_organizer_player), color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
                         }
                         Surface(color = PrimaryBlue, shape = RoundedCornerShape(16.dp)) {
-                            Text("GOLD TIER", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
+                            Text(stringResource(R.string.badge_gold_tier), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
                         }
                     }
                 }
             }
 
-            // ACCOUNT SETTINGS
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Person, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Account Settings", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_account_settings), color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-                ProfileSectionLabel("FULL NAME")
+                ProfileSectionLabel(stringResource(R.string.label_full_name))
                 Spacer(modifier = Modifier.height(8.dp))
                 ProfileTextField(value = fullName, onValueChange = { fullName = it })
 
                 Spacer(modifier = Modifier.height(16.dp))
-                ProfileSectionLabel("EMAIL ADDRESS")
+                ProfileSectionLabel(stringResource(R.string.label_email_address))
                 Spacer(modifier = Modifier.height(8.dp))
                 ProfileTextField(value = email, onValueChange = { email = it })
 
                 Spacer(modifier = Modifier.height(16.dp))
-                ProfileSectionLabel("BIO")
+                ProfileSectionLabel(stringResource(R.string.label_bio))
                 Spacer(modifier = Modifier.height(8.dp))
                 ProfileTextField(value = bio, onValueChange = { bio = it }, singleLine = false, height = 100.dp)
             }
 
-            // PREFERENCES
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Settings, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Preferences", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_preferences), color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                ProfileSectionLabel("LANGUAGE")
+                ProfileSectionLabel(stringResource(R.string.label_language))
                 Spacer(modifier = Modifier.height(8.dp))
+
+                var isPortuguese by remember { mutableStateOf(AppCompatDelegate.getApplicationLocales().toLanguageTags().contains("pt")) }
 
                 Card(
                     colors = CardDefaults.cardColors(containerColor = CardBg),
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, PrimaryBlue),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            if (isPortuguese) {
+                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
+                                isPortuguese = false
+                            } else {
+                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("pt-PT"))
+                                isPortuguese = true
+                            }
+                        }
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("English (US)", color = PrimaryBlue, fontSize = 14.sp)
+                        Text(if (isPortuguese) "Português (PT)" else "English (US)", color = PrimaryBlue, fontSize = 14.sp)
                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                     }
                 }
             }
 
-            // ACTIVE DASHBOARDS
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Info, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Active Dashboards", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_active_dashboards), color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Organizer (Active)
                 Card(
                     colors = CardDefaults.cardColors(containerColor = PrimaryBlue.copy(alpha = 0.1f)),
                     shape = RoundedCornerShape(8.dp),
@@ -205,8 +214,8 @@ fun OrganizerProfileScreen(
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Organizer", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text("Active session", color = TextGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.role_organizer), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.desc_active_session), color = TextGray, fontSize = 12.sp)
                         }
                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
                     }
@@ -214,7 +223,6 @@ fun OrganizerProfileScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Player Dashboard Button
                 Card(
                     colors = CardDefaults.cardColors(containerColor = InputBg),
                     shape = RoundedCornerShape(8.dp),
@@ -229,20 +237,19 @@ fun OrganizerProfileScreen(
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Player", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text("Personal career stats", color = TextGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.role_player), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.desc_personal_career_stats), color = TextGray, fontSize = 12.sp)
                         }
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = TextGray)
                     }
                 }
             }
 
-            // SECURITY
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Lock, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Security", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_security), color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -259,14 +266,13 @@ fun OrganizerProfileScreen(
                             TextButton(onClick = onChangePasswordClick) {
                                 Icon(Icons.Outlined.Lock, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("CHANGE PASSWORD", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                                Text(stringResource(R.string.btn_change_password), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                             }
                         }
                     }
                 }
             }
 
-            // ACTION BUTTONS
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
                     onClick = { onSaveChanges(fullName, email, bio) },
@@ -274,7 +280,7 @@ fun OrganizerProfileScreen(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
-                    Text("SAVE CHANGES", fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.btn_save_changes), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
                 }
 
                 OutlinedButton(
@@ -283,7 +289,7 @@ fun OrganizerProfileScreen(
                     border = BorderStroke(1.dp, ErrorRed),
                     modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
-                    Text("LOG OUT", color = ErrorRed, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.btn_log_out), color = ErrorRed, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
                 }
             }
 
@@ -311,8 +317,8 @@ fun ProfileTextField(value: String, onValueChange: (String) -> Unit, singleLine:
     )
 }
 
-private @Composable
-fun ProfileSectionLabel(text: String) {
+@Composable
+private fun ProfileSectionLabel(text: String) {
     Text(
         text = text,
         color = TextGray,

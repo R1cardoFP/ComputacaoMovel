@@ -20,12 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.PeladinhaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
@@ -61,15 +63,15 @@ fun OrganizerCreateCasualMatchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New Match", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_new_match), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -97,7 +99,7 @@ fun OrganizerCreateCasualMatchScreen(
         ) {
             Column {
                 Text(
-                    text = "Create a casual match",
+                    text = stringResource(R.string.title_create_casual_match),
                     color = DarkBlue,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold
@@ -106,14 +108,14 @@ fun OrganizerCreateCasualMatchScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Organize a quick game with the community.",
+                    text = stringResource(R.string.desc_create_casual_match),
                     color = TextGray,
                     fontSize = 14.sp
                 )
             }
 
             Column {
-                CasualSectionLabel("SPORTS CATEGORY")
+                CasualSectionLabel(stringResource(R.string.label_sports_category_caps))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -123,7 +125,7 @@ fun OrganizerCreateCasualMatchScreen(
                 ) {
                     SportSelectionCard(
                         modifier = Modifier.weight(1f),
-                        title = "Football",
+                        title = stringResource(R.string.sport_football),
                         icon = Icons.Outlined.Star,
                         isSelected = selectedSport == "Football",
                         onClick = { selectedSport = "Football" }
@@ -131,7 +133,7 @@ fun OrganizerCreateCasualMatchScreen(
 
                     SportSelectionCard(
                         modifier = Modifier.weight(1f),
-                        title = "Volleyball",
+                        title = stringResource(R.string.sport_volleyball),
                         icon = Icons.Outlined.Star,
                         isSelected = selectedSport == "Volleyball",
                         onClick = { selectedSport = "Volleyball" }
@@ -139,7 +141,7 @@ fun OrganizerCreateCasualMatchScreen(
 
                     SportSelectionCard(
                         modifier = Modifier.weight(1f),
-                        title = "Basketball",
+                        title = stringResource(R.string.sport_basketball),
                         icon = Icons.Outlined.Star,
                         isSelected = selectedSport == "Basketball",
                         onClick = { selectedSport = "Basketball" }
@@ -155,7 +157,7 @@ fun OrganizerCreateCasualMatchScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Date",
+                        text = stringResource(R.string.label_date),
                         color = DarkBlue,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -166,7 +168,7 @@ fun OrganizerCreateCasualMatchScreen(
                     TextField(
                         value = date,
                         onValueChange = { date = it },
-                        placeholder = { Text("dd / mm / aaaa", color = TextGray) },
+                        placeholder = { Text(stringResource(R.string.placeholder_date_format), color = TextGray) },
                         leadingIcon = {
                             Icon(
                                 Icons.Outlined.DateRange,
@@ -188,7 +190,7 @@ fun OrganizerCreateCasualMatchScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Time",
+                        text = stringResource(R.string.label_time),
                         color = DarkBlue,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -228,7 +230,7 @@ fun OrganizerCreateCasualMatchScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Localization",
+                        text = stringResource(R.string.label_localization),
                         color = DarkBlue,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -239,7 +241,7 @@ fun OrganizerCreateCasualMatchScreen(
                     OutlinedTextField(
                         value = location,
                         onValueChange = { location = it },
-                        placeholder = { Text("Address, club, etc.", color = TextGray) },
+                        placeholder = { Text(stringResource(R.string.placeholder_address), color = TextGray) },
                         leadingIcon = {
                             Icon(
                                 Icons.Outlined.Place,
@@ -274,7 +276,7 @@ fun OrganizerCreateCasualMatchScreen(
                             )
 
                             Text(
-                                text = "Map Preview",
+                                text = stringResource(R.string.label_map_preview),
                                 color = TextGray,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -292,7 +294,7 @@ fun OrganizerCreateCasualMatchScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Match Level",
+                        text = stringResource(R.string.label_match_level),
                         color = DarkBlue,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -306,7 +308,7 @@ fun OrganizerCreateCasualMatchScreen(
                     ) {
                         LevelChip(
                             modifier = Modifier.weight(1f),
-                            title = "Beginner",
+                            title = stringResource(R.string.level_beginner),
                             isSelected = matchLevel == "Beginner"
                         ) {
                             matchLevel = "Beginner"
@@ -314,7 +316,7 @@ fun OrganizerCreateCasualMatchScreen(
 
                         LevelChip(
                             modifier = Modifier.weight(1.2f),
-                            title = "Intermediary",
+                            title = stringResource(R.string.level_intermediary),
                             isSelected = matchLevel == "Intermediary"
                         ) {
                             matchLevel = "Intermediary"
@@ -322,7 +324,7 @@ fun OrganizerCreateCasualMatchScreen(
 
                         LevelChip(
                             modifier = Modifier.weight(1f),
-                            title = "Advanced",
+                            title = stringResource(R.string.level_advanced),
                             isSelected = matchLevel == "Advanced"
                         ) {
                             matchLevel = "Advanced"
@@ -332,7 +334,7 @@ fun OrganizerCreateCasualMatchScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Job Openings Available",
+                        text = stringResource(R.string.label_job_openings),
                         color = DarkBlue,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -357,7 +359,7 @@ fun OrganizerCreateCasualMatchScreen(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Text(
-                            text = "required players",
+                            text = stringResource(R.string.label_required_players),
                             color = TextGray,
                             fontSize = 12.sp
                         )
@@ -367,8 +369,8 @@ fun OrganizerCreateCasualMatchScreen(
 
             Column {
                 CasualRegistrationCard(
-                    title = "Open Registration",
-                    description = "Any team can apply directly through the platform.",
+                    title = stringResource(R.string.format_open_registration),
+                    description = stringResource(R.string.desc_open_registration),
                     icon = Icons.Outlined.Person,
                     isSelected = registrationType == "Open Registration",
                     onClick = { registrationType = "Open Registration" }
@@ -377,13 +379,17 @@ fun OrganizerCreateCasualMatchScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 CasualRegistrationCard(
-                    title = "Invite Only",
-                    description = "You manually invite teams to participate. Add invitees from the tournament card after creation.",
+                    title = stringResource(R.string.format_invite_only),
+                    description = stringResource(R.string.desc_invite_only),
                     icon = Icons.Outlined.Lock,
                     isSelected = registrationType == "Invite Only",
                     onClick = { registrationType = "Invite Only" }
                 )
             }
+
+            val errorDateFormat = stringResource(R.string.error_date_format)
+            val errorTimeFormat = stringResource(R.string.error_time_format)
+            val errorCreateCasual = stringResource(R.string.error_create_casual)
 
             if (errorMessage.isNotBlank()) {
                 Card(
@@ -410,12 +416,12 @@ fun OrganizerCreateCasualMatchScreen(
                     val maxJogadores = openings.toIntOrNull() ?: 0
 
                     if (dataFormatada == null) {
-                        errorMessage = "Indica a data no formato dd/mm/aaaa."
+                        errorMessage = errorDateFormat
                         return@Button
                     }
 
                     if (horaFormatada == null) {
-                        errorMessage = "Indica a hora no formato hh:mm."
+                        errorMessage = errorTimeFormat
                         return@Button
                     }
 
@@ -435,7 +441,7 @@ fun OrganizerCreateCasualMatchScreen(
                             onPublishClick()
                         }.onFailure { erro ->
                             isLoading = false
-                            errorMessage = erro.message ?: "Erro ao criar partida casual."
+                            errorMessage = erro.message ?: errorCreateCasual
                         }
                     }
                 },
@@ -467,7 +473,7 @@ fun OrganizerCreateCasualMatchScreen(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = "Publish Match",
+                            text = stringResource(R.string.btn_publish_match),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )

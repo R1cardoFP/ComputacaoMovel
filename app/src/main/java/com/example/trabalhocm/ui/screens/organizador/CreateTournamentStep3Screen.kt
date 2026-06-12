@@ -1,7 +1,6 @@
 package com.example.trabalhocm.ui.screens.organizador
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -19,15 +18,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import java.text.NumberFormat
 import java.util.Locale
-
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,15 +49,15 @@ fun CreateTournamentStep3Screen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_create), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -80,12 +79,12 @@ fun CreateTournamentStep3Screen(
             Step3HeaderSection()
 
             Column {
-                Step3SectionLabel("VENUE / LOCATION")
+                Step3SectionLabel(stringResource(R.string.label_venue_location))
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = viewModel.venue,
                     onValueChange = { viewModel.venue = it },
-                    placeholder = { Text("Pesquisar morada ou recinto...", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_venue), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp)),
@@ -103,7 +102,7 @@ fun CreateTournamentStep3Screen(
             }
 
             Column {
-                Step3SectionLabel("ENTRY FEE PER TEAM")
+                Step3SectionLabel(stringResource(R.string.label_entry_fee))
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = viewModel.entryFee,
@@ -122,15 +121,15 @@ fun CreateTournamentStep3Screen(
                     prefix = { Text("€ ", color = DarkBlue, fontWeight = FontWeight.Bold) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Leave at 0.00 for free tournament", color = TextGray, fontSize = 12.sp)
+                Text(stringResource(R.string.desc_entry_fee), color = TextGray, fontSize = 12.sp)
             }
 
             Column {
-                Step3SectionLabel("PRIZE POOL DISTRIBUTION")
+                Step3SectionLabel(stringResource(R.string.label_prize_pool))
                 Spacer(modifier = Modifier.height(12.dp))
 
                 PrizeInputRow(
-                    rank = "1st Place",
+                    rank = stringResource(R.string.rank_1st),
                     iconColor = Color(0xFFFBBF24),
                     value = viewModel.prize1,
                     onValueChange = { viewModel.prize1 = it }
@@ -138,7 +137,7 @@ fun CreateTournamentStep3Screen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 PrizeInputRow(
-                    rank = "2nd Place",
+                    rank = stringResource(R.string.rank_2nd),
                     iconColor = Color(0xFF9CA3AF),
                     value = viewModel.prize2,
                     onValueChange = { viewModel.prize2 = it }
@@ -146,7 +145,7 @@ fun CreateTournamentStep3Screen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 PrizeInputRow(
-                    rank = "3rd Place",
+                    rank = stringResource(R.string.rank_3rd),
                     iconColor = Color(0xFFD97706),
                     value = viewModel.prize3,
                     onValueChange = { viewModel.prize3 = it }
@@ -155,18 +154,18 @@ fun CreateTournamentStep3Screen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Total prize pool: ", color = TextGray, fontSize = 12.sp)
+                    Text(stringResource(R.string.label_total_prize_pool), color = TextGray, fontSize = 12.sp)
                     Text("€ ${numberFormat.format(totalPrizePool)}", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
             Column {
-                Step3SectionLabel("VENUE NOTES (OPTIONAL)")
+                Step3SectionLabel(stringResource(R.string.label_venue_notes))
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = viewModel.notes,
                     onValueChange = { viewModel.notes = it },
-                    placeholder = { Text("Parking info, entrance details, special instructions...", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_venue_notes), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
@@ -195,7 +194,7 @@ fun CreateTournamentStep3Screen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("BACK", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.btn_back_caps), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
 
@@ -211,7 +210,7 @@ fun CreateTournamentStep3Screen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text("PROCEED TO ROLE", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.btn_proceed_role), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
                     }
@@ -225,14 +224,14 @@ fun CreateTournamentStep3Screen(
 @Composable
 fun Step3HeaderSection() {
     Column {
-        Text("STEP 3 OF 4", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text(stringResource(R.string.step_3_of_4), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(4.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Location &\nPrizes", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
+            Text(stringResource(R.string.title_location_prizes), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
@@ -243,7 +242,7 @@ fun Step3HeaderSection() {
         }
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Define where the action happens and what's at stake for the winners.",
+            text = stringResource(R.string.desc_location_prizes),
             color = TextGray,
             fontSize = 14.sp,
             lineHeight = 20.sp
@@ -311,4 +310,3 @@ fun Step3SectionLabel(text: String) {
         letterSpacing = 1.sp
     )
 }
-

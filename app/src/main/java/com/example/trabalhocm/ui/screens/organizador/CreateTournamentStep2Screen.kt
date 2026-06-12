@@ -20,17 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,15 +61,15 @@ fun CreateTournamentStep2Screen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_create), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -98,7 +98,7 @@ fun CreateTournamentStep2Screen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Step2SectionLabel("START DATE")
+                    Step2SectionLabel(stringResource(R.string.label_start_date))
                     Spacer(modifier = Modifier.height(8.dp))
                     DatePickerField(
                         value = viewModel.startDate,
@@ -134,7 +134,7 @@ fun CreateTournamentStep2Screen(
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Step2SectionLabel("END DATE")
+                    Step2SectionLabel(stringResource(R.string.label_end_date))
                     Spacer(modifier = Modifier.height(8.dp))
                     DatePickerField(
                         value = viewModel.endDate,
@@ -146,7 +146,7 @@ fun CreateTournamentStep2Screen(
             }
 
             Column {
-                Step2SectionLabel("REGISTRATION DEADLINE")
+                Step2SectionLabel(stringResource(R.string.label_registration_deadline))
                 Spacer(modifier = Modifier.height(8.dp))
                 DatePickerField(
                     value = viewModel.registrationDeadline,
@@ -156,9 +156,8 @@ fun CreateTournamentStep2Screen(
                 )
             }
 
-            // MAX PARTICIPANTS
             Column {
-                Step2SectionLabel("MAX PARTICIPANTS")
+                Step2SectionLabel(stringResource(R.string.label_max_participants))
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = viewModel.maxParticipants,
@@ -174,36 +173,34 @@ fun CreateTournamentStep2Screen(
                     ),
                     singleLine = true,
                     trailingIcon = {
-                        Text("teams", color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(end = 16.dp))
+                        Text(stringResource(R.string.label_teams), color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(end = 16.dp))
                     }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Recommended: 8, 16, 32 or 64 teams for balanced brackets", color = TextGray, fontSize = 12.sp)
+                Text(stringResource(R.string.desc_recommended_participants), color = TextGray, fontSize = 12.sp)
             }
 
-            // REGISTRATION FORMAT
             Column {
-                Step2SectionLabel("REGISTRATION FORMAT")
+                Step2SectionLabel(stringResource(R.string.label_registration_format))
                 Spacer(modifier = Modifier.height(8.dp))
 
                 RegistrationFormatCard(
-                    title = "Open Registration",
-                    description = "Any team can apply directly through the platform.",
+                    title = stringResource(R.string.format_open_registration),
+                    description = stringResource(R.string.desc_open_registration),
                     icon = Icons.Default.Person,
                     isSelected = viewModel.registrationFormat == "Open Registration",
                     onClick = { viewModel.registrationFormat = "Open Registration" }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 RegistrationFormatCard(
-                    title = "Invite Only",
-                    description = "You manually invite teams to participate. Add invitees from the tournament card after creation.",
+                    title = stringResource(R.string.format_invite_only),
+                    description = stringResource(R.string.desc_invite_only),
                     icon = Icons.Default.Lock,
                     isSelected = viewModel.registrationFormat == "Invite Only",
                     onClick = { viewModel.registrationFormat = "Invite Only" }
                 )
             }
 
-            // BOTÕES DE NAVEGAÇÃO
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -218,7 +215,7 @@ fun CreateTournamentStep2Screen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("BACK", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.btn_back_caps), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
 
@@ -234,7 +231,7 @@ fun CreateTournamentStep2Screen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text("PROCEED TO LOCATION", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.btn_proceed_location), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
                     }
@@ -248,14 +245,14 @@ fun CreateTournamentStep2Screen(
 @Composable
 fun Step2HeaderSection() {
     Column {
-        Text("STEP 2 OF 4", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text(stringResource(R.string.step_2_of_4), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(4.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Schedule and\nRegistration", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
+            Text(stringResource(R.string.title_schedule_registration), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
@@ -266,7 +263,7 @@ fun Step2HeaderSection() {
         }
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Set the timeline and registration window for your tournament.",
+            text = stringResource(R.string.desc_schedule_registration),
             color = TextGray,
             fontSize = 14.sp,
             lineHeight = 20.sp
@@ -334,12 +331,12 @@ fun DatePickerField(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.btn_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.btn_cancel))
                 }
             }
         ) {
@@ -441,4 +438,3 @@ fun Step2SectionLabel(text: String) {
         letterSpacing = 1.sp
     )
 }
-

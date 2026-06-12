@@ -19,14 +19,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 enum class EventType { GOAL, HALF_TIME, YELLOW_CARD, SUBSTITUTION, SAVE, START }
@@ -49,14 +52,34 @@ fun OrganizerLiveMatchScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val eventGoal = stringResource(R.string.event_goal)
+    val eventHalfTime = stringResource(R.string.event_half_time)
+    val eventYellowCard = stringResource(R.string.event_yellow_card)
+    val eventSubstitution = stringResource(R.string.event_substitution)
+    val eventGreatSave = stringResource(R.string.event_great_save)
+    val eventKickOff = stringResource(R.string.event_kick_off)
+
+    val descGoal1 = stringResource(R.string.desc_goal_1)
+    val descGoal2 = stringResource(R.string.desc_goal_2)
+    val descHalfTime = stringResource(R.string.desc_half_time)
+    val descYellow1 = stringResource(R.string.desc_yellow_card_1)
+    val descSub = stringResource(R.string.desc_substitution_1)
+    val descSave1 = stringResource(R.string.desc_save_1)
+    val descYellow2 = stringResource(R.string.desc_yellow_card_2)
+    val descSave2 = stringResource(R.string.desc_save_2)
+    val descKickOff = stringResource(R.string.desc_kick_off)
+
+    val descRefereeMock = stringResource(R.string.desc_referee_mock)
+    val descRefereeMock2 = stringResource(R.string.desc_referee_mock_2)
+
     val matchEvents = remember {
         mutableStateListOf(
-            MatchEvent("68'", EventType.GOAL, "GOAL!", "M. Rashford", "Clinical finish into the bottom left corner."),
-            MatchEvent("55'", EventType.GOAL, "GOAL!", "B. Fernandes", "Assisted by Casemiro."),
-            MatchEvent("45'", EventType.HALF_TIME, "HALF TIME", "Teams heading into the tunnel."),
-            MatchEvent("38'", EventType.YELLOW_CARD, "YELLOW CARD", "L. Shaw", "Tactical foul to stop the counter attack."),
-            MatchEvent("24'", EventType.SUBSTITUTION, "SUBSTITUTION", "A. Garnacho", "Replaces Antony due to a minor injury."),
-            MatchEvent("12'", EventType.SAVE, "GREAT SAVE", "A. Onana", "Brilliant diving save to deny a powerful long-range effort.")
+            MatchEvent("68'", EventType.GOAL, eventGoal, "M. Rashford", descGoal1),
+            MatchEvent("55'", EventType.GOAL, eventGoal, "B. Fernandes", descGoal2),
+            MatchEvent("45'", EventType.HALF_TIME, eventHalfTime, descRefereeMock, descHalfTime),
+            MatchEvent("38'", EventType.YELLOW_CARD, eventYellowCard, "L. Shaw", descYellow1),
+            MatchEvent("24'", EventType.SUBSTITUTION, eventSubstitution, "A. Garnacho", descSub),
+            MatchEvent("12'", EventType.SAVE, eventGreatSave, "A. Onana", descSave1)
         )
     }
 
@@ -65,15 +88,15 @@ fun OrganizerLiveMatchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Matches", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_matches), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -113,9 +136,9 @@ fun OrganizerLiveMatchScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Match Events", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(stringResource(R.string.title_match_events), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         Surface(color = PrimaryBlue.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
-                            Text("REAL-TIME", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                            Text(stringResource(R.string.badge_real_time), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                         }
                     }
 
@@ -128,13 +151,12 @@ fun OrganizerLiveMatchScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // 3. A Lógica do Botão
                     if (!hasLoadedMore) {
                         Button(
                             onClick = {
-                                matchEvents.add(MatchEvent("08'", EventType.YELLOW_CARD, "YELLOW CARD", "D. Dalot", "Late challenge on the winger."))
-                                matchEvents.add(MatchEvent("04'", EventType.SAVE, "GREAT SAVE", "D. Costa", "Crucial early block."))
-                                matchEvents.add(MatchEvent("00'", EventType.START, "KICK-OFF", "Referee", "The match gets underway!"))
+                                matchEvents.add(MatchEvent("08'", EventType.YELLOW_CARD, eventYellowCard, "D. Dalot", descYellow2))
+                                matchEvents.add(MatchEvent("04'", EventType.SAVE, eventGreatSave, "D. Costa", descSave2))
+                                matchEvents.add(MatchEvent("00'", EventType.START, eventKickOff, descRefereeMock2, descKickOff))
                                 hasLoadedMore = true
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
@@ -143,11 +165,11 @@ fun OrganizerLiveMatchScreen(
                                 .fillMaxWidth()
                                 .height(48.dp)
                         ) {
-                            Text("LOAD MORE EVENTS", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.btn_load_more_events), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                         }
                     } else {
                         Text(
-                            text = "NO MORE EVENTS",
+                            text = stringResource(R.string.msg_no_more_events),
                             color = TextGray,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -169,7 +191,7 @@ fun OrganizerLiveMatchScreen(
                 ) {
                     Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("MATCHES CALENDAR", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.btn_matches_calendar), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                 }
 
                 OutlinedButton(
@@ -180,7 +202,7 @@ fun OrganizerLiveMatchScreen(
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("MATCH HISTORY", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.btn_match_history), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                 }
 
                 Button(
@@ -191,7 +213,7 @@ fun OrganizerLiveMatchScreen(
                 ) {
                     Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("CASUAL MATCHES", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.btn_casual_matches), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                 }
             }
 
@@ -219,7 +241,7 @@ fun LiveScoreCard() {
                     ) {
                         Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color.White))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("LIVE", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.badge_live_caps), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))

@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.organizador
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,12 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,15 +41,15 @@ fun OrganizerTournamentDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Details", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_details), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -79,16 +81,16 @@ fun OrganizerTournamentDetailsScreen(
             ) {
                 Column {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TourneyBadge("• IN PROGRESS", TealGreen, TealGreen.copy(alpha = 0.1f))
-                        TourneyBadge("⚽ FOOTBALL", TealGreen, TealGreen.copy(alpha = 0.1f))
+                        TourneyBadge(stringResource(R.string.badge_in_progress), TealGreen, TealGreen.copy(alpha = 0.1f))
+                        TourneyBadge(stringResource(R.string.badge_sport_football), TealGreen, TealGreen.copy(alpha = 0.1f))
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Premier Summer\nCup 2026", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 34.sp)
+                    Text(stringResource(R.string.mock_tournament_name), color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 34.sp)
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        HeroStat("SEASON", "25/26")
-                        HeroStat("PRIZE POOL", "125,000 €")
-                        HeroStat("TEAMS", "24")
+                        HeroStat(stringResource(R.string.label_season_caps), "25/26")
+                        HeroStat(stringResource(R.string.label_prize_pool_caps), "125,000 €")
+                        HeroStat(stringResource(R.string.label_teams_caps), "24")
                     }
                 }
             }
@@ -97,20 +99,20 @@ fun OrganizerTournamentDetailsScreen(
 
                 Card(colors = CardDefaults.cardColors(containerColor = CardBg), modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("About", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_about), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("A flagship summer competition for Premier Tier clubs across the western region. League format with playoff finals.", color = TextGray, fontSize = 14.sp, lineHeight = 20.sp)
+                        Text(stringResource(R.string.desc_tournament_about), color = TextGray, fontSize = 14.sp, lineHeight = 20.sp)
                     }
                 }
 
                 Card(colors = CardDefaults.cardColors(containerColor = CardBg), modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Schedule", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_schedule), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
-                        DetailRow("Start Date", "15 Jun 2026")
-                        DetailRow("End Date", "30 Aug 2026")
-                        DetailRow("Registration Closes", "01 Jun 2026")
-                        DetailRow("Format", "League System")
+                        DetailRow(stringResource(R.string.label_start_date), "15 Jun 2026")
+                        DetailRow(stringResource(R.string.label_end_date), "30 Aug 2026")
+                        DetailRow(stringResource(R.string.label_registration_closes), "01 Jun 2026")
+                        DetailRow(stringResource(R.string.label_format), stringResource(R.string.val_league_system))
                     }
                 }
 
@@ -119,35 +121,35 @@ fun OrganizerTournamentDetailsScreen(
                         Icon(Icons.Outlined.Place, contentDescription = null, tint = PrimaryBlue)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Estádio Cidade de Barcelos", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text("Barcelos, Portugal", color = TextGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.mock_stadium_barcelos), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.mock_loc_barcelos), color = TextGray, fontSize = 12.sp)
                         }
                     }
                 }
 
                 Card(colors = CardDefaults.cardColors(containerColor = CardBg), modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Standings", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_standings), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(modifier = Modifier.weight(1f)) {
-                                Text("POS", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(40.dp))
-                                Text("TEAM", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.col_pos), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(40.dp))
+                                Text(stringResource(R.string.col_team), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                Text("P", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                Text("PTS", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.col_p), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.col_pts), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Divider(color = InputBg)
+                        HorizontalDivider(color = InputBg)
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        StandingRow("01", "Porto", "🔵", "12", "31")
-                        StandingRow("02", "Sporting", "🟢", "12", "29")
-                        StandingRow("03", "Benfica", "🔴", "12", "27")
-                        StandingRow("04", "Vianense", "🟡", "12", "23")
+                        StandingRow("01", stringResource(R.string.team_porto), "🔵", "12", "31")
+                        StandingRow("02", stringResource(R.string.team_sporting), "🟢", "12", "29")
+                        StandingRow("03", stringResource(R.string.team_benfica), "🔴", "12", "27")
+                        StandingRow("04", stringResource(R.string.team_vianense), "🟡", "12", "23")
                     }
                 }
 

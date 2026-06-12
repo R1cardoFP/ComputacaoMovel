@@ -22,13 +22,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
+
+private val LightRedBadge = Color(0xFFFEE2E2)
 
 data class TeamPlayer(
     val name: String,
@@ -51,24 +54,24 @@ fun TeamDetailsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val roster = listOf(
-        TeamPlayer("Cristiano Ronaldo", "Striker", 9),
-        TeamPlayer("Bruno Fernandes", "Midfielder", 10, isCaptain = true),
-        TeamPlayer("Rúben Dias", "Defender", 4),
-        TeamPlayer("Diogo Costa", "Goalkeeper", 1)
+        TeamPlayer("Cristiano Ronaldo", stringResource(R.string.role_striker), 9),
+        TeamPlayer("Bruno Fernandes", stringResource(R.string.role_midfielder), 10, isCaptain = true),
+        TeamPlayer("Rúben Dias", stringResource(R.string.role_defender), 4),
+        TeamPlayer("Diogo Costa", stringResource(R.string.role_goalkeeper), 1)
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Team Details", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_team_details), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -114,12 +117,12 @@ fun TeamDetailsScreen(
 
                         Column {
                             Surface(color = Color(0xFF374151), shape = RoundedCornerShape(12.dp)) {
-                                Text("Premier Division", color = Color(0xFFFCA5A5), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                                Text(stringResource(R.string.mock_premier_division), color = Color(0xFFFCA5A5), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text("Benfica", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("Est. 2018 • Portugal, PT", color = Color.LightGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.mock_est_2018), color = Color.LightGray, fontSize = 12.sp)
                         }
                     }
                 }
@@ -139,7 +142,7 @@ fun TeamDetailsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Season Win Rate", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.label_season_win_rate), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text("68.5 %", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                             }
@@ -168,12 +171,12 @@ fun TeamDetailsScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Star, contentDescription = null, tint = TextGray, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Total Goals", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.label_total_goals), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text("42", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("+5 this month", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.mock_plus_5_month), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                         }
 
@@ -187,12 +190,12 @@ fun TeamDetailsScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.DateRange, contentDescription = null, tint = TextGray, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Matches Played", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.label_matches_played), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text("24", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("16W - 4D - 4L", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.mock_w_d_l), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -205,7 +208,7 @@ fun TeamDetailsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Active Roster", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_active_roster), color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
                     Button(
                         onClick = onInvitePlayerClick,
@@ -216,7 +219,7 @@ fun TeamDetailsScreen(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Invite Player", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.btn_invite_player), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -278,7 +281,7 @@ fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
                     if (player.isCaptain) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Surface(color = LightRedBadge, shape = RoundedCornerShape(12.dp)) {
-                            Text("CAPTAIN", color = ErrorRed, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                            Text(stringResource(R.string.badge_captain), color = ErrorRed, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
                         }
                     }
                 }
@@ -293,7 +296,7 @@ fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
                 modifier = Modifier.height(32.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp)
             ) {
-                Text("View Profile", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.btn_view_profile_roster), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

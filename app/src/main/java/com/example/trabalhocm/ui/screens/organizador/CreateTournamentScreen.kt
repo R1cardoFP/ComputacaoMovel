@@ -21,12 +21,13 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,18 +38,22 @@ fun CreateTournamentScreen(
     onProceedClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
+    val sportFootballStr = stringResource(R.string.sport_football)
+    val sportVolleyballStr = stringResource(R.string.sport_volleyball)
+    val sportBasketballStr = stringResource(R.string.sport_basketball)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_create), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -74,12 +79,12 @@ fun CreateTournamentScreen(
             UploadLogoSection()
 
             Column {
-                SectionLabel("TOURNAMENT NAME")
+                SectionLabel(stringResource(R.string.label_tournament_name))
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = viewModel.tournamentName,
                     onValueChange = { viewModel.tournamentName = it },
-                    placeholder = { Text("e.g: FC Mancos", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_tournament_name), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp)),
@@ -93,9 +98,8 @@ fun CreateTournamentScreen(
                 )
             }
 
-            // SPORT CATEGORY
             Column {
-                SectionLabel("SPORT CATEGORY")
+                SectionLabel(stringResource(R.string.label_sport_category))
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -103,7 +107,7 @@ fun CreateTournamentScreen(
                 ) {
                     SportCard(
                         modifier = Modifier.weight(1f),
-                        title = "Football",
+                        title = sportFootballStr,
                         icon = Icons.Default.Star,
                         isSelected = viewModel.selectedSport == "Football",
                         onClick = {
@@ -113,7 +117,7 @@ fun CreateTournamentScreen(
                     )
                     SportCard(
                         modifier = Modifier.weight(1f),
-                        title = "Volleyball",
+                        title = sportVolleyballStr,
                         icon = Icons.Default.Star,
                         isSelected = viewModel.selectedSport == "Volleyball",
                         onClick = {
@@ -123,7 +127,7 @@ fun CreateTournamentScreen(
                     )
                     SportCard(
                         modifier = Modifier.weight(1f),
-                        title = "Basketball",
+                        title = sportBasketballStr,
                         icon = Icons.Default.Star,
                         isSelected = viewModel.selectedSport == "Basketball",
                         onClick = {
@@ -134,32 +138,31 @@ fun CreateTournamentScreen(
                 }
             }
 
-            // COMPETITION FORMAT
             Column {
-                SectionLabel("COMPETITION FORMAT")
+                SectionLabel(stringResource(R.string.label_competition_format))
                 Spacer(modifier = Modifier.height(8.dp))
 
                 when (viewModel.selectedSport) {
                     "Football" -> {
                         FormatCard(
-                            title = "League System",
-                            description = "Round-robin format where teams earn points based on match outcomes.",
+                            title = stringResource(R.string.format_league),
+                            description = stringResource(R.string.desc_format_league),
                             icon = Icons.Default.List,
                             isSelected = viewModel.selectedFormat == "League System",
                             onClick = { viewModel.selectedFormat = "League System" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
-                            title = "Knockout",
-                            description = "Bracket-style elimination. Win to advance, lose to exit the tournament.",
+                            title = stringResource(R.string.format_knockout),
+                            description = stringResource(R.string.desc_format_knockout),
                             icon = Icons.Default.Share,
                             isSelected = viewModel.selectedFormat == "Knockout",
                             onClick = { viewModel.selectedFormat = "Knockout" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
-                            title = "Group Stage + Knockout",
-                            description = "Group round followed by elimination bracket. Hybrid competition format.",
+                            title = stringResource(R.string.format_group_knockout),
+                            description = stringResource(R.string.desc_format_group_knockout),
                             icon = Icons.Default.Check,
                             isSelected = viewModel.selectedFormat == "Group+Knockout",
                             onClick = { viewModel.selectedFormat = "Group+Knockout" }
@@ -168,24 +171,24 @@ fun CreateTournamentScreen(
 
                     "Volleyball" -> {
                         FormatCard(
-                            title = "Pool Play + Playoffs",
-                            description = "Teams compete in groups, with the top teams advancing to an elimination bracket.",
+                            title = stringResource(R.string.format_pool_play),
+                            description = stringResource(R.string.desc_format_pool_play),
                             icon = Icons.Default.Menu,
                             isSelected = viewModel.selectedFormat == "Pool Play + Playoffs",
                             onClick = { viewModel.selectedFormat = "Pool Play + Playoffs" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
-                            title = "Double Elimination Bracket",
-                            description = "A team is only eliminated from the tournament after losing two matches.",
+                            title = stringResource(R.string.format_double_elimination),
+                            description = stringResource(R.string.desc_format_double_elimination),
                             icon = Icons.Default.Share,
                             isSelected = viewModel.selectedFormat == "Double Elimination",
                             onClick = { viewModel.selectedFormat = "Double Elimination" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
-                            title = "League System",
-                            description = "Round-robin format where teams earn points based on match outcomes.",
+                            title = stringResource(R.string.format_league),
+                            description = stringResource(R.string.desc_format_league),
                             icon = Icons.Default.List,
                             isSelected = viewModel.selectedFormat == "League System",
                             onClick = { viewModel.selectedFormat = "League System" }
@@ -194,24 +197,24 @@ fun CreateTournamentScreen(
 
                     "Basketball" -> {
                         FormatCard(
-                            title = "Regular Season + Playoffs",
-                            description = "A full regular season followed by a playoff bracket to determine the champion.",
+                            title = stringResource(R.string.format_regular_playoffs),
+                            description = stringResource(R.string.desc_format_regular_playoffs),
                             icon = Icons.Default.DateRange,
                             isSelected = viewModel.selectedFormat == "Regular Season + Playoffs",
                             onClick = { viewModel.selectedFormat = "Regular Season + Playoffs" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
-                            title = "Single Elimination Bracket",
-                            description = "Standard knockout tournament. Win to advance, lose and you're out.",
+                            title = stringResource(R.string.format_single_elimination),
+                            description = stringResource(R.string.desc_format_single_elimination),
                             icon = Icons.Default.Share,
                             isSelected = viewModel.selectedFormat == "Single Elimination Bracket",
                             onClick = { viewModel.selectedFormat = "Single Elimination Bracket" }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         FormatCard(
-                            title = "3x3 Pool Play",
-                            description = "Teams are divided into pools for round-robin play, with top teams advancing.",
+                            title = stringResource(R.string.format_3x3_pool),
+                            description = stringResource(R.string.desc_format_3x3_pool),
                             icon = Icons.Default.Person,
                             isSelected = viewModel.selectedFormat == "3x3 Pool Play",
                             onClick = { viewModel.selectedFormat = "3x3 Pool Play" }
@@ -221,12 +224,12 @@ fun CreateTournamentScreen(
             }
 
             Column {
-                SectionLabel("DESCRIPTION & RULES")
+                SectionLabel(stringResource(R.string.label_description_rules))
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = viewModel.description,
                     onValueChange = { viewModel.description = it },
-                    placeholder = { Text("Briefly describe the tournament goal, prizes, and specific house rules...", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_description), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp)
@@ -253,7 +256,7 @@ fun CreateTournamentScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("PROCEED TO SCHEDULE", fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.btn_proceed_schedule), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
                 }
@@ -267,14 +270,14 @@ fun CreateTournamentScreen(
 @Composable
 fun HeaderSection() {
     Column {
-        Text("STEP 1 OF 4", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text(stringResource(R.string.step_1_of_4), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(4.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Tournament\nBasics", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
+            Text(stringResource(R.string.title_tournament_basics), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(modifier = Modifier
@@ -301,7 +304,7 @@ fun HeaderSection() {
         }
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Define the fundamental identity and competitive structure of your league.",
+            text = stringResource(R.string.desc_tournament_basics),
             color = TextGray,
             fontSize = 14.sp,
             lineHeight = 20.sp
@@ -312,7 +315,7 @@ fun HeaderSection() {
 @Composable
 fun UploadLogoSection() {
     Column {
-        SectionLabel("TOURNAMENT LOGO")
+        SectionLabel(stringResource(R.string.label_tournament_logo))
         Spacer(modifier = Modifier.height(8.dp))
 
         Box(
@@ -331,14 +334,14 @@ fun UploadLogoSection() {
                     )
                 }
                 .background(CardBg, RoundedCornerShape(12.dp))
-                .clickable { /* Abrir galeria */ },
+                .clickable { },
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Default.AccountBox, contentDescription = null, tint = TextGray, modifier = Modifier.size(48.dp))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Upload Tournament Logo", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text("PNG or JPG • Max 5 MB", color = TextGray, fontSize = 12.sp)
+                Text(stringResource(R.string.btn_upload_tournament_logo), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_logo_format), color = TextGray, fontSize = 12.sp)
             }
         }
     }
@@ -434,4 +437,3 @@ fun SectionLabel(text: String) {
         letterSpacing = 1.sp
     )
 }
-

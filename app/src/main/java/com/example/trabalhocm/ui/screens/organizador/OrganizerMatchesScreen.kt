@@ -19,14 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 enum class MatchResult { WIN, LOSS, DRAW }
@@ -55,7 +56,12 @@ fun OrganizerMatchesScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    val tabs = listOf("All", "Wins", "Losses", "Draws")
+    val tabAll = stringResource(R.string.tab_all)
+    val tabWins = stringResource(R.string.tab_wins)
+    val tabLosses = stringResource(R.string.tab_losses)
+    val tabDraws = stringResource(R.string.tab_draws)
+
+    val tabs = listOf(tabAll, tabWins, tabLosses, tabDraws)
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
     val allMatches = viewModel.matches
@@ -63,9 +69,9 @@ fun OrganizerMatchesScreen(
 
     val filteredMatches = allMatches.filter { match ->
         when (selectedTab) {
-            "Wins" -> match.result == MatchResult.WIN
-            "Losses" -> match.result == MatchResult.LOSS
-            "Draws" -> match.result == MatchResult.DRAW
+            tabWins -> match.result == MatchResult.WIN
+            tabLosses -> match.result == MatchResult.LOSS
+            tabDraws -> match.result == MatchResult.DRAW
             else -> true
         }
     }
@@ -73,15 +79,15 @@ fun OrganizerMatchesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Matches", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_my_matches), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.carregarJogos() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_refresh), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -108,11 +114,11 @@ fun OrganizerMatchesScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("PERSONAL ARCHIVE", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_personal_archive), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("My Matches", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_my_matches), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("All matches you have personally participated in.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_personal_archive), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
@@ -149,7 +155,7 @@ fun OrganizerMatchesScreen(
             } else if (filteredMatches.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        Text("No matches found.", color = TextGray)
+                        Text(stringResource(R.string.msg_no_matches_found), color = TextGray)
                     }
                 }
             } else {
@@ -165,14 +171,16 @@ fun OrganizerMatchesScreen(
     }
 }
 
-
-
 @Composable
 fun MatchArchiveCard(match: MatchArchiveItem) {
+    val badgeWin = stringResource(R.string.badge_win)
+    val badgeLoss = stringResource(R.string.badge_loss)
+    val badgeDraw = stringResource(R.string.badge_draw)
+
     val (badgeBg, badgeText, badgeString) = when (match.result) {
-        MatchResult.WIN -> Triple(TealGreen.copy(alpha = 0.15f), TealGreen, "WIN")
-        MatchResult.LOSS -> Triple(ErrorRed.copy(alpha = 0.15f), ErrorRed, "LOSS")
-        MatchResult.DRAW -> Triple(InputBg, TextGray, "DRAW")
+        MatchResult.WIN -> Triple(TealGreen.copy(alpha = 0.15f), TealGreen, badgeWin)
+        MatchResult.LOSS -> Triple(ErrorRed.copy(alpha = 0.15f), ErrorRed, badgeLoss)
+        MatchResult.DRAW -> Triple(InputBg, TextGray, badgeDraw)
     }
 
     Card(

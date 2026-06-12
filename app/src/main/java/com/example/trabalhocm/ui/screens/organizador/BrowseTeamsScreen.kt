@@ -18,12 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +41,12 @@ fun BrowseTeamsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val tabs = listOf("All Teams", "My Teams", "Others")
+
+    val tabAll = stringResource(id = R.string.tab_all_teams)
+    val tabMine = stringResource(id = R.string.tab_my_teams)
+    val tabOthers = stringResource(id = R.string.tab_others)
+
+    val tabs = listOf(tabAll, tabMine, tabOthers)
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
     val allTeams = viewModel.teams
@@ -49,8 +55,8 @@ fun BrowseTeamsScreen(
     val filteredTeams = allTeams.filter { team ->
         val matchesSearch = team.name.contains(searchQuery, ignoreCase = true)
         val matchesTab = when (selectedTab) {
-            "My Teams" -> team.isMyTeam
-            "Others" -> !team.isMyTeam
+            tabMine -> team.isMyTeam
+            tabOthers -> !team.isMyTeam
             else -> true
         }
         matchesSearch && matchesTab
@@ -59,10 +65,10 @@ fun BrowseTeamsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Teams", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_teams), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { viewModel.carregarEquipas() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_refresh), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -85,7 +91,7 @@ fun BrowseTeamsScreen(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("CREATE TEAM", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.btn_create_team), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                     }
                 }
                 MatchLeagueBottomBar(
@@ -109,11 +115,11 @@ fun BrowseTeamsScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("PREMIER LEAGUE TEAMS", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_league_teams), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Browse Teams", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_browse_teams), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Discover all active teams across the league ecosystem.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_browse_teams), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -121,7 +127,7 @@ fun BrowseTeamsScreen(
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search for teams...", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_search_teams), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp)),
@@ -177,7 +183,7 @@ fun BrowseTeamsScreen(
             } else if (filteredTeams.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        Text("No teams found.", color = TextGray)
+                        Text(stringResource(R.string.msg_no_teams_found), color = TextGray)
                     }
                 }
             } else {
@@ -229,7 +235,7 @@ fun MyTeamCard(
                     Text(team.name, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Surface(color = TealGreen.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
-                        Text("YOUR TEAM", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+                        Text(stringResource(R.string.badge_your_team), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
                     }
                 }
             }
@@ -240,9 +246,9 @@ fun MyTeamCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                StatItem("WINS", team.wins.toString(), PrimaryBlue)
-                StatItem("LOSSES", team.losses.toString(), DarkBlue)
-                StatItem("STREAK", team.streak, TealGreen)
+                StatItem(stringResource(R.string.stat_wins), team.wins.toString(), PrimaryBlue)
+                StatItem(stringResource(R.string.stat_losses), team.losses.toString(), DarkBlue)
+                StatItem(stringResource(R.string.stat_streak), team.streak, TealGreen)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -257,7 +263,7 @@ fun MyTeamCard(
                     border = BorderStroke(1.dp, PrimaryBlue),
                     modifier = Modifier.weight(1f).height(40.dp)
                 ) {
-                    Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(stringResource(R.string.btn_view_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
                 Button(
                     onClick = onManageTeamClick,
@@ -265,7 +271,7 @@ fun MyTeamCard(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f).height(40.dp)
                 ) {
-                    Text("MANAGE", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(stringResource(R.string.btn_manage), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
         }
@@ -298,7 +304,13 @@ fun RegularTeamCard(
                     Text(team.name, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Surface(color = PrimaryBlue.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
-                        Text(team.division ?: "UNKNOWN", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+                        Text(
+                            text = team.divisionRes?.let { stringResource(it) } ?: stringResource(R.string.badge_unknown),
+                            color = PrimaryBlue,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
                     }
                 }
             }
@@ -309,9 +321,9 @@ fun RegularTeamCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                StatItem("WINS", team.wins.toString(), PrimaryBlue)
-                StatItem("LOSSES", team.losses.toString(), DarkBlue)
-                StatItem("STREAK", team.streak, streakColor)
+                StatItem(stringResource(R.string.stat_wins), team.wins.toString(), PrimaryBlue)
+                StatItem(stringResource(R.string.stat_losses), team.losses.toString(), DarkBlue)
+                StatItem(stringResource(R.string.stat_streak), team.streak, streakColor)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -322,7 +334,7 @@ fun RegularTeamCard(
                 border = BorderStroke(1.dp, PrimaryBlue),
                 modifier = Modifier.fillMaxWidth().height(40.dp)
             ) {
-                Text("VIEW DETAILS →", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text(stringResource(R.string.btn_view_details_arrow), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
     }

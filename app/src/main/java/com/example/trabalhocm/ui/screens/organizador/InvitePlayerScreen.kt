@@ -20,11 +20,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
 
@@ -41,30 +42,36 @@ fun InvitePlayerScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val roleStriker = stringResource(R.string.role_striker)
+    val roleDefender = stringResource(R.string.role_defender)
+    val roleMidfielder = stringResource(R.string.role_midfielder)
+    val roleGoalkeeper = stringResource(R.string.role_goalkeeper)
+    val rolePointGuard = stringResource(R.string.role_point_guard)
+
     var searchQuery by remember { mutableStateOf("") }
-    var selectedRole by remember { mutableStateOf("Midfielder") }
+    var selectedRole by remember { mutableStateOf(roleMidfielder) }
     var personalMessage by remember { mutableStateOf("") }
     var showSuccessBanner by remember { mutableStateOf(false) }
 
-    val roles = listOf("Striker", "Defender", "Midfielder", "Goalkeeper")
+    val roles = listOf(roleStriker, roleDefender, roleMidfielder, roleGoalkeeper)
     val recommendedPlayers = listOf(
-        RecommendedPlayer("Cristiano Ronaldo", "Striker"),
-        RecommendedPlayer("João Silva", "Point Guard"),
-        RecommendedPlayer("André Lima", "Defender")
+        RecommendedPlayer("Cristiano Ronaldo", roleStriker),
+        RecommendedPlayer("João Silva", rolePointGuard),
+        RecommendedPlayer("André Lima", roleDefender)
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Player Invite", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_player_invite), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -91,11 +98,11 @@ fun InvitePlayerScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("TEAM RECRUITMENT", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_team_recruitment), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Invite a Player", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_invite_player), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Find players and send them an invitation to join FC Mancos.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_invite_player), color = TextGray, fontSize = 14.sp)
             }
 
             if (showSuccessBanner) {
@@ -109,7 +116,7 @@ fun InvitePlayerScreen(
                         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = TealGreen, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Invitation sent successfully", color = TealGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(stringResource(R.string.msg_invite_sent_success), color = TealGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }
                 }
@@ -117,12 +124,12 @@ fun InvitePlayerScreen(
 
             item {
                 Column {
-                    Text("SEARCH PLAYERS", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.label_search_players), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search by name or ID...", color = Color.LightGray) },
+                        placeholder = { Text(stringResource(R.string.placeholder_search_players), color = Color.LightGray) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
@@ -143,7 +150,7 @@ fun InvitePlayerScreen(
 
             item {
                 Column {
-                    Text("RECOMMENDED", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.label_recommended), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -156,12 +163,12 @@ fun InvitePlayerScreen(
 
             item {
                 Column {
-                    Text("Invitation Details", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_invitation_details), color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Customize the invitation before sending.", color = TextGray, fontSize = 12.sp)
+                    Text(stringResource(R.string.desc_invitation_details), color = TextGray, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("INTENDED ROLE", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.label_intended_role), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(8.dp))
 
                     FlowRow(
@@ -190,13 +197,13 @@ fun InvitePlayerScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("PERSONAL MESSAGE (Optional)", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.label_personal_message), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(8.dp))
 
                     TextField(
                         value = personalMessage,
                         onValueChange = { personalMessage = it },
-                        placeholder = { Text("Hey! We'd love to have you on the squad...", color = Color.LightGray) },
+                        placeholder = { Text(stringResource(R.string.placeholder_personal_message), color = Color.LightGray) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp)
@@ -231,7 +238,7 @@ fun InvitePlayerScreen(
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("SEND INVITE", fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.btn_send_invite), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))

@@ -23,11 +23,12 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,15 +46,15 @@ fun CreateTeamScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Teams", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_teams), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -72,18 +73,16 @@ fun CreateTeamScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // CABEÇALHO
             Column {
-                Text("NEW TEAM", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_new_team), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Team Identity", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_team_identity), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Define your team's name, sport and visual identity.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_team_identity), color = TextGray, fontSize = 14.sp)
             }
 
-            // UPLOAD TEAM LOGO
             Column {
-                Text("TEAM LOGO / PHOTO", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_team_logo), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Box(
@@ -102,26 +101,25 @@ fun CreateTeamScreen(
                             )
                         }
                         .background(CardBg, RoundedCornerShape(12.dp))
-                        .clickable { /* Lógica de abrir galeria */ },
+                        .clickable { },
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Outlined.AccountBox, contentDescription = null, tint = TextGray, modifier = Modifier.size(48.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Upload Team Logo", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("PNG or JPG • Max 5 MB", color = TextGray, fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_upload_logo), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.desc_logo_format), color = TextGray, fontSize = 12.sp)
                     }
                 }
             }
 
-            // TEAM NAME
             Column {
-                Text("TEAM NAME", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_team_name), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = teamName,
                     onValueChange = { teamName = it },
-                    placeholder = { Text("e.g. FC Mancos", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_team_name), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp)),
@@ -135,16 +133,15 @@ fun CreateTeamScreen(
                 )
             }
 
-            // INITIALS
             Column {
-                Text("INITIALS", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_initials), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = initials,
                     onValueChange = {
                         if (it.length <= 4) initials = it.uppercase()
                     },
-                    placeholder = { Text("e.g. FCM", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_initials), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .clip(RoundedCornerShape(8.dp)),
@@ -158,14 +155,13 @@ fun CreateTeamScreen(
                 )
             }
 
-            // HOME CITY
             Column {
-                Text("HOME CITY", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_home_city), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = homeCity,
                     onValueChange = { homeCity = it },
-                    placeholder = { Text("e.g. Viana do Castelo, PT", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_home_city), color = Color.LightGray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp)),
@@ -179,40 +175,43 @@ fun CreateTeamScreen(
                 )
             }
 
-            // SPORT CATEGORY
             Column {
-                Text("SPORT CATEGORY", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_sport_category), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    val sportFootball = stringResource(R.string.sport_football)
                     TeamSportCard(
                         modifier = Modifier.weight(1f),
-                        title = "Football",
+                        title = sportFootball,
                         icon = Icons.Default.Star,
-                        isSelected = selectedSport == "Football",
-                        onClick = { selectedSport = "Football" }
+                        isSelected = selectedSport == sportFootball,
+                        onClick = { selectedSport = sportFootball }
                     )
+
+                    val sportVolleyball = stringResource(R.string.sport_volleyball)
                     TeamSportCard(
                         modifier = Modifier.weight(1f),
-                        title = "Volleyball",
+                        title = sportVolleyball,
                         icon = Icons.Default.Star,
-                        isSelected = selectedSport == "Volleyball",
-                        onClick = { selectedSport = "Volleyball" }
+                        isSelected = selectedSport == sportVolleyball,
+                        onClick = { selectedSport = sportVolleyball }
                     )
+
+                    val sportBasketball = stringResource(R.string.sport_basketball)
                     TeamSportCard(
                         modifier = Modifier.weight(1f),
-                        title = "Basketball",
+                        title = sportBasketball,
                         icon = Icons.Default.Star,
-                        isSelected = selectedSport == "Basketball",
-                        onClick = { selectedSport = "Basketball" }
+                        isSelected = selectedSport == sportBasketball,
+                        onClick = { selectedSport = sportBasketball }
                     )
                 }
             }
 
-            // CREATE TEAM BUTTON
             Button(
                 onClick = onCreateClick,
                 colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
@@ -225,7 +224,7 @@ fun CreateTeamScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("CREATE TEAM", fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.btn_create_team), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
                 }
