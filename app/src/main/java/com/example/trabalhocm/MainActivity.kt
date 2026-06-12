@@ -1266,7 +1266,7 @@ fun MatchLeagueApp() {
         composable("teams") {
             BrowseTeamsScreen(
                 onCreateTeamClick = { navController.navigate("create_team") },
-                onManageTeamClick = { navController.navigate("manage_team") },
+                onManageTeamClick = { idEquipa -> navController.navigate("manage_team/$idEquipa") },
                 onViewDetailsClick = { idEquipa -> navController.navigate("organizador_team_details/$idEquipa") },
                 onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 onTournamentsClick = { navController.navigate("torneios") },
@@ -1276,8 +1276,14 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("manage_team") {
+        composable(
+            route = "manage_team/{idEquipa}",
+            arguments = listOf(navArgument("idEquipa") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idEquipa = backStackEntry.arguments?.getLong("idEquipa") ?: 0L
+
             TeamManagementScreen(
+                idEquipa = idEquipa,
                 onBackClick = { navController.popBackStack() },
                 onInviteClick = { navController.navigate("organizador_invite_player") }
             )

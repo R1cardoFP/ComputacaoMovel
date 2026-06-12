@@ -3,12 +3,14 @@ package com.example.trabalhocm.ui.screens.organizador
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -16,9 +18,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
@@ -34,6 +36,7 @@ private val InputBg = Color(0xFFF1F5F9)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizerTournamentHistoryScreen(
+    viewModel: OrganizerTournamentHistoryViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -41,6 +44,12 @@ fun OrganizerTournamentHistoryScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val sportFootball = stringResource(R.string.sport_football)
+    val sportBasketball = stringResource(R.string.sport_basketball)
+    val sportVolleyball = stringResource(R.string.sport_volleyball)
+    val sportDefault = stringResource(R.string.sport_default)
+    val tbdText = stringResource(R.string.val_tbd)
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,35 +89,42 @@ fun OrganizerTournamentHistoryScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            item {
-                HistoryCard(
-                    borderColor = TealGreen,
-                    badges = listOf(stringResource(R.string.badge_completed) to Color(0xFFD1FAE5) to TealGreen, stringResource(R.string.badge_champion) to Color(0xFFDBEAFE) to PrimaryBlue),
-                    title = "Premier Summer Cup 2026",
-                    subtitle = stringResource(R.string.mock_tourney_sub_1),
-                    stats = listOf(stringResource(R.string.stat_my_role) to stringResource(R.string.role_organizer_val), stringResource(R.string.stat_final_pos) to "1st", stringResource(R.string.stat_played) to "14", stringResource(R.string.stat_goals) to "28"),
-                    footer = stringResource(R.string.mock_tourney_footer_1)
-                )
-            }
+            if (viewModel.isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = TealGreen)
+                    }
+                }
+            } else if (viewModel.torneios.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.msg_no_tournaments_found), color = TextGray)
+                    }
+                }
+            } else {
+                items(viewModel.torneios) { torneio ->
+                    val sportName = when (torneio.idModalidade) {
+                        1L -> sportFootball
+                        2L -> sportBasketball
+                        3L -> sportVolleyball
+                        else -> sportDefault
+                    }
 
-            item {
-                HistoryCard(
-                    borderColor = PrimaryBlue,
-                    badges = listOf(stringResource(R.string.badge_archived) to InputBg to TextGray, stringResource(R.string.badge_runner_up) to Color(0xFFDBEAFE) to PrimaryBlue),
-                    title = "Liga Regional Sul 2025",
-                    subtitle = stringResource(R.string.mock_tourney_sub_2),
-                    stats = listOf(stringResource(R.string.stat_my_role) to stringResource(R.string.role_player_val), stringResource(R.string.stat_final_pos) to "2nd", stringResource(R.string.stat_played) to "9", stringResource(R.string.stat_pts_game) to "14.2")
-                )
-            }
-
-            item {
-                HistoryCard(
-                    borderColor = TextGray,
-                    badges = listOf(stringResource(R.string.badge_archived) to InputBg to TextGray),
-                    title = "Copa Inverno 2024",
-                    subtitle = stringResource(R.string.mock_tourney_sub_3),
-                    stats = listOf(stringResource(R.string.stat_my_role) to stringResource(R.string.role_player_val), stringResource(R.string.stat_final_pos) to "QF", stringResource(R.string.stat_played) to "5", stringResource(R.string.stat_goals) to "3")
-                )
+                    HistoryCard(
+                        borderColor = TextGray,
+                        badges = listOf(
+                            torneio.estado.uppercase() to InputBg to TextGray,
+                            sportName.uppercase() to Color(0xFFDBEAFE) to PrimaryBlue
+                        ),
+                        title = torneio.nome,
+                        subtitle = "${torneio.dataInicio} — ${torneio.dataFim ?: tbdText}",
+                        stats = listOf(
+                            stringResource(R.string.label_format) to torneio.formato.uppercase(),
+                            stringResource(R.string.label_prize_pool_caps) to "${torneio.premio.toInt()}€",
+                            stringResource(R.string.label_entry_fee) to "${torneio.taxaInscricao.toInt()}€"
+                        )
+                    )
+                }
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
