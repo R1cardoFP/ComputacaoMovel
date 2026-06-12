@@ -471,12 +471,21 @@ private fun PlayerRosterCard(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column {
-                    Text(
-                        text = player.nome,
-                        color = BrandBlue,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = player.nome,
+                            color = BrandBlue,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        if (player.isCaptain) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            CaptainBadge()
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(2.dp))
 
@@ -509,6 +518,24 @@ private fun PlayerRosterCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun CaptainBadge() {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFFFFF7DE))
+            .padding(horizontal = 7.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "CAPTAIN",
+            color = Color(0xFFE2A600),
+            fontSize = 7.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 

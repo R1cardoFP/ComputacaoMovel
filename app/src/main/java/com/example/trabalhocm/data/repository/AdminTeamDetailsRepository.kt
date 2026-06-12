@@ -71,10 +71,17 @@ class AdminTeamDetailsRepository {
                         user.text("id") == idUtilizador
                     } ?: return@mapNotNull null
 
+                    val papel = membro.text("papel", "role")
+                        .replace("'", "")
+                        .trim()
+
                     AdminTeamPlayer(
                         id = idUtilizador,
                         nome = utilizador.text("nome").ifBlank { "Player" },
-                        email = utilizador.text("email")
+                        email = utilizador.text("email"),
+                        isCaptain = papel.equals("Captain", ignoreCase = true) ||
+                                papel.equals("Capitão", ignoreCase = true) ||
+                                papel.equals("Capitao", ignoreCase = true)
                     )
                 }
 
