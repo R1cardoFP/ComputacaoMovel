@@ -245,7 +245,7 @@ class AdminNotificationRepository {
     private fun formatTime(data: String): String {
         return try {
             val dataHora = parseDataSupabase(data)
-            val formatter = DateTimeFormatter.ofPattern("HH'h'", Locale("pt", "PT"))
+            val formatter = DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale("pt", "PT"))
 
             dataHora.format(formatter)
         } catch (e: Exception) {

@@ -83,8 +83,6 @@ fun AdminTournamentsScreen(
 
     var tournaments by remember { mutableStateOf<List<AdminTournament>>(emptyList()) }
     var searchText by remember { mutableStateOf("") }
-    var selectedStatus by remember { mutableStateOf("All") }
-    var selectedSport by remember { mutableStateOf("All") }
     var selectedChip by remember { mutableStateOf("All") }
 
     var isLoading by remember { mutableStateOf(true) }
@@ -119,12 +117,6 @@ fun AdminTournamentsScreen(
                     tournament.modalidade.contains(searchText, ignoreCase = true) ||
                     tournament.organizerName.contains(searchText, ignoreCase = true)
 
-        val matchesStatus = selectedStatus == "All" ||
-                statusMatchesFilter(tournament.estado, selectedStatus)
-
-        val matchesSport = selectedSport == "All" ||
-                tournament.modalidade.contains(selectedSport, ignoreCase = true)
-
         val matchesChip = when (selectedChip) {
             "Live" -> tournament.estado.equals("em_decorrer", ignoreCase = true) ||
                     tournament.estado.equals("live", ignoreCase = true)
@@ -139,7 +131,7 @@ fun AdminTournamentsScreen(
             else -> true
         }
 
-        matchesSearch && matchesStatus && matchesSport && matchesChip
+        matchesSearch && matchesChip
     }
 
     val selectedTournamentToDelete = tournamentToDelete
@@ -154,7 +146,7 @@ fun AdminTournamentsScreen(
             },
             text = {
                 Text(
-                    text = "Tens a certeza que queres apagar o torneio ${selectedTournamentToDelete.nome}?"
+                    text = "Are you sure you want to delete the tournament? ${selectedTournamentToDelete.nome}?"
                 )
             },
             confirmButton = {
@@ -175,7 +167,7 @@ fun AdminTournamentsScreen(
                     }
                 ) {
                     Text(
-                        text = "Apagar",
+                        text = "Delete",
                         color = Color(0xFFDC2626)
                     )
                 }
@@ -186,7 +178,7 @@ fun AdminTournamentsScreen(
                         tournamentToDelete = null
                     }
                 ) {
-                    Text(text = "Cancelar")
+                    Text(text = "Cancel")
                 }
             }
         )
@@ -274,39 +266,6 @@ fun AdminTournamentsScreen(
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        AdminFilterBox(
-                            text = "Status: $selectedStatus",
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                selectedStatus = when (selectedStatus) {
-                                    "All" -> "Open"
-                                    "Open" -> "Live"
-                                    "Live" -> "Completed"
-                                    else -> "All"
-                                }
-                            }
-                        )
-
-                        AdminFilterBox(
-                            text = "Sport: $selectedSport",
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                selectedSport = when (selectedSport) {
-                                    "All" -> "Futebol"
-                                    "Futebol" -> "Basquetebol"
-                                    "Basquetebol" -> "Voleibol"
-                                    else -> "All"
-                                }
-                            }
-                        )
-                    }
-                }
-
-                item {
-                    Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         TournamentChip("All", selectedChip == "All") {
@@ -362,7 +321,7 @@ fun AdminTournamentsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = "Nenhum torneio encontrado.",
+                                text = "No tournaments found.",
                                 color = TextGray,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(18.dp)
@@ -502,32 +461,6 @@ private fun AdminTournamentSearchBox(
             cursorColor = BrandGreen
         )
     )
-}
-
-@Composable
-private fun AdminFilterBox(
-    text: String,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .height(42.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(Color(0xFFE9EDF5))
-            .clickable {
-                onClick()
-            }
-            .padding(horizontal = 12.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Text(
-            text = text,
-            color = BrandBlue,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
 }
 
 @Composable
@@ -873,19 +806,6 @@ private fun BottomItem(
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp
         )
-    }
-}
-
-private fun statusMatchesFilter(estado: String, filtro: String): Boolean {
-    val normalized = estado.lowercase()
-
-    return when (filtro) {
-        "Open" -> normalized.contains("aberto") || normalized.contains("open")
-        "Live" -> normalized.contains("decorrer") || normalized.contains("live")
-        "Completed" -> normalized.contains("terminado") ||
-                normalized.contains("completed") ||
-                normalized.contains("archived")
-        else -> true
     }
 }
 
