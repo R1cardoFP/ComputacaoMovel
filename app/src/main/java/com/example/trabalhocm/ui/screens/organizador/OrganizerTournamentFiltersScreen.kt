@@ -16,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 
 private val DarkBlue = Color(0xFF0B1F3A)
 private val PrimaryBlue = Color(0xFF2563EB)
@@ -34,16 +36,33 @@ fun OrganizerTournamentFiltersScreen(
     onCloseClick: () -> Unit = {},
     onApplyClick: () -> Unit = {}
 ) {
+    val filterFootballStr = stringResource(R.string.filter_football)
+    val filterVolleyballStr = stringResource(R.string.filter_volleyball)
+    val filterBasketballStr = stringResource(R.string.filter_basketball)
+
+    val filterLeagueStr = stringResource(R.string.filter_league)
+    val filterKnockoutStr = stringResource(R.string.filter_knockout)
+    val filterGroupStageStr = stringResource(R.string.filter_group_stage)
+
+    val filterUpcomingStr = stringResource(R.string.filter_upcoming)
+    val filterLiveStr = stringResource(R.string.filter_live)
+    val filterRegistrationOpenStr = stringResource(R.string.filter_registration_open)
+    val filterCompletedStr = stringResource(R.string.filter_completed)
+
+    val filterLisbonStr = stringResource(R.string.filter_lisbon)
+    val filterPortoStr = stringResource(R.string.filter_porto)
+    val filterCoimbraStr = stringResource(R.string.filter_coimbra)
+    val filterBragaStr = stringResource(R.string.filter_braga)
+
     var fromDate by remember { mutableStateOf("01/06/2026") }
     var toDate by remember { mutableStateOf("30/09/2026") }
     var sliderPosition by remember { mutableStateOf(10f..70f) }
     var regionSearch by remember { mutableStateOf("") }
 
-    var selectedSports by remember { mutableStateOf(setOf("⚽ Football")) }
-    var selectedFormats by remember { mutableStateOf(setOf("League", "Knockout")) }
-    var selectedStatuses by remember { mutableStateOf(setOf("Registration Open")) }
-    var selectedRegions by remember { mutableStateOf(setOf("📍 Lisbon")) }
-
+    var selectedSports by remember { mutableStateOf(setOf(filterFootballStr)) }
+    var selectedFormats by remember { mutableStateOf(setOf(filterLeagueStr, filterKnockoutStr)) }
+    var selectedStatuses by remember { mutableStateOf(setOf(filterRegistrationOpenStr)) }
+    var selectedRegions by remember { mutableStateOf(setOf(filterLisbonStr)) }
 
     fun toggleSelection(currentSet: Set<String>, item: String): Set<String> {
         return if (currentSet.contains(item)) currentSet - item else currentSet + item
@@ -54,7 +73,7 @@ fun OrganizerTournamentFiltersScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Filters", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { Text(stringResource(R.string.title_filters_sheet), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
                 navigationIcon = {
                     IconButton(onClick = onCloseClick) { Icon(Icons.Default.Close, contentDescription = null, tint = Color.White) }
                 },
@@ -67,7 +86,7 @@ fun OrganizerTournamentFiltersScreen(
                         sliderPosition = 10f..100f
                         regionSearch = ""
                     }) {
-                        Text("RESET", color = TealGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_reset_caps), color = TealGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -81,7 +100,7 @@ fun OrganizerTournamentFiltersScreen(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth().height(48.dp)
                 ) {
-                    Text("APPLY FILTERS ($totalActiveFilters)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(stringResource(R.string.btn_apply_filters_count, totalActiveFilters), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
         },
@@ -91,67 +110,53 @@ fun OrganizerTournamentFiltersScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            FilterSection("Sport Category") {
+            FilterSection(stringResource(R.string.label_sport_category_filters)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val op1 = "⚽ Football"
-                    val op2 = "🏐 Volleyball"
-                    val op3 = "🏀 Basketball"
-                    FilterChip(op1, isSelected = selectedSports.contains(op1), onClick = { selectedSports = toggleSelection(selectedSports, op1) })
-                    FilterChip(op2, isSelected = selectedSports.contains(op2), onClick = { selectedSports = toggleSelection(selectedSports, op2) })
-                    FilterChip(op3, isSelected = selectedSports.contains(op3), onClick = { selectedSports = toggleSelection(selectedSports, op3) })
+                    FilterChip(filterFootballStr, isSelected = selectedSports.contains(filterFootballStr), onClick = { selectedSports = toggleSelection(selectedSports, filterFootballStr) })
+                    FilterChip(filterVolleyballStr, isSelected = selectedSports.contains(filterVolleyballStr), onClick = { selectedSports = toggleSelection(selectedSports, filterVolleyballStr) })
+                    FilterChip(filterBasketballStr, isSelected = selectedSports.contains(filterBasketballStr), onClick = { selectedSports = toggleSelection(selectedSports, filterBasketballStr) })
                 }
             }
 
-            FilterSection("Competition Format") {
+            FilterSection(stringResource(R.string.label_competition_format_filters)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val op1 = "League"
-                    val op2 = "Knockout"
-                    val op3 = "Group Stage"
-                    FilterChip(op1, isSelected = selectedFormats.contains(op1), onClick = { selectedFormats = toggleSelection(selectedFormats, op1) })
-                    FilterChip(op2, isSelected = selectedFormats.contains(op2), onClick = { selectedFormats = toggleSelection(selectedFormats, op2) })
-                    FilterChip(op3, isSelected = selectedFormats.contains(op3), onClick = { selectedFormats = toggleSelection(selectedFormats, op3) })
+                    FilterChip(filterLeagueStr, isSelected = selectedFormats.contains(filterLeagueStr), onClick = { selectedFormats = toggleSelection(selectedFormats, filterLeagueStr) })
+                    FilterChip(filterKnockoutStr, isSelected = selectedFormats.contains(filterKnockoutStr), onClick = { selectedFormats = toggleSelection(selectedFormats, filterKnockoutStr) })
+                    FilterChip(filterGroupStageStr, isSelected = selectedFormats.contains(filterGroupStageStr), onClick = { selectedFormats = toggleSelection(selectedFormats, filterGroupStageStr) })
                 }
             }
 
-            FilterSection("Status") {
+            FilterSection(stringResource(R.string.label_status_filters)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val op1 = "Upcoming"
-                    val op2 = "Live"
-                    val op3 = "Registration Open"
-                    val op4 = "Completed"
-                    FilterChip(op1, isSelected = selectedStatuses.contains(op1), onClick = { selectedStatuses = toggleSelection(selectedStatuses, op1) })
-                    FilterChip(op2, isSelected = selectedStatuses.contains(op2), onClick = { selectedStatuses = toggleSelection(selectedStatuses, op2) }, overrideColor = if (selectedStatuses.contains(op2)) null else Color(0xFFD1FAE5), overrideTextColor = if (selectedStatuses.contains(op2)) null else TealGreen)
-                    FilterChip(op3, isSelected = selectedStatuses.contains(op3), onClick = { selectedStatuses = toggleSelection(selectedStatuses, op3) })
-                    FilterChip(op4, isSelected = selectedStatuses.contains(op4), onClick = { selectedStatuses = toggleSelection(selectedStatuses, op4) })
+                    FilterChip(filterUpcomingStr, isSelected = selectedStatuses.contains(filterUpcomingStr), onClick = { selectedStatuses = toggleSelection(selectedStatuses, filterUpcomingStr) })
+                    FilterChip(filterLiveStr, isSelected = selectedStatuses.contains(filterLiveStr), onClick = { selectedStatuses = toggleSelection(selectedStatuses, filterLiveStr) }, overrideColor = if (selectedStatuses.contains(filterLiveStr)) null else Color(0xFFD1FAE5), overrideTextColor = if (selectedStatuses.contains(filterLiveStr)) null else TealGreen)
+                    FilterChip(filterRegistrationOpenStr, isSelected = selectedStatuses.contains(filterRegistrationOpenStr), onClick = { selectedStatuses = toggleSelection(selectedStatuses, filterRegistrationOpenStr) })
+                    FilterChip(filterCompletedStr, isSelected = selectedStatuses.contains(filterCompletedStr), onClick = { selectedStatuses = toggleSelection(selectedStatuses, filterCompletedStr) })
                 }
             }
 
-            FilterSection("Region") {
+            FilterSection(stringResource(R.string.label_region_filters)) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextField(
                         value = regionSearch, onValueChange = { regionSearch = it },
-                        placeholder = { Text("City or region...", color = TextGray, fontSize = 13.sp) },
+                        placeholder = { Text(stringResource(R.string.placeholder_city_region), color = TextGray, fontSize = 13.sp) },
                         leadingIcon = { Icon(Icons.Outlined.Place, contentDescription = null, tint = TextGray, modifier = Modifier.size(18.dp)) },
                         modifier = Modifier.fillMaxWidth().height(50.dp).clip(RoundedCornerShape(8.dp)),
                         colors = TextFieldDefaults.colors(focusedContainerColor = CardBg, unfocusedContainerColor = CardBg, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent)
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val op1 = "📍 Lisbon"
-                        val op2 = "Porto"
-                        val op3 = "Coimbra"
-                        val op4 = "Braga"
-                        FilterChip(op1, isSelected = selectedRegions.contains(op1), onClick = { selectedRegions = toggleSelection(selectedRegions, op1) })
-                        FilterChip(op2, isSelected = selectedRegions.contains(op2), onClick = { selectedRegions = toggleSelection(selectedRegions, op2) })
-                        FilterChip(op3, isSelected = selectedRegions.contains(op3), onClick = { selectedRegions = toggleSelection(selectedRegions, op3) })
-                        FilterChip(op4, isSelected = selectedRegions.contains(op4), onClick = { selectedRegions = toggleSelection(selectedRegions, op4) })
+                        FilterChip(filterLisbonStr, isSelected = selectedRegions.contains(filterLisbonStr), onClick = { selectedRegions = toggleSelection(selectedRegions, filterLisbonStr) })
+                        FilterChip(filterPortoStr, isSelected = selectedRegions.contains(filterPortoStr), onClick = { selectedRegions = toggleSelection(selectedRegions, filterPortoStr) })
+                        FilterChip(filterCoimbraStr, isSelected = selectedRegions.contains(filterCoimbraStr), onClick = { selectedRegions = toggleSelection(selectedRegions, filterCoimbraStr) })
+                        FilterChip(filterBragaStr, isSelected = selectedRegions.contains(filterBragaStr), onClick = { selectedRegions = toggleSelection(selectedRegions, filterBragaStr) })
                     }
                 }
             }
 
-            FilterSection("Date Range") {
+            FilterSection(stringResource(R.string.label_date_range_filters)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("FROM", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.label_from), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(8.dp))
                         TextField(
                             value = fromDate, onValueChange = { fromDate = it },
@@ -161,7 +166,7 @@ fun OrganizerTournamentFiltersScreen(
                         )
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("TO", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.label_to), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(8.dp))
                         TextField(
                             value = toDate, onValueChange = { toDate = it },
@@ -173,7 +178,7 @@ fun OrganizerTournamentFiltersScreen(
                 }
             }
 
-            FilterSection("Entry Fee Range") {
+            FilterSection(stringResource(R.string.label_entry_fee_range)) {
                 Column {
                     RangeSlider(
                         value = sliderPosition,

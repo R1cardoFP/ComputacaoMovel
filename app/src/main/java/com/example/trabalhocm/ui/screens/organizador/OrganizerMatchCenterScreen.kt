@@ -2,6 +2,7 @@ package com.example.trabalhocm.ui.screens.organizador
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,11 +23,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.PeladinhaComInfo
 import com.example.trabalhocm.data.repository.PeladinhaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
@@ -59,6 +62,8 @@ fun OrganizerMatchCenterScreen(
     var isLoadingPeladinhas by remember { mutableStateOf(true) }
     var errorPeladinhas by remember { mutableStateOf("") }
 
+    val errorLoadCasualMatches = stringResource(R.string.error_load_casual_matches)
+
     fun carregarPeladinhas() {
         scope.launch {
             isLoadingPeladinhas = true
@@ -69,7 +74,7 @@ fun OrganizerMatchCenterScreen(
                     peladinhas = lista.sortedByDescending { it.peladinha.id }
                 }
                 .onFailure { erro ->
-                    errorPeladinhas = erro.message ?: "Erro ao carregar partidas casuais."
+                    errorPeladinhas = erro.message ?: errorLoadCasualMatches
                 }
 
             isLoadingPeladinhas = false
@@ -92,10 +97,10 @@ fun OrganizerMatchCenterScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Matches", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_matches), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { carregarPeladinhas() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_refresh), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -123,9 +128,9 @@ fun OrganizerMatchCenterScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Match Center", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.title_match_center), color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
             Text(
-                "Track live games, follow your team and join casual pickup matches.",
+                stringResource(R.string.desc_match_center),
                 color = TextGray,
                 fontSize = 14.sp,
                 lineHeight = 20.sp
@@ -153,7 +158,7 @@ fun OrganizerMatchCenterScreen(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("CALENDAR", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(stringResource(R.string.btn_calendar), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
 
                 OutlinedButton(
@@ -172,7 +177,7 @@ fun OrganizerMatchCenterScreen(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("HISTORY", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(stringResource(R.string.btn_history), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
 
@@ -197,7 +202,7 @@ fun OrganizerMatchCenterScreen(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
                             placeholder = {
-                                Text("Search matches...", color = TextGray, fontSize = 14.sp)
+                                Text(stringResource(R.string.placeholder_search_matches), color = TextGray, fontSize = 14.sp)
                             },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -230,7 +235,7 @@ fun OrganizerMatchCenterScreen(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        Text("FILTERS", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_filters), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
@@ -279,18 +284,18 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(R.string.desc_close),
                     tint = Color.White,
                     modifier = Modifier.clickable { onCloseClick() }
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                Text("Filters", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.title_filters_sheet), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
 
             Text(
-                "RESET",
+                stringResource(R.string.btn_reset),
                 color = TealGreen,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -306,7 +311,7 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Column {
-                FilterSectionLabel("Sport Category")
+                FilterSectionLabel(stringResource(R.string.label_sport_category_filters))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -314,14 +319,14 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterChipCustom("⚽ Football", isSelected = true)
-                    FilterChipCustom("🏐 Volleyball", isSelected = false)
-                    FilterChipCustom("🏀 Basketball", isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_football), isSelected = true)
+                    FilterChipCustom(stringResource(R.string.filter_volleyball), isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_basketball), isSelected = false)
                 }
             }
 
             Column {
-                FilterSectionLabel("Competition Format")
+                FilterSectionLabel(stringResource(R.string.label_competition_format_filters))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -329,14 +334,14 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterChipCustom("League", isSelected = true)
-                    FilterChipCustom("Knockout", isSelected = true)
-                    FilterChipCustom("Group Stage", isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_league), isSelected = true)
+                    FilterChipCustom(stringResource(R.string.filter_knockout), isSelected = true)
+                    FilterChipCustom(stringResource(R.string.filter_group_stage), isSelected = false)
                 }
             }
 
             Column {
-                FilterSectionLabel("Status")
+                FilterSectionLabel(stringResource(R.string.label_status_filters))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -344,7 +349,7 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterChipCustom("Upcoming", isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_upcoming), isSelected = false)
 
                     Surface(
                         color = Color(0xFFD1FAE5),
@@ -352,7 +357,7 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                         border = BorderStroke(1.dp, TealGreen)
                     ) {
                         Text(
-                            "Live",
+                            stringResource(R.string.filter_live),
                             color = TealGreen,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -360,20 +365,20 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                         )
                     }
 
-                    FilterChipCustom("Registration Open", isSelected = true)
-                    FilterChipCustom("Completed", isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_registration_open), isSelected = true)
+                    FilterChipCustom(stringResource(R.string.filter_completed), isSelected = false)
                 }
             }
 
             Column {
-                FilterSectionLabel("Region")
+                FilterSectionLabel(stringResource(R.string.label_region_filters))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextField(
                     value = "",
                     onValueChange = { },
-                    placeholder = { Text("City or region...", color = TextGray) },
+                    placeholder = { Text(stringResource(R.string.placeholder_city_region), color = TextGray) },
                     leadingIcon = {
                         Icon(
                             Icons.Outlined.Place,
@@ -398,21 +403,21 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterChipCustom("📍 Lisbon", isSelected = true)
-                    FilterChipCustom("Porto", isSelected = false)
-                    FilterChipCustom("Coimbra", isSelected = false)
-                    FilterChipCustom("Braga", isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_lisbon), isSelected = true)
+                    FilterChipCustom(stringResource(R.string.filter_porto), isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_coimbra), isSelected = false)
+                    FilterChipCustom(stringResource(R.string.filter_braga), isSelected = false)
                 }
             }
 
             Column {
-                FilterSectionLabel("Date Range")
+                FilterSectionLabel(stringResource(R.string.label_date_range_filters))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("FROM", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.label_from), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
 
                         Spacer(modifier = Modifier.height(4.dp))
 
@@ -432,7 +437,7 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("TO", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.label_to), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
 
                         Spacer(modifier = Modifier.height(4.dp))
 
@@ -454,7 +459,7 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
             }
 
             Column {
-                FilterSectionLabel("Entry Fee Range")
+                FilterSectionLabel(stringResource(R.string.label_entry_fee_range))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -495,7 +500,7 @@ fun FiltersBottomSheetContent(onCloseClick: () -> Unit) {
                     .fillMaxWidth()
                     .height(48.dp)
             ) {
-                Text("APPLY FILTERS (24)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(stringResource(R.string.btn_apply_filters), fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -558,9 +563,9 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                 .padding(start = 8.dp)
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TagBadge("• LIVE NOW", TealGreen, TealGreen.copy(alpha = 0.1f))
-                TagBadge("CASUAL", TextGray, InputBg)
-                TagBadge("FOOTBALL", TextGray, InputBg)
+                TagBadge(stringResource(R.string.badge_live_now_bullet), TealGreen, TealGreen.copy(alpha = 0.1f))
+                TagBadge(stringResource(R.string.badge_casual), TextGray, InputBg)
+                TagBadge(stringResource(R.string.badge_football), TextGray, InputBg)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -578,12 +583,12 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                             .background(Color.White),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("SLB", color = ErrorRed, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.team_slb), color = ErrorRed, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    Text("Benfica", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.team_benfica), color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -599,12 +604,12 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                             .background(Color.White),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("FCP", color = PrimaryBlue, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.team_fcp), color = PrimaryBlue, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    Text("Porto", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.team_porto), color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -620,7 +625,7 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                Text("Estádio da Luz - Atlantic Cup 2026", color = TextGray, fontSize = 12.sp)
+                Text(stringResource(R.string.mock_stadium_atlantic_cup), color = TextGray, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -634,7 +639,7 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                         .weight(1f)
                         .height(40.dp)
                 ) {
-                    Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(stringResource(R.string.btn_view_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
 
                 Button(
@@ -645,7 +650,7 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                         .weight(1f)
                         .height(40.dp)
                 ) {
-                    Text("WATCH LIVE", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(stringResource(R.string.btn_watch_live), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
         }
@@ -659,6 +664,10 @@ fun PickupMatchesFromDatabaseSection(
     errorMessage: String,
     onCasualMatchClick: () -> Unit
 ) {
+    val suffixCasualMatch = stringResource(R.string.suffix_casual_match)
+    val dateTbd = stringResource(R.string.date_tbd)
+    val locTbd = stringResource(R.string.loc_tbd)
+
     when {
         isLoading -> {
             Card(
@@ -699,7 +708,7 @@ fun PickupMatchesFromDatabaseSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "No casual matches found.",
+                    text = stringResource(R.string.msg_no_casual_matches),
                     color = TextGray,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(16.dp)
@@ -718,20 +727,31 @@ fun PickupMatchesFromDatabaseSection(
                 val maxJogadores = info.peladinha.maxJogadores.coerceAtLeast(1)
                 val actionEnabled = !inviteOnly && status != "FULL"
 
+                val btnInviteOnlyLocked = stringResource(R.string.btn_invite_only_locked)
+                val btnFull = stringResource(R.string.btn_full)
+                val btnViewDetails = stringResource(R.string.btn_view_details)
+
+                val statusTranslated = when (status) {
+                    "OPEN" -> stringResource(R.string.status_open)
+                    "LIVE NOW" -> stringResource(R.string.status_live_now)
+                    "FULL" -> stringResource(R.string.status_full)
+                    else -> status.uppercase()
+                }
+
                 PickupMatchCard(
-                    status = status,
+                    status = statusTranslated,
                     statusColor = statusColor,
                     sport = info.modalidadeNome.uppercase(),
-                    title = obterTituloPeladinha(info),
-                    timeLocation = obterDataHoraLocalPeladinha(info),
+                    title = obterTituloPeladinha(info, suffixCasualMatch),
+                    timeLocation = obterDataHoraLocalPeladinha(info, dateTbd, locTbd),
                     playersJoined = info.jogadoresInscritos,
                     maxPlayers = maxJogadores,
                     onViewDetailsClick = onCasualMatchClick,
                     onActionClick = onCasualMatchClick,
                     actionText = when {
-                        inviteOnly -> "INVITE ONLY — LOCKED"
-                        status == "FULL" -> "FULL"
-                        else -> "VIEW DETAILS"
+                        inviteOnly -> btnInviteOnlyLocked
+                        status == "FULL" -> btnFull
+                        else -> btnViewDetails
                     },
                     actionEnabled = actionEnabled,
                     isInviteOnly = inviteOnly
@@ -767,7 +787,7 @@ fun PickupMatchCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TagBadge("• $status", statusColor, statusColor.copy(alpha = 0.1f))
-                TagBadge("CASUAL", TextGray, InputBg)
+                TagBadge(stringResource(R.string.badge_casual), TextGray, InputBg)
                 TagBadge(sport, TextGray, InputBg)
             }
 
@@ -798,7 +818,7 @@ fun PickupMatchCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "PLAYERS JOINED",
+                        stringResource(R.string.label_players_joined),
                         color = DarkBlue,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -837,7 +857,7 @@ fun PickupMatchCard(
                         .weight(1f)
                         .height(40.dp)
                 ) {
-                    Text("VIEW DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(stringResource(R.string.btn_view_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
 
                 Button(
@@ -913,12 +933,12 @@ fun HostMatchCard(onCreateClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Host a Match?", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.title_host_match), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                "Can't find what you're looking for? Create your own casual match.",
+                stringResource(R.string.desc_host_match),
                 color = TextGray,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
@@ -936,7 +956,7 @@ fun HostMatchCard(onCreateClick: () -> Unit) {
                     .height(48.dp)
             ) {
                 Text(
-                    "CREATE CASUAL MATCH",
+                    stringResource(R.string.btn_create_casual_match),
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
                     letterSpacing = 1.sp
@@ -984,27 +1004,27 @@ fun obterCorStatusPeladinha(status: String): Color {
     }
 }
 
-fun obterTituloPeladinha(info: PeladinhaComInfo): String {
+fun obterTituloPeladinha(info: PeladinhaComInfo, defaultSuffix: String): String {
     val descricao = info.peladinha.descricao.orEmpty().trim()
 
     return if (descricao.isNotBlank() && !descricao.startsWith("Nível:", ignoreCase = true)) {
         descricao
     } else {
-        "${info.modalidadeNome} Casual Match"
+        "${info.modalidadeNome} $defaultSuffix"
     }
 }
 
-fun obterDataHoraLocalPeladinha(info: PeladinhaComInfo): String {
-    val data = formatarDataPeladinha(info.peladinha.data)
+fun obterDataHoraLocalPeladinha(info: PeladinhaComInfo, dateTbd: String, locTbd: String): String {
+    val data = formatarDataPeladinha(info.peladinha.data, dateTbd)
     val hora = formatarHoraPeladinha(info.peladinha.hora)
-    val local = info.peladinha.local ?: "Local por definir"
+    val local = info.peladinha.local ?: locTbd
 
     return "$data $hora • $local"
 }
 
-fun formatarDataPeladinha(data: String?): String {
+fun formatarDataPeladinha(data: String?, dateTbd: String): String {
     if (data.isNullOrBlank()) {
-        return "Date TBD"
+        return dateTbd
     }
 
     val partes = data.take(10).split("-")

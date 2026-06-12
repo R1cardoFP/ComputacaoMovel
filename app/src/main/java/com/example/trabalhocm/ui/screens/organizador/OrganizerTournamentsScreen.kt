@@ -18,13 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 private val WarningYellow = Color(0xFFF59E0B)
@@ -51,13 +52,20 @@ fun OrganizerTournamentsScreen(
     val torneios = viewModel.torneios
     val isLoading = viewModel.isLoading
 
+    val sportFootball = stringResource(R.string.sport_football)
+    val sportBasketball = stringResource(R.string.sport_basketball)
+    val sportVolleyball = stringResource(R.string.sport_volleyball)
+    val sportDefault = stringResource(R.string.sport_default)
+
+    val tbdText = stringResource(R.string.val_tbd)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("List", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_list), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { viewModel.carregarTorneios() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Refresh", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_refresh), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -84,9 +92,9 @@ fun OrganizerTournamentsScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("Tournament Management", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 32.sp)
+                Text(stringResource(R.string.title_tournament_management), color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 32.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Visualize and manage all your active and upcoming leagues.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_tournament_management), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
@@ -102,7 +110,7 @@ fun OrganizerTournamentsScreen(
                         colors = ButtonDefaults.outlinedButtonColors(containerColor = CardBg),
                         modifier = Modifier.weight(1f).height(48.dp)
                     ) {
-                        Text("HISTORY", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_history), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
 
                     Button(
@@ -111,7 +119,7 @@ fun OrganizerTournamentsScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                         modifier = Modifier.weight(1f).height(48.dp)
                     ) {
-                        Text("CREATE NEW", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_create_new), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -121,7 +129,7 @@ fun OrganizerTournamentsScreen(
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search tournaments...", color = TextGray, fontSize = 14.sp) },
+                    placeholder = { Text(stringResource(R.string.placeholder_search_tournaments), color = TextGray, fontSize = 14.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextGray, modifier = Modifier.size(20.dp)) },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = CardBg, unfocusedContainerColor = CardBg,
@@ -144,7 +152,7 @@ fun OrganizerTournamentsScreen(
                 if (torneiosFiltrados.isEmpty()) {
                     item {
                         Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                            Text("No tournaments found.", color = TextGray)
+                            Text(stringResource(R.string.msg_no_tournaments_found), color = TextGray)
                         }
                     }
                 } else {
@@ -152,10 +160,10 @@ fun OrganizerTournamentsScreen(
 
                         val isOrganizer = torneio.idOrganizador == viewModel.currentUserId
                         val sportName = when (torneio.idModalidade) {
-                            1L -> "FOOTBALL"
-                            2L -> "BASKETBALL"
-                            3L -> "VOLLEYBALL"
-                            else -> "SPORT"
+                            1L -> sportFootball
+                            2L -> sportBasketball
+                            3L -> sportVolleyball
+                            else -> sportDefault
                         }
                         val statusColor = if (torneio.estado == "aberto") TealGreen else WarningYellow
 
@@ -165,7 +173,7 @@ fun OrganizerTournamentsScreen(
                                 statusColor = statusColor,
                                 tags = listOf(torneio.formato.uppercase(), sportName),
                                 title = torneio.nome,
-                                dates = "${torneio.dataInicio} — ${torneio.dataFim ?: "TBD"}",
+                                dates = "${torneio.dataInicio} — ${torneio.dataFim ?: tbdText}",
                                 teams = 0,
                                 gamesToday = 0,
                                 onDetailsClick = { onDetailsClick(torneio.id) },
@@ -179,10 +187,10 @@ fun OrganizerTournamentsScreen(
                                 statusColor = statusColor,
                                 tags = listOf(torneio.formato.uppercase(), sportName),
                                 title = torneio.nome,
-                                dates = "Start: ${torneio.dataInicio}",
+                                dates = stringResource(R.string.format_start_date, torneio.dataInicio),
                                 registered = 0,
                                 capacity = 32,
-                                actionText = if (torneio.estado == "aberto") "REGISTER NOW" else "VIEW DETAILS",
+                                actionText = if (torneio.estado == "aberto") stringResource(R.string.btn_register_now) else stringResource(R.string.btn_view_details),
                                 actionColor = if (torneio.estado == "aberto") TealGreen else InputBg,
                                 isActionEnabled = torneio.estado == "aberto",
                                 onDetailsClick = { onDetailsClick(torneio.id) }
@@ -218,7 +226,7 @@ private fun OrganizerTournamentCard(
                 }
                 Icon(
                     Icons.Outlined.Edit,
-                    contentDescription = "Edit",
+                    contentDescription = stringResource(R.string.desc_edit),
                     tint = TealGreen,
                     modifier = Modifier
                         .size(24.dp)
@@ -226,7 +234,7 @@ private fun OrganizerTournamentCard(
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Text("YOU ORGANIZE", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Text(stringResource(R.string.label_you_organize), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(4.dp))
             Text(title, color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
@@ -235,11 +243,11 @@ private fun OrganizerTournamentCard(
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 Column {
-                    Text("TEAMS", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.label_teams_caps), color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Text("$teams", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
                 }
                 Column {
-                    Text("GAMES TODAY", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.label_games_today), color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Text("$gamesToday", color = PrimaryBlue, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
                 }
             }
@@ -247,15 +255,15 @@ private fun OrganizerTournamentCard(
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = onDetailsClick, shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, PrimaryBlue), modifier = Modifier.weight(1f).height(40.dp)) {
-                    Text("DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                    Text(stringResource(R.string.btn_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                 }
                 OutlinedButton(onClick = onInviteTeamsClick, shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, PrimaryBlue), modifier = Modifier.weight(1f).height(40.dp)) {
-                    Text("INVITE TEAMS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                    Text(stringResource(R.string.btn_invite_teams_caps), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = onManageRegistrationClick, shape = RoundedCornerShape(8.dp), colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue), modifier = Modifier.fillMaxWidth().height(40.dp)) {
-                Text("MANAGE REGISTRATION", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                Text(stringResource(R.string.btn_manage_registration), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)
             }
         }
     }
@@ -285,7 +293,7 @@ private fun RegularTournamentCard(
             if (registered != null && capacity != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("REGISTERED", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.label_registered), color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Text("$registered/$capacity", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -299,7 +307,7 @@ private fun RegularTournamentCard(
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = onDetailsClick, shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, PrimaryBlue), modifier = Modifier.weight(1f).height(40.dp)) {
-                    Text("DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                    Text(stringResource(R.string.btn_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                 }
                 Button(
                     onClick = { }, enabled = isActionEnabled, shape = RoundedCornerShape(8.dp),
@@ -317,5 +325,13 @@ private fun RegularTournamentCard(
 fun TourneyBadge(text: String, textColor: Color, bgColor: Color) {
     Surface(color = bgColor, shape = RoundedCornerShape(12.dp)) {
         Text(text, color = textColor, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun OrganizerTournamentsScreenPreview() {
+    MaterialTheme {
+        OrganizerTournamentsScreen()
     }
 }

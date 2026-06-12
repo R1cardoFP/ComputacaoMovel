@@ -20,12 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.clipScrollableContainer
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
@@ -51,12 +47,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.OrganizerHomeFixture
 import com.example.trabalhocm.data.repository.OrganizerHomeLiveMatch
 import com.example.trabalhocm.data.repository.OrganizerHomePlayerStats
@@ -89,7 +87,7 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Home",
+                        text = stringResource(R.string.title_home),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -102,7 +100,7 @@ fun HomeScreen(
                     ) {
                         Icon(
                             Icons.Outlined.Notifications,
-                            contentDescription = "Atualizar dashboard",
+                            contentDescription = stringResource(R.string.desc_refresh_dashboard),
                             tint = Color.White
                         )
                     }
@@ -180,7 +178,7 @@ fun DashboardErrorCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Erro: $message",
+            text = "${stringResource(R.string.label_error)}: $message",
             color = Color(0xFFD01818),
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
@@ -201,10 +199,10 @@ fun ActiveTournamentsSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SectionTitle("MY ACTIVE TOURNAMENTS")
+            SectionTitle(stringResource(R.string.section_active_tournaments))
 
             Text(
-                text = "VIEW ALL",
+                text = stringResource(R.string.btn_view_all),
                 color = Color(0xFF2B5BFE),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -238,7 +236,7 @@ fun ActiveTournamentsSection(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "No active tournaments at the moment.",
+                        text = stringResource(R.string.msg_no_active_tournaments),
                         color = TextGray,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(16.dp)
@@ -257,7 +255,7 @@ fun ActiveTournamentsSection(
 
                     TournamentCard(
                         title = torneio.nome,
-                        role = "ORGANIZER",
+                        role = stringResource(R.string.role_organizer_caps),
                         progress = progress,
                         color = color
                     )
@@ -277,7 +275,7 @@ fun QuickActionsSection(
     onCreateTeamClick: () -> Unit
 ) {
     Column {
-        SectionTitle("QUICK ACTIONS")
+        SectionTitle(stringResource(R.string.section_quick_actions))
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -288,7 +286,7 @@ fun QuickActionsSection(
             QuickActionCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Star,
-                title = "CREATE TOURNAMENT",
+                title = stringResource(R.string.action_create_tournament),
                 tint = EmeraldGreen,
                 onClick = onCreateTournamentClick
             )
@@ -296,7 +294,7 @@ fun QuickActionsSection(
             QuickActionCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Add,
-                title = "CREATE CASUAL\nMATCH",
+                title = stringResource(R.string.action_create_casual_match),
                 tint = EmeraldGreen,
                 onClick = onCreateCasualMatchClick
             )
@@ -311,7 +309,7 @@ fun QuickActionsSection(
             QuickActionCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Share,
-                title = "LIVE MATCHS",
+                title = stringResource(R.string.action_live_matches),
                 tint = Color(0xFF6366F1),
                 onClick = onLiveMatchesClick
             )
@@ -319,7 +317,7 @@ fun QuickActionsSection(
             QuickActionCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Person,
-                title = "CREATE TEAM",
+                title = stringResource(R.string.action_create_team),
                 tint = EmeraldGreen,
                 onClick = onCreateTeamClick
             )
@@ -419,7 +417,7 @@ fun LiveMatchSection(
                         )
                     ) {
                         Text(
-                            text = "NO LIVE MATCH",
+                            text = stringResource(R.string.badge_no_live_match),
                             color = EmeraldGreen,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -430,7 +428,7 @@ fun LiveMatchSection(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "There are no live matches from your tournaments.",
+                        text = stringResource(R.string.msg_no_live_matches_desc),
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
@@ -440,7 +438,7 @@ fun LiveMatchSection(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = "Live matches will appear here automatically.",
+                        text = stringResource(R.string.msg_live_matches_appear_here),
                         color = Color.Gray,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center
@@ -480,7 +478,7 @@ fun LiveMatchSection(
                                 Spacer(modifier = Modifier.width(6.dp))
 
                                 Text(
-                                    text = "LIVE NOW",
+                                    text = stringResource(R.string.badge_live_now),
                                     color = EmeraldGreen,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
@@ -559,7 +557,7 @@ fun LiveMatchSection(
                         ),
                         modifier = Modifier.fillMaxWidth(0.6f)
                     ) {
-                        Text("WATCH STREAM")
+                        Text(stringResource(R.string.btn_watch_stream))
                     }
                 }
             }
@@ -650,7 +648,7 @@ fun TournamentCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "PROGRESS",
+                        text = stringResource(R.string.label_progress),
                         fontSize = 10.sp,
                         color = TextGray,
                         fontWeight = FontWeight.Bold
@@ -687,7 +685,7 @@ fun UpcomingFixturesSection(
     isLoading: Boolean
 ) {
     Column {
-        SectionTitle("UPCOMING FIXTURES")
+        SectionTitle(stringResource(R.string.section_upcoming_fixtures))
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -713,7 +711,7 @@ fun UpcomingFixturesSection(
 
                 fixtures.isEmpty() -> {
                     Text(
-                        text = "No upcoming fixtures scheduled.",
+                        text = stringResource(R.string.msg_no_upcoming_fixtures),
                         color = TextGray,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(16.dp)
@@ -829,7 +827,7 @@ fun PerformanceInsightsSection(
     isLoading: Boolean
 ) {
     Column {
-        SectionTitle("PERFORMANCE INSIGHTS")
+        SectionTitle(stringResource(R.string.section_performance_insights))
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -861,7 +859,7 @@ fun PerformanceInsightsSection(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "PLAYER OF THE WEEK",
+                            text = stringResource(R.string.badge_player_of_week),
                             color = EmeraldGreen,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -880,13 +878,13 @@ fun PerformanceInsightsSection(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = "No player stats yet",
+                            text = stringResource(R.string.msg_no_player_stats),
                             color = Color.White,
                             fontSize = 18.sp
                         )
 
                         Text(
-                            text = "Stats will appear after matches are played.",
+                            text = stringResource(R.string.msg_stats_appear_later),
                             color = EmeraldGreen,
                             fontSize = 12.sp,
                             textAlign = TextAlign.Center
@@ -900,7 +898,7 @@ fun PerformanceInsightsSection(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "PLAYER OF THE WEEK",
+                            text = stringResource(R.string.badge_player_of_week),
                             color = EmeraldGreen,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -959,17 +957,17 @@ fun PerformanceInsightsSection(
                         ) {
                             StatColumn(
                                 value = playerOfWeek.vitorias.toString().padStart(2, '0'),
-                                label = "WINS"
+                                label = stringResource(R.string.stat_wins_caps)
                             )
 
                             StatColumn(
                                 value = playerOfWeek.pontuacao.toString().padStart(2, '0'),
-                                label = "POINTS"
+                                label = stringResource(R.string.stat_points_caps)
                             )
 
                             StatColumn(
                                 value = String.format("%.1f", playerOfWeek.rating),
-                                label = "RATING"
+                                label = stringResource(R.string.stat_rating_caps)
                             )
                         }
                     }

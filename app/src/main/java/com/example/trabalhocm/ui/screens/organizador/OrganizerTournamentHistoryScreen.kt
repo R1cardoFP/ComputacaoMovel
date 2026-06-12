@@ -14,11 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
+import com.example.trabalhocm.ui.theme.*
 
 private val DarkBlue = Color(0xFF0B1F3A)
 private val PrimaryBlue = Color(0xFF2563EB)
@@ -41,12 +44,12 @@ fun OrganizerTournamentHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tournament History", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { Text(stringResource(R.string.title_tournament_history), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White) }
+                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White) }
                 },
                 actions = {
-                    IconButton(onClick = { }) { Icon(Icons.Outlined.Notifications, contentDescription = null, tint = Color.White) }
+                    IconButton(onClick = { }) { Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
@@ -69,42 +72,42 @@ fun OrganizerTournamentHistoryScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("YOUR RECORDS", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_your_records), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("My Tournament History", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_my_tournament_history), color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Tournaments you have organized or participated in.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_my_tournament_history), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
             item {
                 HistoryCard(
                     borderColor = TealGreen,
-                    badges = listOf("COMPLETED" to Color(0xFFD1FAE5) to TealGreen, "CHAMPION" to Color(0xFFDBEAFE) to PrimaryBlue),
+                    badges = listOf(stringResource(R.string.badge_completed) to Color(0xFFD1FAE5) to TealGreen, stringResource(R.string.badge_champion) to Color(0xFFDBEAFE) to PrimaryBlue),
                     title = "Premier Summer Cup 2026",
-                    subtitle = "Football · League System · Season 25/26",
-                    stats = listOf("MY ROLE" to "Organizer", "FINAL POS." to "1st", "PLAYED" to "14", "GOALS" to "28"),
-                    footer = "Champion: FC Mancos · Prize €125 000"
+                    subtitle = stringResource(R.string.mock_tourney_sub_1),
+                    stats = listOf(stringResource(R.string.stat_my_role) to stringResource(R.string.role_organizer_val), stringResource(R.string.stat_final_pos) to "1st", stringResource(R.string.stat_played) to "14", stringResource(R.string.stat_goals) to "28"),
+                    footer = stringResource(R.string.mock_tourney_footer_1)
                 )
             }
 
             item {
                 HistoryCard(
                     borderColor = PrimaryBlue,
-                    badges = listOf("ARCHIVED" to InputBg to TextGray, "RUNNER-UP" to Color(0xFFDBEAFE) to PrimaryBlue),
+                    badges = listOf(stringResource(R.string.badge_archived) to InputBg to TextGray, stringResource(R.string.badge_runner_up) to Color(0xFFDBEAFE) to PrimaryBlue),
                     title = "Liga Regional Sul 2025",
-                    subtitle = "Basketball · Knockout · Season 24/25",
-                    stats = listOf("MY ROLE" to "Player", "FINAL POS." to "2nd", "PLAYED" to "9", "PTS/GAME" to "14.2")
+                    subtitle = stringResource(R.string.mock_tourney_sub_2),
+                    stats = listOf(stringResource(R.string.stat_my_role) to stringResource(R.string.role_player_val), stringResource(R.string.stat_final_pos) to "2nd", stringResource(R.string.stat_played) to "9", stringResource(R.string.stat_pts_game) to "14.2")
                 )
             }
 
             item {
                 HistoryCard(
                     borderColor = TextGray,
-                    badges = listOf("ARCHIVED" to InputBg to TextGray),
+                    badges = listOf(stringResource(R.string.badge_archived) to InputBg to TextGray),
                     title = "Copa Inverno 2024",
-                    subtitle = "Football · Group + Knockout · Season 23/24",
-                    stats = listOf("MY ROLE" to "Player", "FINAL POS." to "QF", "PLAYED" to "5", "GOALS" to "3")
+                    subtitle = stringResource(R.string.mock_tourney_sub_3),
+                    stats = listOf(stringResource(R.string.stat_my_role) to stringResource(R.string.role_player_val), stringResource(R.string.stat_final_pos) to "QF", stringResource(R.string.stat_played) to "5", stringResource(R.string.stat_goals) to "3")
                 )
             }
 

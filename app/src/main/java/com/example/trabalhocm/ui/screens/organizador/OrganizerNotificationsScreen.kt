@@ -10,7 +10,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,13 +22,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 enum class NotificationType { MATCH, TEAM, SYSTEM }
@@ -50,46 +54,24 @@ fun OrganizerNotificationsScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    val tabs = listOf("ALL", "MATCHES", "SYSTEM")
+    val tabAll = stringResource(R.string.tab_all)
+    val tabMatches = stringResource(R.string.tab_matches)
+    val tabSystem = stringResource(R.string.tab_system)
+
+    val tabs = listOf(tabAll, tabMatches, tabSystem)
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
     val notifications = listOf(
-        AppNotification(
-            id = 1,
-            type = NotificationType.MATCH,
-            title = "Match Reminder",
-            message = "Match vs Iron Eagles starts in 1 hour.",
-            time = "2M AGO",
-            isUnread = true
-        ),
-        AppNotification(
-            id = 2,
-            type = NotificationType.TEAM,
-            title = "Team Invitation",
-            message = "You have been invited to join SC BRAGA.",
-            time = "15M AGO",
-            hasActions = true
-        ),
-        AppNotification(
-            id = 3,
-            type = NotificationType.MATCH,
-            title = "Result Update",
-            message = "Final Score: Match #42 - Team A wins 2-1.",
-            time = "2H AGO"
-        ),
-        AppNotification(
-            id = 4,
-            type = NotificationType.SYSTEM,
-            title = "System",
-            message = "Offline data synced successfully.",
-            time = "YESTERDAY"
-        )
+        AppNotification(1, NotificationType.MATCH, stringResource(R.string.notif_match_reminder_title), stringResource(R.string.notif_match_reminder_msg), "2M AGO", true),
+        AppNotification(2, NotificationType.TEAM, stringResource(R.string.notif_team_invite_title), stringResource(R.string.notif_team_invite_msg), "15M AGO", false, true),
+        AppNotification(3, NotificationType.MATCH, stringResource(R.string.notif_result_title), stringResource(R.string.notif_result_msg), "2H AGO"),
+        AppNotification(4, NotificationType.SYSTEM, stringResource(R.string.notif_system_title), stringResource(R.string.notif_system_msg), stringResource(R.string.time_yesterday))
     )
 
     val filteredNotifications = notifications.filter { notif ->
         when (selectedTab) {
-            "MATCHES" -> notif.type == NotificationType.MATCH
-            "SYSTEM" -> notif.type == NotificationType.SYSTEM
+            tabMatches -> notif.type == NotificationType.MATCH
+            tabSystem -> notif.type == NotificationType.SYSTEM
             else -> true
         }
     }
@@ -97,15 +79,15 @@ fun OrganizerNotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_notifications), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -132,9 +114,9 @@ fun OrganizerNotificationsScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("UPDATES CENTER", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_updates_center), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("NOTIFICATIONS", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_notifications_caps), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Row(
@@ -179,7 +161,7 @@ fun OrganizerNotificationsScreen(
                 ) {
                     Icon(Icons.Outlined.Notifications, contentDescription = null, tint = TextGray.copy(alpha = 0.5f), modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("END OF FEED", color = TextGray.copy(alpha = 0.5f), fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    Text(stringResource(R.string.msg_end_of_feed), color = TextGray.copy(alpha = 0.5f), fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                 }
                 Spacer(modifier = Modifier.height(32.dp))
             }
@@ -217,7 +199,6 @@ fun NotificationCard(notification: AppNotification) {
                 .padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // ICONE
             Surface(
                 shape = RoundedCornerShape(8.dp),
                 color = iconBg,
@@ -228,7 +209,6 @@ fun NotificationCard(notification: AppNotification) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // CONTEÚDO
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -253,7 +233,6 @@ fun NotificationCard(notification: AppNotification) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(notification.message, color = TextGray, fontSize = 12.sp, lineHeight = 16.sp)
 
-                // BOTÕES DE AÇÃO
                 if (notification.hasActions) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -264,7 +243,7 @@ fun NotificationCard(notification: AppNotification) {
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                             modifier = Modifier.height(32.dp)
                         ) {
-                            Text("ACCEPT", fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                            Text(stringResource(R.string.btn_accept), fontWeight = FontWeight.Bold, fontSize = 10.sp)
                         }
 
                         OutlinedButton(
@@ -274,19 +253,11 @@ fun NotificationCard(notification: AppNotification) {
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                             modifier = Modifier.height(32.dp)
                         ) {
-                            Text("DECLINE", color = TextGray, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                            Text(stringResource(R.string.btn_decline), color = TextGray, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OrganizerNotificationsScreenPreview() {
-    MaterialTheme {
-        OrganizerNotificationsScreen()
     }
 }

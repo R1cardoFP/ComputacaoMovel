@@ -27,11 +27,13 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 private val DarkBlue = Color(0xFF0B1F3A)
@@ -88,12 +90,12 @@ fun ManageRegistrationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registration", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { Text(stringResource(R.string.title_registration), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White) }
+                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White) }
                 },
                 actions = {
-                    IconButton(onClick = { }) { Icon(Icons.Outlined.Notifications, contentDescription = null, tint = Color.White) }
+                    IconButton(onClick = { }) { Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
@@ -116,15 +118,14 @@ fun ManageRegistrationScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("ORGANIZER TOOL", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_organizer_tool), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Manage Registration", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_manage_registration), color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Review applications and confirm participating teams.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_manage_registration), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Status Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -135,11 +136,11 @@ fun ManageRegistrationScreen(
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Text("Premier Summer Cup 2026", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             Surface(color = TealGreen.copy(alpha = 0.2f), shape = RoundedCornerShape(12.dp)) {
-                                Text("• OPEN", color = TealGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                                Text(stringResource(R.string.badge_open), color = TealGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("TEAMS REGISTERED", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.label_teams_registered), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                         Row(verticalAlignment = Alignment.Bottom) {
                             Text("12", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                             Text(" / 16", color = TextGray, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 6.dp))
@@ -147,7 +148,7 @@ fun ManageRegistrationScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         LinearProgressIndicator(progress = { 12f / 16f }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)), color = TealGreen, trackColor = Color.White.copy(alpha = 0.1f))
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("⏱ Registration closes in 3 days", color = WarningYellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.msg_registration_closes), color = WarningYellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -162,33 +163,37 @@ fun ManageRegistrationScreen(
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("INVITE TEAM", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                    Text(stringResource(R.string.btn_invite_team_caps), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                 }
             }
 
             item {
                 TextField(
                     value = searchQuery, onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search teams or captains...", color = TextGray, fontSize = 13.sp) },
+                    placeholder = { Text(stringResource(R.string.placeholder_search_teams_captains), color = TextGray, fontSize = 13.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextGray, modifier = Modifier.size(20.dp)) },
                     modifier = Modifier.fillMaxWidth().height(50.dp).clip(RoundedCornerShape(8.dp)),
                     colors = TextFieldDefaults.colors(focusedContainerColor = InputBg, unfocusedContainerColor = InputBg, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent)
                 )
             }
 
-            // Tabs
             item {
+                val tabAll = stringResource(R.string.tab_all)
+                val tabPending = stringResource(R.string.tab_pending)
+                val tabApproved = stringResource(R.string.tab_approved)
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("All" to 15, "Pending" to 3, "Approved" to 12).forEach { (tab, count) ->
-                        val isSelected = selectedTab == tab
+                    listOf("All" to (tabAll to 15), "Pending" to (tabPending to 3), "Approved" to (tabApproved to 12)).forEach { (key, tabData) ->
+                        val (tabName, count) = tabData
+                        val isSelected = selectedTab == key
                         Surface(
                             color = if (isSelected) PrimaryBlue else CardBg,
                             shape = RoundedCornerShape(8.dp),
                             border = if (!isSelected) BorderStroke(1.dp, InputBg) else null,
-                            modifier = Modifier.weight(1f).height(40.dp).clickable { selectedTab = tab }
+                            modifier = Modifier.weight(1f).height(40.dp).clickable { selectedTab = key }
                         ) {
                             Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                                Text(tab, color = if (isSelected) Color.White else TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(tabName, color = if (isSelected) Color.White else TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Surface(color = if (isSelected) Color.White.copy(alpha = 0.2f) else InputBg, shape = RoundedCornerShape(4.dp)) {
                                     Text("$count", color = if (isSelected) Color.White else TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
@@ -199,14 +204,16 @@ fun ManageRegistrationScreen(
                 }
             }
 
-            // Section Title
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                val title = if (selectedTab == "All") "ALL APPLICATIONS" else if (selectedTab == "Pending") "PENDING APPROVAL (3)" else "APPROVED TEAMS (12)"
+                val title = when (selectedTab) {
+                    "All" -> stringResource(R.string.title_all_applications)
+                    "Pending" -> stringResource(R.string.title_pending_approval, 3)
+                    else -> stringResource(R.string.title_approved_teams, 12)
+                }
                 Text(title, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
 
-            // List
             items(filteredApps) { app ->
                 if (app.status == "Pending") {
                     PendingTeamCard(app)
@@ -220,7 +227,7 @@ fun ManageRegistrationScreen(
                     Row(modifier = Modifier.padding(16.dp)) {
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("When the tournament fills up, new applications go to the waitlist automatically.", color = DarkBlue, fontSize = 12.sp, lineHeight = 16.sp)
+                        Text(stringResource(R.string.msg_waitlist_info), color = DarkBlue, fontSize = 12.sp, lineHeight = 16.sp)
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -244,31 +251,31 @@ fun PendingTeamCard(app: TeamApplication) {
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(app.name, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text("Captain: ${app.captain} • ${app.tier}", color = TextGray, fontSize = 10.sp)
+                        Text(stringResource(R.string.format_captain_tier, app.captain, app.tier), color = TextGray, fontSize = 10.sp)
                     }
                 }
                 Surface(color = LightYellow, shape = RoundedCornerShape(12.dp)) {
-                    Text("PENDING", color = WarningYellow, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                    Text(stringResource(R.string.badge_pending), color = WarningYellow, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Divider(color = InputBg)
+            HorizontalDivider(color = InputBg)
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("PLAYERS", color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.label_players), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     Text(app.players, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("APPLIED", color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.label_applied), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     Text(app.applied, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("WIN RATE", color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.label_win_rate), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     Text(app.winRate, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("PAYMENT", color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.label_payment), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(if (app.isPaid) Icons.Default.Check else Icons.Default.Close, contentDescription = null, tint = if (app.isPaid) TealGreen else ErrorRed, modifier = Modifier.size(12.dp))
                         Spacer(modifier = Modifier.width(4.dp))
@@ -283,15 +290,15 @@ fun PendingTeamCard(app: TeamApplication) {
                     onClick = {}, shape = RoundedCornerShape(6.dp), colors = ButtonDefaults.buttonColors(containerColor = LightRed),
                     modifier = Modifier.weight(1f).height(40.dp)
                 ) {
-                    Text("× REJECT", color = ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                    Text(stringResource(R.string.btn_reject), color = ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                 }
                 if (app.isPaid) {
                     Button(onClick = {}, shape = RoundedCornerShape(6.dp), colors = ButtonDefaults.buttonColors(containerColor = TealGreen), modifier = Modifier.weight(1f).height(40.dp)) {
-                        Text("✓ APPROVE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text(stringResource(R.string.btn_approve), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 } else {
                     OutlinedButton(onClick = {}, shape = RoundedCornerShape(6.dp), border = BorderStroke(1.dp, PrimaryBlue), modifier = Modifier.weight(1f).height(40.dp)) {
-                        Text("⊙ DETAILS", color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text(stringResource(R.string.btn_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
             }
@@ -315,13 +322,13 @@ fun ApprovedTeamCard(app: TeamApplication) {
                     Text(app.name, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Surface(color = TealGreen.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) { Text("CONFIRMED", color = TealGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) }
-                        Surface(color = Color(0xFFEEF2FF), shape = RoundedCornerShape(12.dp)) { Text("PAID", color = PrimaryBlue, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) }
+                        Surface(color = TealGreen.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.badge_confirmed), color = TealGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) }
+                        Surface(color = Color(0xFFEEF2FF), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.badge_paid), color = PrimaryBlue, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) }
                     }
                 }
             }
             IconButton(onClick = {}, modifier = Modifier.size(36.dp).background(LightRed, RoundedCornerShape(8.dp))) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = ErrorRed, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.desc_delete), tint = ErrorRed, modifier = Modifier.size(18.dp))
             }
         }
     }

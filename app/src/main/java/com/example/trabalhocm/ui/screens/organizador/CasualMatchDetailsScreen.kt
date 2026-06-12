@@ -17,12 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 data class JoinedPlayer(val name: String, val joinedTime: String, val isYou: Boolean = false)
@@ -38,24 +39,24 @@ fun CasualMatchDetailsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val players = listOf(
-        JoinedPlayer("Cristiano Ronaldo", "Joined 2h ago", isYou = true),
-        JoinedPlayer("André Lima", "Joined yesterday"),
-        JoinedPlayer("Joana Costa", "Joined yesterday"),
-        JoinedPlayer("Maria Santos", "Joined 2 days ago")
+        JoinedPlayer("Cristiano Ronaldo", stringResource(R.string.joined_2h_ago), isYou = true),
+        JoinedPlayer("André Lima", stringResource(R.string.joined_yesterday)),
+        JoinedPlayer("Joana Costa", stringResource(R.string.joined_yesterday)),
+        JoinedPlayer("Maria Santos", stringResource(R.string.joined_2_days_ago))
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Details", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_match_details), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -82,16 +83,14 @@ fun CasualMatchDetailsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // HEADER DO JOGO
             Column {
-                Text("PICKUP GAME", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_pickup_game), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("Beach Volley Mix", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Friendly casual game at the Riverside courts. Open to all levels.", color = TextGray, fontSize = 14.sp, lineHeight = 20.sp)
+                Text(stringResource(R.string.desc_match_subtitle), color = TextGray, fontSize = 14.sp, lineHeight = 20.sp)
             }
 
-            // CARTÃO DE STATUS E VAGAS
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -100,38 +99,36 @@ fun CasualMatchDetailsScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        MatchDetailsTag("• LIVE NOW", TealGreen, TealGreen.copy(alpha = 0.1f))
-                        MatchDetailsTag("OPEN REGISTRATION", PrimaryBlue, PrimaryBlue.copy(alpha = 0.1f))
+                        MatchDetailsTag(stringResource(R.string.tag_live_now), TealGreen, TealGreen.copy(alpha = 0.1f))
+                        MatchDetailsTag(stringResource(R.string.tag_open_registration), PrimaryBlue, PrimaryBlue.copy(alpha = 0.1f))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    MatchDetailsTag("VOLLEYBALL", TextGray, InputBg)
+                    MatchDetailsTag(stringResource(R.string.sport_volleyball), TextGray, InputBg)
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Números de Vagas
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("SPOTS LEFT", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.label_spots_left), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             Text("4", color = PrimaryBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                         }
                         Column {
-                            Text("JOINED", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.label_joined), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             Text("8", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                         }
                         Column {
-                            Text("CAPACITY", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.label_capacity), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             Text("10", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Barra de Progresso
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("REGISTRATION", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.label_registration), color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                         Text("8/10", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -144,7 +141,6 @@ fun CasualMatchDetailsScreen(
                 }
             }
 
-            // SCHEDULE CARD
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -155,17 +151,16 @@ fun CasualMatchDetailsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.DateRange, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Schedule", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_schedule), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    DetailRow("Date", "14 May 2026")
-                    DetailRow("Start Time", "19:30")
-                    DetailRow("End Time", "21:30")
-                    DetailRow("Duration", "2 hours", valueColor = PrimaryBlue)
+                    DetailRow(stringResource(R.string.label_date), "14 May 2026")
+                    DetailRow(stringResource(R.string.label_start_time), "19:30")
+                    DetailRow(stringResource(R.string.label_end_time), "21:30")
+                    DetailRow(stringResource(R.string.label_duration), stringResource(R.string.val_2_hours), valueColor = PrimaryBlue)
                 }
             }
 
-            // MATCH INFO CARD
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -176,17 +171,16 @@ fun CasualMatchDetailsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Match Info", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_match_info), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    DetailRow("Skill Level", "INTERMEDIARY", isBadge = true)
-                    DetailRow("Format", "4 vs 4")
-                    DetailRow("Equipment", "Provided")
-                    DetailRow("Cost per Player", "€ 5.00", valueColor = TealGreen)
+                    DetailRow(stringResource(R.string.label_skill_level), stringResource(R.string.val_intermediary), isBadge = true)
+                    DetailRow(stringResource(R.string.label_format), "4 vs 4")
+                    DetailRow(stringResource(R.string.label_equipment), stringResource(R.string.val_provided))
+                    DetailRow(stringResource(R.string.label_cost), "€ 5.00", valueColor = TealGreen)
                 }
             }
 
-            // LOCATION CARD
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -197,7 +191,7 @@ fun CasualMatchDetailsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Place, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Location", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_location), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text("Riverside Beach Courts", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
@@ -205,7 +199,6 @@ fun CasualMatchDetailsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Mapa falso
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -239,12 +232,11 @@ fun CasualMatchDetailsScreen(
                     ) {
                         Icon(Icons.Outlined.Place, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("OPEN IN MAPS", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_open_in_maps), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
 
-            // HOST CARD
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -255,7 +247,7 @@ fun CasualMatchDetailsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Person, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Host", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_host), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -265,13 +257,12 @@ fun CasualMatchDetailsScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text("João Silva", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text("Hosted 14 matches • ★ 4.8", color = TextGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.mock_host_stats), color = TextGray, fontSize = 12.sp)
                         }
                     }
                 }
             }
 
-            // JOINED PLAYERS
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
                 shape = RoundedCornerShape(12.dp),
@@ -284,7 +275,7 @@ fun CasualMatchDetailsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Joined Players", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_joined_players), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Surface(color = PrimaryBlue.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
                             Text("8 / 10", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                         }
@@ -303,22 +294,20 @@ fun CasualMatchDetailsScreen(
                         border = BorderStroke(1.dp, InputBg),
                         modifier = Modifier.fillMaxWidth().height(40.dp)
                     ) {
-                        Text("LOAD MORE", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_load_more), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
 
-            // ABOUT
             Column {
-                Text("About this match", color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.title_about_match), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Casual evening volleyball game at the Riverside beach courts. All levels welcome — we mix teams to keep it balanced. Bring water, sunscreen and good vibes. Equipment and ball provided by the host.",
+                    stringResource(R.string.desc_about_match),
                     color = TextGray, fontSize = 14.sp, lineHeight = 20.sp
                 )
             }
 
-            // DISCLAIMER BOX
             Surface(
                 color = PrimaryBlue.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(8.dp)
@@ -326,11 +315,10 @@ fun CasualMatchDetailsScreen(
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
                     Icon(Icons.Outlined.Info, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Joining this match will reserve a spot. You can cancel up to 2 hours before start time.", color = PrimaryBlue, fontSize = 12.sp, lineHeight = 16.sp)
+                    Text(stringResource(R.string.desc_disclaimer), color = PrimaryBlue, fontSize = 12.sp, lineHeight = 16.sp)
                 }
             }
 
-            // ACTION BUTTONS
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
                     onClick = { },
@@ -341,7 +329,7 @@ fun CasualMatchDetailsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("JOIN MATCH", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.btn_join_match), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
 
@@ -355,7 +343,7 @@ fun CasualMatchDetailsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Share, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("SHARE MATCH", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.btn_share_match), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
             }
@@ -364,8 +352,6 @@ fun CasualMatchDetailsScreen(
         }
     }
 }
-
-// --- Componentes Privados de Reutilização ---
 
 @Composable
 private fun MatchDetailsTag(text: String, textColor: Color, bgColor: Color) {
@@ -412,7 +398,7 @@ private fun JoinedPlayerRow(player: JoinedPlayer) {
 
         if (player.isYou) {
             Surface(color = TealGreen.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
-                Text("YOU", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                Text(stringResource(R.string.badge_you), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
             }
         }
     }

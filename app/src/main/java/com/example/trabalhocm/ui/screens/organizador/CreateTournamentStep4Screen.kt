@@ -20,12 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
-
 import com.example.trabalhocm.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,15 +40,15 @@ fun CreateTournamentStep4Screen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_create), color = Color.White, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -69,20 +70,20 @@ fun CreateTournamentStep4Screen(
             Step4HeaderSection()
 
             Column {
-                Step4SectionLabel("MY ROLE IN THIS TOURNAMENT")
+                Step4SectionLabel(stringResource(R.string.label_my_role))
                 Spacer(modifier = Modifier.height(8.dp))
 
                 RoleCard(
-                    title = "Organizer Only",
-                    description = "Manage the event, brackets, and scores. You will not play.",
+                    title = stringResource(R.string.role_organizer_only),
+                    description = stringResource(R.string.desc_organizer_only),
                     icon = Icons.Default.Build,
                     isSelected = viewModel.selectedRole == "Organizer Only",
                     onClick = { viewModel.selectedRole = "Organizer Only" }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 RoleCard(
-                    title = "Participate as Player",
-                    description = "Manage the event and compete in the bracket.",
+                    title = stringResource(R.string.role_participate_player),
+                    description = stringResource(R.string.desc_participate_player),
                     icon = Icons.Default.Person,
                     isSelected = viewModel.selectedRole == "Participate as Player",
                     onClick = { viewModel.selectedRole = "Participate as Player" }
@@ -101,22 +102,22 @@ fun CreateTournamentStep4Screen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Tournament Details", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(stringResource(R.string.title_tournament_details), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    ReviewRow("Name", viewModel.tournamentName.ifBlank { "Sem Nome" })
+                    ReviewRow(stringResource(R.string.label_name), viewModel.tournamentName.ifBlank { stringResource(R.string.val_no_name) })
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Sport", viewModel.selectedSport)
+                    ReviewRow(stringResource(R.string.label_sport), viewModel.selectedSport)
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Format", viewModel.selectedFormat)
+                    ReviewRow(stringResource(R.string.label_format), viewModel.selectedFormat)
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Schedule", "${viewModel.startDate} - ${viewModel.endDate}")
+                    ReviewRow(stringResource(R.string.label_schedule), "${viewModel.startDate} - ${viewModel.endDate}")
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Max Teams", viewModel.maxParticipants)
+                    ReviewRow(stringResource(R.string.label_max_teams), viewModel.maxParticipants)
                     Spacer(modifier = Modifier.height(8.dp))
-                    ReviewRow("Location", viewModel.venue.ifBlank { "TBD" })
+                    ReviewRow(stringResource(R.string.label_location), viewModel.venue.ifBlank { "TBD" })
                 }
             }
 
@@ -143,7 +144,7 @@ fun CreateTournamentStep4Screen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("BACK", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.btn_back_caps), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
 
@@ -165,7 +166,7 @@ fun CreateTournamentStep4Screen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Text("PUBLISH TOURNAMENT", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.btn_publish_tournament), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                         }
@@ -180,14 +181,14 @@ fun CreateTournamentStep4Screen(
 @Composable
 fun Step4HeaderSection() {
     Column {
-        Text("STEP 4 OF 4", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text(stringResource(R.string.step_4_of_4), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(4.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Role &\nReview", color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
+            Text(stringResource(R.string.title_role_review), color = DarkBlue, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 36.sp)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(modifier = Modifier.width(24.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(TealGreen))
@@ -198,7 +199,7 @@ fun Step4HeaderSection() {
         }
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Choose your level of involvement and confirm everything looks right.",
+            text = stringResource(R.string.desc_role_review),
             color = TextGray,
             fontSize = 14.sp,
             lineHeight = 20.sp
@@ -305,4 +306,3 @@ fun Step4SectionLabel(text: String) {
         letterSpacing = 1.sp
     )
 }
-

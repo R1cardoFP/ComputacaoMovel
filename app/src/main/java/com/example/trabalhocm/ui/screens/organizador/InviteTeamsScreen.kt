@@ -16,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 private val DarkBlue = Color(0xFF0B1F3A)
@@ -54,12 +56,12 @@ fun InviteTeamsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registration", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { Text(stringResource(R.string.title_registration), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White) }
+                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White) }
                 },
                 actions = {
-                    IconButton(onClick = { }) { Icon(Icons.Outlined.Notifications, contentDescription = null, tint = Color.White) }
+                    IconButton(onClick = { }) { Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
@@ -82,11 +84,11 @@ fun InviteTeamsScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("ORGANIZER TOOL", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_organizer_tool), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Invite Teams", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.title_invite_teams), color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Send invitations for Premier Summer Cup 2026.", color = TextGray, fontSize = 14.sp)
+                Text(stringResource(R.string.desc_invite_teams_subtitle), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -94,25 +96,25 @@ fun InviteTeamsScreen(
                 Card(colors = CardDefaults.cardColors(containerColor = DarkBlue), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
-                            Text("SLOTS REMAINING", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.label_slots_remaining), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text("8", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                                 Text(" / 32", color = TextGray, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 6.dp))
                             }
                         }
                         Surface(color = Color(0xFFD1FAE5), shape = RoundedCornerShape(12.dp)) {
-                            Text("INVITE ONLY", color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
+                            Text(stringResource(R.string.badge_invite_only), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
                         }
                     }
                 }
             }
 
             item {
-                Text("SEARCH TEAMS", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_search_teams_caps), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = searchQuery, onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search by team name or captain...", color = TextGray, fontSize = 13.sp) },
+                    placeholder = { Text(stringResource(R.string.placeholder_search_team_captain), color = TextGray, fontSize = 13.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextGray, modifier = Modifier.size(20.dp)) },
                     modifier = Modifier.fillMaxWidth().height(50.dp).clip(RoundedCornerShape(8.dp))
                         .background(CardBg),
@@ -121,7 +123,7 @@ fun InviteTeamsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            item { Text("SUGGESTED TEAMS", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) }
+            item { Text(stringResource(R.string.label_suggested_teams), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) }
 
             items(suggestedTeams) { team ->
                 Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
@@ -131,16 +133,16 @@ fun InviteTeamsScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(team.name, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                Text("Captain: ${team.captain} • ${team.tier}", color = TextGray, fontSize = 10.sp)
+                                Text(stringResource(R.string.format_captain_tier, team.captain, team.tier), color = TextGray, fontSize = 10.sp)
                             }
                         }
                         if (team.status == "Invited") {
                             Surface(color = InputBg, shape = RoundedCornerShape(6.dp)) {
-                                Text("INVITED", color = TextGray, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                                Text(stringResource(R.string.btn_invited), color = TextGray, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                             }
                         } else {
                             Button(onClick = {}, shape = RoundedCornerShape(6.dp), colors = ButtonDefaults.buttonColors(containerColor = TealGreen), contentPadding = PaddingValues(horizontal = 16.dp)) {
-                                Text("INVITE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                Text(stringResource(R.string.btn_invite), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                             }
                         }
                     }
@@ -149,13 +151,13 @@ fun InviteTeamsScreen(
 
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("SENT INVITATIONS (1)", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.label_sent_invitations_1), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(color = Color(0xFFEEF2FF), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.padding(16.dp)) {
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Vianense was invited 2 days ago. Awaiting response.", color = PrimaryBlue, fontSize = 12.sp, lineHeight = 16.sp)
+                        Text(stringResource(R.string.msg_invited_awaiting), color = PrimaryBlue, fontSize = 12.sp, lineHeight = 16.sp)
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))

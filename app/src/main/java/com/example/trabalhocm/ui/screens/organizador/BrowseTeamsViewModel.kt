@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -13,7 +14,7 @@ import kotlinx.coroutines.launch
 data class UiTeam(
     val id: Long,
     val name: String,
-    val division: String?,
+    val divisionRes: Int?,
     val wins: Int,
     val losses: Int,
     val streak: String,
@@ -46,17 +47,17 @@ class BrowseTeamsViewModel : ViewModel() {
                     ?.map { it.idEquipa } ?: emptyList()
 
                 teams = equipasDB.map { eq ->
-                    val modalidadeStr = when(eq.idModalidade) {
-                        1L -> "FOOTBALL"
-                        2L -> "BASKETBALL"
-                        3L -> "VOLLEYBALL"
-                        else -> "SPORT"
+                    val modalidadeRes = when(eq.idModalidade) {
+                        1L -> R.string.sport_football
+                        2L -> R.string.sport_basketball
+                        3L -> R.string.sport_volleyball
+                        else -> R.string.sport_default
                     }
 
                     UiTeam(
                         id = eq.id,
                         name = eq.nome,
-                        division = modalidadeStr,
+                        divisionRes = modalidadeRes,
                         wins = 0,
                         losses = 0,
                         streak = "-",

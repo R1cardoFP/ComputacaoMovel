@@ -23,10 +23,12 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 
 private val DarkBlue = Color(0xFF111827)
 private val PrimaryBlue = Color(0xFF0346B8)
@@ -62,15 +64,15 @@ fun EditTournamentScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { Text(stringResource(R.string.title_edit), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.desc_back), tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = null, tint = Color.White)
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
@@ -87,9 +89,9 @@ fun EditTournamentScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Column {
-                Text("TOURNAMENT MANAGEMENT", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.tag_tournament_management), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Summer Slam 2026", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                Text(stringResource(R.string.mock_tournament_slam), color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -100,7 +102,7 @@ fun EditTournamentScreen(
                     modifier = Modifier.weight(1f).height(40.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorRed)
                 ) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                    Text(stringResource(R.string.btn_cancel_caps), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                 }
                 Button(
                     onClick = onSaveClick,
@@ -108,16 +110,16 @@ fun EditTournamentScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                     modifier = Modifier.weight(1f).height(40.dp)
                 ) {
-                    Text("SAVE CHANGES", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                    Text(stringResource(R.string.btn_save_changes_caps), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                 }
             }
 
             Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Tournament Identity", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_tournament_identity), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
 
                     Column {
-                        FieldLabel("TOURNAMENT LOGO")
+                        FieldLabel(stringResource(R.string.label_tournament_logo))
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -134,19 +136,19 @@ fun EditTournamentScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)).background(DarkBlue))
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("Replace Logo", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.btn_replace_logo), color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text("Current: summer-slam.png - Max 5 MB", color = TextGray, fontSize = 10.sp)
+                                Text(stringResource(R.string.desc_current_logo), color = TextGray, fontSize = 10.sp)
                             }
                         }
                     }
 
-                    EditField("TOURNAMENT NAME", tournamentName) { tournamentName = it }
-                    EditField("SPORT TYPE", sportType) { sportType = it }
-                    EditField("FORMAT", format) { format = it }
+                    EditField(stringResource(R.string.label_tournament_name), tournamentName) { tournamentName = it }
+                    EditField(stringResource(R.string.label_sport_type_caps), sportType) { sportType = it }
+                    EditField(stringResource(R.string.label_format_caps), format) { format = it }
 
                     Column {
-                        FieldLabel("LOCATION")
+                        FieldLabel(stringResource(R.string.label_location_caps))
                         TextField(
                             value = location,
                             onValueChange = { location = it },
@@ -157,19 +159,19 @@ fun EditTournamentScreen(
                         )
                     }
 
-                    EditField("PRIZE POOL (€)", prizePool) { prizePool = it }
+                    EditField(stringResource(R.string.label_prize_pool_eur), prizePool) { prizePool = it }
                 }
             }
 
             Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Schedule and Registration", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_schedule_registration_edit), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
 
-                    EditField("START DATE", startDate) { startDate = it }
-                    EditField("END DATE", endDate) { endDate = it }
+                    EditField(stringResource(R.string.label_start_date), startDate) { startDate = it }
+                    EditField(stringResource(R.string.label_end_date), endDate) { endDate = it }
 
                     Column {
-                        FieldLabel("REGISTRATION DEADLINE")
+                        FieldLabel(stringResource(R.string.label_registration_deadline))
                         TextField(
                             value = regDeadline,
                             onValueChange = { regDeadline = it },
@@ -178,19 +180,19 @@ fun EditTournamentScreen(
                             textStyle = LocalTextStyle.current.copy(fontSize = 13.sp, color = DarkBlue)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("⚠ Deadline is approaching", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.msg_deadline_approaching), color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
 
-                    EditField("MAX PARTICIPANTS", maxParticipants) { maxParticipants = it }
+                    EditField(stringResource(R.string.label_max_participants), maxParticipants) { maxParticipants = it }
                 }
             }
 
             Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column {
-                        Text("My Role", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.title_my_role), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text("Your role for this tournament is locked once published.", color = TextGray, fontSize = 10.sp)
+                        Text(stringResource(R.string.desc_role_locked), color = TextGray, fontSize = 10.sp)
                     }
 
                     Card(
@@ -203,32 +205,32 @@ fun EditTournamentScreen(
                             Icon(Icons.Outlined.Person, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Participate as Player", color = DarkBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                Text("Manage and compete", color = TextGray, fontSize = 10.sp)
+                                Text(stringResource(R.string.role_participate_player), color = DarkBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.desc_manage_compete), color = TextGray, fontSize = 10.sp)
                             }
                             Icon(Icons.Default.Lock, contentDescription = null, tint = TextGray, modifier = Modifier.size(16.dp))
                         }
                     }
 
-                    EditField("MY SEED / TEAM NAME", teamName) { teamName = it }
+                    EditField(stringResource(R.string.label_my_seed_team), teamName) { teamName = it }
                 }
             }
 
             Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Event Status", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_event_status), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Registration Status", color = DarkBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.label_registration_status), color = DarkBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         Surface(color = LightBlueBadge, shape = RoundedCornerShape(12.dp)) {
-                            Text("• OPEN", color = PrimaryBlue, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                            Text(stringResource(R.string.badge_open), color = PrimaryBlue, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                         }
                     }
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Visibility", color = DarkBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.label_visibility), color = DarkBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         Surface(color = InputBg, shape = RoundedCornerShape(12.dp)) {
-                            Text("PUBLIC", color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                            Text(stringResource(R.string.badge_public), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                         }
                     }
                 }
@@ -242,7 +244,7 @@ fun EditTournamentScreen(
             ) {
                 Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Delete Tournament", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(stringResource(R.string.btn_delete_tournament), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
