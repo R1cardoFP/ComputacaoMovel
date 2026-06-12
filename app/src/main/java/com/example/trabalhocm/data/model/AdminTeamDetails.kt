@@ -18,5 +18,6 @@ data class AdminTeamDetails(
 data class AdminTeamPlayer(
     val id: String,
     val nome: String,
-    val email: String
+    val email: String,
+    val isCaptain: Boolean = false
 )

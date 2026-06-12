@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import java.text.Normalizer
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -37,6 +38,12 @@ class AdminNotificationRepository {
                     .decodeList<JsonObject>()
             }.getOrDefault(emptyList())
 
+            val equipas = runCatching {
+                client.from("equipa")
+                    .select()
+                    .decodeList<JsonObject>()
+            }.getOrDefault(emptyList())
+
             notificacoes
                 .sortedByDescending { it.text("criada_em", "created_at") }
                 .map { notificacao ->
@@ -45,14 +52,36 @@ class AdminNotificationRepository {
                     val acaoTexto = notificacao.text("acao_texto", "action_text").takeIf { it.isNotBlank() }
                     val criadaEm = notificacao.text("criada_em", "created_at")
 
-                    val idUtilizadorDireto = notificacao.text("id_utilizador", "user_id").takeIf { it.isNotBlank() }
-                    val idTorneioDireto = notificacao.text("id_torneio", "tournament_id").takeIf { it.isNotBlank() }
+                    val idUtilizadorDireto = notificacao.text(
+                        "id_utilizador",
+                        "user_id",
+                        "id_jogador",
+                        "player_id",
+                        "id_organizador",
+                        "organizer_id",
+                        "utilizador_id"
+                    ).takeIf { it.isNotBlank() }
+
+                    val idTorneioDireto = notificacao.text(
+                        "id_torneio",
+                        "tournament_id",
+                        "torneio_id"
+                    ).takeIf { it.isNotBlank() }
+
+                    val idEquipaDireto = notificacao.text(
+                        "id_equipa",
+                        "team_id",
+                        "equipa_id"
+                    ).takeIf { it.isNotBlank() }
 
                     val idUtilizadorFinal = idUtilizadorDireto
                         ?: inferirUtilizador(titulo, descricao, utilizadores)
 
                     val idTorneioFinal = idTorneioDireto
                         ?: inferirTorneio(titulo, descricao, torneios)
+
+                    val idEquipaFinal = idEquipaDireto
+                        ?: inferirEquipa(titulo, descricao, equipas)
 
                     AdminNotification(
                         id = notificacao.text("id"),
@@ -64,7 +93,8 @@ class AdminNotificationRepository {
                         timeText = formatTime(criadaEm),
                         createdAt = criadaEm,
                         userId = idUtilizadorFinal,
-                        tournamentId = idTorneioFinal
+                        tournamentId = idTorneioFinal,
+                        teamId = idEquipaFinal
                     )
                 }
         }
@@ -80,6 +110,8 @@ class AdminNotificationRepository {
                         eq("id", id)
                     }
                 }
+
+            Unit
         }
     }
 
@@ -88,17 +120,54 @@ class AdminNotificationRepository {
         descricao: String,
         utilizadores: List<JsonObject>
     ): String? {
-        val texto = "$titulo $descricao".lowercase()
+        val texto = normalizarTexto("$titulo $descricao")
 
-        return utilizadores.firstOrNull { utilizador ->
-            val nome = utilizador.text("nome", "username").lowercase()
-            val email = utilizador.text("email").lowercase()
-            val primeiroNome = nome.split(" ").firstOrNull().orEmpty()
+        return utilizadores
+            .mapNotNull { utilizador ->
+                val id = utilizador.text("id")
+                if (id.isBlank()) return@mapNotNull null
 
-            (nome.isNotBlank() && texto.contains(nome)) ||
-                    (primeiroNome.length >= 3 && texto.contains(primeiroNome)) ||
-                    (email.isNotBlank() && texto.contains(email))
-        }?.text("id")
+                val nomeOriginal = utilizador.text("nome", "name")
+                val usernameOriginal = utilizador.text("username")
+                val emailOriginal = utilizador.text("email")
+
+                val nome = normalizarTexto(nomeOriginal)
+                val username = normalizarTexto(usernameOriginal)
+                val email = normalizarTexto(emailOriginal)
+
+                val partesNome = nome
+                    .split(" ")
+                    .filter { it.length >= 2 }
+
+                val primeiroNome = partesNome.firstOrNull().orEmpty()
+                val ultimoNome = partesNome.lastOrNull().orEmpty()
+
+                val inicialUltimoNome = if (primeiroNome.isNotBlank() && ultimoNome.isNotBlank()) {
+                    "${primeiroNome.first()}. $ultimoNome"
+                } else {
+                    ""
+                }
+
+                val score = when {
+                    nome.isNotBlank() && texto.contains(nome) -> 100
+                    email.isNotBlank() && texto.contains(email) -> 95
+                    username.isNotBlank() && texto.contains(username) -> 90
+                    inicialUltimoNome.isNotBlank() && texto.contains(inicialUltimoNome) -> 85
+                    primeiroNome.length >= 3 && ultimoNome.length >= 3 &&
+                            texto.contains(primeiroNome) && texto.contains(ultimoNome) -> 80
+                    primeiroNome.length >= 3 && texto.contains(primeiroNome) -> 50
+                    ultimoNome.length >= 3 && texto.contains(ultimoNome) -> 45
+                    else -> 0
+                }
+
+                if (score > 0) {
+                    id to score
+                } else {
+                    null
+                }
+            }
+            .maxByOrNull { it.second }
+            ?.first
     }
 
     private fun inferirTorneio(
@@ -106,12 +175,71 @@ class AdminNotificationRepository {
         descricao: String,
         torneios: List<JsonObject>
     ): String? {
-        val texto = "$titulo $descricao".lowercase()
+        val texto = normalizarTexto("$titulo $descricao")
 
-        return torneios.firstOrNull { torneio ->
-            val nome = torneio.text("nome", "name").lowercase()
-            nome.isNotBlank() && texto.contains(nome)
-        }?.text("id")
+        return torneios
+            .mapNotNull { torneio ->
+                val id = torneio.text("id")
+                if (id.isBlank()) return@mapNotNull null
+
+                val nomeOriginal = torneio.text("nome", "name")
+                val nome = normalizarTexto(nomeOriginal)
+
+                val palavras = nome
+                    .split(" ")
+                    .filter { it.length >= 3 }
+
+                val score = when {
+                    nome.isNotBlank() && texto.contains(nome) -> 100
+                    palavras.size >= 2 && palavras.all { texto.contains(it) } -> 80
+                    palavras.any { texto.contains(it) } -> 45
+                    else -> 0
+                }
+
+                if (score > 0) {
+                    id to score
+                } else {
+                    null
+                }
+            }
+            .maxByOrNull { it.second }
+            ?.first
+    }
+
+    private fun inferirEquipa(
+        titulo: String,
+        descricao: String,
+        equipas: List<JsonObject>
+    ): String? {
+        val texto = normalizarTexto("$titulo $descricao")
+
+        return equipas
+            .mapNotNull { equipa ->
+                val id = equipa.text("id")
+                if (id.isBlank()) return@mapNotNull null
+
+                val nomeOriginal = equipa.text("nome", "name")
+                val nome = normalizarTexto(nomeOriginal)
+
+                val palavras = nome
+                    .split(" ")
+                    .filter { it.length >= 3 }
+
+                val score = when {
+                    nome.isNotBlank() && texto.contains(nome) -> 100
+                    palavras.size >= 2 && palavras.all { texto.contains(it) } -> 80
+                    palavras.any { texto.contains(it) } -> 45
+                    else -> 0
+                }
+
+                if (score > 0) {
+                    id to score
+                } else {
+                    null
+                }
+            }
+            .maxByOrNull { it.second }
+            ?.first
     }
 
     private fun formatTime(data: String): String {
@@ -141,6 +269,14 @@ class AdminNotificationRepository {
                 LocalDateTime.parse(data)
             }
         }
+    }
+
+    private fun normalizarTexto(texto: String): String {
+        val semAcentos = Normalizer
+            .normalize(texto, Normalizer.Form.NFD)
+            .replace("\\p{Mn}+".toRegex(), "")
+
+        return semAcentos.lowercase(Locale.ROOT)
     }
 
     private fun JsonObject.text(vararg keys: String): String {

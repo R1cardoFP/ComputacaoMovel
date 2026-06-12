@@ -322,8 +322,6 @@ fun AdminOrganizerRequestsScreen(
 
                                 isUpdating = false
                             }
-                        },
-                        onDetailsClick = {
                         }
                     )
                 }
@@ -576,7 +574,6 @@ private fun OrganizerRequestCard(
     request: OrganizerRequest,
     isUpdating: Boolean,
     onRejectClick: (OrganizerRequest) -> Unit,
-    onDetailsClick: (OrganizerRequest) -> Unit,
     onApproveClick: (OrganizerRequest) -> Unit
 ) {
     val initials = getInitials(request.name)
@@ -683,9 +680,9 @@ private fun OrganizerRequestCard(
                 lineHeight = 15.sp
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
             if (request.status == "PENDING") {
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -702,16 +699,6 @@ private fun OrganizerRequestCard(
                     )
 
                     RequestActionButton(
-                        text = "DETAILS",
-                        color = Color(0xFF0057C8),
-                        background = Color.White,
-                        borderColor = Color(0xFF0057C8),
-                        enabled = !isUpdating,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onDetailsClick(request) }
-                    )
-
-                    RequestActionButton(
                         text = "APPROVE",
                         icon = AppIcons.Confirm,
                         color = Color.White,
@@ -722,16 +709,6 @@ private fun OrganizerRequestCard(
                         onClick = { onApproveClick(request) }
                     )
                 }
-            } else {
-                RequestActionButton(
-                    text = "DETAILS",
-                    color = Color(0xFF0057C8),
-                    background = Color.White,
-                    borderColor = Color(0xFF0057C8),
-                    enabled = !isUpdating,
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onDetailsClick(request) }
-                )
             }
         }
     }

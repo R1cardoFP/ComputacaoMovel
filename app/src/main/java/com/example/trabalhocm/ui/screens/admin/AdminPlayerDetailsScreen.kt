@@ -322,15 +322,29 @@ private fun PlayerProfileHeader(player: AdminPlayerDetails) {
                     background = Color(0xFFE5E7EB),
                     textColor = TextGray
                 )
+            }
 
-                if (player.equipas.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(7.dp))
+            if (player.equipas.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "CURRENT TEAMS",
+                        color = TextGray,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(3.dp))
 
                     Text(
-                        text = player.equipas.joinToString(", "),
-                        color = TextGray,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
+                        text = player.equipas.joinToString(" · "),
+                        color = BrandBlue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
