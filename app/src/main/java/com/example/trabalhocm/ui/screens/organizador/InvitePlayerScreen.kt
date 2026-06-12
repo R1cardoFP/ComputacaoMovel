@@ -22,18 +22,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.repository.UtilizadorConviteInfo
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
-
-data class RecommendedPlayer(val name: String, val role: String)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun InvitePlayerScreen(
+    idEquipa: Long,
+    viewModel: InvitePlayerViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSendInviteClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
@@ -46,19 +47,21 @@ fun InvitePlayerScreen(
     val roleDefender = stringResource(R.string.role_defender)
     val roleMidfielder = stringResource(R.string.role_midfielder)
     val roleGoalkeeper = stringResource(R.string.role_goalkeeper)
-    val rolePointGuard = stringResource(R.string.role_point_guard)
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(roleMidfielder) }
     var personalMessage by remember { mutableStateOf("") }
-    var showSuccessBanner by remember { mutableStateOf(false) }
+    var selectedPlayerId by remember { mutableStateOf<String?>(null) }
 
+    val msgSelectPlayer = stringResource(R.string.msg_select_player)
+
+    LaunchedEffect(idEquipa) {
+        viewModel.iniciar(idEquipa)
+    }
+
+    val showSuccessBanner = viewModel.sucesso
     val roles = listOf(roleStriker, roleDefender, roleMidfielder, roleGoalkeeper)
-    val recommendedPlayers = listOf(
-        RecommendedPlayer("Cristiano Ronaldo", roleStriker),
-        RecommendedPlayer("João Silva", rolePointGuard),
-        RecommendedPlayer("André Lima", roleDefender)
-    )
+    val recommendedPlayers = viewModel.resultados
 
     Scaffold(
         topBar = {
@@ -128,7 +131,10 @@ fun InvitePlayerScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = searchQuery,
-                        onValueChange = { searchQuery = it },
+                        onValueChange = {
+                            searchQuery = it
+                            viewModel.pesquisar(it)
+                        },
                         placeholder = { Text(stringResource(R.string.placeholder_search_players), color = Color.LightGray) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -153,9 +159,25 @@ fun InvitePlayerScreen(
                     Text(stringResource(R.string.label_recommended), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        recommendedPlayers.forEach { player ->
-                            RecommendedPlayerCard(player)
+                    if (viewModel.isLoading) {
+                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = PrimaryBlue)
+                        }
+                    } else if (recommendedPlayers.isEmpty()) {
+                        Text(stringResource(R.string.msg_no_players_found), color = TextGray, fontSize = 13.sp)
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            recommendedPlayers.forEach { player ->
+                                RecommendedPlayerCard(
+                                    player = player,
+                                    selected = selectedPlayerId == player.utilizador.id,
+                                    onClick = {
+                                        if (!player.jaPertenceEquipa) {
+                                            selectedPlayerId = player.utilizador.id
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -220,25 +242,43 @@ fun InvitePlayerScreen(
                 }
             }
 
+            if (viewModel.errorMessage.isNotBlank()) {
+                item {
+                    Text(viewModel.errorMessage, color = Color(0xFFDC2626), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
             item {
                 Button(
                     onClick = {
-                        showSuccessBanner = true
-                        onSendInviteClick()
+                        val playerId = selectedPlayerId
+                        if (playerId == null) {
+                            viewModel.errorMessage = msgSelectPlayer
+                            return@Button
+                        }
+                        viewModel.convidar(playerId, selectedRole, personalMessage) {
+                            selectedPlayerId = null
+                            onSendInviteClick()
+                        }
                     },
+                    enabled = !viewModel.isProcessing,
                     colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.btn_send_invite), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    if (viewModel.isProcessing) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(R.string.btn_send_invite), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
@@ -248,38 +288,43 @@ fun InvitePlayerScreen(
 }
 
 @Composable
-fun RecommendedPlayerCard(player: RecommendedPlayer) {
+fun RecommendedPlayerCard(
+    player: UtilizadorConviteInfo,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val nome = player.utilizador.nome.ifBlank { player.utilizador.username }
+    val jaNaEquipa = player.jaPertenceEquipa
+
     Card(
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = if (selected) PrimaryBlue.copy(alpha = 0.08f) else CardBg),
         shape = RoundedCornerShape(8.dp),
+        border = if (selected) BorderStroke(1.5.dp, PrimaryBlue) else null,
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !jaNaEquipa) { onClick() }
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier.size(40.dp).clip(CircleShape).background(InputBg),
                 contentAlignment = Alignment.Center
             ) {
-                Text(player.name.split(" ").take(2).joinToString("") { it.take(1) }, color = DarkBlue, fontWeight = FontWeight.Bold)
+                Text(nome.split(" ").take(2).joinToString("") { it.take(1) }.uppercase(), color = DarkBlue, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(player.name, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(nome, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(2.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(PrimaryBlue))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(player.role, color = TextGray, fontSize = 12.sp)
+                Text("@${player.utilizador.username}", color = TextGray, fontSize = 12.sp)
+            }
+            if (jaNaEquipa) {
+                Surface(color = InputBg, shape = RoundedCornerShape(6.dp)) {
+                    Text(stringResource(R.string.badge_already_member), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                 }
+            } else if (selected) {
+                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InvitePlayerScreenPreview() {
-    MaterialTheme {
-        InvitePlayerScreen()
     }
 }

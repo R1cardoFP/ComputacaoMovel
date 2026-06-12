@@ -25,9 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
@@ -44,9 +44,19 @@ data class AppNotification(
     val hasActions: Boolean = false
 )
 
+private fun mapTipoNotificacao(tipo: String): NotificationType {
+    val t = tipo.lowercase()
+    return when {
+        t.contains("team") || t.contains("equipa") || t.contains("convite") -> NotificationType.TEAM
+        t.contains("match") || t.contains("jogo") || t.contains("torneio") || t.contains("resultado") -> NotificationType.MATCH
+        else -> NotificationType.SYSTEM
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizerNotificationsScreen(
+    viewModel: OrganizerNotificationsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -61,12 +71,17 @@ fun OrganizerNotificationsScreen(
     val tabs = listOf(tabAll, tabMatches, tabSystem)
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
-    val notifications = listOf(
-        AppNotification(1, NotificationType.MATCH, stringResource(R.string.notif_match_reminder_title), stringResource(R.string.notif_match_reminder_msg), "2M AGO", true),
-        AppNotification(2, NotificationType.TEAM, stringResource(R.string.notif_team_invite_title), stringResource(R.string.notif_team_invite_msg), "15M AGO", false, true),
-        AppNotification(3, NotificationType.MATCH, stringResource(R.string.notif_result_title), stringResource(R.string.notif_result_msg), "2H AGO"),
-        AppNotification(4, NotificationType.SYSTEM, stringResource(R.string.notif_system_title), stringResource(R.string.notif_system_msg), stringResource(R.string.time_yesterday))
-    )
+    val notifications = viewModel.notificacoes.map { n ->
+        AppNotification(
+            id = n.id.toInt(),
+            type = mapTipoNotificacao(n.tipo),
+            title = n.titulo,
+            message = n.mensagem,
+            time = n.data.take(10),
+            isUnread = !n.lida,
+            hasActions = false
+        )
+    }
 
     val filteredNotifications = notifications.filter { notif ->
         when (selectedTab) {
@@ -149,21 +164,35 @@ fun OrganizerNotificationsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            items(filteredNotifications) { notification ->
-                NotificationCard(notification = notification)
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Outlined.Notifications, contentDescription = null, tint = TextGray.copy(alpha = 0.5f), modifier = Modifier.size(32.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(stringResource(R.string.msg_end_of_feed), color = TextGray.copy(alpha = 0.5f), fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+            if (viewModel.isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = PrimaryBlue)
+                    }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+            } else if (filteredNotifications.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.msg_end_of_feed), color = TextGray.copy(alpha = 0.5f), fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    }
+                }
+            } else {
+                items(filteredNotifications) { notification ->
+                    NotificationCard(notification = notification)
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Outlined.Notifications, contentDescription = null, tint = TextGray.copy(alpha = 0.5f), modifier = Modifier.size(32.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(stringResource(R.string.msg_end_of_feed), color = TextGray.copy(alpha = 0.5f), fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
             }
         }
     }
