@@ -64,8 +64,8 @@ private data class NotificationVisual(
 @Composable
 fun AdminNotificationsScreen(
     onBackClick: () -> Unit = {},
-    onViewUserProfileClick: (AdminNotification) -> Unit = {},
-    onViewTournamentDetailsClick: (AdminNotification) -> Unit = {},
+    onViewUserProfileClick: (String) -> Unit = {},
+    onViewTournamentDetailsClick: (String) -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -79,6 +79,7 @@ fun AdminNotificationsScreen(
     var notifications by remember { mutableStateOf<List<AdminNotification>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
+    var actionMessage by remember { mutableStateOf("") }
 
     fun carregarNotificacoes(mostrarLoading: Boolean = true) {
         scope.launch {
@@ -204,6 +205,17 @@ fun AdminNotificationsScreen(
                     }
                 }
 
+                if (actionMessage.isNotBlank()) {
+                    item {
+                        Text(
+                            text = actionMessage,
+                            color = BrandGreen,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
                 if (visibleNotifications.isEmpty()) {
                     item {
                         Card(
@@ -239,7 +251,10 @@ fun AdminNotificationsScreen(
                             }
                         },
                         onViewUserProfileClick = onViewUserProfileClick,
-                        onViewTournamentDetailsClick = onViewTournamentDetailsClick
+                        onViewTournamentDetailsClick = onViewTournamentDetailsClick,
+                        onActionWithoutTarget = {
+                            actionMessage = "Não foi possível abrir o destino desta notificação. Falta o ID associado."
+                        }
                     )
                 }
             }
@@ -356,8 +371,9 @@ private fun AdminNotificationFilterChip(
 private fun AdminNotificationCard(
     notification: AdminNotification,
     onNotificationClick: (AdminNotification) -> Unit,
-    onViewUserProfileClick: (AdminNotification) -> Unit,
-    onViewTournamentDetailsClick: (AdminNotification) -> Unit
+    onViewUserProfileClick: (String) -> Unit,
+    onViewTournamentDetailsClick: (String) -> Unit,
+    onActionWithoutTarget: () -> Unit
 ) {
     val visual = notificationVisual(notification)
 
@@ -450,19 +466,39 @@ private fun AdminNotificationCard(
                 if (notification.actionText != null) {
                     Spacer(modifier = Modifier.height(10.dp))
 
+                    val destination = notificationDestination(notification)
+                    val actionEnabled = when (destination) {
+                        "USER" -> !notification.userId.isNullOrBlank()
+                        "TOURNAMENT" -> !notification.tournamentId.isNullOrBlank()
+                        else -> false
+                    }
+
                     NotificationActionButton(
                         text = notification.actionText,
+                        enabled = actionEnabled,
                         onClick = {
                             onNotificationClick(notification)
 
-                            when {
-                                notification.actionText.contains("user", ignoreCase = true) -> {
-                                    onViewUserProfileClick(notification)
+                            when (destination) {
+                                "USER" -> {
+                                    val userId = notification.userId
+                                    if (userId.isNullOrBlank()) {
+                                        onActionWithoutTarget()
+                                    } else {
+                                        onViewUserProfileClick(userId)
+                                    }
                                 }
 
-                                notification.actionText.contains("tournament", ignoreCase = true) -> {
-                                    onViewTournamentDetailsClick(notification)
+                                "TOURNAMENT" -> {
+                                    val tournamentId = notification.tournamentId
+                                    if (tournamentId.isNullOrBlank()) {
+                                        onActionWithoutTarget()
+                                    } else {
+                                        onViewTournamentDetailsClick(tournamentId)
+                                    }
                                 }
+
+                                else -> onActionWithoutTarget()
                             }
                         }
                     )
@@ -475,6 +511,7 @@ private fun AdminNotificationCard(
 @Composable
 private fun NotificationActionButton(
     text: String,
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
     Box(
@@ -482,12 +519,12 @@ private fun NotificationActionButton(
             .fillMaxWidth()
             .height(36.dp)
             .clip(RoundedCornerShape(5.dp))
-            .background(Color.White)
+            .background(if (enabled) Color.White else Color(0xFFE5E7EB))
             .border(
                 BorderStroke(1.dp, Color(0xFFD8DEE9)),
                 RoundedCornerShape(5.dp)
             )
-            .clickable {
+            .clickable(enabled = enabled) {
                 onClick()
             }
             .padding(horizontal = 8.dp),
@@ -495,12 +532,27 @@ private fun NotificationActionButton(
     ) {
         Text(
             text = text,
-            color = BrandBlue,
+            color = if (enabled) BrandBlue else TextGray,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
+
+private fun notificationDestination(notification: AdminNotification): String? {
+    val action = notification.actionText.orEmpty().lowercase()
+    val title = notification.title.lowercase()
+    val description = notification.description.lowercase()
+    val text = "$action $title $description"
+
+    return when {
+        text.contains("tournament") || text.contains("torneio") -> "TOURNAMENT"
+        text.contains("user") || text.contains("profile") || text.contains("utilizador") || text.contains("organizer") || text.contains("organizador") -> "USER"
+        !notification.tournamentId.isNullOrBlank() -> "TOURNAMENT"
+        !notification.userId.isNullOrBlank() -> "USER"
+        else -> null
     }
 }
 

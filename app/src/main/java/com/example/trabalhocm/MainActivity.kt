@@ -1,4 +1,4 @@
-﻿package com.example.trabalhocm
+package com.example.trabalhocm
 
 import android.content.Context
 import android.net.Uri
@@ -140,7 +140,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "admin_home"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -1323,12 +1323,15 @@ fun MatchLeagueApp() {
         composable("admin_home") {
             AdminHomeScreen(
                 onManageUsersClick = {
-                    navController.navigate("admin_users")
+                    navController.navigate("admin_user_management")
                 },
                 onManageTeamsClick = { navController.navigate("admin_teams") },
                 onManageTournamentsClick = { navController.navigate("admin_tournaments") },
                 onReviewRequestsClick = { navController.navigate("admin_organizer_requests") },
                 onHomeClick = {},
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
                 onTournamentsClick = { navController.navigate("admin_tournaments") },
                 onMatchesClick = { navController.navigate("admin_casual_matches") },
                 onTeamsClick = { navController.navigate("admin_teams") },
@@ -1361,14 +1364,28 @@ fun MatchLeagueApp() {
                         }
                     }
                 },
-                onTournamentsClick = { navController.navigate("torneios") },
+                onNotificationsClick = {
+                    navController.navigate("admin_notifications")
+                },
+                onTournamentsClick = { navController.navigate("admin_tournaments") },
                 onMatchesClick = { navController.navigate("admin_casual_matches") },
-                onTeamsClick = {},
+                onTeamsClick = { navController.navigate("admin_teams") },
                 onProfileClick = {}
             )
         }
 
         composable("admin_users") {
+            LaunchedEffect(Unit) {
+                navController.navigate("admin_user_management") {
+                    popUpTo("admin_users") {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }
+        }
+
+        composable("admin_user_management") {
             AdminUserManagementScreen(
                 onBackClick = {
                     navController.popBackStack()
@@ -1380,12 +1397,14 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_notifications")
                 },
                 onTournamentsClick = {
-                    navController.navigate("torneios")
+                    navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
                     navController.navigate("admin_casual_matches")
                 },
-                onTeamsClick = {},
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
                 onProfileClick = {
                     navController.navigate("admin_profile")
                 }
@@ -1397,16 +1416,24 @@ fun MatchLeagueApp() {
                 onBackClick = {
                     navController.popBackStack()
                 },
+                onViewUserProfileClick = { userId ->
+                    navController.navigate("admin_player_details/$userId?teamId=")
+                },
+                onViewTournamentDetailsClick = { tournamentId ->
+                    navController.navigate("admin_tournament_details/$tournamentId")
+                },
                 onHomeClick = {
                     navController.navigate("admin_home")
                 },
                 onTournamentsClick = {
-                    navController.navigate("torneios")
+                    navController.navigate("admin_tournaments")
                 },
                 onMatchesClick = {
                     navController.navigate("admin_casual_matches")
                 },
-                onTeamsClick = {},
+                onTeamsClick = {
+                    navController.navigate("admin_teams")
+                },
                 onProfileClick = {
                     navController.navigate("admin_profile")
                 }
@@ -1431,7 +1458,7 @@ fun MatchLeagueApp() {
                     navController.navigate("admin_casual_matches")
                 },
                 onTeamsClick = {
-                    navController.navigate("teams")
+                    navController.navigate("admin_teams")
                 },
                 onProfileClick = {
                     navController.navigate("admin_profile")
@@ -1451,7 +1478,7 @@ fun MatchLeagueApp() {
                 onMatchesClick = {
                     navController.navigate("admin_casual_matches")
                 },
-                onTeamsClick = {},
+                onTeamsClick = { navController.navigate("admin_teams") },
                 onProfileClick = { navController.navigate("admin_profile") }
             )
         }
@@ -1473,7 +1500,7 @@ fun MatchLeagueApp() {
                 onMatchesClick = {
                     navController.navigate("admin_casual_matches")
                 },
-                onTeamsClick = {},
+                onTeamsClick = { navController.navigate("admin_teams") },
                 onProfileClick = {
                     navController.navigate("admin_profile")
                 }
@@ -1521,7 +1548,7 @@ fun MatchLeagueApp() {
                 onMatchesClick = {
                     navController.navigate("admin_casual_matches")
                 },
-                onTeamsClick = {},
+                onTeamsClick = { navController.navigate("admin_teams") },
                 onProfileClick = {
                     navController.navigate("admin_profile")
                 }
@@ -1573,7 +1600,7 @@ fun MatchLeagueApp() {
                 onMatchesClick = {
                     navController.navigate("admin_casual_matches")
                 },
-                onTeamsClick = {},
+                onTeamsClick = { navController.navigate("admin_teams") },
                 onProfileClick = {
                     navController.navigate("admin_profile")
                 }
@@ -1709,7 +1736,9 @@ fun MatchLeagueApp() {
                 onManageTeamClick = { id ->
                     navController.navigate("admin_manage_team/$id")
                 },
-                onPlayerProfileClick = {},
+                onPlayerProfileClick = { playerId ->
+                    navController.navigate("admin_player_details/$playerId?teamId=$teamId")
+                },
                 onHomeClick = {
                     navController.navigate("admin_home")
                 },
