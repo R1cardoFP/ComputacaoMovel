@@ -499,6 +499,9 @@
     <string name="action_make_captain">Make captain</string>
     <string name="action_remove_member">Remove from team</string>
     <string name="msg_no_members">No members yet.</string>
+    <string name="msg_select_player">Select a player to invite first.</string>
+    <string name="msg_no_players_found">No players found.</string>
+    <string name="badge_already_member">ON TEAM</string>
     <string name="dialog_delete_tournament_message">This action is permanent and will remove the tournament. Are you sure?</string>
     <string name="label_description_caps">DESCRIPTION</string>
     <string name="label_rules_caps">RULES / NOTES</string>
