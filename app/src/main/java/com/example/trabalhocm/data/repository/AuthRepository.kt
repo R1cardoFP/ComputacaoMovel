@@ -37,7 +37,7 @@ class AuthRepository {
                     .decodeList<Utilizador>()
 
                 if (utilizadores.isEmpty()) {
-                    throw Exception("Username não encontrado.")
+                    throw Exception("Username not found.")
                 }
 
                 utilizadores.first().email
@@ -49,7 +49,7 @@ class AuthRepository {
             }
 
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Utilizador autenticado não encontrado.")
+                ?: throw Exception("Authenticated user not found.")
 
             val utilizadorJson = client.from("utilizador")
                 .select {
@@ -65,12 +65,12 @@ class AuthRepository {
 
             if (suspended || accountStatus == "suspended") {
                 client.auth.signOut()
-                throw Exception("A tua conta está suspensa. Contacta o administrador.")
+                throw Exception("Your account is suspended. Please contact the administrator.")
             }
 
             if (deleted || accountStatus == "deleted") {
                 client.auth.signOut()
-                throw Exception("Esta conta foi removida. Contacta o administrador.")
+                throw Exception("This account has been deleted. Please contact the administrator.")
             }
 
             client.from("utilizador")
@@ -158,7 +158,7 @@ class AuthRepository {
             )
 
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Erro: Utilizador não encontrado após verificação.")
+                ?: throw Exception("Error: User not found after verification.")
 
             client.from("utilizador")
                 .select {
@@ -173,14 +173,14 @@ class AuthRepository {
     suspend fun sincronizarUtilizadorGoogle(): Result<Unit> {
         return runCatching {
             val user = client.auth.currentUserOrNull()
-                ?: throw Exception("Utilizador Google não autenticado.")
+                ?: throw Exception("Google user not authenticated.")
 
             val utilizadores = client.from("utilizador")
                 .select { filter { eq("id", user.id) } }
                 .decodeList<Utilizador>()
 
             if (utilizadores.isEmpty()) {
-                val nomeGoogle = user.userMetadata?.get("full_name")?.toString()?.removeSurrounding("\"") ?: "Novo Jogador"
+                val nomeGoogle = user.userMetadata?.get("full_name")?.toString()?.removeSurrounding("\"") ?: "New Player"
                 val emailGoogle = user.email ?: ""
 
                 val baseUsername = emailGoogle.substringBefore("@").replace(".", "").lowercase()
@@ -201,7 +201,7 @@ class AuthRepository {
     suspend fun atualizarPerfil(username: String, bio: String): Result<Unit> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Utilizador não autenticado.")
+                ?: throw Exception("User not authenticated.")
 
             client.from("utilizador")
                 .update(
@@ -220,7 +220,7 @@ class AuthRepository {
     suspend fun atualizarFotoPerfil(imageBytes: ByteArray): Result<String> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Utilizador não autenticado.")
+                ?: throw Exception("User not authenticated.")
 
             val path = "avatar_$userId.jpg"
 
@@ -272,7 +272,7 @@ class AuthRepository {
     suspend fun alterarPassword(passwordAtual: String, novaPassword: String): Result<Unit> {
         return runCatching {
             val emailAtual = client.auth.currentUserOrNull()?.email
-                ?: throw Exception("Não foi possível obter o email do utilizador atual.")
+                ?: throw Exception("Could not retrieve the current user's email.")
 
             client.auth.signInWith(Email) {
                 this.email = emailAtual
@@ -288,7 +288,7 @@ class AuthRepository {
     suspend fun obterUtilizadorAtual(): Result<Utilizador> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
-                ?: throw Exception("Nenhum utilizador com sessão iniciada.")
+                ?: throw Exception("No user is currently logged in.")
 
             client.from("utilizador")
                 .select {

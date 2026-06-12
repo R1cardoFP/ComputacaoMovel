@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -38,6 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -48,13 +52,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.data.remote.SupabaseClient
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 
-// IMPORTS CORRIGIDOS PARA O COMPOSE AUTH
 import io.github.jan.supabase.compose.auth.composeAuth
 import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
 import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
@@ -74,25 +78,23 @@ fun LoginScreen(
     var mensagem by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-    // --- LÓGICA DO GOOGLE LOGIN ---
     val composeAuth = SupabaseClient.client.composeAuth
     val googleSignIn = composeAuth.rememberSignInWithGoogle(
         onResult = { result ->
             when (result) {
                 is NativeSignInResult.Success -> {
-                    mensagem = "A criar perfil de jogador..."
+                    mensagem = "Creating player profile..."
                     isLoading = true
 
-                    // Chama a nossa nova função de sincronização!
                     scope.launch {
                         authRepository.sincronizarUtilizadorGoogle()
                             .onSuccess {
-                                mensagem = "Login feito com sucesso!"
+                                mensagem = "Login successful!"
                                 isLoading = false
-                                onLoginSuccess() // Isto manda-te para o ecrã seguinte (UserType/Profile)
+                                onLoginSuccess()
                             }
                             .onFailure { erro ->
-                                mensagem = "Erro ao guardar na base de dados: ${erro.message}"
+                                mensagem = "Database error: ${erro.message}"
                                 isLoading = false
                             }
                     }
@@ -101,17 +103,17 @@ fun LoginScreen(
                     isLoading = false
                 }
                 is NativeSignInResult.Error -> {
-                    mensagem = "Erro no Google. Falta registar o SHA-1 na Cloud."
+                    mensagem = "Google error. Missing SHA-1 fingerprint."
                     isLoading = false
                 }
                 is NativeSignInResult.NetworkError -> {
-                    mensagem = "Erro de rede ao ligar ao Google."
+                    mensagem = "Network error connecting to Google."
                     isLoading = false
                 }
             }
         },
         fallback = {
-            mensagem = "Erro: O Google Login não é suportado neste dispositivo."
+            mensagem = "Error: Google Login is not supported on this device."
             isLoading = false
         }
     )
@@ -210,7 +212,7 @@ fun LoginScreen(
                 Button(
                     onClick = {
                         if (emailOrUsername.isBlank() || password.isBlank()) {
-                            mensagem = "Preenche o identificador e a password."
+                            mensagem = "Please fill in the identifier and password."
                             return@Button
                         }
 
@@ -225,11 +227,11 @@ fun LoginScreen(
 
                             resultado
                                 .onSuccess { utilizador ->
-                                    mensagem = "Login feito com sucesso. Bem-vindo, ${utilizador.nome}!"
+                                    mensagem = "Login successful. Welcome, ${utilizador.nome}!"
                                     onLoginSuccess()
                                 }
                                 .onFailure { erro ->
-                                    mensagem = "Erro no login: ${erro.message}"
+                                    mensagem = "Login error: ${erro.message}"
                                 }
 
                             isLoading = false
@@ -264,7 +266,8 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
                         text = mensagem,
-                        color = if (mensagem.startsWith("Erro") || mensagem.startsWith("Preenche")) {
+                        color = if (mensagem.contains("error", ignoreCase = true) ||
+                            mensagem.startsWith("Please", ignoreCase = true)) {
                             MaterialTheme.colorScheme.error
                         } else {
                             BrandBlue
@@ -308,7 +311,7 @@ fun LoginScreen(
                     onClick = {
                         isLoading = true
                         mensagem = ""
-                        googleSignIn.startFlow() // <- Abre o ecrã de permissões do Google
+                        googleSignIn.startFlow()
                     }
                 )
             }
@@ -347,11 +350,11 @@ fun LoginLogo() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "ML",
-                color = BrandBlue,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "MatchLeague Logo",
+                modifier = Modifier.size(64.dp), // <-- AUMENTADO AQUI
+                contentScale = ContentScale.Fit
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -365,7 +368,7 @@ fun LoginLogo() {
                         append("League")
                     }
                 },
-                fontSize = 22.sp,
+                fontSize = 28.sp, // <-- Aumentei um pouco o texto para acompanhar o logo
                 fontWeight = FontWeight.Bold
             )
         }

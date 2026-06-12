@@ -881,6 +881,22 @@ class EquipaRepository {
             ?: error("Could not identify user.")
     }
 
+    suspend fun eliminarEquipa(idEquipa: Long): Result<Unit> {
+        return runCatching {
+            client.from("membro_equipa").delete {
+                filter {
+                    eq("id_equipa", idEquipa)
+                }
+            }
+
+            client.from("equipa").delete {
+                filter {
+                    eq("id", idEquipa)
+                }
+            }
+        }
+    }
+
     private fun gerarIniciaisEquipa(nome: String): String {
         val palavras = nome
             .split(" ")

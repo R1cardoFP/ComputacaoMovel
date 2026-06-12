@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import coil.compose.AsyncImage
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
@@ -288,13 +291,13 @@ fun RegisterScreen(
                                                 erroOriginal.contains("already exists", ignoreCase = true) ||
                                                 erroOriginal.contains("taken", ignoreCase = true) ||
                                                 erroOriginal.contains("duplicate key value", ignoreCase = true) -> {
-                                            "Já existe um utilizador com esse username ou email."
+                                            "A user with this username or email already exists."
                                         }
                                         erroOriginal.contains("Password should be", ignoreCase = true) -> {
-                                            "A password é demasiado fraca. Escolha uma mais segura."
+                                            "Password is too weak. Please choose a stronger one."
                                         }
                                         else -> {
-                                            "Ocorreu um erro ao criar a conta. Tente novamente."
+                                            "An error occurred while creating the account. Please try again."
                                         }
                                     }
                                 }
@@ -369,14 +372,14 @@ fun AppLogoRegister() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "ML",
-            color = BrandBlue,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "MatchLeague Logo",
+            modifier = Modifier.size(56.dp),
+            contentScale = ContentScale.Fit
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Text(
             buildAnnotatedString {
@@ -387,7 +390,7 @@ fun AppLogoRegister() {
                     append("League")
                 }
             },
-            fontSize = 20.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
     }
