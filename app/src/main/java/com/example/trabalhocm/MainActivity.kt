@@ -3,8 +3,8 @@ package com.example.trabalhocm
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -71,6 +71,7 @@ import com.example.trabalhocm.ui.screens.organizador.CreateTournamentScreen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep2Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep3Screen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentStep4Screen
+import com.example.trabalhocm.ui.screens.organizador.CreateMatchScreen
 import com.example.trabalhocm.ui.screens.organizador.CreateTournamentViewModel
 import com.example.trabalhocm.ui.screens.organizador.EditTournamentScreen
 import com.example.trabalhocm.ui.screens.organizador.HomeScreen
@@ -115,7 +116,7 @@ import com.example.trabalhocm.ui.screens.player.PlayerTournamentRegistrationScre
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -963,8 +964,8 @@ fun MatchLeagueApp() {
                 onFiltersClick = { navController.navigate("organizador_tournament_filters") },
                 onCreateNewClick = { navController.navigate("create_tournament") },
                 onDetailsClick = { idTorneio -> navController.navigate("organizador_tournament_details/$idTorneio") },
-                onInviteTeamsClick = { navController.navigate("invite_teams") },
-                onManageRegistrationClick = { navController.navigate("manage_registration") },
+                onInviteTeamsClick = { idTorneio -> navController.navigate("invite_teams/$idTorneio") },
+                onManageRegistrationClick = { idTorneio -> navController.navigate("manage_registration/$idTorneio") },
                 onEditClick = { idTorneio -> navController.navigate("edit_tournament/$idTorneio") },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { },
@@ -974,8 +975,14 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("invite_teams") {
+        composable(
+            route = "invite_teams/{idTorneio}",
+            arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idTorneio = backStackEntry.arguments?.getLong("idTorneio") ?: 0L
+
             InviteTeamsScreen(
+                idTorneio = idTorneio,
                 onBackClick = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
@@ -985,10 +992,16 @@ fun MatchLeagueApp() {
             )
         }
 
-        composable("manage_registration") {
+        composable(
+            route = "manage_registration/{idTorneio}",
+            arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idTorneio = backStackEntry.arguments?.getLong("idTorneio") ?: 0L
+
             ManageRegistrationScreen(
+                idTorneio = idTorneio,
                 onBackClick = { navController.popBackStack() },
-                onInviteTeamClick = { navController.navigate("invite_teams") },
+                onInviteTeamClick = { navController.navigate("invite_teams/$idTorneio") },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
@@ -1007,6 +1020,7 @@ fun MatchLeagueApp() {
                 idTorneio = idTorneio,
                 onBackClick = { navController.popBackStack() },
                 onEditClick = { navController.navigate("edit_tournament/$idTorneio") },
+                onCreateMatchClick = { navController.navigate("organizador_create_match/$idTorneio") },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
@@ -1175,6 +1189,40 @@ fun MatchLeagueApp() {
                 onMatchesClick = { navController.navigate("organizador_matches") },
                 onTeamsClick = { navController.navigate("teams") },
                 onProfileClick = { navController.navigate("organizador_profile") }
+            )
+        }
+
+        composable(
+            route = "organizador_live_match/{idJogo}",
+            arguments = listOf(navArgument("idJogo") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idJogo = backStackEntry.arguments?.getLong("idJogo") ?: 0L
+
+            OrganizerLiveMatchScreen(
+                idJogo = idJogo,
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onTournamentsClick = { navController.navigate("torneios") },
+                onMatchesClick = { navController.navigate("organizador_matches") },
+                onTeamsClick = { navController.navigate("teams") },
+                onProfileClick = { navController.navigate("organizador_profile") }
+            )
+        }
+
+        composable(
+            route = "organizador_create_match/{idTorneio}",
+            arguments = listOf(navArgument("idTorneio") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idTorneio = backStackEntry.arguments?.getLong("idTorneio") ?: 0L
+
+            CreateMatchScreen(
+                idTorneio = idTorneio,
+                onBackClick = { navController.popBackStack() },
+                onMatchCreated = { idJogo ->
+                    navController.navigate("organizador_live_match/$idJogo") {
+                        popUpTo("organizador_create_match/{idTorneio}") { inclusive = true }
+                    }
+                }
             )
         }
 

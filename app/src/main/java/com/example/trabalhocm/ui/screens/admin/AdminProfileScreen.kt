@@ -1,5 +1,7 @@
 package com.example.trabalhocm.ui.screens.admin
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -195,17 +197,37 @@ fun AdminProfileScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        LanguageOption(
-                            text = "English (US)",
-                            selected = language == "English (US)",
-                            onClick = { language = "English (US)" }
-                        )
+                        val idiomaAtual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                        val isPortugues = idiomaAtual.startsWith("pt", ignoreCase = true)
 
-                        LanguageOption(
-                            text = "Portuguese (PT)",
-                            selected = language == "Portuguese (PT)",
-                            onClick = { language = "Portuguese (PT)" }
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            LanguageButton(
+                                text = "Português",
+                                selected = isPortugues,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    language = "Portuguese (PT)"
+                                    AppCompatDelegate.setApplicationLocales(
+                                        LocaleListCompat.forLanguageTags("pt-PT")
+                                    )
+                                }
+                            )
+
+                            LanguageButton(
+                                text = "English",
+                                selected = !isPortugues,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    language = "English (US)"
+                                    AppCompatDelegate.setApplicationLocales(
+                                        LocaleListCompat.forLanguageTags("en")
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -592,25 +614,21 @@ private fun ProfileInput(
 }
 
 @Composable
-private fun LanguageOption(
+private fun LanguageButton(
     text: String,
     selected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .height(50.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(3.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) Color.White else Color(0xFFF4F6FB)
+            containerColor = if (selected) Color(0xFF3566C9) else Color(0xFFF4F6FB)
         ),
-        border = if (selected) {
-            BorderStroke(1.5.dp, Color(0xFF3566C9))
-        } else {
-            null
-        },
+        border = if (selected) null else BorderStroke(1.dp, Color(0xFFD4DCE8)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -618,31 +636,24 @@ private fun LanguageOption(
                 .fillMaxSize()
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.Center
         ) {
+            if (selected) {
+                Icon(
+                    imageVector = AppIcons.Confirm,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.size(6.dp))
+            }
+
             Text(
                 text = text,
-                color = if (selected) Color(0xFF0B1F3A) else TextMuted,
-                fontSize = 12.sp,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                color = if (selected) Color.White else TextMuted,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
             )
-
-            if (selected) {
-                Box(
-                    modifier = Modifier
-                        .size(18.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(Color(0xFF3566C9)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = AppIcons.Confirm,
-                        contentDescription = "Selecionado",
-                        tint = Color.White,
-                        modifier = Modifier.size(12.dp)
-                    )
-                }
-            }
         }
     }
 }
