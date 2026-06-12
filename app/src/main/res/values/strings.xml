@@ -567,4 +567,10 @@
     <string name="format_roster_count">ROSTER (%1$d)</string>
     <string name="badge_captain_caps">CAPTAIN</string>
     <string name="desc_options">Options</string>
+
+    <string name="nav_home">HOME</string>
+    <string name="nav_tournaments">TOURNAMENTS</string>
+    <string name="nav_matches">MATCHES</string>
+    <string name="nav_teams">TEAMS</string>
+    <string name="nav_profile">PROFILE</string>
 </resources>
