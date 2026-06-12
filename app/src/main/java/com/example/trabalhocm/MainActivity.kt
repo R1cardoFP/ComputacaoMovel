@@ -141,7 +141,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "admin_home"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -1450,6 +1450,9 @@ fun MatchLeagueApp() {
                 },
                 onNotificationsClick = {
                     navController.navigate("admin_notifications")
+                },
+                onUserClick = { userId ->
+                    navController.navigate("admin_player_details/$userId?teamId=")
                 },
                 onTournamentsClick = {
                     navController.navigate("admin_tournaments")

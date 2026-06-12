@@ -69,6 +69,7 @@ fun AdminUserManagementScreen(
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    onUserClick: (String) -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -298,6 +299,9 @@ fun AdminUserManagementScreen(
                 items(visibleUsers.size) { index ->
                     AdminUserCard(
                         user = visibleUsers[index],
+                        onUserClick = { user ->
+                            onUserClick(user.id)
+                        },
                         onMakeAdministrator = { user ->
                             scope.launch {
                                 repository.tornarAdministrador(user.id)
@@ -514,6 +518,7 @@ private fun FilterChip(
 @Composable
 private fun AdminUserCard(
     user: AdminUser,
+    onUserClick: (AdminUser) -> Unit,
     onMakeAdministrator: (AdminUser) -> Unit,
     onMakeOrganizer: (AdminUser) -> Unit,
     onRevokeAdministrator: (AdminUser) -> Unit,
@@ -523,7 +528,11 @@ private fun AdminUserCard(
     var menuExpanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onUserClick(user)
+            },
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)

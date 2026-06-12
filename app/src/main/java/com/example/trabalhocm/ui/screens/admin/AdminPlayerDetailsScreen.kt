@@ -230,22 +230,11 @@ private fun AdminPlayerDetailsContent(
         }
 
         item {
-            Row(
+            PlayerStatCard(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                PlayerStatCard(
-                    modifier = Modifier.weight(1f),
-                    title = "GOALS",
-                    value = player.goals.toString()
-                )
-
-                PlayerStatCard(
-                    modifier = Modifier.weight(1f),
-                    title = "ASSISTS",
-                    value = player.assists.toString()
-                )
-            }
+                title = "POINTS",
+                value = player.points.toString()
+            )
         }
 
         if (actionMessage.isNotBlank()) {
@@ -436,7 +425,7 @@ private fun AccountInformationCard(player: AdminPlayerDetails) {
             Box(
                 modifier = Modifier
                     .width(4.dp)
-                    .height(196.dp)
+                    .height(166.dp)
                     .background(
                         if (player.suspended) Color(0xFFEAB308) else BrandGreen
                     )
@@ -476,12 +465,6 @@ private fun AccountInformationCard(player: AdminPlayerDetails) {
                     value = if (player.suspended) "SUSPENDED" else player.accountStatus.uppercase(),
                     valueBadge = true,
                     badgePositive = !player.suspended
-                )
-                AccountInfoRow(
-                    label = "2FA Enabled",
-                    value = if (player.twoFactorEnabled) "YES" else "NO",
-                    valueBadge = true,
-                    badgePositive = player.twoFactorEnabled
                 )
             }
         }

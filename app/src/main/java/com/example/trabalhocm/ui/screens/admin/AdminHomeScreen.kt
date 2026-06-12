@@ -282,16 +282,9 @@ private fun AdminTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = title,
                 color = Color.White,
