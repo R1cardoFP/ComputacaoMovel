@@ -27,23 +27,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.repository.MembroEquipaDetalhesInfo
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
+import kotlin.math.roundToInt
 
 private val LightRedBadge = Color(0xFFFEE2E2)
-
-data class TeamPlayer(
-    val name: String,
-    val position: String,
-    val number: Int,
-    val isCaptain: Boolean = false
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamDetailsScreen(
-    isUserTeam: Boolean = false,
+    idEquipa: Long,
+    viewModel: TeamDetailsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onInvitePlayerClick: () -> Unit = {},
     onViewPlayerProfileClick: () -> Unit = {},
@@ -53,12 +50,12 @@ fun TeamDetailsScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    val roster = listOf(
-        TeamPlayer("Cristiano Ronaldo", stringResource(R.string.role_striker), 9),
-        TeamPlayer("Bruno Fernandes", stringResource(R.string.role_midfielder), 10, isCaptain = true),
-        TeamPlayer("Rúben Dias", stringResource(R.string.role_defender), 4),
-        TeamPlayer("Diogo Costa", stringResource(R.string.role_goalkeeper), 1)
-    )
+    LaunchedEffect(idEquipa) {
+        viewModel.carregar(idEquipa)
+    }
+
+    val detalhes = viewModel.detalhes
+    val info = detalhes?.equipaInfo
 
     Scaffold(
         topBar = {
@@ -89,6 +86,26 @@ fun TeamDetailsScreen(
         },
         containerColor = BgLight
     ) { paddingValues ->
+        if (viewModel.isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = TealGreen)
+            }
+            return@Scaffold
+        }
+
+        if (detalhes == null || info == null) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(24.dp), contentAlignment = Alignment.Center) {
+                Text(
+                    viewModel.errorMessage.ifBlank { stringResource(R.string.msg_no_teams_found) },
+                    color = TextGray, fontSize = 14.sp
+                )
+            }
+            return@Scaffold
+        }
+
+        val winRateTexto = "${detalhes.winRate.roundToInt()} %"
+        val wdl = "${info.vitorias}V · ${detalhes.empates}E · ${info.derrotas}D"
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -110,19 +127,19 @@ fun TeamDetailsScreen(
                                 .background(Color.White),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("SLB", color = ErrorRed, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
+                            Text(info.iniciais, color = ErrorRed, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
 
                         Column {
                             Surface(color = Color(0xFF374151), shape = RoundedCornerShape(12.dp)) {
-                                Text(stringResource(R.string.mock_premier_division), color = Color(0xFFFCA5A5), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                                Text(info.modalidadeNome, color = Color(0xFFFCA5A5), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Benfica", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(info.equipa.nome, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(stringResource(R.string.mock_est_2018), color = Color.LightGray, fontSize = 12.sp)
+                            Text(info.cidade, color = Color.LightGray, fontSize = 12.sp)
                         }
                     }
                 }
@@ -144,7 +161,7 @@ fun TeamDetailsScreen(
                             Column {
                                 Text(stringResource(R.string.label_season_win_rate), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("68.5 %", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                                Text(winRateTexto, color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                             }
                             Box(
                                 modifier = Modifier.size(48.dp).clip(CircleShape).border(2.dp, InputBg, CircleShape),
@@ -174,9 +191,7 @@ fun TeamDetailsScreen(
                                     Text(stringResource(R.string.label_total_goals), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("42", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(stringResource(R.string.mock_plus_5_month), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text("${detalhes.totalGolos}", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                             }
                         }
 
@@ -193,9 +208,9 @@ fun TeamDetailsScreen(
                                     Text(stringResource(R.string.label_matches_played), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("24", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                                Text("${detalhes.jogosDisputados}", color = DarkBlue, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(stringResource(R.string.mock_w_d_l), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(wdl, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -224,9 +239,9 @@ fun TeamDetailsScreen(
                 }
             }
 
-            items(roster) { player ->
+            items(detalhes.membros) { membro ->
                 Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                    RosterPlayerCard(player = player, onViewProfile = onViewPlayerProfileClick)
+                    RosterPlayerCard(membro = membro, onViewProfile = onViewPlayerProfileClick)
                 }
             }
 
@@ -238,7 +253,9 @@ fun TeamDetailsScreen(
 }
 
 @Composable
-fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
+fun RosterPlayerCard(membro: MembroEquipaDetalhesInfo, onViewProfile: () -> Unit) {
+    val nome = membro.utilizador.nome.ifBlank { membro.utilizador.username }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
         shape = RoundedCornerShape(12.dp),
@@ -249,7 +266,7 @@ fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .drawBehind {
-                    if (player.isCaptain) {
+                    if (membro.isCaptain) {
                         drawLine(
                             color = ErrorRed,
                             start = Offset(0f, 0f),
@@ -266,7 +283,7 @@ fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = player.name.split(" ").take(2).joinToString("") { it.take(1) },
+                    text = nome.split(" ").take(2).joinToString("") { it.take(1) }.uppercase(),
                     color = DarkBlue,
                     fontWeight = FontWeight.Bold
                 )
@@ -276,9 +293,9 @@ fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(player.name, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(nome, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
 
-                    if (player.isCaptain) {
+                    if (membro.isCaptain) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Surface(color = LightRedBadge, shape = RoundedCornerShape(12.dp)) {
                             Text(stringResource(R.string.badge_captain), color = ErrorRed, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
@@ -286,7 +303,7 @@ fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("${player.position} • #${player.number}", color = TextGray, fontSize = 12.sp)
+                Text(membro.posicao, color = TextGray, fontSize = 12.sp)
             }
 
             OutlinedButton(
@@ -299,13 +316,5 @@ fun RosterPlayerCard(player: TeamPlayer, onViewProfile: () -> Unit) {
                 Text(stringResource(R.string.btn_view_profile_roster), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TeamDetailsScreenPreview() {
-    MaterialTheme {
-        TeamDetailsScreen()
     }
 }

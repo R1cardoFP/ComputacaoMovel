@@ -33,7 +33,7 @@ fun BrowseTeamsScreen(
     viewModel: BrowseTeamsViewModel = viewModel(),
     onCreateTeamClick: () -> Unit = {},
     onManageTeamClick: () -> Unit = {},
-    onViewDetailsClick: (Boolean) -> Unit = {},
+    onViewDetailsClick: (Long) -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -192,12 +192,12 @@ fun BrowseTeamsScreen(
                         MyTeamCard(
                             team = team,
                             onManageTeamClick = onManageTeamClick,
-                            onViewDetailsClick = { onViewDetailsClick(true) }
+                            onViewDetailsClick = { onViewDetailsClick(team.id) }
                         )
                     } else {
                         RegularTeamCard(
                             team = team,
-                            onViewDetailsClick = { onViewDetailsClick(false) }
+                            onViewDetailsClick = { onViewDetailsClick(team.id) }
                         )
                     }
                 }
