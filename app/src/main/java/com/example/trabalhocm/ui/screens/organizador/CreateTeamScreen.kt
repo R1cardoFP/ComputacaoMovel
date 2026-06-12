@@ -29,7 +29,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.ui.theme.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +44,12 @@ fun CreateTeamScreen(
     var initials by remember { mutableStateOf("") }
     var homeCity by remember { mutableStateOf("") }
     var selectedSport by remember { mutableStateOf("") }
+
+    val scope = rememberCoroutineScope()
+    val repository = remember { EquipaRepository() }
+    var isSaving by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    val msgChooseSport = stringResource(R.string.msg_choose_sport)
 
     Scaffold(
         topBar = {
@@ -212,21 +220,52 @@ fun CreateTeamScreen(
                 }
             }
 
+            if (errorMessage.isNotBlank()) {
+                Text(errorMessage, color = ErrorRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            }
+
             Button(
-                onClick = onCreateClick,
+                onClick = {
+                    if (selectedSport.isBlank()) {
+                        errorMessage = msgChooseSport
+                        return@Button
+                    }
+                    scope.launch {
+                        isSaving = true
+                        errorMessage = ""
+                        repository.criarEquipa(
+                            nome = teamName,
+                            iniciais = initials,
+                            cidade = homeCity,
+                            modalidadeNome = selectedSport,
+                            tipoEntrada = "privada"
+                        ).onSuccess {
+                            isSaving = false
+                            onCreateClick()
+                        }.onFailure { erro ->
+                            isSaving = false
+                            errorMessage = erro.message ?: "Erro ao criar equipa."
+                        }
+                    }
+                },
+                enabled = !isSaving,
                 colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(stringResource(R.string.btn_create_team), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
+                if (isSaving) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(stringResource(R.string.btn_create_team), fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
+                    }
                 }
             }
 
