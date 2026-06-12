@@ -20,22 +20,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 private val DarkBlue = Color(0xFF0B1F3A)
 private val PrimaryBlue = Color(0xFF2563EB)
 private val TealGreen = Color(0xFF059669)
+private val ErrorRed = Color(0xFFDC2626)
 private val TextGray = Color(0xFF64748B)
 private val BgLight = Color(0xFFF8FAFC)
 private val CardBg = Color(0xFFFFFFFF)
 private val InputBg = Color(0xFFF1F5F9)
 
-data class TeamInvite(val name: String, val captain: String, val tier: String, val status: String)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InviteTeamsScreen(
+    idTorneio: Long,
+    viewModel: InviteTeamsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -45,13 +47,17 @@ fun InviteTeamsScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val suggestedTeams = listOf(
-        TeamInvite("Benfica", "P. Neves", "Premier Tier", "None"),
-        TeamInvite("Porto", "R. Costa", "Premier Tier", "None"),
-        TeamInvite("Sporting", "A. Lima", "Division A", "None"),
-        TeamInvite("Vianense", "J. Pereira", "Division A", "Invited"),
-        TeamInvite("SC Braga", "M. Silva", "Premier Tier", "None")
-    )
+    LaunchedEffect(idTorneio) {
+        viewModel.carregar(idTorneio)
+    }
+
+    val dados = viewModel.dados
+
+    val teams = dados?.teams.orEmpty().filter {
+        it.teamName.contains(searchQuery, ignoreCase = true) ||
+                it.captainName.contains(searchQuery, ignoreCase = true)
+    }
+    val sentInvitations = dados?.sentInvitations.orEmpty()
 
     Scaffold(
         topBar = {
@@ -78,6 +84,13 @@ fun InviteTeamsScreen(
         },
         containerColor = BgLight
     ) { paddingValues ->
+        if (viewModel.isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = TealGreen)
+            }
+            return@Scaffold
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -92,14 +105,20 @@ fun InviteTeamsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
+            if (viewModel.errorMessage.isNotBlank()) {
+                item {
+                    Text(viewModel.errorMessage, color = ErrorRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
             item {
                 Card(colors = CardDefaults.cardColors(containerColor = DarkBlue), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Text(stringResource(R.string.label_slots_remaining), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             Row(verticalAlignment = Alignment.Bottom) {
-                                Text("8", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
-                                Text(" / 32", color = TextGray, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 6.dp))
+                                Text("${dados?.slotsRemaining ?: 0}", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                                Text(" / ${dados?.maxTeams ?: 0}", color = TextGray, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 6.dp))
                             }
                         }
                         Surface(color = Color(0xFFD1FAE5), shape = RoundedCornerShape(12.dp)) {
@@ -125,24 +144,38 @@ fun InviteTeamsScreen(
 
             item { Text(stringResource(R.string.label_suggested_teams), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) }
 
-            items(suggestedTeams) { team ->
-                Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
-                    Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)).background(InputBg), contentAlignment = Alignment.Center) { Text(team.name.take(2), fontWeight = FontWeight.Bold) }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(team.name, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.format_captain_tier, team.captain, team.tier), color = TextGray, fontSize = 10.sp)
+            if (teams.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.msg_no_teams_invite), color = TextGray, fontSize = 13.sp)
+                    }
+                }
+            } else {
+                items(teams, key = { it.teamId }) { team ->
+                    Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
+                        Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)).background(InputBg), contentAlignment = Alignment.Center) { Text(team.teamName.take(2).uppercase(), fontWeight = FontWeight.Bold) }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(team.teamName, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.format_captain_tier, team.captainName, team.division), color = TextGray, fontSize = 10.sp)
+                                }
                             }
-                        }
-                        if (team.status == "Invited") {
-                            Surface(color = InputBg, shape = RoundedCornerShape(6.dp)) {
-                                Text(stringResource(R.string.btn_invited), color = TextGray, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                            }
-                        } else {
-                            Button(onClick = {}, shape = RoundedCornerShape(6.dp), colors = ButtonDefaults.buttonColors(containerColor = TealGreen), contentPadding = PaddingValues(horizontal = 16.dp)) {
-                                Text(stringResource(R.string.btn_invite), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            if (team.isInvited) {
+                                Surface(color = InputBg, shape = RoundedCornerShape(6.dp)) {
+                                    Text(stringResource(R.string.btn_invited), color = TextGray, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                                }
+                            } else {
+                                Button(
+                                    onClick = { viewModel.convidar(team.teamId) },
+                                    enabled = !viewModel.isProcessing,
+                                    shape = RoundedCornerShape(6.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
+                                    contentPadding = PaddingValues(horizontal = 16.dp)
+                                ) {
+                                    Text(stringResource(R.string.btn_invite), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                }
                             }
                         }
                     }
@@ -157,7 +190,14 @@ fun InviteTeamsScreen(
                     Row(modifier = Modifier.padding(16.dp)) {
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(stringResource(R.string.msg_invited_awaiting), color = PrimaryBlue, fontSize = 12.sp, lineHeight = 16.sp)
+                        Text(
+                            text = if (sentInvitations.isEmpty()) {
+                                stringResource(R.string.msg_invited_awaiting)
+                            } else {
+                                sentInvitations.joinToString(", ") { it.teamName }
+                            },
+                            color = PrimaryBlue, fontSize = 12.sp, lineHeight = 16.sp
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))

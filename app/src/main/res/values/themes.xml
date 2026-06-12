@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.TrabalhoCM" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Parent AppCompat é obrigatório para AppCompatActivity (troca de idioma em runtime) -->
+    <style name="Theme.TrabalhoCM" parent="Theme.AppCompat.Light.NoActionBar" />
 </resources>

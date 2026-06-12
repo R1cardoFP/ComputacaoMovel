@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -34,6 +35,7 @@ fun OrganizerTournamentDetailsScreen(
     viewModel: OrganizerTournamentDetailsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onEditClick: () -> Unit = {},
+    onCreateMatchClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -145,6 +147,15 @@ fun OrganizerTournamentDetailsScreen(
             }
 
             Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+                Button(
+                    onClick = onCreateMatchClick,
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                ) {
+                    Text(stringResource(R.string.title_create_match), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = 1.sp)
+                }
 
                 if (!torneio.descricao.isNullOrBlank() || !torneio.regras.isNullOrBlank()) {
                     Card(colors = CardDefaults.cardColors(containerColor = CardBg), modifier = Modifier.fillMaxWidth()) {

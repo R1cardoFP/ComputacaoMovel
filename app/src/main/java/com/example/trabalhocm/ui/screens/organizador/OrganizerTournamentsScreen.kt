@@ -38,8 +38,8 @@ fun OrganizerTournamentsScreen(
     onFiltersClick: () -> Unit = {},
     onCreateNewClick: () -> Unit = {},
     onDetailsClick: (Long) -> Unit = { _ -> },
-    onInviteTeamsClick: () -> Unit = {},
-    onManageRegistrationClick: () -> Unit = {},
+    onInviteTeamsClick: (Long) -> Unit = { _ -> },
+    onManageRegistrationClick: (Long) -> Unit = { _ -> },
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -182,8 +182,8 @@ fun OrganizerTournamentsScreen(
                                 teams = 0,
                                 gamesToday = 0,
                                 onDetailsClick = { onDetailsClick(torneio.id) },
-                                onInviteTeamsClick = onInviteTeamsClick,
-                                onManageRegistrationClick = onManageRegistrationClick,
+                                onInviteTeamsClick = { onInviteTeamsClick(torneio.id) },
+                                onManageRegistrationClick = { onManageRegistrationClick(torneio.id) },
                                 onEditClick = { onEditClick(torneio.id) }
                             )
                         } else {

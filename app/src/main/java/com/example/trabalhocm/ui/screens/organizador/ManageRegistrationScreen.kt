@@ -2,12 +2,10 @@ package com.example.trabalhocm.ui.screens.organizador
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,11 +27,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.model.AdminRegistrationTeam
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 
 private val DarkBlue = Color(0xFF0B1F3A)
@@ -48,21 +46,11 @@ private val BgLight = Color(0xFFF8FAFC)
 private val CardBg = Color(0xFFFFFFFF)
 private val InputBg = Color(0xFFF1F5F9)
 
-data class TeamApplication(
-    val name: String,
-    val captain: String,
-    val tier: String,
-    val players: String,
-    val winRate: String,
-    val applied: String,
-    val isPaid: Boolean,
-    val amount: String,
-    val status: String
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageRegistrationScreen(
+    idTorneio: Long,
+    viewModel: ManageRegistrationViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onInviteTeamClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
@@ -74,17 +62,23 @@ fun ManageRegistrationScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("Pending") }
 
-    val applications = listOf(
-        TeamApplication("SC Braga", "M. Silva", "Premier Tier", "11 / 11", "72%", "2h ago", true, "Paid €100", "Pending"),
-        TeamApplication("SC Vianense", "J. Costa", "Division A", "10 / 11", "58%", "5h ago", false, "Unpaid", "Pending"),
-        TeamApplication("Sporting", "A. Lima", "Premier Tier", "11 / 11", "65%", "1d ago", true, "Paid €100", "Approved"),
-        TeamApplication("Benfica", "P. Neves", "Premier Tier", "11 / 11", "70%", "1d ago", true, "Paid €100", "Approved"),
-        TeamApplication("Porto", "R. Costa", "Premier Tier", "11 / 11", "68%", "2d ago", true, "Paid €100", "Approved")
-    )
+    LaunchedEffect(idTorneio) {
+        viewModel.carregar(idTorneio)
+    }
 
-    val filteredApps = applications.filter {
-        (selectedTab == "All" || it.status == selectedTab) &&
-                it.name.contains(searchQuery, ignoreCase = true)
+    val dados = viewModel.dados
+
+    val pending = dados?.pendingTeams.orEmpty()
+    val approved = dados?.approvedTeams.orEmpty()
+    val all = pending + approved + dados?.rejectedTeams.orEmpty()
+
+    val visibleTeams = when (selectedTab) {
+        "Pending" -> pending
+        "Approved" -> approved
+        else -> all
+    }.filter {
+        it.teamName.contains(searchQuery, ignoreCase = true) ||
+                it.captainName.contains(searchQuery, ignoreCase = true)
     }
 
     Scaffold(
@@ -112,6 +106,13 @@ fun ManageRegistrationScreen(
         },
         containerColor = BgLight
     ) { paddingValues ->
+        if (viewModel.isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = TealGreen)
+            }
+            return@Scaffold
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -126,7 +127,16 @@ fun ManageRegistrationScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
+            if (viewModel.errorMessage.isNotBlank()) {
+                item {
+                    Text(viewModel.errorMessage, color = ErrorRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
             item {
+                val registered = dados?.registeredTeams ?: 0
+                val maxTeams = (dados?.maxTeams ?: 1).coerceAtLeast(1)
+
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     shape = RoundedCornerShape(12.dp),
@@ -134,21 +144,19 @@ fun ManageRegistrationScreen(
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text("Premier Summer Cup 2026", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(dados?.tournamentName ?: "", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             Surface(color = TealGreen.copy(alpha = 0.2f), shape = RoundedCornerShape(12.dp)) {
-                                Text(stringResource(R.string.badge_open), color = TealGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                                Text((dados?.status ?: "aberto").uppercase(), color = TealGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(stringResource(R.string.label_teams_registered), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                         Row(verticalAlignment = Alignment.Bottom) {
-                            Text("12", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
-                            Text(" / 16", color = TextGray, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 6.dp))
+                            Text("$registered", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(" / $maxTeams", color = TextGray, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 6.dp))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        LinearProgressIndicator(progress = { 12f / 16f }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)), color = TealGreen, trackColor = Color.White.copy(alpha = 0.1f))
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(stringResource(R.string.msg_registration_closes), color = WarningYellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        LinearProgressIndicator(progress = { registered.toFloat() / maxTeams.toFloat() }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)), color = TealGreen, trackColor = Color.White.copy(alpha = 0.1f))
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -183,7 +191,11 @@ fun ManageRegistrationScreen(
                 val tabApproved = stringResource(R.string.tab_approved)
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("All" to (tabAll to 15), "Pending" to (tabPending to 3), "Approved" to (tabApproved to 12)).forEach { (key, tabData) ->
+                    listOf(
+                        "All" to (tabAll to all.size),
+                        "Pending" to (tabPending to pending.size),
+                        "Approved" to (tabApproved to approved.size)
+                    ).forEach { (key, tabData) ->
                         val (tabName, count) = tabData
                         val isSelected = selectedTab == key
                         Surface(
@@ -204,21 +216,28 @@ fun ManageRegistrationScreen(
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                val title = when (selectedTab) {
-                    "All" -> stringResource(R.string.title_all_applications)
-                    "Pending" -> stringResource(R.string.title_pending_approval, 3)
-                    else -> stringResource(R.string.title_approved_teams, 12)
+            if (visibleTeams.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.msg_no_applications), color = TextGray, fontSize = 13.sp)
+                    }
                 }
-                Text(title, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            }
-
-            items(filteredApps) { app ->
-                if (app.status == "Pending") {
-                    PendingTeamCard(app)
-                } else {
-                    ApprovedTeamCard(app)
+            } else {
+                items(visibleTeams, key = { it.registrationId }) { team ->
+                    if (pending.any { it.registrationId == team.registrationId }) {
+                        PendingTeamCard(
+                            team = team,
+                            isProcessing = viewModel.isProcessing,
+                            onApprove = { viewModel.aprovar(team.registrationId) },
+                            onReject = { viewModel.rejeitar(team.registrationId) }
+                        )
+                    } else {
+                        ApprovedTeamCard(
+                            team = team,
+                            isProcessing = viewModel.isProcessing,
+                            onRemove = { viewModel.remover(team.registrationId) }
+                        )
+                    }
                 }
             }
 
@@ -237,7 +256,14 @@ fun ManageRegistrationScreen(
 }
 
 @Composable
-fun PendingTeamCard(app: TeamApplication) {
+private fun PendingTeamCard(
+    team: AdminRegistrationTeam,
+    isProcessing: Boolean,
+    onApprove: () -> Unit,
+    onReject: () -> Unit
+) {
+    val isPaid = team.paymentStatus.equals("pago", ignoreCase = true)
+
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
         shape = RoundedCornerShape(8.dp), elevation = CardDefaults.cardElevation(1.dp),
@@ -247,11 +273,11 @@ fun PendingTeamCard(app: TeamApplication) {
         Column(modifier = Modifier.padding(16.dp).padding(start = 4.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)).background(InputBg), contentAlignment = Alignment.Center) { Text(app.name.take(2), fontWeight = FontWeight.Bold) }
+                    Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)).background(InputBg), contentAlignment = Alignment.Center) { Text(team.teamName.take(2).uppercase(), fontWeight = FontWeight.Bold) }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(app.name, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text(stringResource(R.string.format_captain_tier, app.captain, app.tier), color = TextGray, fontSize = 10.sp)
+                        Text(team.teamName, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.format_captain_tier, team.captainName, team.division), color = TextGray, fontSize = 10.sp)
                     }
                 }
                 Surface(color = LightYellow, shape = RoundedCornerShape(12.dp)) {
@@ -266,20 +292,20 @@ fun PendingTeamCard(app: TeamApplication) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.label_players), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text(app.players, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("${team.playersCount} / ${team.maxPlayers}", color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(stringResource(R.string.label_applied), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text(app.applied, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(team.appliedAgo, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.label_win_rate), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text(app.winRate, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(team.winRate, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(stringResource(R.string.label_payment), color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(if (app.isPaid) Icons.Default.Check else Icons.Default.Close, contentDescription = null, tint = if (app.isPaid) TealGreen else ErrorRed, modifier = Modifier.size(12.dp))
+                        Icon(if (isPaid) Icons.Default.Check else Icons.Default.Close, contentDescription = null, tint = if (isPaid) TealGreen else ErrorRed, modifier = Modifier.size(12.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(app.amount, color = if (app.isPaid) TealGreen else ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(team.paymentStatus.replaceFirstChar { it.uppercase() }, color = if (isPaid) TealGreen else ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -287,19 +313,18 @@ fun PendingTeamCard(app: TeamApplication) {
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
-                    onClick = {}, shape = RoundedCornerShape(6.dp), colors = ButtonDefaults.buttonColors(containerColor = LightRed),
+                    onClick = onReject, enabled = !isProcessing, shape = RoundedCornerShape(6.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = LightRed),
                     modifier = Modifier.weight(1f).height(40.dp)
                 ) {
                     Text(stringResource(R.string.btn_reject), color = ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                 }
-                if (app.isPaid) {
-                    Button(onClick = {}, shape = RoundedCornerShape(6.dp), colors = ButtonDefaults.buttonColors(containerColor = TealGreen), modifier = Modifier.weight(1f).height(40.dp)) {
-                        Text(stringResource(R.string.btn_approve), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                    }
-                } else {
-                    OutlinedButton(onClick = {}, shape = RoundedCornerShape(6.dp), border = BorderStroke(1.dp, PrimaryBlue), modifier = Modifier.weight(1f).height(40.dp)) {
-                        Text(stringResource(R.string.btn_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                    }
+                Button(
+                    onClick = onApprove, enabled = !isProcessing, shape = RoundedCornerShape(6.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
+                    modifier = Modifier.weight(1f).height(40.dp)
+                ) {
+                    Text(stringResource(R.string.btn_approve), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                 }
             }
         }
@@ -307,7 +332,13 @@ fun PendingTeamCard(app: TeamApplication) {
 }
 
 @Composable
-fun ApprovedTeamCard(app: TeamApplication) {
+private fun ApprovedTeamCard(
+    team: AdminRegistrationTeam,
+    isProcessing: Boolean,
+    onRemove: () -> Unit
+) {
+    val isPaid = team.paymentStatus.equals("pago", ignoreCase = true)
+
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
         shape = RoundedCornerShape(8.dp), elevation = CardDefaults.cardElevation(1.dp),
@@ -316,18 +347,20 @@ fun ApprovedTeamCard(app: TeamApplication) {
     ) {
         Row(modifier = Modifier.padding(16.dp).padding(start = 4.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)).background(InputBg), contentAlignment = Alignment.Center) { Text(app.name.take(2), fontWeight = FontWeight.Bold) }
+                Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)).background(InputBg), contentAlignment = Alignment.Center) { Text(team.teamName.take(2).uppercase(), fontWeight = FontWeight.Bold) }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text(app.name, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(team.teamName, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Surface(color = TealGreen.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.badge_confirmed), color = TealGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) }
-                        Surface(color = Color(0xFFEEF2FF), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.badge_paid), color = PrimaryBlue, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) }
+                        if (isPaid) {
+                            Surface(color = Color(0xFFEEF2FF), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.badge_paid), color = PrimaryBlue, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) }
+                        }
                     }
                 }
             }
-            IconButton(onClick = {}, modifier = Modifier.size(36.dp).background(LightRed, RoundedCornerShape(8.dp))) {
+            IconButton(onClick = onRemove, enabled = !isProcessing, modifier = Modifier.size(36.dp).background(LightRed, RoundedCornerShape(8.dp))) {
                 Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.desc_delete), tint = ErrorRed, modifier = Modifier.size(18.dp))
             }
         }

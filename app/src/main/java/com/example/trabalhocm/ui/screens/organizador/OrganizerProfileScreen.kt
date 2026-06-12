@@ -162,32 +162,39 @@ fun OrganizerProfileScreen(
                 ProfileSectionLabel(stringResource(R.string.label_language))
                 Spacer(modifier = Modifier.height(8.dp))
 
-                var isPortuguese by remember { mutableStateOf(AppCompatDelegate.getApplicationLocales().toLanguageTags().contains("pt")) }
+                val isPortuguese = AppCompatDelegate.getApplicationLocales()
+                    .toLanguageTags()
+                    .contains("pt", ignoreCase = true)
 
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, PrimaryBlue),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            if (isPortuguese) {
-                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
-                                isPortuguese = false
-                            } else {
-                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("pt-PT"))
-                                isPortuguese = true
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    LanguageChoiceButton(
+                        text = "Português",
+                        selected = isPortuguese,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            if (!isPortuguese) {
+                                AppCompatDelegate.setApplicationLocales(
+                                    LocaleListCompat.forLanguageTags("pt-PT")
+                                )
                             }
                         }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(if (isPortuguese) "Português (PT)" else "English (US)", color = PrimaryBlue, fontSize = 14.sp)
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
-                    }
+                    )
+
+                    LanguageChoiceButton(
+                        text = "English",
+                        selected = !isPortuguese,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            if (isPortuguese) {
+                                AppCompatDelegate.setApplicationLocales(
+                                    LocaleListCompat.forLanguageTags("en")
+                                )
+                            }
+                        }
+                    )
                 }
             }
 
@@ -326,4 +333,46 @@ private fun ProfileSectionLabel(text: String) {
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp
     )
+}
+
+@Composable
+private fun LanguageChoiceButton(
+    text: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) PrimaryBlue else CardBg
+        ),
+        shape = RoundedCornerShape(8.dp),
+        border = if (selected) null else BorderStroke(1.dp, InputBg),
+        modifier = modifier
+            .height(50.dp)
+            .clickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (selected) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+            }
+
+            Text(
+                text = text,
+                color = if (selected) Color.White else TextGray,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
 }
