@@ -141,7 +141,7 @@ fun MatchLeagueApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "admin_home"
+        startDestination = "splash"
     ) {
         // ==========================================
         // 1. INICIALIZAÇÃO & AUTENTICAÇÃO
@@ -215,7 +215,7 @@ fun MatchLeagueApp() {
         }
 
         composable("change_password") {
-            ChangePasswordScreen(onPasswordChanged = { navController.popBackStack() })
+            ChangePasswordScreen(onBackClick = { navController.popBackStack() }, onPasswordChanged = { navController.popBackStack() })
         }
 
         composable("user_type") {
@@ -620,7 +620,8 @@ fun MatchLeagueApp() {
                 onMatchesClick = { navController.navigate("player_matches") },
                 onTeamsClick = { navController.navigate("player_teams") },
                 onProfileClick = {},
-                onNotificationsClick = { navController.navigate("player_notifications") }
+                onNotificationsClick = { navController.navigate("player_notifications") },
+                onChangePasswordClick = { navController.navigate("change_password") }
             )
         }
 

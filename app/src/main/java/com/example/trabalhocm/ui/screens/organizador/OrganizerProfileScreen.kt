@@ -56,6 +56,7 @@ fun OrganizerProfileScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_profile), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
+                    // Sem o trevo - Apenas o Sino (mesmo não navegando, fica esteticamente limpo e pronto para o futuro)
                     IconButton(onClick = { }) {
                         Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
@@ -270,7 +271,7 @@ fun OrganizerProfileScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            TextButton(onClick = onChangePasswordClick) {
+                            TextButton(onClick = onChangePasswordClick) { // <-- LIGADO À NAVEGAÇÃO
                                 Icon(Icons.Outlined.Lock, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(stringResource(R.string.btn_change_password), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)

@@ -29,7 +29,6 @@ import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,8 +40,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -92,14 +89,14 @@ fun PlayerProfileScreen(
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {} // <-- NOVO PARAMETRO AQUI
+    onNotificationsClick: () -> Unit = {},
+    onChangePasswordClick: () -> Unit = {} // <-- NOVO PARAMETRO AQUI
 ) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
     var username by remember(initialUsername) { mutableStateOf(initialUsername) }
     var bio by remember(initialBio) { mutableStateOf(initialBio) }
-    var twoFactorEnabled by remember { mutableStateOf(true) }
     var selectedImageUri by remember(initialPhotoUri) { mutableStateOf(initialPhotoUri) }
 
     var isLoading by remember { mutableStateOf(false) }
@@ -138,7 +135,7 @@ fun PlayerProfileScreen(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = "Notificações",
                 tint = BrandWhite,
-                modifier = Modifier.clickable { onNotificationsClick() } // <-- CLIQUE ADICIONADO AQUI
+                modifier = Modifier.clickable { onNotificationsClick() }
             )
         }
 
@@ -198,16 +195,36 @@ fun PlayerProfileScreen(
 
             SectionHeader(icon = Icons.Outlined.Lock, title = "Security")
             Spacer(modifier = Modifier.height(16.dp))
-            SecurityToggle(
-                checked = twoFactorEnabled,
-                onCheckedChange = { twoFactorEnabled = it }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            TextButton(
-                onClick = { },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = InputBg),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("CHANGE PASSWORD", color = Color(0xFF3566C9), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onChangePasswordClick() },
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = null,
+                            tint = Color(0xFF3566C9),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "CHANGE PASSWORD",
+                            color = Color(0xFF3566C9),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -484,31 +501,6 @@ fun DashboardOption(onClick: () -> Unit = {}) {
             Text("Personal career stats", color = TextGray, fontSize = 12.sp)
         }
         Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = BrandGreen)
-    }
-}
-
-@Composable
-fun SecurityToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(InputBg, RoundedCornerShape(6.dp))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(imageVector = Icons.Outlined.Phone, contentDescription = null, tint = TextGray, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text("Two-Factor Auth", color = TextDark, fontSize = 14.sp, modifier = Modifier.weight(1f))
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = BrandWhite,
-                checkedTrackColor = BrandGreen,
-                uncheckedThumbColor = BrandWhite,
-                uncheckedTrackColor = Color.LightGray
-            )
-        )
     }
 }
 

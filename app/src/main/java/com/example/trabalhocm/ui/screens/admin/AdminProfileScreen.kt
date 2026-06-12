@@ -247,7 +247,7 @@ fun AdminProfileScreen(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
                                 .clickable {
-                                    onChangePasswordClick()
+                                    onChangePasswordClick() // <-- LIGADO À NAVEGAÇÃO
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -458,6 +458,7 @@ private fun AdminProfileTopBar(
             )
         }
 
+        // Sem o trevo - Fica apenas o sino
         Icon(
             imageVector = AppIcons.Notifications,
             contentDescription = "Notificações",

@@ -20,11 +20,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -68,7 +71,6 @@ fun PlayerTeamsScreen(
     val repository = remember { EquipaRepository() }
     val scope = rememberCoroutineScope()
 
-    var selectedDivision by remember { mutableStateOf("All Teams") }
     var search by remember { mutableStateOf("") }
 
     var teams by remember { mutableStateOf<List<EquipaComInfo>>(emptyList()) }
@@ -94,17 +96,10 @@ fun PlayerTeamsScreen(
     }
 
     val filteredTeams = teams.filter { team ->
-        val matchesDivision =
-            selectedDivision == "All Teams" ||
-                    team.divisao.equals(selectedDivision, ignoreCase = true)
-
-        val matchesSearch =
-            search.isBlank() ||
-                    team.equipa.nome.contains(search, ignoreCase = true) ||
-                    team.modalidadeNome.contains(search, ignoreCase = true) ||
-                    team.cidade.contains(search, ignoreCase = true)
-
-        matchesDivision && matchesSearch
+        search.isBlank() ||
+                team.equipa.nome.contains(search, ignoreCase = true) ||
+                team.modalidadeNome.contains(search, ignoreCase = true) ||
+                team.cidade.contains(search, ignoreCase = true)
     }
 
     Column(
@@ -114,7 +109,7 @@ fun PlayerTeamsScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        PlayerTeamsTopBar()
+        PlayerTeamsTopBar(onNotificationsClick = onNotificationsClick)
 
         Column(
             modifier = Modifier
@@ -187,14 +182,7 @@ fun PlayerTeamsScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            TeamsDivisionTabs(
-                selectedDivision = selectedDivision,
-                onDivisionSelected = { selectedDivision = it }
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             when {
                 isLoading -> {
@@ -306,7 +294,7 @@ fun PlayerTeamsScreen(
 }
 
 @Composable
-fun PlayerTeamsTopBar() {
+fun PlayerTeamsTopBar(onNotificationsClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -325,63 +313,13 @@ fun PlayerTeamsTopBar() {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-fun TeamsDivisionTabs(
-    selectedDivision: String,
-    onDivisionSelected: (String) -> Unit
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(7.dp)
-    ) {
-        TeamDivisionButton(
-            text = "All Teams",
-            selected = selectedDivision == "All Teams",
-            onClick = { onDivisionSelected("All Teams") }
-        )
-
-        TeamDivisionButton(
-            text = "Division A",
-            selected = selectedDivision == "Division A",
-            onClick = { onDivisionSelected("Division A") }
-        )
-
-        TeamDivisionButton(
-            text = "Division B",
-            selected = selectedDivision == "Division B",
-            onClick = { onDivisionSelected("Division B") }
-        )
-    }
-}
-
-@Composable
-fun TeamDivisionButton(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .height(32.dp)
-            .clip(RoundedCornerShape(3.dp))
-            .background(if (selected) Color(0xFF0757C8) else Color(0xFFEAF0FF))
-            .clickable { onClick() }
-            .padding(horizontal = 13.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = if (selected) BrandWhite else Color(0xFF0757C8),
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = Icons.Outlined.Notifications,
+            contentDescription = "Notifications",
+            tint = BrandWhite,
+            modifier = Modifier
+                .size(26.dp)
+                .clickable { onNotificationsClick() }
         )
     }
 }

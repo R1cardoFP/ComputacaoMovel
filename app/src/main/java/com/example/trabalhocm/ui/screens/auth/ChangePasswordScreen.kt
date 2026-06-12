@@ -1,6 +1,7 @@
 package com.example.trabalhocm.ui.screens.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ChangePasswordScreen(
+    onBackClick: () -> Unit = {}, // <-- NOVO PARAMETRO
     onPasswordChanged: () -> Unit = {}
 ) {
     val authRepository = remember { AuthRepository() }
@@ -74,146 +76,169 @@ fun ChangePasswordScreen(
             .fillMaxSize()
             .background(Color(0xFFF4F5FA))
             .statusBarsPadding()
-            .navigationBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 28.dp, vertical = 28.dp),
+            .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(120.dp))
 
-        ChangePasswordLogo()
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        // --- NOVA TOP BAR COM SETA DE VOLTAR ---
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 32.dp, vertical = 36.dp),
-                horizontalAlignment = Alignment.Start
+            Text(
+                text = "←",
+                color = BrandBlue,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onBackClick() }
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(60.dp))
+
+            ChangePasswordLogo()
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Text(
-                    text = "Change\nPassword",
-                    color = BrandBlue,
-                    fontSize = 34.sp,
-                    lineHeight = 38.sp,
-                    fontWeight = FontWeight.Normal
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "ENTER YOUR CURRENT PASSWORD\nAND THEN YOUR NEW ONE.",
-                    color = Color(0xFF8B92A5),
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 3.sp
-                )
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                PasswordFieldBlock(
-                    label = "CURRENT PASSWORD",
-                    value = currentPassword,
-                    onValueChange = { currentPassword = it },
-                    visible = showCurrentPassword,
-                    onToggleVisible = { showCurrentPassword = !showCurrentPassword }
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                PasswordFieldBlock(
-                    label = "NEW PASSWORD",
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
-                    visible = showNewPassword,
-                    onToggleVisible = { showNewPassword = !showNewPassword }
-                )
-
-                Spacer(modifier = Modifier.height(22.dp))
-
-                PasswordStrengthBar(strength = strength)
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                Button(
-                    onClick = {
-                        if (currentPassword.isBlank() || newPassword.isBlank()) {
-                            mensagem = "Preenche todos os campos."
-                            return@Button
-                        }
-
-                        if (newPassword.length < 6) {
-                            mensagem = "A nova password deve ter pelo menos 6 caracteres."
-                            return@Button
-                        }
-
-                        if (currentPassword == newPassword) {
-                            mensagem = "A nova password deve ser diferente da atual."
-                            return@Button
-                        }
-
-                        scope.launch {
-                            isLoading = true
-                            mensagem = ""
-
-                            val resultado = authRepository.alterarPassword(
-                                passwordAtual = currentPassword,
-                                novaPassword = newPassword
-                            )
-
-                            resultado
-                                .onSuccess {
-                                    mensagem = "Password alterada com sucesso."
-                                    onPasswordChanged()
-                                }
-                                .onFailure { erro ->
-                                    mensagem = "Erro ao alterar password: ${erro.message}"
-                                }
-
-                            isLoading = false
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(58.dp),
-                    enabled = !isLoading,
-                    shape = RoundedCornerShape(4.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGreen,
-                        contentColor = BrandWhite
-                    )
+                Column(
+                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 36.dp),
+                    horizontalAlignment = Alignment.Start
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            color = BrandWhite,
-                            strokeWidth = 2.dp
+                    Text(
+                        text = "Change\nPassword",
+                        color = BrandBlue,
+                        fontSize = 34.sp,
+                        lineHeight = 38.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "ENTER YOUR CURRENT PASSWORD\nAND THEN YOUR NEW ONE.",
+                        color = Color(0xFF8B92A5),
+                        fontSize = 12.sp,
+                        lineHeight = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 3.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    PasswordFieldBlock(
+                        label = "CURRENT PASSWORD",
+                        value = currentPassword,
+                        onValueChange = { currentPassword = it },
+                        visible = showCurrentPassword,
+                        onToggleVisible = { showCurrentPassword = !showCurrentPassword }
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    PasswordFieldBlock(
+                        label = "NEW PASSWORD",
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        visible = showNewPassword,
+                        onToggleVisible = { showNewPassword = !showNewPassword }
+                    )
+
+                    Spacer(modifier = Modifier.height(22.dp))
+
+                    PasswordStrengthBar(strength = strength)
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    Button(
+                        onClick = {
+                            if (currentPassword.isBlank() || newPassword.isBlank()) {
+                                mensagem = "Preenche todos os campos."
+                                return@Button
+                            }
+
+                            if (newPassword.length < 6) {
+                                mensagem = "A nova password deve ter pelo menos 6 caracteres."
+                                return@Button
+                            }
+
+                            if (currentPassword == newPassword) {
+                                mensagem = "A nova password deve ser diferente da atual."
+                                return@Button
+                            }
+
+                            scope.launch {
+                                isLoading = true
+                                mensagem = ""
+
+                                val resultado = authRepository.alterarPassword(
+                                    passwordAtual = currentPassword,
+                                    novaPassword = newPassword
+                                )
+
+                                resultado
+                                    .onSuccess {
+                                        mensagem = "Password alterada com sucesso."
+                                        onPasswordChanged()
+                                    }
+                                    .onFailure { erro ->
+                                        mensagem = "Erro ao alterar password: ${erro.message}"
+                                    }
+
+                                isLoading = false
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(58.dp),
+                        enabled = !isLoading,
+                        shape = RoundedCornerShape(4.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BrandGreen,
+                            contentColor = BrandWhite
                         )
-                    } else {
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = BrandWhite,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = "CHANGE PASSWORD →",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 2.sp
+                            )
+                        }
+                    }
+
+                    if (mensagem.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "CHANGE PASSWORD →",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
+                            text = mensagem,
+                            color = if (mensagem.startsWith("Erro")) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                BrandBlue
+                            },
+                            fontSize = 13.sp
                         )
                     }
-                }
-
-                if (mensagem.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = mensagem,
-                        color = if (mensagem.startsWith("Erro")) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            BrandBlue
-                        },
-                        fontSize = 13.sp
-                    )
                 }
             }
         }

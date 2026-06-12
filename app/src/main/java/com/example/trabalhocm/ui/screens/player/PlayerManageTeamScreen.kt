@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.player
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,9 +30,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -89,45 +92,20 @@ fun PlayerManageTeamScreen(
     var successMessage by remember { mutableStateOf("") }
 
     var search by remember { mutableStateOf("") }
-    var selectedPosition by remember { mutableStateOf("All") }
 
     var showOptions by remember { mutableStateOf(false) }
     var selectedMember by remember { mutableStateOf<MembroEquipaGestaoInfo?>(null) }
 
     var showInviteDialog by remember { mutableStateOf(false) }
     var inviteSearch by remember { mutableStateOf("") }
-    var invitePosition by remember { mutableStateOf("Forward") }
     var inviteResults by remember { mutableStateOf<List<UtilizadorConviteInfo>>(emptyList()) }
     var inviteLoading by remember { mutableStateOf(false) }
     var inviteMessage by remember { mutableStateOf("") }
 
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+
     var currentUserId by remember { mutableStateOf("") }
     var resolvedTeamId by remember { mutableLongStateOf(idEquipa) }
-
-    fun reloadTeam() {
-        val teamId = resolvedTeamId
-
-        if (teamId == 0L) {
-            errorMessage = "Could not identify team."
-            return
-        }
-
-        scope.launch {
-            isActionLoading = true
-            errorMessage = ""
-            successMessage = ""
-
-            repository.obterGestaoEquipa(teamId)
-                .onSuccess {
-                    gestaoEquipa = it
-                }
-                .onFailure {
-                    errorMessage = it.message ?: "Error updating team."
-                }
-
-            isActionLoading = false
-        }
-    }
 
     fun reloadInviteResults() {
         val teamId = resolvedTeamId
@@ -205,17 +183,10 @@ fun PlayerManageTeamScreen(
     }
 
     val filteredPlayers = rosterList.filter { membro ->
-        val matchesPosition =
-            selectedPosition == "All" ||
-                    membro.posicao.equals(selectedPosition, ignoreCase = true)
-
         val searchText =
             "${membro.utilizador.nome} ${membro.utilizador.username} ${membro.utilizador.email}".lowercase()
 
-        val matchesSearch =
-            search.isBlank() || searchText.contains(search.lowercase())
-
-        matchesPosition && matchesSearch
+        search.isBlank() || searchText.contains(search.lowercase())
     }
 
     Column(
@@ -386,13 +357,6 @@ fun PlayerManageTeamScreen(
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    ManageTeamPositionFilters(
-                        selectedPosition = selectedPosition,
-                        onPositionSelected = { selectedPosition = it }
-                    )
-
                     if (errorMessage.isNotBlank()) {
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -425,7 +389,7 @@ fun PlayerManageTeamScreen(
 
                     if (filteredPlayers.isEmpty()) {
                         ManageTeamEmptyCard(
-                            text = "No players found with these filters."
+                            text = "No players found."
                         )
                     } else {
                         filteredPlayers.forEach { membro ->
@@ -438,6 +402,27 @@ fun PlayerManageTeamScreen(
                             )
 
                             Spacer(modifier = Modifier.height(10.dp))
+                        }
+                    }
+
+                    if (isCurrentUserCaptain) {
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        OutlinedButton(
+                            onClick = { showDeleteConfirmDialog = true },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(54.dp),
+                            shape = RoundedCornerShape(6.dp),
+                            border = BorderStroke(1.dp, Color(0xFFC62828)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC62828))
+                        ) {
+                            Text(
+                                text = "DELETE TEAM",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
                         }
                     }
 
@@ -495,12 +480,11 @@ fun PlayerManageTeamScreen(
                         idUtilizador = member.utilizador.id
                     )
                         .onSuccess {
-                            // Sucesso! Vamos direcionar o utilizador para a página das Equipas
                             onTeamsClick()
                         }
                         .onFailure {
                             errorMessage = it.message ?: "Error updating team."
-                            isActionLoading = false // Só paramos o loading se der erro.
+                            isActionLoading = false
                         }
                 }
             },
@@ -536,10 +520,6 @@ fun PlayerManageTeamScreen(
             onSearchChange = {
                 inviteSearch = it
             },
-            selectedPosition = invitePosition,
-            onPositionSelected = {
-                invitePosition = it
-            },
             results = inviteResults,
             isLoading = inviteLoading,
             message = inviteMessage,
@@ -555,7 +535,7 @@ fun PlayerManageTeamScreen(
                         idEquipa = resolvedTeamId,
                         idUtilizador = jogador.utilizador.id,
                         mensagem = "Invitation sent by team management.",
-                        posicao = invitePosition
+                        posicao = "Player"
                     )
                         .onSuccess {
                             inviteMessage = "Invitation sent to ${jogador.utilizador.nome}."
@@ -575,6 +555,64 @@ fun PlayerManageTeamScreen(
                 }
             }
         )
+    }
+
+    if (showDeleteConfirmDialog) {
+        Dialog(onDismissRequest = { showDeleteConfirmDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        text = "Delete Team",
+                        color = Color(0xFFD01818),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Are you sure you want to delete this team? All players will be removed and this action cannot be undone.",
+                        color = Color(0xFF6D7486),
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                            Text("CANCEL", color = BrandBlue, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                showDeleteConfirmDialog = false
+                                scope.launch {
+                                    isActionLoading = true
+                                    repository.eliminarEquipa(resolvedTeamId)
+                                        .onSuccess {
+                                            onTeamsClick()
+                                        }
+                                        .onFailure {
+                                            errorMessage = it.message ?: "Error deleting team."
+                                            isActionLoading = false
+                                        }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD01818))
+                        ) {
+                            Text("YES, DELETE", color = BrandWhite, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -621,15 +659,6 @@ fun ManageTeamTopBar(
                 modifier = Modifier
                     .size(26.dp)
                     .clickable { onNotificationsClick() }
-            )
-
-            Spacer(modifier = Modifier.width(18.dp))
-
-            Text(
-                text = "♧",
-                color = BrandWhite,
-                fontSize = 27.sp,
-                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -769,82 +798,6 @@ fun ManageTeamPrivacyCard(
 }
 
 @Composable
-fun ManageTeamPositionFilters(
-    selectedPosition: String,
-    onPositionSelected: (String) -> Unit
-) {
-    val positions = listOf(
-        "All",
-        "Forward",
-        "Midfielder",
-        "Defender",
-        "Goalkeeper"
-    )
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            positions.take(3).forEach { position ->
-                ManageTeamFilterButton(
-                    text = position,
-                    selected = selectedPosition == position,
-                    onClick = { onPositionSelected(position) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            positions.drop(3).forEach { position ->
-                ManageTeamFilterButton(
-                    text = position,
-                    selected = selectedPosition == position,
-                    onClick = { onPositionSelected(position) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-fun ManageTeamFilterButton(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .height(30.dp)
-            .clip(RoundedCornerShape(3.dp))
-            .background(
-                if (selected) Color(0xFF0757C8) else Color(0xFFEAF0FF)
-            )
-            .clickable {
-                onClick()
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = if (selected) BrandWhite else Color(0xFF0757C8),
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
 fun ManageTeamPlayerRow(
     membro: MembroEquipaGestaoInfo,
     onOptionsClick: () -> Unit
@@ -891,7 +844,7 @@ fun ManageTeamPlayerRow(
                     if (!membro.utilizador.fotoUrl.isNullOrEmpty()) {
                         AsyncImage(
                             model = membro.utilizador.fotoUrl,
-                            contentDescription = "Foto",
+                            contentDescription = "Photo",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
@@ -1054,8 +1007,6 @@ fun ManagePlayerOptionRow(
 fun InvitePlayerDialog(
     search: String,
     onSearchChange: (String) -> Unit,
-    selectedPosition: String,
-    onPositionSelected: (String) -> Unit,
     results: List<UtilizadorConviteInfo>,
     isLoading: Boolean,
     message: String,
@@ -1135,23 +1086,6 @@ fun InvitePlayerDialog(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "POSITION",
-                    color = Color(0xFF7D8497),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.4.sp
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                ManageTeamPositionFilters(
-                    selectedPosition = selectedPosition,
-                    onPositionSelected = onPositionSelected
-                )
-
                 if (message.isNotBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -1229,7 +1163,7 @@ fun InvitePlayerRow(
                 if (!utilizador.fotoUrl.isNullOrEmpty()) {
                     AsyncImage(
                         model = utilizador.fotoUrl,
-                        contentDescription = "Foto",
+                        contentDescription = "Photo",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
