@@ -14,13 +14,21 @@ import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 
+data class PerformanceInsights(
+    val playerOfWeek: PlayerHomePlayerStats?,
+    val top3Players: List<PlayerHomePlayerStats>,
+    val currentUserRank: Int?,
+    val rankVariationText: String
+)
+
 data class PlayerHomeData(
     val liveMatch: PlayerHomeLiveMatch?,
     val activeTournaments: List<PlayerHomeTournament>,
     val upcomingFixtures: List<PlayerHomeFixture>,
-    val playerOfWeek: PlayerHomePlayerStats?,
-    val currentUserRank: Int?,
-    val rankVariationText: String
+    val perfAll: PerformanceInsights,
+    val perfFootball: PerformanceInsights,
+    val perfBasketball: PerformanceInsights,
+    val perfVolleyball: PerformanceInsights
 )
 
 data class PlayerHomeLiveMatch(
@@ -68,10 +76,11 @@ data class PlayerHomePlayerStats(
 class PlayerHomeRepository {
 
     private val client = SupabaseClient.client
+    private val authRepository = AuthRepository()
 
     suspend fun carregarDadosHome(): Result<PlayerHomeData> {
         return runCatching {
-            val userIdAtual = client.auth.currentUserOrNull()?.id
+            val userIdAtual = authRepository.obterUtilizadorAtual().getOrNull()?.id
 
             val jogos = client.from("jogo")
                 .select()
@@ -101,7 +110,6 @@ class PlayerHomeRepository {
 
             val equipasPorId = equipas.associateBy { it.homeLongValue("id") }
             val torneiosPorId = torneios.associateBy { it.homeLongValue("id") }
-            val utilizadoresPorId = utilizadores.associateBy { it.homeStringValue("id").orEmpty() }
             val jogoEquipasPorJogo = jogoEquipas.groupBy { it.homeLongValue("id_jogo") }
 
             val liveMatch = obterLiveMatch(
@@ -122,28 +130,37 @@ class PlayerHomeRepository {
                 equipasPorId = equipasPorId
             )
 
-            val ranking = obterRankingJogadores(
-                estatisticas = estatisticas,
-                utilizadoresPorId = utilizadoresPorId
-            )
+            // Criar rankings separados por modalidade
+            val rankingAll = obterRankingJogadores(estatisticas, utilizadores)
+            val rankingFut = obterRankingJogadores(estatisticas.filter { it.homeIntValue("id_modalidade") == 1 }, utilizadores)
+            val rankingBasq = obterRankingJogadores(estatisticas.filter { it.homeIntValue("id_modalidade") == 2 }, utilizadores)
+            val rankingVol = obterRankingJogadores(estatisticas.filter { it.homeIntValue("id_modalidade") == 3 }, utilizadores)
 
-            val playerOfWeek = ranking.firstOrNull()
+            fun criarPerformance(ranking: List<PlayerHomePlayerStats>): PerformanceInsights {
+                val playerOfWeek = ranking.firstOrNull { it.numJogos > 0 }
+                val top3 = ranking.filter { it.numJogos > 0 }.take(3)
 
-            val currentUserRank = if (userIdAtual != null) {
-                ranking.indexOfFirst { it.idUtilizador == userIdAtual }
-                    .takeIf { it >= 0 }
-                    ?.plus(1)
-            } else {
-                null
+                val currentUserRank = if (userIdAtual != null) {
+                    val idx = ranking.indexOfFirst { it.idUtilizador == userIdAtual }
+                    if (idx >= 0) idx + 1 else ranking.size + 1
+                } else null
+
+                return PerformanceInsights(
+                    playerOfWeek = playerOfWeek,
+                    top3Players = top3,
+                    currentUserRank = currentUserRank,
+                    rankVariationText = "↗ 12%"
+                )
             }
 
             PlayerHomeData(
                 liveMatch = liveMatch,
                 activeTournaments = activeTournaments,
                 upcomingFixtures = upcomingFixtures,
-                playerOfWeek = playerOfWeek,
-                currentUserRank = currentUserRank,
-                rankVariationText = "↗ 12%"
+                perfAll = criarPerformance(rankingAll),
+                perfFootball = criarPerformance(rankingFut),
+                perfBasketball = criarPerformance(rankingBasq),
+                perfVolleyball = criarPerformance(rankingVol)
             )
         }
     }
@@ -276,48 +293,48 @@ class PlayerHomeRepository {
 
     private fun obterRankingJogadores(
         estatisticas: List<JsonObject>,
-        utilizadoresPorId: Map<String, JsonObject>
+        utilizadores: List<JsonObject>
     ): List<PlayerHomePlayerStats> {
-        return estatisticas
-            .groupBy { it.homeStringValue("id_utilizador").orEmpty() }
-            .mapNotNull { (idUtilizador, linhas) ->
-                if (idUtilizador.isBlank()) {
-                    return@mapNotNull null
-                }
+        val estatisticasPorUtilizador = estatisticas.groupBy { it.homeStringValue("id_utilizador").orEmpty() }
 
-                val utilizador = utilizadoresPorId[idUtilizador]
-
-                val vitorias = linhas.sumOf { it.homeIntValue("vitorias") }
-                val empates = linhas.sumOf { it.homeIntValue("empates") }
-                val derrotas = linhas.sumOf { it.homeIntValue("derrotas") }
-                val numJogos = linhas.sumOf { it.homeIntValue("num_jogos") }
-                val pontuacao = linhas.sumOf { it.homeIntValue("pontuacao") }
-
-                val rating = calcularRating(
-                    vitorias = vitorias,
-                    empates = empates,
-                    derrotas = derrotas,
-                    pontuacao = pontuacao
-                )
-
-                PlayerHomePlayerStats(
-                    idUtilizador = idUtilizador,
-                    nome = utilizador?.homeStringValue("nome") ?: "Jogador",
-                    username = utilizador?.homeStringValue("username") ?: "player",
-                    fotoUrl = utilizador?.homeStringValue("foto_url"),
-                    vitorias = vitorias,
-                    empates = empates,
-                    derrotas = derrotas,
-                    numJogos = numJogos,
-                    pontuacao = pontuacao,
-                    rating = rating
-                )
+        return utilizadores.mapNotNull { utilizador ->
+            val idUtilizador = utilizador.homeStringValue("id").orEmpty()
+            if (idUtilizador.isBlank()) {
+                return@mapNotNull null
             }
-            .sortedWith(
-                compareByDescending<PlayerHomePlayerStats> { it.pontuacao }
-                    .thenByDescending { it.vitorias }
-                    .thenBy { it.derrotas }
+
+            val linhas = estatisticasPorUtilizador[idUtilizador] ?: emptyList()
+
+            val vitorias = linhas.sumOf { it.homeIntValue("vitorias") }
+            val empates = linhas.sumOf { it.homeIntValue("empates") }
+            val derrotas = linhas.sumOf { it.homeIntValue("derrotas") }
+            val numJogos = linhas.sumOf { it.homeIntValue("num_jogos") }
+            val pontuacao = linhas.sumOf { it.homeIntValue("pontuacao") }
+
+            val rating = calcularRating(
+                vitorias = vitorias,
+                empates = empates,
+                derrotas = derrotas,
+                pontuacao = pontuacao
             )
+
+            PlayerHomePlayerStats(
+                idUtilizador = idUtilizador,
+                nome = utilizador.homeStringValue("nome") ?: "Jogador",
+                username = utilizador.homeStringValue("username") ?: "player",
+                fotoUrl = utilizador.homeStringValue("foto_url"),
+                vitorias = vitorias,
+                empates = empates,
+                derrotas = derrotas,
+                numJogos = numJogos,
+                pontuacao = pontuacao,
+                rating = rating
+            )
+        }.sortedWith(
+            compareByDescending<PlayerHomePlayerStats> { it.pontuacao }
+                .thenByDescending { it.vitorias }
+                .thenBy { it.derrotas }
+        )
     }
 
     private fun calcularProgressoTorneio(
