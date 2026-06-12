@@ -49,6 +49,11 @@ fun OrganizerTournamentsScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
+    // Recarrega sempre que o ecrã volta a entrar em composição (ex.: regresso do editar)
+    LaunchedEffect(Unit) {
+        viewModel.carregarTorneios()
+    }
+
     val torneios = viewModel.torneios
     val isLoading = viewModel.isLoading
 

@@ -19,6 +19,65 @@ class TorneioRepository {
         }
     }
 
+    suspend fun obterTorneioPorId(id: Long): Result<Torneio> {
+        return runCatching {
+            client.from("torneio")
+                .select {
+                    filter {
+                        eq("id", id)
+                    }
+                }
+                .decodeSingle<Torneio>()
+        }
+    }
+
+    suspend fun atualizarTorneio(torneio: Torneio): Result<Unit> {
+        return runCatching {
+            val linhasAtualizadas = client.from("torneio")
+                .update(
+                    AtualizarTorneioRequest(
+                        nome = torneio.nome,
+                        descricao = torneio.descricao,
+                        regras = torneio.regras,
+                        local = torneio.local,
+                        dataInicio = torneio.dataInicio,
+                        dataFim = torneio.dataFim,
+                        formato = torneio.formato,
+                        taxaInscricao = torneio.taxaInscricao,
+                        premio = torneio.premio,
+                        idModalidade = torneio.idModalidade
+                    )
+                ) {
+                    select()
+                    filter {
+                        eq("id", torneio.id)
+                    }
+                }
+                .decodeList<Torneio>()
+
+            if (linhasAtualizadas.isEmpty()) {
+                throw Exception("Nada foi atualizado — só o organizador do torneio pode editá-lo.")
+            }
+        }
+    }
+
+    suspend fun apagarTorneio(id: Long): Result<Unit> {
+        return runCatching {
+            val linhasApagadas = client.from("torneio")
+                .delete {
+                    select()
+                    filter {
+                        eq("id", id)
+                    }
+                }
+                .decodeList<Torneio>()
+
+            if (linhasApagadas.isEmpty()) {
+                throw Exception("Nada foi eliminado — só o organizador do torneio pode eliminá-lo.")
+            }
+        }
+    }
+
     suspend fun criarTorneio(torneio: Torneio): Result<Unit> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
@@ -44,6 +103,30 @@ class TorneioRepository {
         }
     }
 }
+
+@Serializable
+private data class AtualizarTorneioRequest(
+    val nome: String,
+    val descricao: String? = null,
+    val regras: String? = null,
+    val local: String? = null,
+
+    @SerialName("data_inicio")
+    val dataInicio: String,
+
+    @SerialName("data_fim")
+    val dataFim: String? = null,
+
+    val formato: String,
+
+    @SerialName("taxa_inscricao")
+    val taxaInscricao: Double = 0.0,
+
+    val premio: Double = 0.0,
+
+    @SerialName("id_modalidade")
+    val idModalidade: Long
+)
 
 @Serializable
 private data class CriarTorneioRequest(
