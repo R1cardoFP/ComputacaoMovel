@@ -1470,6 +1470,12 @@ fun MatchLeagueApp() {
                 onViewTournamentDetailsClick = { tournamentId ->
                     navController.navigate("admin_tournament_details/$tournamentId")
                 },
+                onViewTeamDetailsClick = { teamId ->
+                    navController.navigate("admin_team_details/$teamId")
+                },
+                onUserManagementClick = {
+                    navController.navigate("admin_user_management")
+                },
                 onHomeClick = {
                     navController.navigate("admin_home")
                 },

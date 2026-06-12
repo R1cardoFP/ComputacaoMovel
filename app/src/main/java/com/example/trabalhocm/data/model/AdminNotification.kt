@@ -10,5 +10,6 @@ data class AdminNotification(
     val timeText: String,
     val createdAt: String,
     val userId: String? = null,
-    val tournamentId: String? = null
+    val tournamentId: String? = null,
+    val teamId: String? = null
 )
