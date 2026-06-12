@@ -568,4 +568,10 @@
     <string name="format_roster_count">PLANTEL (%1$d)</string>
     <string name="badge_captain_caps">CAPITÃO</string>
     <string name="desc_options">Opções</string>
+
+    <string name="nav_home">INÍCIO</string>
+    <string name="nav_tournaments">TORNEIOS</string>
+    <string name="nav_matches">JOGOS</string>
+    <string name="nav_teams">EQUIPAS</string>
+    <string name="nav_profile">PERFIL</string>
 </resources>

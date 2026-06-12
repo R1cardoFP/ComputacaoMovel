@@ -17,9 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.theme.AppIcons
 
 @Composable
@@ -42,35 +44,35 @@ fun MatchLeagueBottomBar(
     ) {
         BottomNavItem(
             icon = AppIcons.Home,
-            title = "HOME",
+            title = stringResource(R.string.nav_home),
             selected = selectedTab == "HOME",
             onClick = onHomeClick
         )
 
         BottomNavItem(
             icon = AppIcons.Tournaments,
-            title = "TOURNAMENTS",
+            title = stringResource(R.string.nav_tournaments),
             selected = selectedTab == "TOURNAMENTS",
             onClick = onTournamentsClick
         )
 
         BottomNavItem(
             icon = AppIcons.Games,
-            title = "MATCHES",
+            title = stringResource(R.string.nav_matches),
             selected = selectedTab == "MATCHES",
             onClick = onMatchesClick
         )
 
         BottomNavItem(
             icon = AppIcons.Teams,
-            title = "TEAMS",
+            title = stringResource(R.string.nav_teams),
             selected = selectedTab == "TEAMS",
             onClick = onTeamsClick
         )
 
         BottomNavItem(
             icon = AppIcons.Profile,
-            title = "PROFILE",
+            title = stringResource(R.string.nav_profile),
             selected = selectedTab == "PROFILE",
             onClick = onProfileClick
         )
