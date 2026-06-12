@@ -54,6 +54,8 @@ import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.Normalizer
+import java.util.Locale
 
 private data class NotificationVisual(
     val icon: ImageVector,
@@ -66,6 +68,8 @@ fun AdminNotificationsScreen(
     onBackClick: () -> Unit = {},
     onViewUserProfileClick: (String) -> Unit = {},
     onViewTournamentDetailsClick: (String) -> Unit = {},
+    onViewTeamDetailsClick: (String) -> Unit = {},
+    onUserManagementClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
@@ -252,8 +256,12 @@ fun AdminNotificationsScreen(
                         },
                         onViewUserProfileClick = onViewUserProfileClick,
                         onViewTournamentDetailsClick = onViewTournamentDetailsClick,
+                        onViewTeamDetailsClick = onViewTeamDetailsClick,
+                        onUserManagementClick = onUserManagementClick,
+                        onTournamentsClick = onTournamentsClick,
+                        onTeamsClick = onTeamsClick,
                         onActionWithoutTarget = {
-                            actionMessage = "Não foi possível abrir o destino desta notificação. Falta o ID associado."
+                            actionMessage = "Não foi possível abrir o destino desta notificação."
                         }
                     )
                 }
@@ -373,6 +381,10 @@ private fun AdminNotificationCard(
     onNotificationClick: (AdminNotification) -> Unit,
     onViewUserProfileClick: (String) -> Unit,
     onViewTournamentDetailsClick: (String) -> Unit,
+    onViewTeamDetailsClick: (String) -> Unit,
+    onUserManagementClick: () -> Unit,
+    onTournamentsClick: () -> Unit,
+    onTeamsClick: () -> Unit,
     onActionWithoutTarget: () -> Unit
 ) {
     val visual = notificationVisual(notification)
@@ -467,23 +479,19 @@ private fun AdminNotificationCard(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     val destination = notificationDestination(notification)
-                    val actionEnabled = when (destination) {
-                        "USER" -> !notification.userId.isNullOrBlank()
-                        "TOURNAMENT" -> !notification.tournamentId.isNullOrBlank()
-                        else -> false
-                    }
 
                     NotificationActionButton(
                         text = notification.actionText,
-                        enabled = actionEnabled,
+                        enabled = true,
                         onClick = {
                             onNotificationClick(notification)
 
                             when (destination) {
                                 "USER" -> {
                                     val userId = notification.userId
+
                                     if (userId.isNullOrBlank()) {
-                                        onActionWithoutTarget()
+                                        onUserManagementClick()
                                     } else {
                                         onViewUserProfileClick(userId)
                                     }
@@ -491,14 +499,27 @@ private fun AdminNotificationCard(
 
                                 "TOURNAMENT" -> {
                                     val tournamentId = notification.tournamentId
+
                                     if (tournamentId.isNullOrBlank()) {
-                                        onActionWithoutTarget()
+                                        onTournamentsClick()
                                     } else {
                                         onViewTournamentDetailsClick(tournamentId)
                                     }
                                 }
 
-                                else -> onActionWithoutTarget()
+                                "TEAM" -> {
+                                    val teamId = notification.teamId
+
+                                    if (teamId.isNullOrBlank()) {
+                                        onTeamsClick()
+                                    } else {
+                                        onViewTeamDetailsClick(teamId)
+                                    }
+                                }
+
+                                else -> {
+                                    onActionWithoutTarget()
+                                }
                             }
                         }
                     )
@@ -542,23 +563,50 @@ private fun NotificationActionButton(
 }
 
 private fun notificationDestination(notification: AdminNotification): String? {
-    val action = notification.actionText.orEmpty().lowercase()
-    val title = notification.title.lowercase()
-    val description = notification.description.lowercase()
+    val action = normalizarTexto(notification.actionText.orEmpty())
+    val title = normalizarTexto(notification.title)
+    val description = normalizarTexto(notification.description)
     val text = "$action $title $description"
 
     return when {
+        action.contains("view user profile") ||
+                action.contains("perfil utilizador") ||
+                action.contains("perfil do utilizador") ||
+                action.contains("user profile") -> "USER"
+
+        action.contains("view tournament details") ||
+                action.contains("detalhes torneio") ||
+                action.contains("detalhes do torneio") ||
+                action.contains("tournament details") -> "TOURNAMENT"
+
+        action.contains("view team details") ||
+                action.contains("detalhes equipa") ||
+                action.contains("detalhes da equipa") ||
+                action.contains("team details") -> "TEAM"
+
         text.contains("tournament") || text.contains("torneio") -> "TOURNAMENT"
-        text.contains("user") || text.contains("profile") || text.contains("utilizador") || text.contains("organizer") || text.contains("organizador") -> "USER"
+        text.contains("team") || text.contains("equipa") -> "TEAM"
+
+        text.contains("user") ||
+                text.contains("profile") ||
+                text.contains("utilizador") ||
+                text.contains("organizer") ||
+                text.contains("organizador") ||
+                text.contains("player") ||
+                text.contains("jogador") -> "USER"
+
         !notification.tournamentId.isNullOrBlank() -> "TOURNAMENT"
+        !notification.teamId.isNullOrBlank() -> "TEAM"
         !notification.userId.isNullOrBlank() -> "USER"
+
         else -> null
     }
 }
 
 private fun notificationVisual(notification: AdminNotification): NotificationVisual {
-    val title = notification.title.lowercase()
-    val description = notification.description.lowercase()
+    val title = normalizarTexto(notification.title)
+    val description = normalizarTexto(notification.description)
+    val text = "$title $description"
 
     return when {
         notification.type == "SYSTEM" -> NotificationVisual(
@@ -567,25 +615,25 @@ private fun notificationVisual(notification: AdminNotification): NotificationVis
             iconBackground = Color(0xFFEAF3FF)
         )
 
-        title.contains("tournament") || description.contains("tournament") -> NotificationVisual(
+        text.contains("tournament") || text.contains("torneio") -> NotificationVisual(
             icon = AppIcons.Tournaments,
             iconColor = Color(0xFFE2A600),
             iconBackground = Color(0xFFFFF7DE)
         )
 
-        title.contains("team") || description.contains("team") -> NotificationVisual(
+        text.contains("team") || text.contains("equipa") -> NotificationVisual(
             icon = AppIcons.Teams,
             iconColor = Color(0xFF0057C8),
             iconBackground = Color(0xFFEAF3FF)
         )
 
-        title.contains("suspended") || description.contains("suspended") -> NotificationVisual(
+        text.contains("suspended") || text.contains("suspenso") || text.contains("suspensa") -> NotificationVisual(
             icon = AppIcons.Cancel,
             iconColor = Color(0xFFDC2626),
             iconBackground = Color(0xFFFEE2E2)
         )
 
-        title.contains("payment") || description.contains("payment") -> NotificationVisual(
+        text.contains("payment") || text.contains("pagamento") -> NotificationVisual(
             icon = AppIcons.Payment,
             iconColor = BrandGreen,
             iconBackground = Color(0xFFEAF8F5)
@@ -597,6 +645,14 @@ private fun notificationVisual(notification: AdminNotification): NotificationVis
             iconBackground = Color(0xFFEAF8F5)
         )
     }
+}
+
+private fun normalizarTexto(texto: String): String {
+    val semAcentos = Normalizer
+        .normalize(texto, Normalizer.Form.NFD)
+        .replace("\\p{Mn}+".toRegex(), "")
+
+    return semAcentos.lowercase(Locale.ROOT)
 }
 
 @Composable

@@ -31,8 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -156,7 +154,7 @@ fun AdminProfileScreen(
                         icon = AppIcons.Profile
                     ) {
                         ProfileInput(
-                            label = "FULL NAME",
+                            label = "USERNAME",
                             value = nome,
                             onValueChange = { nome = it }
                         )
@@ -200,30 +198,30 @@ fun AdminProfileScreen(
                         val idiomaAtual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
                         val isPortugues = idiomaAtual.startsWith("pt", ignoreCase = true)
 
-                        Row(
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             LanguageButton(
-                                text = "Português",
-                                selected = isPortugues,
-                                modifier = Modifier.weight(1f),
+                                text = "English (US)",
+                                selected = !isPortugues,
+                                modifier = Modifier.fillMaxWidth(),
                                 onClick = {
-                                    language = "Portuguese (PT)"
+                                    language = "English (US)"
                                     AppCompatDelegate.setApplicationLocales(
-                                        LocaleListCompat.forLanguageTags("pt-PT")
+                                        LocaleListCompat.forLanguageTags("en")
                                     )
                                 }
                             )
 
                             LanguageButton(
-                                text = "English",
-                                selected = !isPortugues,
-                                modifier = Modifier.weight(1f),
+                                text = "Portuguese (PT)",
+                                selected = isPortugues,
+                                modifier = Modifier.fillMaxWidth(),
                                 onClick = {
-                                    language = "English (US)"
+                                    language = "Portuguese (PT)"
                                     AppCompatDelegate.setApplicationLocales(
-                                        LocaleListCompat.forLanguageTags("en")
+                                        LocaleListCompat.forLanguageTags("pt-PT")
                                     )
                                 }
                             )
@@ -236,9 +234,7 @@ fun AdminProfileScreen(
                         title = "Active Dashboards",
                         icon = AppIcons.Home
                     ) {
-                        DashboardOption(
-                            onClick = onDashboardClick
-                        )
+                        DashboardOption()
                     }
                 }
 
@@ -247,43 +243,6 @@ fun AdminProfileScreen(
                         title = "Security",
                         icon = AppIcons.Security
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFFF4F6FB), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Two-Factor Auth",
-                                color = AdminBlue,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Switch(
-                                checked = true,
-                                onCheckedChange = {},
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = AdminGreen
-                                )
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "REQUIRED FOR ADMIN",
-                            color = AdminGreen,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.align(Alignment.End)
-                        )
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
                         Row(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
@@ -626,9 +585,13 @@ private fun LanguageButton(
             .clickable { onClick() },
         shape = RoundedCornerShape(3.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) Color(0xFF3566C9) else Color(0xFFF4F6FB)
+            containerColor = Color.White
         ),
-        border = if (selected) null else BorderStroke(1.dp, Color(0xFFD4DCE8)),
+        border = if (selected) {
+            BorderStroke(1.dp, Color(0xFF0057FF))
+        } else {
+            null
+        },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -636,40 +599,34 @@ private fun LanguageButton(
                 .fillMaxSize()
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            Text(
+                text = text,
+                color = if (selected) Color(0xFF0057FF) else TextMuted,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+
             if (selected) {
                 Icon(
                     imageVector = AppIcons.Confirm,
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
+                    tint = Color(0xFF0057FF),
+                    modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.size(6.dp))
             }
-
-            Text(
-                text = text,
-                color = if (selected) Color.White else TextMuted,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
 
 @Composable
-private fun DashboardOption(
-    onClick: () -> Unit = {}
-) {
+private fun DashboardOption() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
             .background(Color(0xFFEAF3FF), RoundedCornerShape(3.dp))
-            .clickable {
-                onClick()
-            }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -705,13 +662,6 @@ private fun DashboardOption(
                 fontSize = 10.sp
             )
         }
-
-        Icon(
-            imageVector = AppIcons.ChevronRight,
-            contentDescription = "Abrir dashboard",
-            tint = AdminBlue,
-            modifier = Modifier.size(22.dp)
-        )
     }
 }
 
