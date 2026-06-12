@@ -51,6 +51,20 @@ class AdminPlayerDetailsRepository {
                 }
                 .decodeList<JsonObject>()
 
+            val estatisticasJogador = runCatching {
+                client.from("estatistica_jogador")
+                    .select {
+                        filter {
+                            eq("id_utilizador", playerId)
+                        }
+                    }
+                    .decodeList<JsonObject>()
+            }.getOrDefault(emptyList())
+
+            val points = estatisticasJogador.sumOf { estatistica ->
+                estatistica.intValue("pontuacao", "pontos", "points") ?: 0
+            }
+
             val idsEquipas = membrosEquipa
                 .mapNotNull { membro ->
                     membro.text("id_equipa").toLongOrNull()
@@ -128,9 +142,9 @@ class AdminPlayerDetailsRepository {
                 position = user.nestedText("dados_pessoais", "position").ifBlank { papelNome },
                 goals = user.nestedInt("dados_pessoais", "goals") ?: 0,
                 assists = user.nestedInt("dados_pessoais", "assists") ?: 0,
+                points = points,
                 memberSince = user.nestedText("dados_pessoais", "member_since").ifBlank { "-" },
                 lastActive = user.nestedText("dados_pessoais", "last_active").ifBlank { "-" },
-                twoFactorEnabled = user.nestedBoolean("dados_pessoais", "two_factor_enabled") ?: false,
                 accountStatus = user.nestedText("dados_pessoais", "account_status").ifBlank { "active" },
                 suspended = user.nestedBoolean("dados_pessoais", "suspended") ?: false,
                 deleted = user.nestedBoolean("dados_pessoais", "deleted") ?: false
@@ -216,6 +230,27 @@ class AdminPlayerDetailsRepository {
         }
 
         return ""
+    }
+
+    private fun JsonObject.intValue(vararg keys: String): Int? {
+        keys.forEach { key ->
+            val primitive = this[key]?.jsonPrimitive
+
+            val direct = primitive?.intOrNull
+            if (direct != null) {
+                return direct
+            }
+
+            val fromText = primitive
+                ?.contentOrNull
+                ?.toIntOrNull()
+
+            if (fromText != null) {
+                return fromText
+            }
+        }
+
+        return null
     }
 
     private fun JsonObject.nestedText(objectKey: String, vararg keys: String): String {
