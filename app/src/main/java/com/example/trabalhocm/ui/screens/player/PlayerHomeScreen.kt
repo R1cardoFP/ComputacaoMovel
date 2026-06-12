@@ -86,6 +86,8 @@ fun PlayerHomeScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
+    var selectedPerfSport by remember { mutableStateOf("ALL") }
+
     LaunchedEffect(Unit) {
         isLoading = true
         errorMessage = ""
@@ -109,7 +111,7 @@ fun PlayerHomeScreen(
             .navigationBarsPadding()
     ) {
         PlayerHomeTopBar(
-            onNotificationsClick = onNotificationsClick // <-- AGORA SIM! Passado corretamente para a barra
+            onNotificationsClick = onNotificationsClick
         )
 
         Column(
@@ -239,17 +241,48 @@ fun PlayerHomeScreen(
 
                     SectionTitle(title = "PERFORMANCE INSIGHTS")
 
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // --- NOVAS ABAS DE DESPORTO ---
+                    PerformanceSportTabs(
+                        selectedSport = selectedPerfSport,
+                        onSportSelected = { selectedPerfSport = it }
+                    )
+
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    // Decidir que dados mostrar consoante a aba selecionada
+                    val perfData = when (selectedPerfSport) {
+                        "FOOTBALL" -> dados?.perfFootball
+                        "BASKETBALL" -> dados?.perfBasketball
+                        "VOLLEYBALL" -> dados?.perfVolleyball
+                        else -> dados?.perfAll
+                    }
+
+                    val pontuacaoLabel = when (selectedPerfSport) {
+                        "FOOTBALL" -> "GOALS"
+                        "BASKETBALL" -> "POINTS"
+                        "VOLLEYBALL" -> "SPIKES"
+                        else -> "POINTS"
+                    }
+
                     PlayerOfWeekCard(
-                        playerStats = dados?.playerOfWeek
+                        playerStats = perfData?.playerOfWeek,
+                        pontuacaoLabel = pontuacaoLabel
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
 
                     GlobalRankCard(
-                        rank = dados?.currentUserRank,
-                        variationText = dados?.rankVariationText ?: "↗ 0%"
+                        rank = perfData?.currentUserRank,
+                        variationText = perfData?.rankVariationText ?: "↗ 0%"
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Top3LeaderboardCard(
+                        top3 = perfData?.top3Players.orEmpty(),
+                        pontuacaoLabel = pontuacaoLabel.lowercase()
                     )
                 }
             }
@@ -265,6 +298,151 @@ fun PlayerHomeScreen(
             onTeamsClick = onTeamsClick,
             onProfileClick = onProfileClick
         )
+    }
+}
+
+// --- NOVO COMPONENTE DE ABAS ---
+@Composable
+fun PerformanceSportTabs(selectedSport: String, onSportSelected: (String) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(38.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(BrandWhite)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        PerformanceTabButton("ALL", selectedSport == "ALL", { onSportSelected("ALL") }, Modifier.weight(1f))
+        PerformanceTabButton("FOOTBALL", selectedSport == "FOOTBALL", { onSportSelected("FOOTBALL") }, Modifier.weight(1f))
+        PerformanceTabButton("BASKET", selectedSport == "BASKETBALL", { onSportSelected("BASKETBALL") }, Modifier.weight(1f))
+        PerformanceTabButton("VOLLEY", selectedSport == "VOLLEYBALL", { onSportSelected("VOLLEYBALL") }, Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun PerformanceTabButton(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (selected) BrandBlue else Color.Transparent)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = if (selected) BrandWhite else Color(0xFF7D8497),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        )
+    }
+}
+
+@Composable
+fun Top3LeaderboardCard(top3: List<PlayerHomePlayerStats>, pontuacaoLabel: String) {
+    if (top3.isEmpty()) return
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(7.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = "GLOBAL TOP SCORERS",
+                color = Color(0xFF7D8497),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.8.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            top3.forEachIndexed { index, player ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(
+                                when (index) {
+                                    0 -> Color(0xFFFFD700)
+                                    1 -> Color(0xFFC0C0C0)
+                                    2 -> Color(0xFFCD7F32)
+                                    else -> Color(0xFFEAF0FF)
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${index + 1}",
+                            color = if (index < 3) Color.White else BrandBlue,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    if (!player.fotoUrl.isNullOrEmpty()) {
+                        coil.compose.AsyncImage(
+                            model = player.fotoUrl,
+                            contentDescription = player.nome,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFEAF0FB)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = playerHomeTeamInitials(player.nome),
+                                color = BrandBlue,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        text = player.nome,
+                        color = BrandBlue,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Text(
+                        text = "${player.pontuacao} $pontuacaoLabel",
+                        color = BrandGreen,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                if (index < top3.lastIndex) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFF0F2FA)))
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+            }
+        }
     }
 }
 
@@ -288,25 +466,14 @@ fun PlayerHomeTopBar(
             fontWeight = FontWeight.Bold
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notifications",
-                tint = BrandWhite,
-                modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onNotificationsClick() }
-            )
-
-            Spacer(modifier = Modifier.width(18.dp))
-
-            Text(
-                text = "♧",
-                color = BrandWhite,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+       Icon(
+            imageVector = Icons.Outlined.Notifications,
+            contentDescription = "Notifications",
+            tint = BrandWhite,
+            modifier = Modifier
+                .size(26.dp)
+                .clickable { onNotificationsClick() }
+        )
     }
 }
 
@@ -782,7 +949,8 @@ fun FixtureRow(
 
 @Composable
 fun PlayerOfWeekCard(
-    playerStats: PlayerHomePlayerStats?
+    playerStats: PlayerHomePlayerStats?,
+    pontuacaoLabel: String
 ) {
     Card(
         modifier = Modifier
@@ -825,15 +993,31 @@ fun PlayerOfWeekCard(
                     )
                 }
             } else {
-                Image(
-                    painter = painterResource(R.drawable.avatar_player),
-                    contentDescription = playerStats.nome,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(86.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFF0F2FA))
-                )
+                if (!playerStats.fotoUrl.isNullOrEmpty()) {
+                    coil.compose.AsyncImage(
+                        model = playerStats.fotoUrl,
+                        contentDescription = playerStats.nome,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(86.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(86.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFF0F2FA)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = playerHomeTeamInitials(playerStats.nome),
+                            color = BrandBlue,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(18.dp))
 
@@ -862,13 +1046,13 @@ fun PlayerOfWeekCard(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     PlayerStat(
-                        value = playerStats.vitorias.toString().padStart(2, '0'),
-                        label = "WINS"
+                        value = playerStats.pontuacao.toString().padStart(2, '0'),
+                        label = pontuacaoLabel
                     )
 
                     PlayerStat(
-                        value = playerStats.empates.toString().padStart(2, '0'),
-                        label = "DRAWS"
+                        value = playerStats.vitorias.toString().padStart(2, '0'),
+                        label = "WINS"
                     )
 
                     PlayerStat(
