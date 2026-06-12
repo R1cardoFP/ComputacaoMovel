@@ -32,7 +32,7 @@ import com.example.trabalhocm.ui.theme.*
 fun BrowseTeamsScreen(
     viewModel: BrowseTeamsViewModel = viewModel(),
     onCreateTeamClick: () -> Unit = {},
-    onManageTeamClick: () -> Unit = {},
+    onManageTeamClick: (Long) -> Unit = {},
     onViewDetailsClick: (Long) -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -191,7 +191,7 @@ fun BrowseTeamsScreen(
                     if (team.isMyTeam) {
                         MyTeamCard(
                             team = team,
-                            onManageTeamClick = onManageTeamClick,
+                            onManageTeamClick = { onManageTeamClick(team.id) },
                             onViewDetailsClick = { onViewDetailsClick(team.id) }
                         )
                     } else {

@@ -2,7 +2,6 @@ package com.example.trabalhocm.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,10 +22,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.repository.MembroEquipaGestaoInfo
+import com.example.trabalhocm.ui.screens.organizador.TeamManagementViewModel
 
 private val DarkBlue = Color(0xFF111827)
 private val PrimaryBlue = Color(0xFF0346B8)
@@ -34,50 +35,30 @@ private val TextGray = Color(0xFF64748B)
 private val BgLight = Color(0xFFF8FAFC)
 private val CardBg = Color(0xFFFFFFFF)
 private val InputBg = Color(0xFFF1F5F9)
-private val LightBlueBadge = Color(0xFFE0E7FF)
-private val ErrorRed = Color(0xFFDC2626)
 private val LightRedBadge = Color(0xFFFEE2E2)
+private val ErrorRed = Color(0xFFDC2626)
 
-data class Player(
-    val name: String,
-    val position: String,
-    val number: Int,
-    val isCaptain: Boolean = false
-)
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamManagementScreen(
+    idEquipa: Long,
+    viewModel: TeamManagementViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onInviteClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val filterAll = stringResource(R.string.filter_all)
-    val roleForward = stringResource(R.string.role_forward)
-    val roleMidfielder = stringResource(R.string.role_midfielder)
-    val roleDefender = stringResource(R.string.role_defender)
-    val roleGoalkeeper = stringResource(R.string.role_goalkeeper)
+    LaunchedEffect(idEquipa) {
+        viewModel.carregar(idEquipa)
+    }
 
-    var selectedFilter by remember(filterAll) { mutableStateOf(filterAll) }
+    val gestao = viewModel.gestao
+    val info = gestao?.equipaInfo
 
-    val filters = listOf(filterAll, roleForward, roleMidfielder, roleDefender, roleGoalkeeper)
-
-    val roster = listOf(
-        Player("Bruno Fernandes", roleMidfielder, 10, isCaptain = true),
-        Player("Cristiano Ronaldo", roleForward, 9),
-        Player("Rúben Dias", roleDefender, 4),
-        Player("Diogo Costa", roleGoalkeeper, 1),
-        Player("João Cancelo", roleDefender, 20),
-        Player("Bernardo Silva", roleMidfielder, 8),
-        Player("João Félix", roleForward, 11)
-    )
-
-    val filteredRoster = roster.filter { player ->
-        val matchesSearch = player.name.contains(searchQuery, ignoreCase = true)
-        val matchesPosition = if (selectedFilter == filterAll) true else player.position == selectedFilter
-        matchesSearch && matchesPosition
+    val membros = gestao?.membros.orEmpty().filter {
+        val nome = it.utilizador.nome.ifBlank { it.utilizador.username }
+        nome.contains(searchQuery, ignoreCase = true)
     }
 
     Scaffold(
@@ -102,6 +83,23 @@ fun TeamManagementScreen(
         },
         containerColor = BgLight
     ) { paddingValues ->
+        if (viewModel.isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = PrimaryBlue)
+            }
+            return@Scaffold
+        }
+
+        if (gestao == null || info == null) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(24.dp), contentAlignment = Alignment.Center) {
+                Text(
+                    viewModel.errorMessage.ifBlank { stringResource(R.string.msg_no_teams_found) },
+                    color = TextGray, fontSize = 14.sp
+                )
+            }
+            return@Scaffold
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -115,6 +113,12 @@ fun TeamManagementScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(stringResource(R.string.desc_team_management), color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (viewModel.errorMessage.isNotBlank()) {
+                item {
+                    Text(viewModel.errorMessage, color = ErrorRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
             }
 
             item {
@@ -134,15 +138,15 @@ fun TeamManagementScreen(
                                 .background(CardBg.copy(alpha = 0.2f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("FC", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(info.iniciais, color = Color.White, fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
 
                         Column {
-                            Text("FC Mancos", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(info.equipa.nome, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(stringResource(R.string.mock_team_subtitle), color = Color.LightGray, fontSize = 12.sp)
+                            Text(info.modalidadeNome, color = Color.LightGray, fontSize = 12.sp)
                         }
                     }
                 }
@@ -188,34 +192,9 @@ fun TeamManagementScreen(
             }
 
             item {
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    filters.forEach { filter ->
-                        val isSelected = selectedFilter == filter
-                        Surface(
-                            color = if (isSelected) PrimaryBlue else LightBlueBadge,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.clickable { selectedFilter = filter }
-                        ) {
-                            Text(
-                                text = filter,
-                                color = if (isSelected) Color.White else PrimaryBlue,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.format_roster_count, filteredRoster.size),
+                    text = stringResource(R.string.format_roster_count, membros.size),
                     color = TextGray,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -223,8 +202,21 @@ fun TeamManagementScreen(
                 )
             }
 
-            items(filteredRoster) { player ->
-                PlayerCard(player = player)
+            if (membros.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.msg_no_members), color = TextGray, fontSize = 13.sp)
+                    }
+                }
+            } else {
+                items(membros) { membro ->
+                    PlayerCard(
+                        membro = membro,
+                        enabled = !viewModel.isProcessing,
+                        onMakeCaptain = { viewModel.tornarCapitao(membro.utilizador.id) },
+                        onRemove = { viewModel.removerMembro(membro.utilizador.id) }
+                    )
+                }
             }
 
             item {
@@ -235,7 +227,16 @@ fun TeamManagementScreen(
 }
 
 @Composable
-fun PlayerCard(player: Player) {
+fun PlayerCard(
+    membro: MembroEquipaGestaoInfo,
+    enabled: Boolean,
+    onMakeCaptain: () -> Unit,
+    onRemove: () -> Unit
+) {
+    val nome = membro.utilizador.nome.ifBlank { membro.utilizador.username }
+    var menuExpanded by remember { mutableStateOf(false) }
+    val pendente = membro.estadoConvite.lowercase() != "aceite"
+
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
         shape = RoundedCornerShape(12.dp),
@@ -246,7 +247,7 @@ fun PlayerCard(player: Player) {
             modifier = Modifier
                 .fillMaxWidth()
                 .drawBehind {
-                    if (player.isCaptain) {
+                    if (membro.isCaptain) {
                         drawLine(
                             color = ErrorRed,
                             start = androidx.compose.ui.geometry.Offset(0f, 0f),
@@ -266,7 +267,7 @@ fun PlayerCard(player: Player) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = player.name.split(" ").take(2).joinToString("") { it.take(1) },
+                    text = nome.split(" ").take(2).joinToString("") { it.take(1) }.uppercase(),
                     color = DarkBlue,
                     fontWeight = FontWeight.Bold
                 )
@@ -276,14 +277,11 @@ fun PlayerCard(player: Player) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(player.name, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(nome, color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
 
-                    if (player.isCaptain) {
+                    if (membro.isCaptain) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        Surface(
-                            color = LightRedBadge,
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
+                        Surface(color = LightRedBadge, shape = RoundedCornerShape(12.dp)) {
                             Text(
                                 stringResource(R.string.badge_captain_caps),
                                 color = ErrorRed,
@@ -295,20 +293,36 @@ fun PlayerCard(player: Player) {
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("${player.position} • #${player.number}", color = TextGray, fontSize = 12.sp)
+                Text(
+                    text = if (pendente) stringResource(R.string.badge_pending) else membro.posicao,
+                    color = TextGray,
+                    fontSize = 12.sp
+                )
             }
 
-            IconButton(onClick = {  }) {
-                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.desc_options), tint = TextGray)
+            if (!membro.isCaptain) {
+                Box {
+                    IconButton(onClick = { menuExpanded = true }, enabled = enabled) {
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.desc_options), tint = TextGray)
+                    }
+                    DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_make_captain)) },
+                            onClick = {
+                                menuExpanded = false
+                                onMakeCaptain()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_remove_member), color = ErrorRed) },
+                            onClick = {
+                                menuExpanded = false
+                                onRemove()
+                            }
+                        )
+                    }
+                }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TeamManagementScreenPreview() {
-    MaterialTheme {
-        TeamManagementScreen()
     }
 }

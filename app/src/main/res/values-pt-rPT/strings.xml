@@ -497,6 +497,9 @@
     <string name="badge_finished">TERMINADO</string>
     <string name="msg_no_live_match">Sem jogo para controlar de momento.</string>
     <string name="msg_choose_sport">Escolhe uma modalidade para a equipa.</string>
+    <string name="action_make_captain">Tornar capitão</string>
+    <string name="action_remove_member">Remover da equipa</string>
+    <string name="msg_no_members">Ainda não há membros.</string>
     <string name="dialog_delete_tournament_message">Esta ação é permanente e vai remover o torneio. Tens a certeza?</string>
     <string name="label_description_caps">DESCRIÇÃO</string>
     <string name="label_rules_caps">REGRAS / NOTAS</string>
