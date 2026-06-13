@@ -2,6 +2,7 @@ package com.example.trabalhocm.data.repository
 
 import com.example.trabalhocm.data.model.Equipa
 import com.example.trabalhocm.data.model.Jogo
+import com.example.trabalhocm.data.model.JogoEquipa
 import com.example.trabalhocm.data.model.Torneio
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -9,7 +10,6 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// --- NOVOS MODELOS PARA A LIGA E CLASSIFICAÇÃO ---
 data class EstatisticaEquipaLiga(
     val idEquipa: Long,
     val nomeEquipa: String,
@@ -20,7 +20,6 @@ data class EstatisticaEquipaLiga(
     val pontos: Int
 )
 
-// Mudámos para ler da tabela "classificacao"
 @Serializable
 private data class ClassificacaoBD(
     @SerialName("id_equipa") val idEquipa: Long,
@@ -36,7 +35,14 @@ private data class TorneioEquipaDB(
     @SerialName("id_torneio") val idTorneio: Long,
     val estado: String
 )
-// ---------------------------------
+
+data class JogoBracketUI(
+    val idJogo: Long,
+    val nomeCasa: String,
+    val pontosCasa: String,
+    val nomeFora: String,
+    val pontosFora: String
+)
 
 
 class TorneioRepository {
@@ -75,7 +81,48 @@ class TorneioRepository {
         }
     }
 
-    // --- NOVA FUNÇÃO QUE LÊ DA TABELA CLASSIFICACAO ---
+    suspend fun obterJogosBracket(idTorneio: Long): Result<List<JogoBracketUI>> {
+        return runCatching {
+            val jogos = client.from("jogo")
+                .select { filter { eq("id_torneio", idTorneio) } }
+                .decodeList<Jogo>()
+                .sortedBy { it.id }
+
+            if (jogos.isEmpty()) return@runCatching emptyList()
+
+            val idsJogos = jogos.map { it.id }
+
+            val jogoEquipas = client.from("jogo_equipa")
+                .select { filter { isIn("id_jogo", idsJogos) } }
+                .decodeList<JogoEquipa>()
+
+            val idsEquipas = jogoEquipas.map { it.idEquipa }.distinct()
+
+            val equipas = if (idsEquipas.isNotEmpty()) {
+                client.from("equipa")
+                    .select { filter { isIn("id", idsEquipas) } }
+                    .decodeList<Equipa>()
+                    .associateBy { it.id }
+            } else {
+                emptyMap()
+            }
+
+            jogos.map { jogo ->
+                val equipasDesteJogo = jogoEquipas.filter { it.idJogo == jogo.id }
+                val equipaCasa = equipasDesteJogo.find { it.papelEquipa.lowercase() == "casa" }
+                val equipaFora = equipasDesteJogo.find { it.papelEquipa.lowercase() == "fora" }
+
+                JogoBracketUI(
+                    idJogo = jogo.id,
+                    nomeCasa = equipaCasa?.idEquipa?.let { equipas[it]?.nome } ?: "TBD",
+                    pontosCasa = equipaCasa?.pontosMarcados?.toString() ?: "-",
+                    nomeFora = equipaFora?.idEquipa?.let { equipas[it]?.nome } ?: "TBD",
+                    pontosFora = equipaFora?.pontosMarcados?.toString() ?: "-"
+                )
+            }
+        }
+    }
+
     suspend fun obterClassificacaoTorneio(idTorneio: Long): Result<List<EstatisticaEquipaLiga>> {
         return runCatching {
 
@@ -99,7 +146,6 @@ class TorneioRepository {
                 .decodeList<Equipa>()
                 .associateBy { it.id }
 
-            // A MÁGICA ESTÁ AQUI: Agora lemos da tabela "classificacao"!
             val classificacoesBD = client.from("classificacao")
                 .select {
                     filter {
@@ -113,14 +159,12 @@ class TorneioRepository {
             idsEquipas.mapNotNull { idEquipa ->
                 val equipaNome = equipas[idEquipa]?.nome ?: return@mapNotNull null
 
-                // Se a equipa não tiver linha na tabela classificacao para este torneio, cria uma virtual com zeros
                 val estatistica = classificacoesBD[idEquipa] ?: ClassificacaoBD(idEquipa)
 
                 val v = estatistica.vitorias
                 val e = estatistica.empates
                 val d = estatistica.derrotas
 
-                // Na tabela classificacao não tens a coluna jogos_disputados, por isso calculamos somando os resultados
                 val jogos = v + e + d
 
                 val pontos = estatistica.pontos
