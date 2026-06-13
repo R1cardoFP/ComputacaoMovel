@@ -63,6 +63,8 @@ import com.example.trabalhocm.ui.theme.InputBg
 import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 
 @Composable
 fun AdminUserManagementScreen(
@@ -85,7 +87,17 @@ fun AdminUserManagementScreen(
     var selectedFilter by remember { mutableStateOf("All") }
     var visibleCount by remember { mutableIntStateOf(6) }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
     var userToDelete by remember { mutableStateOf<AdminUser?>(null) }
+
+    val errorLoadingUsersText = stringResource(R.string.admin_users_error_loading)
+    val deleteUserSuccessText = stringResource(R.string.admin_users_delete_success)
+    val deleteUserErrorText = stringResource(R.string.admin_users_delete_error)
+    val makeAdministratorSuccessText = stringResource(R.string.admin_users_make_admin_success)
+    val makeOrganizerSuccessText = stringResource(R.string.admin_users_make_organizer_success)
+    val revokeAdministratorSuccessText = stringResource(R.string.admin_users_revoke_admin_success)
+    val revokeOrganizerSuccessText = stringResource(R.string.admin_users_revoke_organizer_success)
+    val genericErrorText = stringResource(R.string.admin_users_generic_error)
 
     fun carregarUsers() {
         scope.launch {
@@ -97,7 +109,7 @@ fun AdminUserManagementScreen(
                     users = it
                 }
                 .onFailure {
-                    errorMessage = "Erro ao carregar utilizadores: ${it.message}"
+                    errorMessage = "$errorLoadingUsersText: ${it.message}"
                 }
 
             isLoading = false
@@ -132,10 +144,15 @@ fun AdminUserManagementScreen(
                 userToDelete = null
             },
             title = {
-                Text(text = "Delete User")
+                Text(text = stringResource(R.string.admin_users_delete_title))
             },
             text = {
-                Text(text = "Tens a certeza que queres apagar ${selectedUserToDelete.nome}?")
+                Text(
+                    text = stringResource(
+                        R.string.admin_users_delete_message,
+                        selectedUserToDelete.nome
+                    )
+                )
             },
             confirmButton = {
                 TextButton(
@@ -143,19 +160,21 @@ fun AdminUserManagementScreen(
                         scope.launch {
                             repository.apagarUtilizador(selectedUserToDelete.id)
                                 .onSuccess {
-                                    actionMessage = "Utilizador apagado."
+                                    actionMessage = deleteUserSuccessText
+                                    actionMessageIsError = false
                                     userToDelete = null
                                     carregarUsers()
                                 }
                                 .onFailure {
-                                    actionMessage = "Erro: ${it.message}"
+                                    actionMessage = "$deleteUserErrorText: ${it.message}"
+                                    actionMessageIsError = true
                                     userToDelete = null
                                 }
                         }
                     }
                 ) {
                     Text(
-                        text = "Apagar",
+                        text = stringResource(R.string.admin_users_delete_button),
                         color = Color(0xFFDC2626)
                     )
                 }
@@ -166,7 +185,7 @@ fun AdminUserManagementScreen(
                         userToDelete = null
                     }
                 ) {
-                    Text(text = "Cancelar")
+                    Text(text = stringResource(R.string.admin_common_cancel))
                 }
             }
         )
@@ -176,7 +195,7 @@ fun AdminUserManagementScreen(
         containerColor = BgLight,
         topBar = {
             AdminUsersTopBar(
-                title = "Manage Users",
+                title = stringResource(R.string.admin_users_top_title),
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )
@@ -217,7 +236,7 @@ fun AdminUserManagementScreen(
                 item {
                     Column {
                         Text(
-                            text = "ADMIN CONSOLE",
+                            text = stringResource(R.string.admin_users_console).uppercase(),
                             color = BrandGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -227,7 +246,7 @@ fun AdminUserManagementScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "User Management",
+                            text = stringResource(R.string.admin_users_title),
                             color = BrandBlue,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
@@ -236,7 +255,7 @@ fun AdminUserManagementScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Oversee every account on the platform.",
+                            text = stringResource(R.string.admin_users_description),
                             color = TextGray,
                             fontSize = 13.sp
                         )
@@ -265,7 +284,7 @@ fun AdminUserManagementScreen(
 
                 item {
                     Text(
-                        text = "${filteredUsers.size} Results founded",
+                        text = stringResource(R.string.admin_users_results_found, filteredUsers.size),
                         color = TextGray,
                         fontSize = 12.sp
                     )
@@ -285,7 +304,7 @@ fun AdminUserManagementScreen(
                     item {
                         Text(
                             text = actionMessage,
-                            color = if (actionMessage.startsWith("Erro")) {
+                            color = if (actionMessageIsError) {
                                 Color(0xFFDC2626)
                             } else {
                                 BrandGreen
@@ -306,11 +325,13 @@ fun AdminUserManagementScreen(
                             scope.launch {
                                 repository.tornarAdministrador(user.id)
                                     .onSuccess {
-                                        actionMessage = "User promoted to administrator."
+                                        actionMessage = makeAdministratorSuccessText
+                                        actionMessageIsError = false
                                         carregarUsers()
                                     }
                                     .onFailure {
-                                        actionMessage = "Erro: ${it.message}"
+                                        actionMessage = "$genericErrorText: ${it.message}"
+                                        actionMessageIsError = true
                                     }
                             }
                         },
@@ -318,11 +339,13 @@ fun AdminUserManagementScreen(
                             scope.launch {
                                 repository.tornarOrganizador(user.id)
                                     .onSuccess {
-                                        actionMessage = "User promoted to organizer."
+                                        actionMessage = makeOrganizerSuccessText
+                                        actionMessageIsError = false
                                         carregarUsers()
                                     }
                                     .onFailure {
-                                        actionMessage = "Erro: ${it.message}"
+                                        actionMessage = "$genericErrorText: ${it.message}"
+                                        actionMessageIsError = true
                                     }
                             }
                         },
@@ -330,11 +353,13 @@ fun AdminUserManagementScreen(
                             scope.launch {
                                 repository.removerAdministrador(user.id)
                                     .onSuccess {
-                                        actionMessage = "Administrator removed"
+                                        actionMessage = revokeAdministratorSuccessText
+                                        actionMessageIsError = false
                                         carregarUsers()
                                     }
                                     .onFailure {
-                                        actionMessage = "Erro: ${it.message}"
+                                        actionMessage = "$genericErrorText: ${it.message}"
+                                        actionMessageIsError = true
                                     }
                             }
                         },
@@ -342,11 +367,13 @@ fun AdminUserManagementScreen(
                             scope.launch {
                                 repository.removerOrganizador(user.id)
                                     .onSuccess {
-                                        actionMessage = "Organizer removed."
+                                        actionMessage = revokeOrganizerSuccessText
+                                        actionMessageIsError = false
                                         carregarUsers()
                                     }
                                     .onFailure {
-                                        actionMessage = "Erro: ${it.message}"
+                                        actionMessage = "$genericErrorText: ${it.message}"
+                                        actionMessageIsError = true
                                     }
                             }
                         },
@@ -372,7 +399,7 @@ fun AdminUserManagementScreen(
                             )
                         ) {
                             Text(
-                                text = "LOAD MORE",
+                                text = stringResource(R.string.admin_users_load_more).uppercase(),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
@@ -406,7 +433,7 @@ private fun AdminUsersTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = Color.White,
                 modifier = Modifier.size(22.dp)
             )
@@ -423,7 +450,7 @@ private fun AdminUsersTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier
                 .size(22.dp)
@@ -444,7 +471,7 @@ private fun SearchBox(
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = "Search users by name or email...",
+                text = stringResource(R.string.admin_users_search_placeholder),
                 color = TextGray,
                 fontSize = 13.sp
             )
@@ -452,7 +479,7 @@ private fun SearchBox(
         leadingIcon = {
             Icon(
                 imageVector = AppIcons.Search,
-                contentDescription = "Pesquisar",
+                contentDescription = stringResource(R.string.admin_users_search_content_description),
                 tint = TextGray,
                 modifier = Modifier.size(20.dp)
             )
@@ -485,16 +512,40 @@ private fun FilterRow(
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        FilterChip("All", selectedFilter == "All", onFilterClick)
-        FilterChip("Admins", selectedFilter == "Admins", onFilterClick)
-        FilterChip("Organizers", selectedFilter == "Organizers", onFilterClick)
-        FilterChip("Players", selectedFilter == "Players", onFilterClick)
+        FilterChip(
+            text = stringResource(R.string.admin_users_filter_all),
+            value = "All",
+            selected = selectedFilter == "All",
+            onClick = onFilterClick
+        )
+
+        FilterChip(
+            text = stringResource(R.string.admin_users_filter_admins),
+            value = "Admins",
+            selected = selectedFilter == "Admins",
+            onClick = onFilterClick
+        )
+
+        FilterChip(
+            text = stringResource(R.string.admin_users_filter_organizers),
+            value = "Organizers",
+            selected = selectedFilter == "Organizers",
+            onClick = onFilterClick
+        )
+
+        FilterChip(
+            text = stringResource(R.string.admin_users_filter_players),
+            value = "Players",
+            selected = selectedFilter == "Players",
+            onClick = onFilterClick
+        )
     }
 }
 
 @Composable
 private fun FilterChip(
     text: String,
+    value: String,
     selected: Boolean,
     onClick: (String) -> Unit
 ) {
@@ -502,7 +553,7 @@ private fun FilterChip(
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
             .background(if (selected) Color(0xFF0057C8) else LightBlueBadge)
-            .clickable { onClick(text) }
+            .clickable { onClick(value) }
             .padding(horizontal = 16.dp, vertical = 9.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -577,7 +628,7 @@ private fun AdminUserCard(
             Box {
                 Icon(
                     imageVector = AppIcons.MoreVert,
-                    contentDescription = "Opções",
+                    contentDescription = stringResource(R.string.admin_users_options_content_description),
                     tint = BrandBlue,
                     modifier = Modifier
                         .size(24.dp)
@@ -599,7 +650,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Security,
-                                        text = "Revoke Administrator",
+                                        text = stringResource(R.string.admin_users_revoke_administrator),
                                         color = BrandBlue
                                     )
                                 },
@@ -613,7 +664,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Delete,
-                                        text = "Delete User",
+                                        text = stringResource(R.string.admin_users_delete_title),
                                         color = Color(0xFFDC2626)
                                     )
                                 },
@@ -629,7 +680,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Security,
-                                        text = "Make Administrator",
+                                        text = stringResource(R.string.admin_users_make_administrator),
                                         color = BrandBlue
                                     )
                                 },
@@ -643,7 +694,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Profile,
-                                        text = "Revoke Organizer",
+                                        text = stringResource(R.string.admin_users_revoke_organizer),
                                         color = Color(0xFFDC2626)
                                     )
                                 },
@@ -657,7 +708,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Delete,
-                                        text = "Delete User",
+                                        text = stringResource(R.string.admin_users_delete_title),
                                         color = Color(0xFFDC2626)
                                     )
                                 },
@@ -673,7 +724,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Security,
-                                        text = "Make Administrator",
+                                        text = stringResource(R.string.admin_users_make_administrator),
                                         color = BrandBlue
                                     )
                                 },
@@ -687,7 +738,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Profile,
-                                        text = "Make Organizer",
+                                        text = stringResource(R.string.admin_users_make_organizer),
                                         color = BrandBlue
                                     )
                                 },
@@ -701,7 +752,7 @@ private fun AdminUserCard(
                                 text = {
                                     MenuItemContent(
                                         icon = AppIcons.Delete,
-                                        text = "Delete User",
+                                        text = stringResource(R.string.admin_users_delete_title),
                                         color = Color(0xFFDC2626)
                                     )
                                 },
@@ -798,11 +849,21 @@ private fun RoleBadge(role: String) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = role,
+            text = roleDisplayName(role),
             color = textColor,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+@Composable
+private fun roleDisplayName(role: String): String {
+    return when (role) {
+        "ADMINISTRATOR" -> stringResource(R.string.admin_users_role_administrator).uppercase()
+        "ORGANIZER" -> stringResource(R.string.admin_users_role_organizer).uppercase()
+        "PLAYER" -> stringResource(R.string.admin_users_role_player).uppercase()
+        else -> role
     }
 }
 
@@ -824,11 +885,11 @@ private fun AdminUsersBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AdminUsersBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        AdminUsersBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        AdminUsersBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        AdminUsersBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        AdminUsersBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        AdminUsersBottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        AdminUsersBottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        AdminUsersBottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        AdminUsersBottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        AdminUsersBottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

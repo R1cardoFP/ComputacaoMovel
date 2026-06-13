@@ -49,6 +49,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminTournamentDetails
 import com.example.trabalhocm.data.repository.AdminTournamentRepository
 import com.example.trabalhocm.ui.theme.AppIcons
@@ -100,6 +102,12 @@ fun AdminTournamentEditScreen(
     var isSaving by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
+    val errorLoadingTournamentText = stringResource(R.string.admin_tournament_edit_error_loading)
+    val nameEmptyErrorText = stringResource(R.string.admin_tournament_edit_name_empty_error)
+    val saveSuccessText = stringResource(R.string.admin_tournament_edit_save_success)
+    val saveErrorText = stringResource(R.string.admin_tournament_edit_save_error)
 
     fun preencherCampos(details: AdminTournamentDetails) {
         nome = details.nome
@@ -120,7 +128,7 @@ fun AdminTournamentEditScreen(
                 preencherCampos(it)
             }
             .onFailure {
-                errorMessage = "Erro ao carregar torneio: ${it.message}"
+                errorMessage = "$errorLoadingTournamentText: ${it.message}"
             }
 
         isLoading = false
@@ -135,7 +143,7 @@ fun AdminTournamentEditScreen(
         containerColor = BgLight,
         topBar = {
             AdminEditTopBar(
-                title = "Tournament Details",
+                title = stringResource(R.string.admin_tournament_edit_top_title),
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )
@@ -196,7 +204,7 @@ fun AdminTournamentEditScreen(
                     item {
                         Column {
                             Text(
-                                text = "ADMIN CONSOLE",
+                                text = stringResource(R.string.admin_tournament_edit_console).uppercase(),
                                 color = BrandGreen,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -206,7 +214,7 @@ fun AdminTournamentEditScreen(
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "Edit Tournament details",
+                                text = stringResource(R.string.admin_tournament_edit_title),
                                 color = BrandBlue,
                                 fontSize = 25.sp,
                                 fontWeight = FontWeight.Bold
@@ -215,7 +223,7 @@ fun AdminTournamentEditScreen(
                             Spacer(modifier = Modifier.height(6.dp))
 
                             Text(
-                                text = "Update schedule, registration, and tournament settings.",
+                                text = stringResource(R.string.admin_tournament_edit_description),
                                 color = TextGray,
                                 fontSize = 12.sp,
                                 lineHeight = 17.sp
@@ -230,14 +238,16 @@ fun AdminTournamentEditScreen(
                             estado = estado,
                             season = originalDetails?.season ?: "--/--",
                             premio = premio,
-                            teams = originalDetails?.teamsCount?.toString() ?: "0"
+                            teams = originalDetails?.teamsCount?.toString() ?: "0",
+                            defaultSportText = stringResource(R.string.admin_tournament_edit_default_sport),
+                            defaultTournamentNameText = stringResource(R.string.admin_tournament_edit_default_tournament_name)
                         )
                     }
 
                     item {
-                        EditSectionCard(title = "Tournament name") {
+                        EditSectionCard(title = stringResource(R.string.admin_tournament_edit_section_identity)) {
                             EditInput(
-                                label = "TOURNAMENT NAME",
+                                label = stringResource(R.string.admin_tournament_edit_label_tournament_name).uppercase(),
                                 value = nome,
                                 onValueChange = {
                                     nome = it
@@ -252,7 +262,7 @@ fun AdminTournamentEditScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "SPORT",
+                                    text = stringResource(R.string.admin_tournament_edit_label_sport).uppercase(),
                                     color = TextGray,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
@@ -261,7 +271,7 @@ fun AdminTournamentEditScreen(
 
                                 if (!modalidadeEditavel) {
                                     Text(
-                                        text = "LOCKED",
+                                        text = stringResource(R.string.admin_tournament_edit_locked).uppercase(),
                                         color = Color(0xFFDC2626),
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold,
@@ -276,7 +286,7 @@ fun AdminTournamentEditScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 EditChip(
-                                    text = "Futebol",
+                                    text = stringResource(R.string.admin_teams_filter_football),
                                     selected = modalidade.equals("Futebol", true) ||
                                             modalidade.contains("fut", true),
                                     enabled = modalidadeEditavel
@@ -285,7 +295,7 @@ fun AdminTournamentEditScreen(
                                 }
 
                                 EditChip(
-                                    text = "Basquetebol",
+                                    text = stringResource(R.string.admin_teams_filter_basketball),
                                     selected = modalidade.equals("Basquetebol", true) ||
                                             modalidade.contains("basquet", true) ||
                                             modalidade.contains("basket", true),
@@ -295,7 +305,7 @@ fun AdminTournamentEditScreen(
                                 }
 
                                 EditChip(
-                                    text = "Voleibol",
+                                    text = stringResource(R.string.admin_teams_filter_volleyball),
                                     selected = modalidade.equals("Voleibol", true) ||
                                             modalidade.contains("volei", true) ||
                                             modalidade.contains("volley", true),
@@ -309,7 +319,7 @@ fun AdminTournamentEditScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 Text(
-                                    text = "A modalidade só pode ser alterada quando o torneio está em rascunho ou aberto.",
+                                    text = stringResource(R.string.admin_tournament_edit_sport_locked_message),
                                     color = TextGray,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
@@ -319,7 +329,7 @@ fun AdminTournamentEditScreen(
                             Spacer(modifier = Modifier.height(12.dp))
 
                             Text(
-                                text = "FORMAT",
+                                text = stringResource(R.string.admin_tournament_edit_label_format).uppercase(),
                                 color = TextGray,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
@@ -332,7 +342,7 @@ fun AdminTournamentEditScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 EditChip(
-                                    text = "League System",
+                                    text = stringResource(R.string.admin_tournament_edit_format_league),
                                     selected = formato.equals("liga", true) ||
                                             formato.contains("league", true)
                                 ) {
@@ -340,7 +350,7 @@ fun AdminTournamentEditScreen(
                                 }
 
                                 EditChip(
-                                    text = "Knockout",
+                                    text = stringResource(R.string.admin_tournament_edit_format_knockout),
                                     selected = formato.equals("eliminatorias", true) ||
                                             formato.contains("knockout", true)
                                 ) {
@@ -348,7 +358,7 @@ fun AdminTournamentEditScreen(
                                 }
 
                                 EditChip(
-                                    text = "Groups",
+                                    text = stringResource(R.string.admin_tournament_edit_format_groups),
                                     selected = formato.equals("grupos", true) ||
                                             formato.contains("group", true)
                                 ) {
@@ -359,12 +369,12 @@ fun AdminTournamentEditScreen(
                     }
 
                     item {
-                        EditSectionCard(title = "Schedule") {
+                        EditSectionCard(title = stringResource(R.string.admin_tournament_edit_section_schedule)) {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 DateInput(
-                                    label = "START DATE",
+                                    label = stringResource(R.string.admin_tournament_edit_label_start_date).uppercase(),
                                     value = dataInicio,
                                     onDateSelected = {
                                         dataInicio = it
@@ -373,7 +383,7 @@ fun AdminTournamentEditScreen(
                                 )
 
                                 DateInput(
-                                    label = "END DATE",
+                                    label = stringResource(R.string.admin_tournament_edit_label_end_date).uppercase(),
                                     value = dataFim,
                                     onDateSelected = {
                                         dataFim = it
@@ -385,9 +395,9 @@ fun AdminTournamentEditScreen(
                     }
 
                     item {
-                        EditSectionCard(title = "Location and organizer") {
+                        EditSectionCard(title = stringResource(R.string.admin_tournament_edit_section_location_organizer)) {
                             EditInput(
-                                label = "VENUE",
+                                label = stringResource(R.string.admin_tournament_edit_label_venue).uppercase(),
                                 value = local,
                                 onValueChange = {
                                     local = it
@@ -397,7 +407,7 @@ fun AdminTournamentEditScreen(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             EditInput(
-                                label = "ORGANIZER",
+                                label = stringResource(R.string.admin_tournament_edit_label_organizer).uppercase(),
                                 value = originalDetails?.organizerName ?: "",
                                 onValueChange = {},
                                 enabled = false
@@ -406,9 +416,9 @@ fun AdminTournamentEditScreen(
                     }
 
                     item {
-                        EditSectionCard(title = "Description and rules") {
+                        EditSectionCard(title = stringResource(R.string.admin_tournament_edit_section_description_rules)) {
                             EditInput(
-                                label = "DESCRIPTION AND RULES",
+                                label = stringResource(R.string.admin_tournament_edit_label_description_rules).uppercase(),
                                 value = descricao,
                                 onValueChange = {
                                     descricao = it
@@ -420,9 +430,9 @@ fun AdminTournamentEditScreen(
                     }
 
                     item {
-                        EditSectionCard(title = "Prize pool") {
+                        EditSectionCard(title = stringResource(R.string.admin_tournament_edit_section_prize_pool)) {
                             EditInput(
-                                label = "PRIZE POOL (€)",
+                                label = stringResource(R.string.admin_tournament_edit_label_prize_pool).uppercase(),
                                 value = premio,
                                 onValueChange = {
                                     premio = it
@@ -433,7 +443,7 @@ fun AdminTournamentEditScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "O estado do torneio é calculado automaticamente com base nas datas.",
+                                text = stringResource(R.string.admin_tournament_edit_status_auto_message),
                                 color = TextGray,
                                 fontSize = 11.sp,
                                 lineHeight = 15.sp
@@ -445,7 +455,7 @@ fun AdminTournamentEditScreen(
                         item {
                             Text(
                                 text = actionMessage,
-                                color = if (actionMessage.startsWith("Erro")) {
+                                color = if (actionMessageIsError) {
                                     Color(0xFFDC2626)
                                 } else {
                                     BrandGreen
@@ -459,13 +469,18 @@ fun AdminTournamentEditScreen(
                     item {
                         EditAdminActionsCard(
                             isSaving = isSaving,
+                            adminActionsText = stringResource(R.string.admin_tournament_edit_admin_actions).uppercase(),
+                            savingText = stringResource(R.string.admin_tournament_edit_saving).uppercase(),
+                            saveChangesText = stringResource(R.string.admin_tournament_edit_save_changes).uppercase(),
+                            discardChangesText = stringResource(R.string.admin_tournament_edit_discard_changes).uppercase(),
                             onSaveClick = {
                                 scope.launch {
                                     isSaving = true
                                     actionMessage = ""
 
                                     if (nome.isBlank()) {
-                                        actionMessage = "Erro: o nome do torneio não pode estar vazio."
+                                        actionMessage = nameEmptyErrorText
+                                        actionMessageIsError = true
                                         isSaving = false
                                         return@launch
                                     }
@@ -483,11 +498,13 @@ fun AdminTournamentEditScreen(
                                         estado = estado.trim()
                                     )
                                         .onSuccess {
-                                            actionMessage = "Alterações guardadas com sucesso."
+                                            actionMessage = saveSuccessText
+                                            actionMessageIsError = false
                                             onSaveSuccess()
                                         }
                                         .onFailure {
-                                            actionMessage = "Erro ao guardar: ${it.message}"
+                                            actionMessage = "$saveErrorText: ${it.message}"
+                                            actionMessageIsError = true
                                         }
 
                                     isSaving = false
@@ -511,7 +528,9 @@ private fun EditHeroCard(
     estado: String,
     season: String,
     premio: String,
-    teams: String
+    teams: String,
+    defaultSportText: String,
+    defaultTournamentNameText: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -526,13 +545,13 @@ private fun EditHeroCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 EditHeroBadge(
-                    text = modalidade.ifBlank { "SPORT" },
+                    text = modalidade.ifBlank { defaultSportText },
                     background = LightBlueBadge,
                     textColor = Color(0xFF0057C8)
                 )
 
                 EditHeroBadge(
-                    text = estado.uppercase(),
+                    text = translatedEditStatus(estado),
                     background = BrandGreen,
                     textColor = Color.White
                 )
@@ -541,7 +560,7 @@ private fun EditHeroCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = nome.ifBlank { "Tournament name" },
+                text = nome.ifBlank { defaultTournamentNameText },
                 color = Color.White,
                 fontSize = 19.sp,
                 lineHeight = 22.sp,
@@ -553,11 +572,36 @@ private fun EditHeroCard(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                EditHeroStat("SEASON", season)
-                EditHeroStat("PRIZE POOL", premio)
-                EditHeroStat("TEAMS", teams)
+                EditHeroStat(stringResource(R.string.admin_tournament_details_season).uppercase(), season)
+                EditHeroStat(stringResource(R.string.admin_tournament_details_prize_pool).uppercase(), premio)
+                EditHeroStat(stringResource(R.string.admin_tournament_details_teams).uppercase(), teams)
             }
         }
+    }
+}
+
+
+@Composable
+private fun translatedEditStatus(status: String): String {
+    val normalized = status.lowercase()
+
+    return when {
+        normalized.contains("aberto") || normalized.contains("open") ->
+            stringResource(R.string.admin_status_open).uppercase()
+
+        normalized.contains("decorrer") || normalized.contains("live") ->
+            stringResource(R.string.admin_status_live).uppercase()
+
+        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") ->
+            stringResource(R.string.admin_status_completed).uppercase()
+
+        normalized.contains("cancelado") ->
+            stringResource(R.string.admin_status_cancelled).uppercase()
+
+        normalized.contains("rascunho") || normalized.contains("draft") ->
+            stringResource(R.string.admin_status_draft).uppercase()
+
+        else -> status.uppercase()
     }
 }
 
@@ -726,6 +770,10 @@ private fun EditChip(
 @Composable
 private fun EditAdminActionsCard(
     isSaving: Boolean,
+    adminActionsText: String,
+    savingText: String,
+    saveChangesText: String,
+    discardChangesText: String,
     onSaveClick: () -> Unit,
     onDiscardClick: () -> Unit
 ) {
@@ -739,7 +787,7 @@ private fun EditAdminActionsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "ADMIN ACTIONS",
+                text = adminActionsText,
                 color = TextGray,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
@@ -761,7 +809,7 @@ private fun EditAdminActionsCard(
                 )
             ) {
                 Text(
-                    text = if (isSaving) "SAVING..." else "SAVE CHANGES",
+                    text = if (isSaving) savingText else saveChangesText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -783,7 +831,7 @@ private fun EditAdminActionsCard(
                 )
             ) {
                 Text(
-                    text = "DISCARD CHANGES",
+                    text = discardChangesText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -815,7 +863,7 @@ private fun AdminEditTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = Color.White,
                 modifier = Modifier.size(22.dp)
             )
@@ -832,7 +880,7 @@ private fun AdminEditTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier
                 .size(23.dp)
@@ -861,11 +909,11 @@ private fun AdminEditBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        EditBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        EditBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        EditBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        EditBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        EditBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        EditBottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        EditBottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        EditBottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        EditBottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        EditBottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 
@@ -947,7 +995,7 @@ private fun DateInput(
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = value.ifBlank { "Selecionar data" },
+                text = value.ifBlank { stringResource(R.string.admin_tournament_edit_select_date) },
                 color = BrandBlue,
                 fontSize = 13.sp
             )
@@ -977,7 +1025,7 @@ private fun DateInput(
                         showPicker = false
                     }
                 ) {
-                    Text(text = "Confirmar")
+                    Text(text = stringResource(R.string.admin_tournament_edit_confirm))
                 }
             },
             dismissButton = {
@@ -986,7 +1034,7 @@ private fun DateInput(
                         showPicker = false
                     }
                 ) {
-                    Text(text = "Cancelar")
+                    Text(text = stringResource(R.string.admin_common_cancel))
                 }
             }
         ) {

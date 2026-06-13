@@ -45,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminLiveCasualMatch
 import com.example.trabalhocm.data.model.AdminLiveCasualPlayer
 import com.example.trabalhocm.data.model.AdminLiveCasualPoint
@@ -85,8 +87,19 @@ fun AdminLiveCasualMatchScreen(
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
     var refreshKey by remember { mutableStateOf(0) }
+    var actionMessageIsError by remember { mutableStateOf(false) }
 
     var pendingPoints by remember { mutableStateOf<List<PendingPoint>>(emptyList()) }
+
+    val errorLoadingLiveMatchText = stringResource(R.string.admin_live_match_error_loading)
+    val selectPlayerFirstText = stringResource(R.string.admin_live_match_select_player_first)
+    val pointAddedLocallyText = stringResource(R.string.admin_live_match_point_added_locally)
+    val noChangesToConfirmText = stringResource(R.string.admin_live_match_no_changes_confirm)
+    val unknownErrorText = stringResource(R.string.admin_live_match_unknown_error)
+    val errorConfirmingChangesText = stringResource(R.string.admin_live_match_error_confirming_changes)
+    val changesConfirmedText = stringResource(R.string.admin_live_match_changes_confirmed)
+    val noChangesToDiscardText = stringResource(R.string.admin_live_match_no_changes_discard)
+    val changesDiscardedText = stringResource(R.string.admin_live_match_changes_discarded)
 
     LaunchedEffect(matchId, refreshKey) {
         isLoading = true
@@ -105,7 +118,7 @@ fun AdminLiveCasualMatchScreen(
                 }
             }
             .onFailure {
-                errorMessage = "Error loading live match: ${it.message}"
+                errorMessage = "$errorLoadingLiveMatchText: ${it.message}"
             }
 
         isLoading = false
@@ -169,6 +182,7 @@ fun AdminLiveCasualMatchScreen(
                     selectedPlayer = selectedPlayer,
                     isSaving = isSaving,
                     actionMessage = actionMessage,
+                    actionMessageIsError = actionMessageIsError,
                     innerPadding = innerPadding,
                     onSideSelected = { side ->
                         selectedSide = side
@@ -183,7 +197,8 @@ fun AdminLiveCasualMatchScreen(
                         val player = selectedPlayer
 
                         if (player == null) {
-                            actionMessage = "Please select a player first."
+                            actionMessage = selectPlayerFirstText
+                            actionMessageIsError = true
                             return@AdminLiveCasualMatchContent
                         }
 
@@ -199,11 +214,13 @@ fun AdminLiveCasualMatchScreen(
                             }
                         )
 
-                        actionMessage = "Point added locally. Confirm changes to save."
+                        actionMessage = pointAddedLocallyText
+                        actionMessageIsError = false
                     },
                     onConfirmChangesClick = {
                         if (pendingPoints.isEmpty()) {
-                            actionMessage = "There are no changes to confirm."
+                            actionMessage = noChangesToConfirmText
+                            actionMessageIsError = true
                             return@AdminLiveCasualMatchContent
                         }
 
@@ -223,15 +240,17 @@ fun AdminLiveCasualMatchScreen(
                                 )
                                     .onFailure {
                                         hasError = true
-                                        errorText = it.message ?: "Unknown error"
+                                        errorText = it.message ?: unknownErrorText
                                     }
                             }
 
                             if (hasError) {
-                                actionMessage = "Error confirming changes: $errorText"
+                                actionMessage = "$errorConfirmingChangesText: $errorText"
+                                actionMessageIsError = true
                             } else {
                                 pendingPoints = emptyList()
-                                actionMessage = "Changes confirmed successfully."
+                                actionMessage = changesConfirmedText
+                                actionMessageIsError = false
                                 refreshKey++
                             }
 
@@ -240,10 +259,12 @@ fun AdminLiveCasualMatchScreen(
                     },
                     onDiscardChangesClick = {
                         if (pendingPoints.isEmpty()) {
-                            actionMessage = "There are no changes to discard."
+                            actionMessage = noChangesToDiscardText
+                            actionMessageIsError = false
                         } else {
                             pendingPoints = emptyList()
-                            actionMessage = "Changes discarded."
+                            actionMessage = changesDiscardedText
+                            actionMessageIsError = false
                         }
                     }
                 )
@@ -260,6 +281,7 @@ private fun AdminLiveCasualMatchContent(
     selectedPlayer: AdminLiveCasualPlayer?,
     isSaving: Boolean,
     actionMessage: String,
+    actionMessageIsError: Boolean,
     innerPadding: PaddingValues,
     onSideSelected: (String) -> Unit,
     onPlayerSelected: (AdminLiveCasualPlayer) -> Unit,
@@ -284,7 +306,7 @@ private fun AdminLiveCasualMatchContent(
     ) {
         item {
             Text(
-                text = "ADMIN VIEW",
+                text = stringResource(R.string.admin_live_match_admin_view).uppercase(),
                 color = BrandGreen,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -302,7 +324,7 @@ private fun AdminLiveCasualMatchContent(
 
         item {
             Text(
-                text = "Points",
+                text = stringResource(R.string.admin_live_match_points),
                 color = BrandBlue,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -318,7 +340,7 @@ private fun AdminLiveCasualMatchContent(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Text(
-                        text = "No points registered yet.",
+                        text = stringResource(R.string.admin_live_match_no_points),
                         color = TextGray,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(16.dp)
@@ -351,7 +373,7 @@ private fun AdminLiveCasualMatchContent(
             item {
                 Text(
                     text = actionMessage,
-                    color = if (actionMessage.startsWith("Error") || actionMessage.startsWith("Please")) {
+                    color = if (actionMessageIsError) {
                         ErrorRed
                     } else {
                         BrandGreen
@@ -398,7 +420,7 @@ private fun LiveScoreCard(
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "LIVE",
+                    text = stringResource(R.string.admin_live_match_live).uppercase(),
                     color = BrandWhite,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold
@@ -512,7 +534,7 @@ private fun PointRow(point: AdminLiveCasualPoint) {
 
             Column {
                 Text(
-                    text = "POINT!",
+                    text = stringResource(R.string.admin_live_match_point).uppercase(),
                     color = BrandBlue,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
@@ -566,7 +588,7 @@ private fun PendingPointRow(point: PendingPoint) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "POINT!",
+                    text = stringResource(R.string.admin_live_match_point).uppercase(),
                     color = BrandBlue,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
@@ -582,7 +604,7 @@ private fun PendingPointRow(point: PendingPoint) {
             }
 
             Text(
-                text = "PENDING",
+                text = stringResource(R.string.admin_live_match_pending).uppercase(),
                 color = BrandGreen,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold
@@ -615,7 +637,7 @@ private fun AddPointCard(
             modifier = Modifier.padding(15.dp)
         ) {
             Text(
-                text = "Register Point",
+                text = stringResource(R.string.admin_live_match_register_point),
                 color = BrandBlue,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
@@ -624,7 +646,7 @@ private fun AddPointCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "TEAM",
+                text = stringResource(R.string.admin_live_match_team).uppercase(),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -656,7 +678,7 @@ private fun AddPointCard(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = "PLAYER",
+                text = stringResource(R.string.admin_live_match_player).uppercase(),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -667,7 +689,7 @@ private fun AddPointCard(
 
             if (playersFromSelectedSide.isEmpty()) {
                 Text(
-                    text = "No players assigned to this team.",
+                    text = stringResource(R.string.admin_live_match_no_players_team),
                     color = TextGray,
                     fontSize = 12.sp
                 )
@@ -703,7 +725,7 @@ private fun AddPointCard(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = if (isSaving) "ADDING..." else "ADD POINT",
+                    text = if (isSaving) stringResource(R.string.admin_live_match_adding).uppercase() else stringResource(R.string.admin_live_match_add_point).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -798,7 +820,7 @@ private fun PlayerPointOption(
 
         if (selected) {
             Text(
-                text = "SELECTED",
+                text = stringResource(R.string.admin_live_match_selected).uppercase(),
                 color = BrandGreen,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold
@@ -825,7 +847,7 @@ private fun LiveConfirmActionsCard(
             modifier = Modifier.padding(15.dp)
         ) {
             Text(
-                text = "Admin Actions",
+                text = stringResource(R.string.admin_live_match_admin_actions),
                 color = BrandGreen,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -851,7 +873,7 @@ private fun LiveConfirmActionsCard(
             ) {
                 Icon(
                     imageVector = AppIcons.Cancel,
-                    contentDescription = "Discard changes",
+                    contentDescription = stringResource(R.string.admin_live_match_discard_changes),
                     tint = if (hasPendingChanges && !isSaving) BrandBlue else TextGray,
                     modifier = Modifier.size(16.dp)
                 )
@@ -859,7 +881,7 @@ private fun LiveConfirmActionsCard(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "DISCARD CHANGES",
+                    text = stringResource(R.string.admin_live_match_discard_changes).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -884,7 +906,7 @@ private fun LiveConfirmActionsCard(
             ) {
                 Icon(
                     imageVector = AppIcons.Confirm,
-                    contentDescription = "Confirm changes",
+                    contentDescription = stringResource(R.string.admin_live_match_confirm_changes),
                     tint = BrandWhite,
                     modifier = Modifier.size(16.dp)
                 )
@@ -892,7 +914,7 @@ private fun LiveConfirmActionsCard(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = if (isSaving) "SAVING..." else "CONFIRM CHANGES",
+                    text = if (isSaving) stringResource(R.string.admin_live_match_saving).uppercase() else stringResource(R.string.admin_live_match_confirm_changes).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -923,7 +945,7 @@ private fun AdminLiveCasualMatchTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -931,7 +953,7 @@ private fun AdminLiveCasualMatchTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "LIVE MATCH",
+                text = stringResource(R.string.admin_live_match_top_title).uppercase(),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -940,7 +962,7 @@ private fun AdminLiveCasualMatchTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notifications",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -969,11 +991,11 @@ private fun AdminLiveCasualMatchBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomLiveMatchItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomLiveMatchItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomLiveMatchItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomLiveMatchItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomLiveMatchItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomLiveMatchItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomLiveMatchItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomLiveMatchItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomLiveMatchItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomLiveMatchItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

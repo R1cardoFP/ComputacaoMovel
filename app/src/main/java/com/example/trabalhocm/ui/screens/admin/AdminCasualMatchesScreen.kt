@@ -55,6 +55,8 @@ import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 
 @Composable
 fun AdminCasualMatchesScreen(
@@ -78,6 +80,8 @@ fun AdminCasualMatchesScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
+    val errorLoadingMatchesText = stringResource(R.string.admin_casual_matches_error_loading)
+
     LaunchedEffect(Unit) {
         isLoading = true
         errorMessage = ""
@@ -87,7 +91,7 @@ fun AdminCasualMatchesScreen(
                 matches = it
             }
             .onFailure {
-                errorMessage = "Error loading matches: ${it.message}"
+                errorMessage = "$errorLoadingMatchesText: ${it.message}"
             }
 
         isLoading = false
@@ -206,7 +210,7 @@ private fun AdminCasualMatchesContent(
     ) {
         item {
             Text(
-                text = "ADMIN CONSOLE",
+                text = stringResource(R.string.admin_casual_matches_console).uppercase(),
                 color = BrandGreen,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -216,7 +220,7 @@ private fun AdminCasualMatchesContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Casual Matches",
+                text = stringResource(R.string.admin_casual_matches_title),
                 color = BrandBlue,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
@@ -225,7 +229,7 @@ private fun AdminCasualMatchesContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Monitor every match across the platform in real time.",
+                text = stringResource(R.string.admin_casual_matches_description),
                 color = TextGray,
                 fontSize = 12.sp
             )
@@ -245,7 +249,7 @@ private fun AdminCasualMatchesContent(
             ) {
                 Icon(
                     imageVector = AppIcons.Calendar,
-                    contentDescription = "Calendar",
+                    contentDescription = stringResource(R.string.admin_casual_matches_calendar_content_description),
                     tint = BrandWhite,
                     modifier = Modifier.size(16.dp)
                 )
@@ -253,7 +257,7 @@ private fun AdminCasualMatchesContent(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "MATCHES CALENDAR",
+                    text = stringResource(R.string.admin_casual_matches_calendar_button).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -272,14 +276,14 @@ private fun AdminCasualMatchesContent(
                 leadingIcon = {
                     Icon(
                         imageVector = AppIcons.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(R.string.admin_casual_matches_search_content_description),
                         tint = TextGray,
                         modifier = Modifier.size(18.dp)
                     )
                 },
                 placeholder = {
                     Text(
-                        text = "Search matches...",
+                        text = stringResource(R.string.admin_casual_matches_search_placeholder),
                         color = TextGray,
                         fontSize = 12.sp
                     )
@@ -297,12 +301,17 @@ private fun AdminCasualMatchesContent(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("All", "Live", "Open", "Canceled").forEach { filter ->
+                listOf(
+                    "All" to stringResource(R.string.admin_casual_matches_filter_all),
+                    "Live" to stringResource(R.string.admin_casual_matches_filter_live),
+                    "Open" to stringResource(R.string.admin_casual_matches_filter_open),
+                    "Canceled" to stringResource(R.string.admin_casual_matches_filter_canceled)
+                ).forEach { (filterValue, filterText) ->
                     MatchFilterChip(
-                        text = filter,
-                        selected = selectedFilter == filter,
+                        text = filterText,
+                        selected = selectedFilter == filterValue,
                         onClick = {
-                            onFilterChange(filter)
+                            onFilterChange(filterValue)
                         }
                     )
                 }
@@ -318,7 +327,7 @@ private fun AdminCasualMatchesContent(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Text(
-                        text = "No casual matches found.",
+                        text = stringResource(R.string.admin_casual_matches_no_found),
                         color = TextGray,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(18.dp)
@@ -437,7 +446,7 @@ private fun CasualMatchCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "PLAYERS JOINED",
+                    text = stringResource(R.string.admin_casual_matches_players_joined).uppercase(),
                     color = TextGray,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -504,7 +513,11 @@ private fun CasualMatchCard(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = if (match.isLive) "WATCH LIVE" else "VIEW DETAILS",
+                        text = if (match.isLive) {
+                            stringResource(R.string.admin_casual_matches_watch_live).uppercase()
+                        } else {
+                            stringResource(R.string.admin_casual_matches_view_details).uppercase()
+                        },
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -524,7 +537,7 @@ private fun CasualMatchCard(
                     )
                 ) {
                     Text(
-                        text = "EDIT",
+                        text = stringResource(R.string.admin_casual_matches_edit).uppercase(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -553,10 +566,10 @@ private fun StatusBadge(status: String) {
     }
 
     val text = when (status) {
-        "LIVE" -> "LIVE NOW"
-        "OPEN" -> "OPEN"
-        "CLOSED" -> "CLOSED"
-        "CANCELED" -> "CANCELED"
+        "LIVE" -> stringResource(R.string.admin_casual_matches_status_live_now).uppercase()
+        "OPEN" -> stringResource(R.string.admin_casual_matches_status_open).uppercase()
+        "CLOSED" -> stringResource(R.string.admin_casual_matches_status_closed).uppercase()
+        "CANCELED" -> stringResource(R.string.admin_casual_matches_status_canceled).uppercase()
         else -> status
     }
 
@@ -633,7 +646,7 @@ private fun AdminCasualMatchesTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -641,7 +654,7 @@ private fun AdminCasualMatchesTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Casual Matches",
+                text = stringResource(R.string.admin_casual_matches_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -650,7 +663,7 @@ private fun AdminCasualMatchesTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -679,11 +692,11 @@ private fun AdminCasualMatchesBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomCasualMatchItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomCasualMatchItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomCasualMatchItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomCasualMatchItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomCasualMatchItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomCasualMatchItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomCasualMatchItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomCasualMatchItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomCasualMatchItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomCasualMatchItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

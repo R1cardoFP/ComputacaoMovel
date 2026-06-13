@@ -64,6 +64,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import com.example.trabalhocm.ui.theme.WarningYellow
 import com.example.trabalhocm.ui.theme.ErrorRed
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 
 @Composable
 fun AdminTournamentsScreen(
@@ -90,6 +92,12 @@ fun AdminTournamentsScreen(
     var actionMessage by remember { mutableStateOf("") }
     var tournamentToDelete by remember { mutableStateOf<AdminTournament?>(null) }
 
+    val errorLoadingTournamentsText = stringResource(R.string.admin_tournaments_error_loading)
+    val tournamentDeletedSuccessText = stringResource(R.string.admin_tournaments_delete_success)
+    val deleteTournamentErrorText = stringResource(R.string.admin_tournaments_delete_error)
+
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
     fun carregarTorneios() {
         scope.launch {
             isLoading = true
@@ -100,7 +108,7 @@ fun AdminTournamentsScreen(
                     tournaments = it
                 }
                 .onFailure {
-                    errorMessage = "Erro ao carregar torneios: ${it.message}"
+                    errorMessage = "$errorLoadingTournamentsText: ${it.message}"
                 }
 
             isLoading = false
@@ -142,11 +150,14 @@ fun AdminTournamentsScreen(
                 tournamentToDelete = null
             },
             title = {
-                Text(text = "Delete Tournament")
+                Text(text = stringResource(R.string.admin_tournaments_delete_title))
             },
             text = {
                 Text(
-                    text = "Are you sure you want to delete the tournament? ${selectedTournamentToDelete.nome}?"
+                    text = stringResource(
+                        R.string.admin_tournaments_delete_message,
+                        selectedTournamentToDelete.nome
+                    )
                 )
             },
             confirmButton = {
@@ -155,19 +166,21 @@ fun AdminTournamentsScreen(
                         scope.launch {
                             repository.apagarTorneio(selectedTournamentToDelete.id)
                                 .onSuccess {
-                                    actionMessage = "Torneio apagado com sucesso."
+                                    actionMessage = tournamentDeletedSuccessText
+                                    actionMessageIsError = false
                                     tournamentToDelete = null
                                     carregarTorneios()
                                 }
                                 .onFailure {
-                                    actionMessage = "Erro ao apagar torneio: ${it.message}"
+                                    actionMessage = "$deleteTournamentErrorText: ${it.message}"
+                                    actionMessageIsError = true
                                     tournamentToDelete = null
                                 }
                         }
                     }
                 ) {
                     Text(
-                        text = "Delete",
+                        text = stringResource(R.string.admin_tournaments_delete_button),
                         color = Color(0xFFDC2626)
                     )
                 }
@@ -178,7 +191,7 @@ fun AdminTournamentsScreen(
                         tournamentToDelete = null
                     }
                 ) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.admin_common_cancel))
                 }
             }
         )
@@ -188,7 +201,7 @@ fun AdminTournamentsScreen(
         containerColor = BgLight,
         topBar = {
             AdminTournamentsTopBar(
-                title = "Tournaments",
+                title = stringResource(R.string.admin_tournaments_title),
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )
@@ -229,7 +242,7 @@ fun AdminTournamentsScreen(
                 item {
                     Column {
                         Text(
-                            text = "ADMIN CONSOLE",
+                            text = stringResource(R.string.admin_tournaments_console).uppercase(),
                             color = BrandGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -239,7 +252,7 @@ fun AdminTournamentsScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "All Tournaments",
+                            text = stringResource(R.string.admin_tournaments_all_title),
                             color = BrandBlue,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
@@ -248,7 +261,7 @@ fun AdminTournamentsScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Global oversight of every league on the platform.",
+                            text = stringResource(R.string.admin_tournaments_description),
                             color = TextGray,
                             fontSize = 13.sp
                         )
@@ -268,19 +281,19 @@ fun AdminTournamentsScreen(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        TournamentChip("All", selectedChip == "All") {
+                        TournamentChip(stringResource(R.string.admin_tournaments_filter_all), selectedChip == "All") {
                             selectedChip = "All"
                         }
 
-                        TournamentChip("Live", selectedChip == "Live") {
+                        TournamentChip(stringResource(R.string.admin_tournaments_filter_live), selectedChip == "Live") {
                             selectedChip = "Live"
                         }
 
-                        TournamentChip("Open", selectedChip == "Open") {
+                        TournamentChip(stringResource(R.string.admin_tournaments_filter_open), selectedChip == "Open") {
                             selectedChip = "Open"
                         }
 
-                        TournamentChip("Completed", selectedChip == "Completed") {
+                        TournamentChip(stringResource(R.string.admin_tournaments_filter_completed), selectedChip == "Completed") {
                             selectedChip = "Completed"
                         }
                     }
@@ -301,7 +314,7 @@ fun AdminTournamentsScreen(
                     item {
                         Text(
                             text = actionMessage,
-                            color = if (actionMessage.startsWith("Erro")) {
+                            color = if (actionMessageIsError) {
                                 Color(0xFFDC2626)
                             } else {
                                 BrandGreen
@@ -321,7 +334,7 @@ fun AdminTournamentsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = "No tournaments found.",
+                                text = stringResource(R.string.admin_tournaments_no_found),
                                 color = TextGray,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(18.dp)
@@ -358,7 +371,7 @@ fun AdminTournamentsScreen(
                         )
                     ) {
                         Text(
-                            text = "VIEW GLOBAL TOURNAMENTS ARCHIVE",
+                            text = stringResource(R.string.admin_tournaments_archive_button).uppercase(),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.7.sp
@@ -393,7 +406,7 @@ private fun AdminTournamentsTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = Color.White,
                 modifier = Modifier.size(22.dp)
             )
@@ -410,7 +423,7 @@ private fun AdminTournamentsTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier
                 .size(23.dp)
@@ -431,7 +444,7 @@ private fun AdminTournamentSearchBox(
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = "Search any tournament...",
+                text = stringResource(R.string.admin_tournaments_search_placeholder),
                 color = TextGray,
                 fontSize = 13.sp
             )
@@ -517,7 +530,7 @@ private fun AdminTournamentMainCard(
                     StatusBadge(status = tournament.estado)
 
                     SmallBadge(
-                        text = "PRO LEAGUE",
+                        text = stringResource(R.string.admin_tournaments_pro_league).uppercase(),
                         background = Color(0xFFEAF2F5),
                         textColor = TextGray
                     )
@@ -558,7 +571,7 @@ private fun AdminTournamentMainCard(
                             },
                             text = {
                                 Text(
-                                    text = "Delete Tournament",
+                                    text = stringResource(R.string.admin_tournaments_delete_title),
                                     color = Color(0xFFDC2626),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium
@@ -585,7 +598,11 @@ private fun AdminTournamentMainCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Season ${tournament.season} · Organizer: ${tournament.organizerName}",
+                text = stringResource(
+                    R.string.admin_tournaments_season_organizer,
+                    tournament.season,
+                    tournament.organizerName
+                ),
                 color = TextGray,
                 fontSize = 11.sp
             )
@@ -598,7 +615,7 @@ private fun AdminTournamentMainCard(
             ) {
                 Column {
                     Text(
-                        text = "TEAMS",
+                        text = stringResource(R.string.admin_tournaments_teams).uppercase(),
                         color = TextGray,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -661,7 +678,7 @@ private fun AdminTournamentMainCard(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "DETAILS",
+                        text = stringResource(R.string.admin_tournaments_details).uppercase(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -680,7 +697,7 @@ private fun AdminTournamentMainCard(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "MANAGE REGISTRATION",
+                        text = stringResource(R.string.admin_tournaments_manage_registration).uppercase(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -711,11 +728,21 @@ private fun StatusBadge(status: String) {
     }
 
     val text = when {
-        normalized.contains("aberto") || normalized.contains("open") -> "OPEN"
-        normalized.contains("decorrer") || normalized.contains("live") -> "LIVE"
-        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") -> "COMPLETED"
-        normalized.contains("cancelado") -> "CANCELLED"
-        normalized.contains("rascunho") -> "DRAFT"
+        normalized.contains("aberto") || normalized.contains("open") ->
+            stringResource(R.string.admin_status_open).uppercase()
+
+        normalized.contains("decorrer") || normalized.contains("live") ->
+            stringResource(R.string.admin_status_live).uppercase()
+
+        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") ->
+            stringResource(R.string.admin_status_completed).uppercase()
+
+        normalized.contains("cancelado") ->
+            stringResource(R.string.admin_status_cancelled).uppercase()
+
+        normalized.contains("rascunho") ->
+            stringResource(R.string.admin_status_draft).uppercase()
+
         else -> status.uppercase()
     }
 
@@ -767,11 +794,11 @@ private fun AdminTournamentsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

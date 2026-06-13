@@ -50,6 +50,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.OrganizerRequest
 import com.example.trabalhocm.data.repository.AdminOrganizerRequestRepository
 import com.example.trabalhocm.ui.theme.AppIcons
@@ -85,6 +87,13 @@ fun AdminOrganizerRequestsScreen(
     var isUpdating by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
+    val errorLoadingRequestsText = stringResource(R.string.admin_organizer_requests_error_loading)
+    val rejectedSuccessText = stringResource(R.string.admin_organizer_requests_rejected_success)
+    val approvedSuccessText = stringResource(R.string.admin_organizer_requests_approved_success)
+    val rejectErrorText = stringResource(R.string.admin_organizer_requests_reject_error)
+    val approveErrorText = stringResource(R.string.admin_organizer_requests_approve_error)
 
     fun carregarPedidos(mostrarLoading: Boolean = true) {
         scope.launch {
@@ -99,7 +108,7 @@ fun AdminOrganizerRequestsScreen(
                     requests = pedidos
                 }
                 .onFailure { erro ->
-                    errorMessage = "Erro ao carregar pedidos: ${erro.message}"
+                    errorMessage = "$errorLoadingRequestsText: ${erro.message}"
                 }
 
             isLoading = false
@@ -136,7 +145,7 @@ fun AdminOrganizerRequestsScreen(
         containerColor = AdminBackground,
         topBar = {
             OrganizerRequestsTopBar(
-                title = "Organizer Requests",
+                title = stringResource(R.string.admin_organizer_requests_title),
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )
@@ -177,7 +186,7 @@ fun AdminOrganizerRequestsScreen(
                 item {
                     Column {
                         Text(
-                            text = "ADMIN CONSOLE",
+                            text = stringResource(R.string.admin_organizer_requests_console).uppercase(),
                             color = AdminGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -187,7 +196,7 @@ fun AdminOrganizerRequestsScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Organizer Requests",
+                            text = stringResource(R.string.admin_organizer_requests_title),
                             color = AdminBlue,
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold
@@ -196,7 +205,7 @@ fun AdminOrganizerRequestsScreen(
                         Spacer(modifier = Modifier.height(5.dp))
 
                         Text(
-                            text = "Review and approve players who applied to become\norganizers.",
+                            text = stringResource(R.string.admin_organizer_requests_description),
                             color = TextMuted,
                             fontSize = 12.sp,
                             lineHeight = 17.sp
@@ -247,7 +256,7 @@ fun AdminOrganizerRequestsScreen(
                     item {
                         Text(
                             text = actionMessage,
-                            color = if (actionMessage.startsWith("Erro")) RejectRed else AdminGreen,
+                            color = if (actionMessageIsError) RejectRed else AdminGreen,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -256,7 +265,11 @@ fun AdminOrganizerRequestsScreen(
 
                 item {
                     Text(
-                        text = "${selectedFilter.uppercase()} APPROVAL (${filteredRequests.size})",
+                        text = stringResource(
+                            R.string.admin_organizer_requests_approval_section,
+                            selectedFilterDisplayName(selectedFilter).uppercase(),
+                            filteredRequests.size
+                        ),
                         color = TextMuted,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -273,7 +286,7 @@ fun AdminOrganizerRequestsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = "Sem pedidos para mostrar.",
+                                text = stringResource(R.string.admin_organizer_requests_empty),
                                 color = TextMuted,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(18.dp)
@@ -293,11 +306,13 @@ fun AdminOrganizerRequestsScreen(
 
                                 repository.rejeitarPedido(request.id)
                                     .onSuccess {
-                                        actionMessage = "Pedido rejeitado."
+                                        actionMessage = rejectedSuccessText
+                                        actionMessageIsError = false
                                         carregarPedidos(mostrarLoading = false)
                                     }
                                     .onFailure { erro ->
-                                        actionMessage = "Erro ao rejeitar: ${erro.message}"
+                                        actionMessage = "$rejectErrorText: ${erro.message}"
+                                        actionMessageIsError = true
                                     }
 
                                 isUpdating = false
@@ -313,11 +328,13 @@ fun AdminOrganizerRequestsScreen(
                                     idUtilizador = request.userId
                                 )
                                     .onSuccess {
-                                        actionMessage = "Pedido aprovado e utilizador promovido a organizador."
+                                        actionMessage = approvedSuccessText
+                                        actionMessageIsError = false
                                         carregarPedidos(mostrarLoading = false)
                                     }
                                     .onFailure { erro ->
-                                        actionMessage = "Erro ao aprovar: ${erro.message}"
+                                        actionMessage = "$approveErrorText: ${erro.message}"
+                                        actionMessageIsError = true
                                     }
 
                                 isUpdating = false
@@ -355,7 +372,7 @@ private fun OrganizerRequestsTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = Color.White,
                 modifier = Modifier.size(22.dp)
             )
@@ -372,7 +389,7 @@ private fun OrganizerRequestsTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier
                 .size(22.dp)
@@ -403,7 +420,7 @@ private fun PendingReviewCard(
         ) {
             Column {
                 Text(
-                    text = "PENDING REVIEW",
+                    text = stringResource(R.string.admin_organizer_requests_pending_review).uppercase(),
                     color = Color(0xFFB9C4D8),
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
@@ -424,7 +441,7 @@ private fun PendingReviewCard(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = "THIS WEEK",
+                    text = stringResource(R.string.admin_organizer_requests_this_week).uppercase(),
                     color = Color(0xFFB9C4D8),
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
@@ -434,7 +451,7 @@ private fun PendingReviewCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "+$weeklyRequests new requests",
+                    text = stringResource(R.string.admin_organizer_requests_new_requests, weeklyRequests),
                     color = Color.White,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -454,7 +471,7 @@ private fun SearchBox(
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = "Search applicants...",
+                text = stringResource(R.string.admin_organizer_requests_search_placeholder),
                 color = TextMuted,
                 fontSize = 12.sp
             )
@@ -462,7 +479,7 @@ private fun SearchBox(
         leadingIcon = {
             Icon(
                 imageVector = AppIcons.Search,
-                contentDescription = "Pesquisar",
+                contentDescription = stringResource(R.string.admin_organizer_requests_search_content_description),
                 tint = TextMuted,
                 modifier = Modifier.size(18.dp)
             )
@@ -500,7 +517,8 @@ private fun OrganizerRequestFilterRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         RequestFilterChip(
-            text = "Pending",
+            text = stringResource(R.string.admin_organizer_requests_filter_pending),
+            value = "Pending",
             count = pendingCount,
             selected = selectedFilter == "Pending",
             modifier = Modifier.weight(1f),
@@ -508,7 +526,8 @@ private fun OrganizerRequestFilterRow(
         )
 
         RequestFilterChip(
-            text = "Approved",
+            text = stringResource(R.string.admin_organizer_requests_filter_approved),
+            value = "Approved",
             count = approvedCount,
             selected = selectedFilter == "Approved",
             modifier = Modifier.weight(1f),
@@ -516,7 +535,8 @@ private fun OrganizerRequestFilterRow(
         )
 
         RequestFilterChip(
-            text = "Rejected",
+            text = stringResource(R.string.admin_organizer_requests_filter_rejected),
+            value = "Rejected",
             count = rejectedCount,
             selected = selectedFilter == "Rejected",
             modifier = Modifier.weight(1f),
@@ -528,6 +548,7 @@ private fun OrganizerRequestFilterRow(
 @Composable
 private fun RequestFilterChip(
     text: String,
+    value: String,
     count: Int,
     selected: Boolean,
     modifier: Modifier = Modifier,
@@ -538,7 +559,7 @@ private fun RequestFilterChip(
             .height(34.dp)
             .clip(RoundedCornerShape(5.dp))
             .background(if (selected) Color(0xFF0057C8) else LightBlueBadge)
-            .clickable { onClick(text) }
+            .clickable { onClick(value) }
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -641,13 +662,13 @@ private fun OrganizerRequestCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 InfoColumn(
-                    title = "SPORT",
+                    title = stringResource(R.string.admin_organizer_requests_sport).uppercase(),
                     value = request.sport,
                     modifier = Modifier.weight(1f)
                 )
 
                 InfoColumn(
-                    title = "EXPERIENCE",
+                    title = stringResource(R.string.admin_organizer_requests_experience).uppercase(),
                     value = request.experience,
                     modifier = Modifier.weight(1f)
                 )
@@ -659,13 +680,13 @@ private fun OrganizerRequestCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 InfoColumn(
-                    title = "FREQUENCY",
+                    title = stringResource(R.string.admin_organizer_requests_frequency).uppercase(),
                     value = request.frequency,
                     modifier = Modifier.weight(1f)
                 )
 
                 InfoColumn(
-                    title = "APPLIED",
+                    title = stringResource(R.string.admin_organizer_requests_applied).uppercase(),
                     value = request.applied,
                     modifier = Modifier.weight(1f)
                 )
@@ -688,7 +709,7 @@ private fun OrganizerRequestCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     RequestActionButton(
-                        text = "REJECT",
+                        text = stringResource(R.string.admin_organizer_requests_reject).uppercase(),
                         icon = AppIcons.Cancel,
                         color = RejectRed,
                         background = Color(0xFFFFF5F5),
@@ -699,7 +720,7 @@ private fun OrganizerRequestCard(
                     )
 
                     RequestActionButton(
-                        text = "APPROVE",
+                        text = stringResource(R.string.admin_organizer_requests_approve).uppercase(),
                         icon = AppIcons.Confirm,
                         color = Color.White,
                         background = AdminGreen,
@@ -763,7 +784,7 @@ private fun StatusBadge(status: String) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = status,
+            text = organizerRequestStatusText(status).uppercase(),
             color = textColor,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold
@@ -837,7 +858,7 @@ private fun InfoBox() {
     ) {
         Icon(
             imageVector = AppIcons.Info,
-            contentDescription = "Informação",
+            contentDescription = stringResource(R.string.admin_organizer_requests_info_content_description),
             tint = AdminGreen,
             modifier = Modifier.size(17.dp)
         )
@@ -845,7 +866,7 @@ private fun InfoBox() {
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = "Approving a request immediately grants the user organizer permissions and notifies them by email.",
+            text = stringResource(R.string.admin_organizer_requests_info_message),
             color = AdminGreen,
             fontSize = 11.sp,
             lineHeight = 15.sp
@@ -871,11 +892,11 @@ private fun OrganizerRequestsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 
@@ -908,6 +929,25 @@ private fun BottomItem(
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp
         )
+    }
+}
+
+@Composable
+private fun selectedFilterDisplayName(filter: String): String {
+    return when (filter) {
+        "Pending" -> stringResource(R.string.admin_organizer_requests_filter_pending)
+        "Approved" -> stringResource(R.string.admin_organizer_requests_filter_approved)
+        "Rejected" -> stringResource(R.string.admin_organizer_requests_filter_rejected)
+        else -> filter
+    }
+}
+
+@Composable
+private fun organizerRequestStatusText(status: String): String {
+    return when (status) {
+        "APPROVED" -> stringResource(R.string.admin_organizer_requests_status_approved)
+        "REJECTED" -> stringResource(R.string.admin_organizer_requests_status_rejected)
+        else -> stringResource(R.string.admin_organizer_requests_status_pending)
     }
 }
 

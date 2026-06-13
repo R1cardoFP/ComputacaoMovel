@@ -49,6 +49,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminManageRegistrationData
 import com.example.trabalhocm.data.model.AdminRegistrationTeam
 import com.example.trabalhocm.data.repository.AdminRegistrationRepository
@@ -89,6 +91,15 @@ fun AdminManageRegistrationScreen(
     var actionMessage by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     var refreshKey by remember { mutableStateOf(0) }
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
+    val errorLoadingRegistrationsText = stringResource(R.string.admin_manage_registration_error_loading)
+    val rejectedSuccessText = stringResource(R.string.admin_manage_registration_rejected_success)
+    val approvedSuccessText = stringResource(R.string.admin_manage_registration_approved_success)
+    val removedSuccessText = stringResource(R.string.admin_manage_registration_removed_success)
+    val rejectErrorText = stringResource(R.string.admin_manage_registration_reject_error)
+    val approveErrorText = stringResource(R.string.admin_manage_registration_approve_error)
+    val removeErrorText = stringResource(R.string.admin_manage_registration_remove_error)
 
     LaunchedEffect(tournamentId, refreshKey) {
         isLoading = true
@@ -99,7 +110,7 @@ fun AdminManageRegistrationScreen(
                 data = it
             }
             .onFailure {
-                errorMessage = "Erro ao carregar inscrições: ${it.message}"
+                errorMessage = "$errorLoadingRegistrationsText: ${it.message}"
             }
 
         isLoading = false
@@ -186,7 +197,7 @@ fun AdminManageRegistrationScreen(
                     item {
                         Column {
                             Text(
-                                text = "ADMIN TOOL",
+                                text = stringResource(R.string.admin_manage_registration_console).uppercase(),
                                 color = BrandGreen,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -196,7 +207,7 @@ fun AdminManageRegistrationScreen(
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "Manage Registration",
+                                text = stringResource(R.string.admin_manage_registration_title),
                                 color = BrandBlue,
                                 fontSize = 25.sp,
                                 fontWeight = FontWeight.Bold
@@ -205,7 +216,7 @@ fun AdminManageRegistrationScreen(
                             Spacer(modifier = Modifier.height(5.dp))
 
                             Text(
-                                text = "Review applications and manage participating teams.",
+                                text = stringResource(R.string.admin_manage_registration_description),
                                 color = TextGray,
                                 fontSize = 12.sp
                             )
@@ -232,7 +243,7 @@ fun AdminManageRegistrationScreen(
                         ) {
                             Icon(
                                 imageVector = AppIcons.Add,
-                                contentDescription = "Convidar equipa",
+                                contentDescription = stringResource(R.string.admin_manage_registration_invite_team_content_description),
                                 tint = BrandWhite,
                                 modifier = Modifier.size(17.dp)
                             )
@@ -240,7 +251,7 @@ fun AdminManageRegistrationScreen(
                             Spacer(modifier = Modifier.width(7.dp))
 
                             Text(
-                                text = "INVITE TEAM",
+                                text = stringResource(R.string.admin_manage_registration_invite_team).uppercase(),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -261,7 +272,7 @@ fun AdminManageRegistrationScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             RegistrationTabChip(
-                                text = "All",
+                                text = stringResource(R.string.admin_manage_registration_tab_all),
                                 count = screenData.pendingTeams.size +
                                         screenData.approvedTeams.size +
                                         screenData.rejectedTeams.size,
@@ -271,7 +282,7 @@ fun AdminManageRegistrationScreen(
                             }
 
                             RegistrationTabChip(
-                                text = "Pending",
+                                text = stringResource(R.string.admin_manage_registration_tab_pending),
                                 count = screenData.pendingTeams.size,
                                 selected = selectedTab == "pending"
                             ) {
@@ -279,7 +290,7 @@ fun AdminManageRegistrationScreen(
                             }
 
                             RegistrationTabChip(
-                                text = "Approved",
+                                text = stringResource(R.string.admin_manage_registration_tab_approved),
                                 count = screenData.approvedTeams.size,
                                 selected = selectedTab == "approved"
                             ) {
@@ -292,7 +303,7 @@ fun AdminManageRegistrationScreen(
                         item {
                             Text(
                                 text = actionMessage,
-                                color = if (actionMessage.startsWith("Erro")) ErrorRed else BrandGreen,
+                                color = if (actionMessageIsError) ErrorRed else BrandGreen,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -301,12 +312,12 @@ fun AdminManageRegistrationScreen(
 
                     if (selectedTab == "all" || selectedTab == "pending") {
                         item {
-                            SectionTitle("PENDING APPROVAL (${pendingFiltered.size})")
+                            SectionTitle(stringResource(R.string.admin_manage_registration_pending_approval, pendingFiltered.size).uppercase())
                         }
 
                         if (pendingFiltered.isEmpty()) {
                             item {
-                                EmptyRegistrationCard("Sem pedidos pendentes.")
+                                EmptyRegistrationCard(stringResource(R.string.admin_manage_registration_empty_pending))
                             }
                         }
 
@@ -317,11 +328,13 @@ fun AdminManageRegistrationScreen(
                                     scope.launch {
                                         repository.rejeitarInscricao(team.registrationId)
                                             .onSuccess {
-                                                actionMessage = "Pedido rejeitado."
+                                                actionMessage = rejectedSuccessText
+                                                actionMessageIsError = false
                                                 refreshKey++
                                             }
                                             .onFailure {
-                                                actionMessage = "Erro ao rejeitar: ${it.message}"
+                                                actionMessage = "$rejectErrorText: ${it.message}"
+                                                actionMessageIsError = true
                                             }
                                     }
                                 },
@@ -329,11 +342,13 @@ fun AdminManageRegistrationScreen(
                                     scope.launch {
                                         repository.aprovarInscricao(team.registrationId)
                                             .onSuccess {
-                                                actionMessage = "Pedido aprovado."
+                                                actionMessage = approvedSuccessText
+                                                actionMessageIsError = false
                                                 refreshKey++
                                             }
                                             .onFailure {
-                                                actionMessage = "Erro ao aprovar: ${it.message}"
+                                                actionMessage = "$approveErrorText: ${it.message}"
+                                                actionMessageIsError = true
                                             }
                                     }
                                 },
@@ -346,12 +361,12 @@ fun AdminManageRegistrationScreen(
 
                     if (selectedTab == "all" || selectedTab == "approved") {
                         item {
-                            SectionTitle("APPROVED TEAMS (${approvedFiltered.size})")
+                            SectionTitle(stringResource(R.string.admin_manage_registration_approved_teams, approvedFiltered.size).uppercase())
                         }
 
                         if (approvedFiltered.isEmpty()) {
                             item {
-                                EmptyRegistrationCard("Sem equipas aprovadas.")
+                                EmptyRegistrationCard(stringResource(R.string.admin_manage_registration_empty_approved))
                             }
                         }
 
@@ -362,11 +377,13 @@ fun AdminManageRegistrationScreen(
                                     scope.launch {
                                         repository.removerInscricao(team.registrationId)
                                             .onSuccess {
-                                                actionMessage = "Equipa removida do torneio."
+                                                actionMessage = removedSuccessText
+                                                actionMessageIsError = false
                                                 refreshKey++
                                             }
                                             .onFailure {
-                                                actionMessage = "Erro ao remover: ${it.message}"
+                                                actionMessage = "$removeErrorText: ${it.message}"
+                                                actionMessageIsError = true
                                             }
                                     }
                                 }
@@ -376,12 +393,12 @@ fun AdminManageRegistrationScreen(
 
                     if (selectedTab == "all") {
                         item {
-                            SectionTitle("REJECTED TEAMS (${rejectedFiltered.size})")
+                            SectionTitle(stringResource(R.string.admin_manage_registration_rejected_teams, rejectedFiltered.size).uppercase())
                         }
 
                         if (rejectedFiltered.isEmpty()) {
                             item {
-                                EmptyRegistrationCard("Sem equipas rejeitadas.")
+                                EmptyRegistrationCard(stringResource(R.string.admin_manage_registration_empty_rejected))
                             }
                         }
 
@@ -417,7 +434,7 @@ private fun ManageRegistrationTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -425,7 +442,7 @@ private fun ManageRegistrationTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Manage Registration",
+                text = stringResource(R.string.admin_manage_registration_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -434,7 +451,7 @@ private fun ManageRegistrationTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -478,7 +495,7 @@ private fun TournamentRegistrationHero(data: AdminManageRegistrationData) {
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "TEAMS REGISTERED",
+                        text = stringResource(R.string.admin_manage_registration_teams_registered).uppercase(),
                         color = Color(0xFFB9C4D8),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
@@ -535,10 +552,18 @@ private fun TournamentRegistrationHero(data: AdminManageRegistrationData) {
 @Composable
 private fun SmallStatusBadge(status: String) {
     val text = when {
-        status.contains("aberto", ignoreCase = true) -> "OPEN"
-        status.contains("decorrer", ignoreCase = true) -> "LIVE"
-        status.contains("terminado", ignoreCase = true) -> "COMPLETED"
-        status.contains("cancelado", ignoreCase = true) -> "CANCELLED"
+        status.contains("aberto", ignoreCase = true) || status.contains("open", ignoreCase = true) ->
+            stringResource(R.string.admin_status_open).uppercase()
+
+        status.contains("decorrer", ignoreCase = true) || status.contains("live", ignoreCase = true) ->
+            stringResource(R.string.admin_status_live).uppercase()
+
+        status.contains("terminado", ignoreCase = true) || status.contains("completed", ignoreCase = true) || status.contains("archived", ignoreCase = true) ->
+            stringResource(R.string.admin_status_completed).uppercase()
+
+        status.contains("cancelado", ignoreCase = true) || status.contains("canceled", ignoreCase = true) ->
+            stringResource(R.string.admin_status_cancelled).uppercase()
+
         else -> status.uppercase()
     }
 
@@ -568,7 +593,7 @@ private fun RegistrationSearchBox(
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = "Search teams or captains...",
+                text = stringResource(R.string.admin_manage_registration_search_placeholder),
                 color = TextGray,
                 fontSize = 12.sp
             )
@@ -576,7 +601,7 @@ private fun RegistrationSearchBox(
         leadingIcon = {
             Icon(
                 imageVector = AppIcons.Search,
-                contentDescription = "Pesquisar",
+                contentDescription = stringResource(R.string.admin_manage_registration_search_content_description),
                 tint = TextGray,
                 modifier = Modifier.size(18.dp)
             )
@@ -699,14 +724,14 @@ private fun PendingTeamCard(
                         )
 
                         Text(
-                            text = "Captain: ${team.captainName} · ${team.division}",
+                            text = stringResource(R.string.admin_manage_registration_captain_division, team.captainName, team.division),
                             color = TextGray,
                             fontSize = 10.sp
                         )
                     }
 
                     MiniBadge(
-                        text = "PENDING",
+                        text = stringResource(R.string.admin_manage_registration_status_pending),
                         background = Color(0xFFFFF7D6),
                         textColor = Color(0xFFB45309)
                     )
@@ -719,12 +744,12 @@ private fun PendingTeamCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     SmallInfo(
-                        label = "PLAYERS",
+                        label = stringResource(R.string.admin_manage_registration_players).uppercase(),
                         value = "${team.playersCount}/${team.maxPlayers}"
                     )
 
                     SmallInfo(
-                        label = "WIN RATE",
+                        label = stringResource(R.string.admin_manage_registration_win_rate).uppercase(),
                         value = team.winRate
                     )
                 }
@@ -736,7 +761,7 @@ private fun PendingTeamCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     SmallInfo(
-                        label = "APPLIED",
+                        label = stringResource(R.string.admin_manage_registration_applied).uppercase(),
                         value = team.appliedAgo
                     )
 
@@ -761,7 +786,7 @@ private fun PendingTeamCard(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = "×  REJECT",
+                            text = "×  ${stringResource(R.string.admin_manage_registration_reject).uppercase()}",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -780,7 +805,7 @@ private fun PendingTeamCard(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = "✓  APPROVE",
+                            text = "✓  ${stringResource(R.string.admin_manage_registration_approve).uppercase()}",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -803,7 +828,7 @@ private fun PendingTeamCard(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "DETAILS",
+                        text = stringResource(R.string.admin_manage_registration_details).uppercase(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -855,7 +880,7 @@ private fun ApprovedTeamCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         MiniBadge(
-                            text = "CONFIRMED",
+                            text = stringResource(R.string.admin_manage_registration_status_confirmed),
                             background = Color(0xFFEAF8F5),
                             textColor = BrandGreen
                         )
@@ -880,7 +905,7 @@ private fun ApprovedTeamCard(
                 ) {
                     Icon(
                         imageVector = AppIcons.Delete,
-                        contentDescription = "Remover equipa",
+                        contentDescription = stringResource(R.string.admin_manage_registration_remove_team_content_description),
                         tint = ErrorRed,
                         modifier = Modifier.size(18.dp)
                     )
@@ -921,7 +946,7 @@ private fun RejectedTeamCard(team: AdminRegistrationTeam) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 MiniBadge(
-                    text = "REJECTED",
+                    text = stringResource(R.string.admin_manage_registration_status_rejected),
                     background = LightRedBadge,
                     textColor = ErrorRed
                 )
@@ -958,14 +983,14 @@ private fun PaymentText(status: String) {
 
     Column {
         Text(
-            text = "PAYMENT",
+            text = stringResource(R.string.admin_manage_registration_payment).uppercase(),
             color = TextGray,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
-            text = if (paid) "✓ Paid" else "× Unpaid",
+            text = if (paid) "✓ ${stringResource(R.string.admin_manage_registration_paid)}" else "× ${stringResource(R.string.admin_manage_registration_unpaid)}",
             color = if (paid) BrandGreen else ErrorRed,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
@@ -995,11 +1020,12 @@ private fun MiniBadge(
     }
 }
 
+@Composable
 private fun paymentLabel(status: String): String {
     return when {
-        status.equals("pago", ignoreCase = true) -> "PAID"
-        status.equals("nao_pago", ignoreCase = true) -> "UNPAID"
-        else -> "PENDING"
+        status.equals("pago", ignoreCase = true) -> stringResource(R.string.admin_manage_registration_paid).uppercase()
+        status.equals("nao_pago", ignoreCase = true) -> stringResource(R.string.admin_manage_registration_unpaid).uppercase()
+        else -> stringResource(R.string.admin_manage_registration_status_pending).uppercase()
     }
 }
 
@@ -1021,11 +1047,11 @@ private fun ManageRegistrationBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomManageItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomManageItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomManageItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomManageItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomManageItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomManageItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomManageItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomManageItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomManageItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomManageItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

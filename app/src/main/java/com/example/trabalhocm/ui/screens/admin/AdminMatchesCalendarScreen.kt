@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.example.trabalhocm.data.model.AdminCasualMatch
 import com.example.trabalhocm.data.repository.AdminCasualMatchRepository
 import com.example.trabalhocm.ui.theme.AppIcons
@@ -55,6 +56,7 @@ import com.example.trabalhocm.ui.theme.CardBg
 import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
+import com.example.trabalhocm.R
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -83,6 +85,12 @@ fun AdminMatchesCalendarScreen(
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
 
+    val errorLoadingCalendarText = stringResource(R.string.admin_matches_error_loading_calendar)
+    val selectedDateFormatter = DateTimeFormatter.ofPattern(
+        stringResource(R.string.admin_matches_date_format),
+        Locale.getDefault()
+    )
+
     LaunchedEffect(Unit) {
         isLoading = true
         errorMessage = ""
@@ -92,7 +100,7 @@ fun AdminMatchesCalendarScreen(
                 matches = it
             }
             .onFailure {
-                errorMessage = "Error loading calendar: ${it.message}"
+                errorMessage = "$errorLoadingCalendarText: ${it.message}"
             }
 
         isLoading = false
@@ -175,7 +183,7 @@ fun AdminMatchesCalendarScreen(
                 ) {
                     item {
                         Text(
-                            text = "ADMIN CONSOLE",
+                            text = stringResource(R.string.admin_matches_console).uppercase(),
                             color = BrandGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -185,7 +193,7 @@ fun AdminMatchesCalendarScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Matches Calendar",
+                            text = stringResource(R.string.admin_matches_title),
                             color = BrandBlue,
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold
@@ -194,7 +202,7 @@ fun AdminMatchesCalendarScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "View every match scheduled across the platform.",
+                            text = stringResource(R.string.admin_matches_description),
                             color = TextGray,
                             fontSize = 12.sp
                         )
@@ -202,7 +210,7 @@ fun AdminMatchesCalendarScreen(
 
                     item {
                         Text(
-                            text = "CALENDAR",
+                            text = stringResource(R.string.admin_matches_calendar_label).uppercase(),
                             color = TextGray,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -230,9 +238,7 @@ fun AdminMatchesCalendarScreen(
 
                     item {
                         Text(
-                            text = selectedDate.format(
-                                DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH)
-                            ),
+                            text = selectedDate.format(selectedDateFormatter),
                             color = BrandBlue,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
@@ -248,7 +254,7 @@ fun AdminMatchesCalendarScreen(
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
                                 Text(
-                                    text = "No matches scheduled for this day.",
+                                    text = stringResource(R.string.admin_matches_no_matches_day),
                                     color = TextGray,
                                     fontSize = 13.sp,
                                     modifier = Modifier.padding(16.dp)
@@ -293,6 +299,19 @@ private fun CalendarCard(
 ) {
     val days = calendarDaysForMonth(currentMonth)
     val today = LocalDate.now(ZoneId.of("Europe/Lisbon"))
+    val monthFormatter = DateTimeFormatter.ofPattern(
+        stringResource(R.string.admin_matches_month_format),
+        Locale.getDefault()
+    )
+    val weekDays = listOf(
+        stringResource(R.string.admin_weekday_mon),
+        stringResource(R.string.admin_weekday_tue),
+        stringResource(R.string.admin_weekday_wed),
+        stringResource(R.string.admin_weekday_thu),
+        stringResource(R.string.admin_weekday_fri),
+        stringResource(R.string.admin_weekday_sat),
+        stringResource(R.string.admin_weekday_sun)
+    )
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -308,9 +327,7 @@ private fun CalendarCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = currentMonth.format(
-                        DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
-                    ),
+                    text = currentMonth.format(monthFormatter),
                     color = BrandBlue,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
@@ -336,7 +353,7 @@ private fun CalendarCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN").forEach { day ->
+                weekDays.forEach { day ->
                     Text(
                         text = day,
                         color = TextGray,
@@ -543,7 +560,11 @@ private fun CalendarMatchCard(
                         )
 
                         Text(
-                            text = if (match.isLive) "Live now" else match.status,
+                            text = if (match.isLive) {
+                                stringResource(R.string.admin_matches_live_now)
+                            } else {
+                                calendarMatchStatusText(match.status)
+                            },
                             color = TextGray,
                             fontSize = 10.sp,
                             maxLines = 1
@@ -599,7 +620,11 @@ private fun CalendarMatchCard(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = if (match.isLive) "WATCH LIVE" else "VIEW DETAILS",
+                            text = if (match.isLive) {
+                                stringResource(R.string.admin_matches_watch_live).uppercase()
+                            } else {
+                                stringResource(R.string.admin_matches_view_details).uppercase()
+                            },
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1
@@ -622,7 +647,7 @@ private fun CalendarMatchCard(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = "EDIT",
+                            text = stringResource(R.string.admin_matches_edit).uppercase(),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -633,13 +658,23 @@ private fun CalendarMatchCard(
     }
 }
 
+
+@Composable
+private fun calendarMatchStatusText(status: String): String {
+    return when (status.uppercase()) {
+        "CANCELED" -> stringResource(R.string.admin_matches_status_canceled)
+        "CLOSED" -> stringResource(R.string.admin_matches_status_closed)
+        else -> stringResource(R.string.admin_matches_status_upcoming)
+    }
+}
+
 @Composable
 private fun CalendarStatusBadge(match: AdminCasualMatch) {
     val text = when {
-        match.isLive -> "LIVE NOW"
-        match.status == "CANCELED" -> "CANCELED"
-        match.status == "CLOSED" -> "CLOSED"
-        else -> "UPCOMING"
+        match.isLive -> stringResource(R.string.admin_matches_status_live_now).uppercase()
+        match.status == "CANCELED" -> stringResource(R.string.admin_matches_status_canceled).uppercase()
+        match.status == "CLOSED" -> stringResource(R.string.admin_matches_status_closed).uppercase()
+        else -> stringResource(R.string.admin_matches_status_upcoming).uppercase()
     }
 
     val background = when {
@@ -752,7 +787,7 @@ private fun AdminMatchesCalendarTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -760,7 +795,7 @@ private fun AdminMatchesCalendarTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Calendar",
+                text = stringResource(R.string.admin_matches_calendar_top_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -769,7 +804,7 @@ private fun AdminMatchesCalendarTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notifications",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -798,11 +833,11 @@ private fun AdminMatchesCalendarBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomCalendarItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomCalendarItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomCalendarItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomCalendarItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomCalendarItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomCalendarItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomCalendarItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomCalendarItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomCalendarItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomCalendarItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

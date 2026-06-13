@@ -49,6 +49,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminInviteTeam
 import com.example.trabalhocm.data.model.AdminInviteTeamsData
 import com.example.trabalhocm.data.repository.AdminInviteTeamRepository
@@ -78,6 +81,7 @@ fun AdminInviteTeamsScreen(
 ) {
     val repository = remember { AdminInviteTeamRepository() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var data by remember { mutableStateOf<AdminInviteTeamsData?>(null) }
     var searchText by remember { mutableStateOf("") }
@@ -85,6 +89,10 @@ fun AdminInviteTeamsScreen(
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
     var refreshKey by remember { mutableStateOf(0) }
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
+    val errorLoadingTeamsText = stringResource(R.string.admin_invite_teams_error_loading)
+    val inviteErrorText = stringResource(R.string.admin_invite_teams_error_inviting)
 
     LaunchedEffect(tournamentId, refreshKey) {
         isLoading = true
@@ -95,7 +103,7 @@ fun AdminInviteTeamsScreen(
                 data = it
             }
             .onFailure {
-                errorMessage = "Error loading teams: ${it.message}"
+                errorMessage = "$errorLoadingTeamsText: ${it.message}"
             }
 
         isLoading = false
@@ -173,7 +181,7 @@ fun AdminInviteTeamsScreen(
                     item {
                         Column {
                             Text(
-                                text = "ADMIN TOOL",
+                                text = stringResource(R.string.admin_invite_teams_console).uppercase(),
                                 color = BrandGreen,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -183,7 +191,7 @@ fun AdminInviteTeamsScreen(
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "Invite Teams",
+                                text = stringResource(R.string.admin_invite_teams_title),
                                 color = BrandBlue,
                                 fontSize = 27.sp,
                                 fontWeight = FontWeight.Bold
@@ -192,7 +200,7 @@ fun AdminInviteTeamsScreen(
                             Spacer(modifier = Modifier.height(6.dp))
 
                             Text(
-                                text = "Send invitations for ${screenData.tournamentName}",
+                                text = stringResource(R.string.admin_invite_teams_description, screenData.tournamentName),
                                 color = TextGray,
                                 fontSize = 12.sp
                             )
@@ -204,7 +212,7 @@ fun AdminInviteTeamsScreen(
                     }
 
                     item {
-                        SectionTitleInvite("SEARCH TEAMS")
+                        SectionTitleInvite(stringResource(R.string.admin_invite_teams_search_teams).uppercase())
                     }
 
                     item {
@@ -220,7 +228,7 @@ fun AdminInviteTeamsScreen(
                         item {
                             Text(
                                 text = actionMessage,
-                                color = if (actionMessage.startsWith("Erro")) ErrorRed else BrandGreen,
+                                color = if (actionMessageIsError) ErrorRed else BrandGreen,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -228,12 +236,12 @@ fun AdminInviteTeamsScreen(
                     }
 
                     item {
-                        SectionTitleInvite("SUGGESTED TEAMS")
+                        SectionTitleInvite(stringResource(R.string.admin_invite_teams_suggested_teams).uppercase())
                     }
 
                     if (filteredTeams.isEmpty()) {
                         item {
-                            EmptyInviteCard("No teams available for this tournament.")
+                            EmptyInviteCard(stringResource(R.string.admin_invite_teams_no_teams_available))
                         }
                     }
 
@@ -247,11 +255,13 @@ fun AdminInviteTeamsScreen(
                                         teamId = team.teamId
                                     )
                                         .onSuccess {
-                                            actionMessage = "Invitation sent to ${team.teamName}."
+                                            actionMessage = context.getString(R.string.admin_invite_teams_invitation_sent_to, team.teamName)
+                                            actionMessageIsError = false
                                             refreshKey++
                                         }
                                         .onFailure {
-                                            actionMessage = "Error inviting team: ${it.message}"
+                                            actionMessage = "$inviteErrorText: ${it.message}"
+                                            actionMessageIsError = true
                                         }
                                 }
                             }
@@ -259,12 +269,12 @@ fun AdminInviteTeamsScreen(
                     }
 
                     item {
-                        SectionTitleInvite("SENT INVITATIONS (${screenData.sentInvitations.size})")
+                        SectionTitleInvite(stringResource(R.string.admin_invite_teams_sent_invitations_count, screenData.sentInvitations.size).uppercase())
                     }
 
                     if (screenData.sentInvitations.isEmpty()) {
                         item {
-                            EmptyInviteCard("No invitations have been sent yet.")
+                            EmptyInviteCard(stringResource(R.string.admin_invite_teams_no_invitations_sent))
                         }
                     }
 
@@ -299,7 +309,7 @@ private fun InviteTeamsTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -307,7 +317,7 @@ private fun InviteTeamsTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Invite Teams",
+                text = stringResource(R.string.admin_invite_teams_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -316,7 +326,7 @@ private fun InviteTeamsTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -344,7 +354,7 @@ private fun InviteTeamsHero(data: AdminInviteTeamsData) {
         ) {
             Column {
                 Text(
-                    text = "SLOTS REMAINING",
+                    text = stringResource(R.string.admin_invite_teams_slots_remaining).uppercase(),
                     color = Color(0xFFB9C4D8),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -382,7 +392,7 @@ private fun InviteTeamsHero(data: AdminInviteTeamsData) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "INVITE ONLY",
+                    text = stringResource(R.string.admin_invite_teams_invite_only).uppercase(),
                     color = BrandGreen,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold
@@ -413,7 +423,7 @@ private fun InviteTeamsSearchBox(
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = "Search by team name or captain...",
+                text = stringResource(R.string.admin_invite_teams_search_placeholder),
                 color = TextGray,
                 fontSize = 12.sp
             )
@@ -421,7 +431,7 @@ private fun InviteTeamsSearchBox(
         leadingIcon = {
             Icon(
                 imageVector = AppIcons.Search,
-                contentDescription = "Pesquisar",
+                contentDescription = stringResource(R.string.admin_invite_teams_search_content_description),
                 tint = TextGray,
                 modifier = Modifier.size(18.dp)
             )
@@ -483,7 +493,7 @@ private fun InviteTeamCard(
                     Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = "Captain: ${team.captainName} · ${team.division}",
+                        text = stringResource(R.string.admin_invite_teams_captain_division, team.captainName, team.division),
                         color = TextGray,
                         fontSize = 10.sp
                     )
@@ -506,7 +516,7 @@ private fun InviteTeamCard(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = if (team.isInvited) "INVITED" else "INVITE",
+                    text = if (team.isInvited) stringResource(R.string.admin_invite_teams_invited).uppercase() else stringResource(R.string.admin_invite_teams_invite).uppercase(),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -529,7 +539,7 @@ private fun SentInvitationCard(team: AdminInviteTeam) {
         ) {
             Icon(
                 imageVector = AppIcons.Info,
-                contentDescription = "Convite enviado",
+                contentDescription = stringResource(R.string.admin_invite_teams_sent_invitation_content_description),
                 tint = PrimaryBlue,
                 modifier = Modifier.size(19.dp)
             )
@@ -537,7 +547,11 @@ private fun SentInvitationCard(team: AdminInviteTeam) {
             Spacer(modifier = Modifier.width(10.dp))
 
             Text(
-                text = "${team.teamName} was invited ${team.invitedAgo.ifBlank { "recently" }}. Awaiting response.",
+                text = stringResource(
+                    R.string.admin_invite_teams_invited_awaiting_response,
+                    team.teamName,
+                    team.invitedAgo.ifBlank { stringResource(R.string.admin_invite_teams_recently) }
+                ),
                 color = PrimaryBlue,
                 fontSize = 12.sp,
                 lineHeight = 16.sp
@@ -621,11 +635,11 @@ private fun InviteTeamsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomInviteItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomInviteItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomInviteItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomInviteItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomInviteItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomInviteItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomInviteItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomInviteItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomInviteItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomInviteItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

@@ -64,6 +64,8 @@ import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 
 @Composable
 fun AdminTeamsScreen(
@@ -88,6 +90,12 @@ fun AdminTeamsScreen(
     var actionMessage by remember { mutableStateOf("") }
     var teamToDelete by remember { mutableStateOf<AdminTeam?>(null) }
 
+    val errorLoadingTeamsText = stringResource(R.string.admin_teams_error_loading)
+    val teamDeletedSuccessText = stringResource(R.string.admin_teams_delete_success)
+    val deleteTeamErrorText = stringResource(R.string.admin_teams_delete_error)
+
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
     fun carregarEquipas() {
         scope.launch {
             isLoading = true
@@ -98,7 +106,7 @@ fun AdminTeamsScreen(
                     teams = it
                 }
                 .onFailure {
-                    errorMessage = "Error loading teams: ${it.message}"
+                    errorMessage = "$errorLoadingTeamsText: ${it.message}"
                 }
 
             isLoading = false
@@ -140,14 +148,17 @@ fun AdminTeamsScreen(
             },
             title = {
                 Text(
-                    text = "Delete Team",
+                    text = stringResource(R.string.admin_teams_delete_title),
                     color = BrandBlue,
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
                 Text(
-                    text = "Are you sure you want to delete ${selectedTeamToDelete.nome}?",
+                    text = stringResource(
+                        R.string.admin_teams_delete_message,
+                        selectedTeamToDelete.nome
+                    ),
                     color = TextGray,
                     fontSize = 13.sp
                 )
@@ -158,19 +169,21 @@ fun AdminTeamsScreen(
                         scope.launch {
                             repository.apagarEquipa(selectedTeamToDelete.id)
                                 .onSuccess {
-                                    actionMessage = "Team deleted successfully."
+                                    actionMessage = teamDeletedSuccessText
+                                    actionMessageIsError = false
                                     teamToDelete = null
                                     carregarEquipas()
                                 }
                                 .onFailure {
-                                    actionMessage = "Error deleting team: ${it.message}"
+                                    actionMessage = "$deleteTeamErrorText: ${it.message}"
+                                    actionMessageIsError = true
                                     teamToDelete = null
                                 }
                         }
                     }
                 ) {
                     Text(
-                        text = "Delete",
+                        text = stringResource(R.string.admin_teams_delete_button),
                         color = ErrorRed,
                         fontWeight = FontWeight.Bold
                     )
@@ -183,7 +196,7 @@ fun AdminTeamsScreen(
                     }
                 ) {
                     Text(
-                        text = "Cancel",
+                        text = stringResource(R.string.admin_common_cancel),
                         color = BrandBlue
                     )
                 }
@@ -195,7 +208,7 @@ fun AdminTeamsScreen(
         containerColor = BgLight,
         topBar = {
             AdminTeamsTopBar(
-                title = "Teams",
+                title = stringResource(R.string.admin_teams_title),
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )
@@ -236,7 +249,7 @@ fun AdminTeamsScreen(
                 item {
                     Column {
                         Text(
-                            text = "ADMIN CONSOLE",
+                            text = stringResource(R.string.admin_teams_console).uppercase(),
                             color = BrandGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -246,7 +259,7 @@ fun AdminTeamsScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "All Teams",
+                            text = stringResource(R.string.admin_teams_all_title),
                             color = BrandBlue,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
@@ -255,7 +268,7 @@ fun AdminTeamsScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Manage every team registered on the platform.",
+                            text = stringResource(R.string.admin_teams_description),
                             color = TextGray,
                             fontSize = 13.sp
                         )
@@ -279,21 +292,21 @@ fun AdminTeamsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             AdminTeamFilterChip(
-                                text = "All Teams",
+                                text = stringResource(R.string.admin_teams_filter_all),
                                 selected = selectedFilter == "All Teams"
                             ) {
                                 selectedFilter = "All Teams"
                             }
 
                             AdminTeamFilterChip(
-                                text = "Futebol",
+                                text = stringResource(R.string.admin_teams_filter_football),
                                 selected = selectedFilter == "Futebol"
                             ) {
                                 selectedFilter = "Futebol"
                             }
 
                             AdminTeamFilterChip(
-                                text = "Basquetebol",
+                                text = stringResource(R.string.admin_teams_filter_basketball),
                                 selected = selectedFilter == "Basquetebol"
                             ) {
                                 selectedFilter = "Basquetebol"
@@ -304,7 +317,7 @@ fun AdminTeamsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             AdminTeamFilterChip(
-                                text = "Voleibol",
+                                text = stringResource(R.string.admin_teams_filter_volleyball),
                                 selected = selectedFilter == "Voleibol"
                             ) {
                                 selectedFilter = "Voleibol"
@@ -328,7 +341,7 @@ fun AdminTeamsScreen(
                     item {
                         Text(
                             text = actionMessage,
-                            color = if (actionMessage.startsWith("Error")) {
+                            color = if (actionMessageIsError) {
                                 ErrorRed
                             } else {
                                 BrandGreen
@@ -348,7 +361,7 @@ fun AdminTeamsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = "No teams found.",
+                                text = stringResource(R.string.admin_teams_no_found),
                                 color = TextGray,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(18.dp)
@@ -400,7 +413,7 @@ private fun AdminTeamsTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = Color.White,
                 modifier = Modifier.size(22.dp)
             )
@@ -417,7 +430,7 @@ private fun AdminTeamsTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier
                 .size(23.dp)
@@ -438,7 +451,7 @@ private fun AdminTeamsSearchBox(
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = "Search any team...",
+                text = stringResource(R.string.admin_teams_search_placeholder),
                 color = TextGray,
                 fontSize = 13.sp
             )
@@ -446,7 +459,7 @@ private fun AdminTeamsSearchBox(
         leadingIcon = {
             Icon(
                 imageVector = AppIcons.Search,
-                contentDescription = "Pesquisar",
+                contentDescription = stringResource(R.string.admin_teams_search_content_description),
                 tint = TextGray,
                 modifier = Modifier.size(18.dp)
             )
@@ -542,7 +555,7 @@ private fun AdminTeamCard(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         SmallTeamBadge(
-                            text = "${team.modalidade.uppercase()} · ${team.playersCount} PLAYERS"
+                            text = "${team.modalidade.uppercase()} · ${team.playersCount} ${stringResource(R.string.admin_teams_players).uppercase()}"
                         )
                     }
                 }
@@ -550,7 +563,7 @@ private fun AdminTeamCard(
                 Box {
                     Icon(
                         imageVector = AppIcons.MoreVert,
-                        contentDescription = "Opções",
+                        contentDescription = stringResource(R.string.admin_teams_options_content_description),
                         tint = BrandBlue,
                         modifier = Modifier
                             .size(22.dp)
@@ -577,7 +590,7 @@ private fun AdminTeamCard(
                             },
                             text = {
                                 Text(
-                                    text = "Delete Team",
+                                    text = stringResource(R.string.admin_teams_delete_title),
                                     color = ErrorRed,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium
@@ -599,19 +612,19 @@ private fun AdminTeamCard(
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 TeamStat(
-                    label = "WINS",
+                    label = stringResource(R.string.admin_teams_wins).uppercase(),
                     value = team.wins.toString(),
                     color = PrimaryBlue
                 )
 
                 TeamStat(
-                    label = "LOSSES",
+                    label = stringResource(R.string.admin_teams_losses).uppercase(),
                     value = team.losses.toString(),
                     color = BrandBlue
                 )
 
                 TeamStat(
-                    label = "STREAK",
+                    label = stringResource(R.string.admin_teams_streak).uppercase(),
                     value = team.streak.uppercase(),
                     color = if (team.streak.startsWith("L", ignoreCase = true)) {
                         ErrorRed
@@ -641,7 +654,7 @@ private fun AdminTeamCard(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "VIEW DETAILS",
+                        text = stringResource(R.string.admin_teams_view_details).uppercase(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -660,7 +673,7 @@ private fun AdminTeamCard(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "MANAGE TEAM",
+                        text = stringResource(R.string.admin_teams_manage_team).uppercase(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -778,11 +791,11 @@ private fun AdminTeamsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomTeamItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomTeamItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomTeamItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomTeamItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomTeamItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomTeamItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomTeamItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomTeamItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomTeamItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomTeamItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 
