@@ -43,11 +43,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.EquipaComInfo
 import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
@@ -118,7 +120,7 @@ fun PlayerTeamsScreen(
                 .padding(horizontal = 22.dp, vertical = 18.dp)
         ) {
             Text(
-                text = "PREMIER LEAGUE TEAMS",
+                text = stringResource(R.string.player_teams_league_label),
                 color = Color(0xFF0757C8),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
@@ -128,7 +130,7 @@ fun PlayerTeamsScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Browse Teams",
+                text = stringResource(R.string.player_teams_title),
                 color = BrandBlue,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
@@ -137,7 +139,7 @@ fun PlayerTeamsScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Discover all active teams across the league\necosystem.",
+                text = stringResource(R.string.player_teams_subtitle),
                 color = Color(0xFF6D7486),
                 fontSize = 12.sp,
                 lineHeight = 18.sp,
@@ -155,7 +157,7 @@ fun PlayerTeamsScreen(
                 singleLine = true,
                 placeholder = {
                     Text(
-                        text = "Search for teams...",
+                        text = stringResource(R.string.player_teams_search_placeholder),
                         color = Color(0xFF9EA4B3),
                         fontSize = 13.sp
                     )
@@ -206,7 +208,7 @@ fun PlayerTeamsScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = "Erro: $errorMessage",
+                            text = "${stringResource(R.string.player_common_error)}: $errorMessage",
                             color = Color(0xFFD01818),
                             fontSize = 13.sp,
                             modifier = Modifier.padding(18.dp)
@@ -224,7 +226,7 @@ fun PlayerTeamsScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = "Não existem equipas com estes filtros.",
+                            text = stringResource(R.string.player_teams_empty),
                             color = BrandBlue,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(18.dp)
@@ -272,7 +274,7 @@ fun PlayerTeamsScreen(
                 )
             ) {
                 Text(
-                    text = "⊙  CREATE TEAM",
+                    text = "⊙  ${stringResource(R.string.player_teams_create_team)}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -304,7 +306,7 @@ fun PlayerTeamsTopBar(onNotificationsClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Teams",
+            text = stringResource(R.string.player_teams_topbar_title),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -315,7 +317,7 @@ fun PlayerTeamsTopBar(onNotificationsClick: () -> Unit) {
 
         Icon(
             imageVector = Icons.Outlined.Notifications,
-            contentDescription = "Notifications",
+            contentDescription = stringResource(R.string.player_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(26.dp)
@@ -375,11 +377,11 @@ fun PlayerTeamCard(
                     Text(
                         text = when {
                             team.utilizadorCapitao -> {
-                                "YOUR TEAM · CAPTAIN · ${team.divisao}".uppercase()
+                                stringResource(R.string.player_teams_badge_captain, team.divisao).uppercase()
                             }
 
                             team.utilizadorPertence -> {
-                                "YOUR TEAM · ${team.divisao}".uppercase()
+                                stringResource(R.string.player_teams_badge_member, team.divisao).uppercase()
                             }
 
                             else -> {
@@ -402,7 +404,7 @@ fun PlayerTeamCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (isPublic) "PUBLIC 🔓" else "PRIVATE 🔒",
+                        text = if (isPublic) "${stringResource(R.string.player_common_public)} 🔓" else "${stringResource(R.string.player_common_private)} 🔒",
                         color = if (isPublic) BrandGreen else Color(0xFFFF8A80),
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Bold
@@ -417,19 +419,19 @@ fun PlayerTeamCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TeamStat(
-                    label = "WINS",
+                    label = stringResource(R.string.player_common_wins),
                     value = team.vitorias.toString(),
                     valueColor = Color(0xFF0757C8)
                 )
 
                 TeamStat(
-                    label = "LOSSES",
+                    label = stringResource(R.string.player_common_losses),
                     value = team.derrotas.toString(),
                     valueColor = BrandBlue
                 )
 
                 TeamStat(
-                    label = "STREAK",
+                    label = stringResource(R.string.player_common_streak),
                     value = team.streak,
                     valueColor = if (team.streakGood) BrandGreen else Color(0xFFE53935)
                 )
@@ -451,7 +453,7 @@ fun PlayerTeamCard(
                     )
                 ) {
                     Text(
-                        text = "VIEW DETAILS",
+                        text = stringResource(R.string.player_common_view_details),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -470,7 +472,7 @@ fun PlayerTeamCard(
                         )
                     ) {
                         Text(
-                            text = "MANAGE TEAM",
+                            text = stringResource(R.string.player_teams_manage_team),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -490,7 +492,7 @@ fun PlayerTeamCard(
                             )
                         ) {
                             Text(
-                                text = "PENDING",
+                                text = stringResource(R.string.player_common_pending),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -516,7 +518,7 @@ fun PlayerTeamCard(
                                 )
                             } else {
                                 Text(
-                                    text = if (isPublic) "JOIN TEAM" else "REQUEST",
+                                    text = if (isPublic) stringResource(R.string.player_teams_join) else stringResource(R.string.player_teams_request),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )

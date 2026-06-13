@@ -38,10 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.EquipaDetalhesInfo
 import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.data.repository.MembroEquipaDetalhesInfo
@@ -153,24 +155,24 @@ fun PlayerTeamDetailsScreen(
                             TeamSmallMetricCard(
                                 modifier = Modifier.weight(1f),
                                 icon = "◎",
-                                title = "Total Goals",
+                                title = stringResource(R.string.player_teamdetails_total_goals),
                                 value = info.totalGolos.toString(),
-                                subtitle = "Total da equipa"
+                                subtitle = stringResource(R.string.player_teamdetails_team_total)
                             )
 
                             TeamSmallMetricCard(
                                 modifier = Modifier.weight(1f),
                                 icon = "▦",
-                                title = "Matches Played",
+                                title = stringResource(R.string.player_teamdetails_matches_played),
                                 value = info.jogosDisputados.toString(),
-                                subtitle = "${info.equipaInfo.vitorias}W - ${info.empates}D - ${info.equipaInfo.derrotas}L"
+                                subtitle = stringResource(R.string.player_teamdetails_wdl_format, info.equipaInfo.vitorias, info.empates, info.equipaInfo.derrotas)
                             )
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Text(
-                            text = "Active Roster",
+                            text = stringResource(R.string.player_teamdetails_active_roster),
                             color = Color(0xFF20242D),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Medium
@@ -180,7 +182,7 @@ fun PlayerTeamDetailsScreen(
 
                         if (info.membros.isEmpty()) {
                             TeamDetailsEmptyCard(
-                                text = "Esta equipa ainda não tem jogadores associados."
+                                text = stringResource(R.string.player_teamdetails_no_players)
                             )
                         } else {
                             info.membros.forEach { membro ->
@@ -237,7 +239,7 @@ fun TeamDetailsTopBar(
         Spacer(modifier = Modifier.width(14.dp))
 
         Text(
-            text = "Team Details",
+            text = stringResource(R.string.player_teamdetails_title),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -312,7 +314,7 @@ fun TeamDetailsHeroCard(
                             .padding(horizontal = 9.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = if(isPublic) "PUBLIC 🔓" else "PRIVATE 🔒",
+                            text = if(isPublic) "${stringResource(R.string.player_common_public)} 🔓" else "${stringResource(R.string.player_common_private)} 🔒",
                             color = if(isPublic) BrandGreen else Color(0xFFFF8A80),
                             fontSize = 8.sp,
                             fontWeight = FontWeight.Bold
@@ -385,7 +387,7 @@ fun TeamWinRateCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Season Win Rate",
+                    text = stringResource(R.string.player_teamdetails_win_rate),
                     color = Color(0xFF7D8497),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -471,7 +473,7 @@ fun TeamPlayerRosterCard(
 ) {
     val nome = membro.utilizador.nome
     val role = if (membro.isCaptain) {
-        "Captain"
+        stringResource(R.string.player_role_captain)
     } else {
         formatarPapelMembroEquipa(membro.papel)
     }
@@ -507,7 +509,7 @@ fun TeamPlayerRosterCard(
                 if (!membro.utilizador.fotoUrl.isNullOrEmpty()) {
                     coil.compose.AsyncImage(
                         model = membro.utilizador.fotoUrl,
-                        contentDescription = "Foto do Jogador",
+                        contentDescription = stringResource(R.string.player_common_photo),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier
                             .size(46.dp)
@@ -555,7 +557,7 @@ fun TeamPlayerRosterCard(
                                     .padding(horizontal = 6.dp, vertical = 3.dp)
                             ) {
                                 Text(
-                                    text = "CAPTAIN",
+                                    text = stringResource(R.string.player_common_captain),
                                     color = Color(0xFFB72D2D),
                                     fontSize = 7.sp,
                                     fontWeight = FontWeight.Bold
@@ -580,7 +582,7 @@ fun TeamPlayerRosterCard(
                     shape = RoundedCornerShape(5.dp)
                 ) {
                     Text(
-                        text = "View",
+                        text = stringResource(R.string.player_common_view),
                         color = Color(0xFF062B67),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -602,7 +604,7 @@ fun TeamDetailsErrorCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Text(
-            text = "Erro: $text",
+            text = "${stringResource(R.string.player_common_error)}: $text",
             color = Color(0xFFD01818),
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
@@ -658,6 +660,7 @@ fun teamDetailsInitials(nome: String): String {
     }
 }
 
+@Composable
 fun formatarPapelMembroEquipa(papel: String): String {
     val papelLimpo = papel
         .replace("'", "")
@@ -666,9 +669,9 @@ fun formatarPapelMembroEquipa(papel: String): String {
         .lowercase()
 
     return when (papelLimpo) {
-        "capitao", "captain" -> "Captain"
-        "jogador", "player" -> "Player"
-        "treinador", "coach" -> "Coach"
+        "capitao", "captain" -> stringResource(R.string.player_role_captain)
+        "jogador", "player" -> stringResource(R.string.player_role_player)
+        "treinador", "coach" -> stringResource(R.string.player_role_coach)
         else -> papelLimpo
             .replace("_", " ")
             .replaceFirstChar {
@@ -677,6 +680,7 @@ fun formatarPapelMembroEquipa(papel: String): String {
     }
 }
 
+@Composable
 fun formatarPosicaoMembroEquipa(posicao: String): String {
     val posicaoLimpa = posicao
         .replace("'", "")
@@ -685,10 +689,10 @@ fun formatarPosicaoMembroEquipa(posicao: String): String {
         .lowercase()
 
     return when (posicaoLimpa) {
-        "forward", "foward", "avancado", "avançado" -> "Forward"
-        "midfielder", "medio", "médio" -> "Midfielder"
-        "defender", "defesa" -> "Defender"
-        "goalkeeper", "guarda-redes", "guarda redes" -> "Goalkeeper"
+        "forward", "foward", "avancado", "avançado" -> stringResource(R.string.player_pos_forward)
+        "midfielder", "medio", "médio" -> stringResource(R.string.player_pos_midfielder)
+        "defender", "defesa" -> stringResource(R.string.player_pos_defender)
+        "goalkeeper", "guarda-redes", "guarda redes" -> stringResource(R.string.player_pos_goalkeeper)
         else -> posicaoLimpa
             .replace("_", " ")
             .replaceFirstChar {

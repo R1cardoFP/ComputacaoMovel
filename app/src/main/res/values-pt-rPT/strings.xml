@@ -1237,4 +1237,205 @@
     <string name="admin_archive_season">Época</string>
 
 
+    <!-- ============================ PLAYER ============================ -->
+
+    <!-- Player common (reused across player screens) -->
+    <string name="player_common_loading">A carregar...</string>
+    <string name="player_common_now">Agora</string>
+    <string name="player_common_total">Total</string>
+    <string name="player_common_active">ATIVO</string>
+    <string name="player_common_photo">Foto</string>
+    <string name="player_common_error">Erro</string>
+    <string name="player_common_notifications">Notificações</string>
+    <string name="player_common_wins">VITÓRIAS</string>
+    <string name="player_common_losses">DERROTAS</string>
+    <string name="player_common_streak">SEQUÊNCIA</string>
+    <string name="player_common_view_details">VER DETALHES</string>
+    <string name="player_common_pending">PENDENTE</string>
+    <string name="player_common_public">PÚBLICA</string>
+    <string name="player_common_private">PRIVADA</string>
+    <string name="player_common_captain">CAPITÃO</string>
+    <string name="player_common_view">Ver</string>
+    <string name="player_common_optional">Opcional</string>
+    <string name="player_common_cancel">CANCELAR</string>
+    <string name="player_common_no_players_found">Nenhum jogador encontrado.</string>
+    <string name="player_common_profile">Perfil</string>
+    <string name="player_common_goals">GOLOS</string>
+    <string name="player_common_points">PONTOS</string>
+    <string name="player_common_winrate">VIT. %</string>
+    <string name="player_common_view_all">VER TUDO</string>
+    <string name="player_common_selected">Selecionado</string>
+    <string name="player_common_accept">ACEITAR</string>
+    <string name="player_common_decline">RECUSAR</string>
+
+    <!-- Player team-player details -->
+    <string name="player_teamplayer_title">Detalhes do Jogador</string>
+    <string name="player_teamplayer_no_team">Sem equipa</string>
+    <string name="player_teamplayer_season_stats">Estatísticas da Época</string>
+    <string name="player_teamplayer_goals">GOLOS</string>
+    <string name="player_teamplayer_assists">ASSISTÊNCIAS</string>
+    <string name="player_teamplayer_team_history">Histórico de Equipas</string>
+    <string name="player_teamplayer_no_history">Sem histórico de equipas.</string>
+
+    <!-- Player teams (browse) -->
+    <string name="player_teams_topbar_title">Equipas</string>
+    <string name="player_teams_league_label">EQUIPAS DA LIGA</string>
+    <string name="player_teams_title">Explorar Equipas</string>
+    <string name="player_teams_subtitle">Descobre todas as equipas ativas no\necossistema da liga.</string>
+    <string name="player_teams_search_placeholder">Procurar equipas...</string>
+    <string name="player_teams_empty">Não existem equipas com estes filtros.</string>
+    <string name="player_teams_create_team">CRIAR EQUIPA</string>
+    <string name="player_teams_badge_captain">A TUA EQUIPA · CAPITÃO · %1$s</string>
+    <string name="player_teams_badge_member">A TUA EQUIPA · %1$s</string>
+    <string name="player_teams_manage_team">GERIR EQUIPA</string>
+    <string name="player_teams_join">ENTRAR</string>
+    <string name="player_teams_request">PEDIR ENTRADA</string>
+
+    <!-- Player roles & positions -->
+    <string name="player_role_captain">Capitão</string>
+    <string name="player_role_player">Jogador</string>
+    <string name="player_role_coach">Treinador</string>
+    <string name="player_pos_forward">Avançado</string>
+    <string name="player_pos_midfielder">Médio</string>
+    <string name="player_pos_defender">Defesa</string>
+    <string name="player_pos_goalkeeper">Guarda-redes</string>
+    <string name="player_pos_striker">Avançado</string>
+    <string name="player_pos_point_guard">Base</string>
+
+    <!-- Player sports -->
+    <string name="player_sport_football">Futebol</string>
+    <string name="player_sport_volleyball">Voleibol</string>
+    <string name="player_sport_basketball">Basquetebol</string>
+
+    <!-- Player team details -->
+    <string name="player_teamdetails_title">Detalhes da Equipa</string>
+    <string name="player_teamdetails_total_goals">Golos Totais</string>
+    <string name="player_teamdetails_team_total">Total da equipa</string>
+    <string name="player_teamdetails_matches_played">Jogos Disputados</string>
+    <string name="player_teamdetails_wdl_format">%1$dV - %2$dE - %3$dD</string>
+    <string name="player_teamdetails_active_roster">Plantel Ativo</string>
+    <string name="player_teamdetails_no_players">Esta equipa ainda não tem jogadores associados.</string>
+    <string name="player_teamdetails_win_rate">Taxa de Vitórias da Época</string>
+
+    <!-- Player invite player -->
+    <string name="player_inviteplayer_topbar">Convite a Jogador</string>
+    <string name="player_inviteplayer_eyebrow">RECRUTAMENTO DE EQUIPA</string>
+    <string name="player_inviteplayer_title">Convidar Jogador</string>
+    <string name="player_inviteplayer_subtitle">Encontra jogadores e envia-lhes um convite para entrar no FC\nMancos.</string>
+    <string name="player_inviteplayer_search_label">PROCURAR JOGADORES</string>
+    <string name="player_inviteplayer_search_placeholder">Procurar por nome ou ID...</string>
+    <string name="player_inviteplayer_recommended">RECOMENDADOS</string>
+    <string name="player_inviteplayer_details_title">Detalhes do Convite</string>
+    <string name="player_inviteplayer_details_subtitle">Personaliza o convite antes de enviar.</string>
+    <string name="player_inviteplayer_role_label">POSIÇÃO PRETENDIDA</string>
+    <string name="player_inviteplayer_message_label">MENSAGEM PESSOAL</string>
+    <string name="player_inviteplayer_send">ENVIAR CONVITE</string>
+    <string name="player_inviteplayer_success">Convite enviado com sucesso</string>
+    <string name="player_inviteplayer_default_message">Olá! Adorávamos ter-te na equipa...</string>
+
+    <!-- Player create team -->
+    <string name="player_createteam_eyebrow">NOVA EQUIPA</string>
+    <string name="player_createteam_title">Identidade da Equipa</string>
+    <string name="player_createteam_subtitle">Define o nome, desporto e identidade visual da tua equipa.</string>
+    <string name="player_createteam_privacy_label">PRIVACIDADE DA EQUIPA</string>
+    <string name="player_createteam_private_title">Privada</string>
+    <string name="player_createteam_private_desc">Entrada por pedido</string>
+    <string name="player_createteam_public_title">Pública</string>
+    <string name="player_createteam_public_desc">Qualquer um pode entrar</string>
+    <string name="player_createteam_field_name">NOME DA EQUIPA</string>
+    <string name="player_createteam_field_initials">INICIAIS</string>
+    <string name="player_createteam_field_city">CIDADE</string>
+    <string name="player_createteam_sport_label">CATEGORIA DE DESPORTO</string>
+
+    <!-- Player manage team -->
+    <string name="player_manageteam_eyebrow">GESTÃO DE EQUIPA</string>
+    <string name="player_manageteam_subtitle">Gere o teu plantel, convida novos jogadores e supervisiona a\ncomposição da equipa.</string>
+    <string name="player_manageteam_invite_player">CONVIDAR JOGADOR</string>
+    <string name="player_manageteam_search_placeholder">Procurar no plantel...</string>
+    <string name="player_manageteam_roster_count">PLANTEL (%1$d)</string>
+    <string name="player_manageteam_delete_team">ELIMINAR EQUIPA</string>
+    <string name="player_manageteam_players_division">%1$d jogadores · %2$s</string>
+    <string name="player_manageteam_privacy_public_desc">Qualquer um pode entrar instantaneamente na tua equipa.</string>
+    <string name="player_manageteam_privacy_private_desc">Os jogadores têm de pedir para entrar, e podes aceitá-los nas Notificações.</string>
+    <string name="player_manageteam_delete_title">Eliminar Equipa</string>
+    <string name="player_manageteam_delete_message">Tens a certeza que queres eliminar esta equipa? Todos os jogadores serão removidos e esta ação não pode ser revertida.</string>
+    <string name="player_manageteam_delete_confirm">SIM, ELIMINAR</string>
+    <string name="player_manageteam_opt_view_profile">Ver Perfil</string>
+    <string name="player_manageteam_opt_make_captain">Tornar Capitão</string>
+    <string name="player_manageteam_opt_remove">Remover da Equipa</string>
+    <string name="player_manageteam_invite_title">Convidar Jogador</string>
+    <string name="player_manageteam_invite_search_placeholder">Procurar jogador...</string>
+    <string name="player_manageteam_invited">CONVIDADO</string>
+    <string name="player_manageteam_in_team">NA EQUIPA</string>
+    <string name="player_manageteam_invite_btn">CONVIDAR</string>
+    <string name="player_manageteam_privacy_updated">Privacidade da equipa atualizada para %1$s</string>
+    <string name="player_manageteam_player_removed">%1$s foi removido da equipa.</string>
+    <string name="player_manageteam_invitation_sent">Convite enviado para %1$s.</string>
+    <string name="player_manageteam_err_search">Erro ao procurar jogadores.</string>
+    <string name="player_manageteam_err_load">Erro ao carregar o plantel.</string>
+    <string name="player_manageteam_no_team">Não estás associado a nenhuma equipa.</string>
+    <string name="player_manageteam_err_privacy">Erro ao atualizar a privacidade.</string>
+    <string name="player_manageteam_err_update">Erro ao atualizar a equipa.</string>
+    <string name="player_manageteam_err_invite">Erro ao convidar o jogador.</string>
+    <string name="player_manageteam_err_delete">Erro ao eliminar a equipa.</string>
+
+    <!-- Player stats -->
+    <string name="player_stats_match_history">HISTÓRICO DE JOGOS</string>
+    <string name="player_stats_last5">ÚLTIMOS 5 JOGOS</string>
+    <string name="player_stats_no_matches">Ainda não há jogos registados.</string>
+
+    <!-- Player profile -->
+    <string name="player_profile_no_username">Sem Username</string>
+    <string name="player_profile_section_account">Definições da Conta</string>
+    <string name="player_profile_label_username">NOME DE UTILIZADOR</string>
+    <string name="player_profile_label_fullname">NOME COMPLETO</string>
+    <string name="player_profile_label_email">ENDEREÇO DE EMAIL</string>
+    <string name="player_profile_label_bio">BIO</string>
+    <string name="player_profile_bio_placeholder">Sem biografia definida.</string>
+    <string name="player_profile_section_preferences">Preferências</string>
+    <string name="player_profile_label_language">IDIOMA</string>
+    <string name="player_profile_lang_en">Inglês (US)</string>
+    <string name="player_profile_lang_pt">Português (PT)</string>
+    <string name="player_profile_section_dashboards">Painéis Ativos</string>
+    <string name="player_profile_section_security">Segurança</string>
+    <string name="player_profile_change_password">ALTERAR PALAVRA-PASSE</string>
+    <string name="player_profile_save">GUARDAR ALTERAÇÕES</string>
+    <string name="player_profile_logout">TERMINAR SESSÃO</string>
+    <string name="player_profile_member_since">MEMBRO DESDE %1$s</string>
+    <string name="player_profile_dashboard_player">Jogador</string>
+    <string name="player_profile_dashboard_subtitle">Estatísticas pessoais de carreira</string>
+    <string name="player_profile_success">Perfil atualizado com sucesso!</string>
+    <string name="player_profile_err_empty_username">O username não pode estar vazio.</string>
+    <string name="player_profile_err_username_taken">Este username já está em uso! Escolhe outro.</string>
+    <string name="player_profile_err_save">Erro ao guardar: %1$s</string>
+
+    <!-- Player notifications -->
+    <string name="player_notif_eyebrow">CENTRO DE ATUALIZAÇÕES</string>
+    <string name="player_notif_title">NOTIFICAÇÕES</string>
+    <string name="player_notif_empty">Sem notificações de momento.</string>
+    <string name="player_notif_join_request_title">Pedido de Entrada</string>
+    <string name="player_notif_join_request_desc">O jogador %1$s pediu para entrar na tua equipa %2$s.</string>
+    <string name="player_notif_invitation_title">Convite de Equipa</string>
+    <string name="player_notif_invitation_desc">Foste convidado para entrar na equipa %1$s como %2$s.</string>
+    <string name="player_notif_tab_all">TODAS</string>
+    <string name="player_notif_tab_matches">JOGOS</string>
+    <string name="player_notif_tab_teams">EQUIPAS</string>
+    <string name="player_notif_tab_system">SISTEMA</string>
+    <string name="player_notif_end_of_feed">FIM DO FEED</string>
+    <string name="player_notif_just_now">AGORA MESMO</string>
+    <string name="player_notif_minutes_ago">HÁ %1$dM</string>
+    <string name="player_notif_hours_ago">HÁ %1$dH</string>
+    <string name="player_notif_yesterday">ONTEM</string>
+    <string name="player_notif_days_ago">HÁ %1$dD</string>
+    <string name="player_notif_recently">RECENTEMENTE</string>
+    <string name="player_notif_success_request_accepted">Pedido aceite. O jogador agora faz parte da equipa.</string>
+    <string name="player_notif_err_accept_request">Erro ao aceitar pedido.</string>
+    <string name="player_notif_success_request_declined">Pedido recusado e eliminado.</string>
+    <string name="player_notif_err_decline_request">Erro ao recusar pedido.</string>
+    <string name="player_notif_success_invite_accepted">Convite da equipa %1$s aceite.</string>
+    <string name="player_notif_err_accept_invite">Erro ao aceitar convite.</string>
+    <string name="player_notif_success_invite_declined">Convite da equipa %1$s recusado.</string>
+    <string name="player_notif_err_decline_invite">Erro ao recusar convite.</string>
+    <string name="player_notif_err_load_invites">Erro ao carregar convites.</string>
+
 </resources>

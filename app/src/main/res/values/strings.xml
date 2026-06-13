@@ -1232,4 +1232,205 @@
     <string name="admin_archive_season">Season</string>
 
 
+    <!-- ============================ PLAYER ============================ -->
+
+    <!-- Player common (reused across player screens) -->
+    <string name="player_common_loading">Loading...</string>
+    <string name="player_common_now">Now</string>
+    <string name="player_common_total">Total</string>
+    <string name="player_common_active">ACTIVE</string>
+    <string name="player_common_photo">Photo</string>
+    <string name="player_common_error">Error</string>
+    <string name="player_common_notifications">Notifications</string>
+    <string name="player_common_wins">WINS</string>
+    <string name="player_common_losses">LOSSES</string>
+    <string name="player_common_streak">STREAK</string>
+    <string name="player_common_view_details">VIEW DETAILS</string>
+    <string name="player_common_pending">PENDING</string>
+    <string name="player_common_public">PUBLIC</string>
+    <string name="player_common_private">PRIVATE</string>
+    <string name="player_common_captain">CAPTAIN</string>
+    <string name="player_common_view">View</string>
+    <string name="player_common_optional">Optional</string>
+    <string name="player_common_cancel">CANCEL</string>
+    <string name="player_common_no_players_found">No players found.</string>
+    <string name="player_common_profile">Profile</string>
+    <string name="player_common_goals">GOALS</string>
+    <string name="player_common_points">POINTS</string>
+    <string name="player_common_winrate">WIN %</string>
+    <string name="player_common_view_all">VIEW ALL</string>
+    <string name="player_common_selected">Selected</string>
+    <string name="player_common_accept">ACCEPT</string>
+    <string name="player_common_decline">DECLINE</string>
+
+    <!-- Player team-player details -->
+    <string name="player_teamplayer_title">Player Details</string>
+    <string name="player_teamplayer_no_team">No team</string>
+    <string name="player_teamplayer_season_stats">Season Stats</string>
+    <string name="player_teamplayer_goals">GOALS</string>
+    <string name="player_teamplayer_assists">ASSISTS</string>
+    <string name="player_teamplayer_team_history">Team History</string>
+    <string name="player_teamplayer_no_history">No team history.</string>
+
+    <!-- Player teams (browse) -->
+    <string name="player_teams_topbar_title">Teams</string>
+    <string name="player_teams_league_label">PREMIER LEAGUE TEAMS</string>
+    <string name="player_teams_title">Browse Teams</string>
+    <string name="player_teams_subtitle">Discover all active teams across the league\necosystem.</string>
+    <string name="player_teams_search_placeholder">Search for teams...</string>
+    <string name="player_teams_empty">No teams match these filters.</string>
+    <string name="player_teams_create_team">CREATE TEAM</string>
+    <string name="player_teams_badge_captain">YOUR TEAM · CAPTAIN · %1$s</string>
+    <string name="player_teams_badge_member">YOUR TEAM · %1$s</string>
+    <string name="player_teams_manage_team">MANAGE TEAM</string>
+    <string name="player_teams_join">JOIN TEAM</string>
+    <string name="player_teams_request">REQUEST</string>
+
+    <!-- Player roles & positions -->
+    <string name="player_role_captain">Captain</string>
+    <string name="player_role_player">Player</string>
+    <string name="player_role_coach">Coach</string>
+    <string name="player_pos_forward">Forward</string>
+    <string name="player_pos_midfielder">Midfielder</string>
+    <string name="player_pos_defender">Defender</string>
+    <string name="player_pos_goalkeeper">Goalkeeper</string>
+    <string name="player_pos_striker">Striker</string>
+    <string name="player_pos_point_guard">Point Guard</string>
+
+    <!-- Player sports -->
+    <string name="player_sport_football">Football</string>
+    <string name="player_sport_volleyball">Volleyball</string>
+    <string name="player_sport_basketball">Basketball</string>
+
+    <!-- Player team details -->
+    <string name="player_teamdetails_title">Team Details</string>
+    <string name="player_teamdetails_total_goals">Total Goals</string>
+    <string name="player_teamdetails_team_total">Team total</string>
+    <string name="player_teamdetails_matches_played">Matches Played</string>
+    <string name="player_teamdetails_wdl_format">%1$dW - %2$dD - %3$dL</string>
+    <string name="player_teamdetails_active_roster">Active Roster</string>
+    <string name="player_teamdetails_no_players">This team has no players yet.</string>
+    <string name="player_teamdetails_win_rate">Season Win Rate</string>
+
+    <!-- Player invite player -->
+    <string name="player_inviteplayer_topbar">Player Invite</string>
+    <string name="player_inviteplayer_eyebrow">TEAM RECRUITMENT</string>
+    <string name="player_inviteplayer_title">Invite a Player</string>
+    <string name="player_inviteplayer_subtitle">Find players and send them an invitation to join FC\nMancos.</string>
+    <string name="player_inviteplayer_search_label">SEARCH PLAYERS</string>
+    <string name="player_inviteplayer_search_placeholder">Search by name or ID...</string>
+    <string name="player_inviteplayer_recommended">RECOMMENDED</string>
+    <string name="player_inviteplayer_details_title">Invitation Details</string>
+    <string name="player_inviteplayer_details_subtitle">Customize the invitation before sending.</string>
+    <string name="player_inviteplayer_role_label">INTENDED ROLE</string>
+    <string name="player_inviteplayer_message_label">PERSONAL MESSAGE</string>
+    <string name="player_inviteplayer_send">SEND INVITE</string>
+    <string name="player_inviteplayer_success">Invitation sent successfully</string>
+    <string name="player_inviteplayer_default_message">Hey! We\'d love to have you on the squad...</string>
+
+    <!-- Player create team -->
+    <string name="player_createteam_eyebrow">NEW TEAM</string>
+    <string name="player_createteam_title">Team Identity</string>
+    <string name="player_createteam_subtitle">Define your team\'s name, sport and visual identity.</string>
+    <string name="player_createteam_privacy_label">TEAM PRIVACY</string>
+    <string name="player_createteam_private_title">Private</string>
+    <string name="player_createteam_private_desc">Join by request</string>
+    <string name="player_createteam_public_title">Public</string>
+    <string name="player_createteam_public_desc">Anyone can join</string>
+    <string name="player_createteam_field_name">TEAM NAME</string>
+    <string name="player_createteam_field_initials">INITIALS</string>
+    <string name="player_createteam_field_city">HOME CITY</string>
+    <string name="player_createteam_sport_label">SPORT CATEGORY</string>
+
+    <!-- Player manage team -->
+    <string name="player_manageteam_eyebrow">TEAM MANAGEMENT</string>
+    <string name="player_manageteam_subtitle">Manage your roster, invite new players and oversee\nteam composition.</string>
+    <string name="player_manageteam_invite_player">INVITE PLAYER</string>
+    <string name="player_manageteam_search_placeholder">Search roster...</string>
+    <string name="player_manageteam_roster_count">ROSTER (%1$d)</string>
+    <string name="player_manageteam_delete_team">DELETE TEAM</string>
+    <string name="player_manageteam_players_division">%1$d players · %2$s</string>
+    <string name="player_manageteam_privacy_public_desc">Anyone can instantly join your team.</string>
+    <string name="player_manageteam_privacy_private_desc">Players must request to join, and you can accept them in Notifications.</string>
+    <string name="player_manageteam_delete_title">Delete Team</string>
+    <string name="player_manageteam_delete_message">Are you sure you want to delete this team? All players will be removed and this action cannot be undone.</string>
+    <string name="player_manageteam_delete_confirm">YES, DELETE</string>
+    <string name="player_manageteam_opt_view_profile">View Profile</string>
+    <string name="player_manageteam_opt_make_captain">Make Captain</string>
+    <string name="player_manageteam_opt_remove">Remove from Team</string>
+    <string name="player_manageteam_invite_title">Invite Player</string>
+    <string name="player_manageteam_invite_search_placeholder">Search player...</string>
+    <string name="player_manageteam_invited">INVITED</string>
+    <string name="player_manageteam_in_team">IN TEAM</string>
+    <string name="player_manageteam_invite_btn">INVITE</string>
+    <string name="player_manageteam_privacy_updated">Team privacy updated to %1$s</string>
+    <string name="player_manageteam_player_removed">%1$s was removed from the team.</string>
+    <string name="player_manageteam_invitation_sent">Invitation sent to %1$s.</string>
+    <string name="player_manageteam_err_search">Error searching players.</string>
+    <string name="player_manageteam_err_load">Error loading roster.</string>
+    <string name="player_manageteam_no_team">You are not associated with any team.</string>
+    <string name="player_manageteam_err_privacy">Error updating privacy.</string>
+    <string name="player_manageteam_err_update">Error updating team.</string>
+    <string name="player_manageteam_err_invite">Error inviting player.</string>
+    <string name="player_manageteam_err_delete">Error deleting team.</string>
+
+    <!-- Player stats -->
+    <string name="player_stats_match_history">MATCH HISTORY</string>
+    <string name="player_stats_last5">LAST 5 MATCHES</string>
+    <string name="player_stats_no_matches">No matches recorded yet.</string>
+
+    <!-- Player profile -->
+    <string name="player_profile_no_username">No Username</string>
+    <string name="player_profile_section_account">Account Settings</string>
+    <string name="player_profile_label_username">USERNAME</string>
+    <string name="player_profile_label_fullname">FULL NAME</string>
+    <string name="player_profile_label_email">EMAIL ADDRESS</string>
+    <string name="player_profile_label_bio">BIO</string>
+    <string name="player_profile_bio_placeholder">No bio set.</string>
+    <string name="player_profile_section_preferences">Preferences</string>
+    <string name="player_profile_label_language">LANGUAGE</string>
+    <string name="player_profile_lang_en">English (US)</string>
+    <string name="player_profile_lang_pt">Portuguese (PT)</string>
+    <string name="player_profile_section_dashboards">Active Dashboards</string>
+    <string name="player_profile_section_security">Security</string>
+    <string name="player_profile_change_password">CHANGE PASSWORD</string>
+    <string name="player_profile_save">SAVE CHANGES</string>
+    <string name="player_profile_logout">LOG OUT</string>
+    <string name="player_profile_member_since">MEMBER SINCE %1$s</string>
+    <string name="player_profile_dashboard_player">Player</string>
+    <string name="player_profile_dashboard_subtitle">Personal career stats</string>
+    <string name="player_profile_success">Profile updated successfully!</string>
+    <string name="player_profile_err_empty_username">Username cannot be empty.</string>
+    <string name="player_profile_err_username_taken">This username is already in use! Choose another.</string>
+    <string name="player_profile_err_save">Error saving: %1$s</string>
+
+    <!-- Player notifications -->
+    <string name="player_notif_eyebrow">UPDATES CENTER</string>
+    <string name="player_notif_title">NOTIFICATIONS</string>
+    <string name="player_notif_empty">No notifications at the moment.</string>
+    <string name="player_notif_join_request_title">Team Join Request</string>
+    <string name="player_notif_join_request_desc">Player %1$s requested to join your team %2$s.</string>
+    <string name="player_notif_invitation_title">Team Invitation</string>
+    <string name="player_notif_invitation_desc">You\'ve been invited to join %1$s as %2$s.</string>
+    <string name="player_notif_tab_all">ALL</string>
+    <string name="player_notif_tab_matches">MATCHES</string>
+    <string name="player_notif_tab_teams">TEAMS</string>
+    <string name="player_notif_tab_system">SYSTEM</string>
+    <string name="player_notif_end_of_feed">END OF FEED</string>
+    <string name="player_notif_just_now">JUST NOW</string>
+    <string name="player_notif_minutes_ago">%1$dM AGO</string>
+    <string name="player_notif_hours_ago">%1$dH AGO</string>
+    <string name="player_notif_yesterday">YESTERDAY</string>
+    <string name="player_notif_days_ago">%1$dD AGO</string>
+    <string name="player_notif_recently">RECENTLY</string>
+    <string name="player_notif_success_request_accepted">Request accepted. The player is now part of the team.</string>
+    <string name="player_notif_err_accept_request">Error accepting request.</string>
+    <string name="player_notif_success_request_declined">Request declined and removed.</string>
+    <string name="player_notif_err_decline_request">Error declining request.</string>
+    <string name="player_notif_success_invite_accepted">Invitation to team %1$s accepted.</string>
+    <string name="player_notif_err_accept_invite">Error accepting invitation.</string>
+    <string name="player_notif_success_invite_declined">Invitation to team %1$s declined.</string>
+    <string name="player_notif_err_decline_invite">Error declining invitation.</string>
+    <string name="player_notif_err_load_invites">Error loading invitations.</string>
+
 </resources>

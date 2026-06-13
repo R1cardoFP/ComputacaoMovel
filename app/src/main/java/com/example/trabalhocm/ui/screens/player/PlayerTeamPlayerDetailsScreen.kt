@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.remote.SupabaseClient
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
@@ -38,10 +40,13 @@ fun PlayerTeamPlayerDetailsScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val loadingText = stringResource(R.string.player_common_loading)
+    val noTeamText = stringResource(R.string.player_teamplayer_no_team)
+
     var isLoading by remember { mutableStateOf(true) }
-    var nome by remember { mutableStateOf("A carregar...") }
+    var nome by remember { mutableStateOf(loadingText) }
     var fotoUrl by remember { mutableStateOf<Uri?>(null) }
-    var equipaAtual by remember { mutableStateOf("Sem equipa") }
+    var equipaAtual by remember { mutableStateOf(noTeamText) }
     var golos by remember { mutableIntStateOf(0) }
     var assistencias by remember { mutableIntStateOf(0) }
     var historico by remember { mutableStateOf<List<Pair<MembroEquipaSimplesDTO, String>>>(emptyList()) }
@@ -106,22 +111,22 @@ fun PlayerTeamPlayerDetailsScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("▥", color = Color(0xFF0757C8), fontSize = 17.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Season Stats", color = BrandBlue, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.player_teamplayer_season_stats), color = BrandBlue, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     PlayerSeasonStatCard(
-                        modifier = Modifier.weight(1f), label = "GOALS", value = golos.toString(), subtitle = "Total", icon = "⊙", progress = (golos / 50f).coerceIn(0f, 1f)
+                        modifier = Modifier.weight(1f), label = stringResource(R.string.player_teamplayer_goals), value = golos.toString(), subtitle = stringResource(R.string.player_common_total), icon = "⊙", progress = (golos / 50f).coerceIn(0f, 1f)
                     )
                     PlayerSeasonStatCard(
-                        modifier = Modifier.weight(1f), label = "ASSISTS", value = assistencias.toString(), subtitle = "Total", icon = "☆", progress = (assistencias / 30f).coerceIn(0f, 1f)
+                        modifier = Modifier.weight(1f), label = stringResource(R.string.player_teamplayer_assists), value = assistencias.toString(), subtitle = stringResource(R.string.player_common_total), icon = "☆", progress = (assistencias / 30f).coerceIn(0f, 1f)
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("◷", color = Color(0xFF0757C8), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Team History", color = BrandBlue, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.player_teamplayer_team_history), color = BrandBlue, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 TeamPlayerHistoryCard(historico = historico)
@@ -143,7 +148,7 @@ fun TeamPlayerDetailsTopBar(onBackClick: () -> Unit) {
     ) {
         Text("←", color = BrandWhite, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onBackClick() })
         Spacer(modifier = Modifier.width(14.dp))
-        Text("Player Details", color = BrandWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+        Text(stringResource(R.string.player_teamplayer_title), color = BrandWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
         Spacer(modifier = Modifier.weight(1f))
         Text("♧", color = BrandWhite, fontSize = 27.sp, fontWeight = FontWeight.Bold)
     }
@@ -162,7 +167,7 @@ fun TeamPlayerProfileCard(nome: String, fotoUrl: Uri?, equipaAtual: String) {
                 modifier = Modifier.size(86.dp).clip(CircleShape).background(Color(0xFFF0F2FA)), contentAlignment = Alignment.Center
             ) {
                 if (fotoUrl != null) {
-                    AsyncImage(model = fotoUrl, contentDescription = "Foto", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                    AsyncImage(model = fotoUrl, contentDescription = stringResource(R.string.player_common_photo), contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                 } else {
                     Text(text = nome.take(1).uppercase(), color = BrandBlue, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 }
@@ -213,14 +218,14 @@ fun TeamPlayerHistoryCard(historico: List<Pair<MembroEquipaSimplesDTO, String>>)
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             if (historico.isEmpty()) {
-                Text("Sem histórico de equipas.", color = Color(0xFF7D8497), fontSize = 12.sp, modifier = Modifier.padding(vertical = 10.dp))
+                Text(stringResource(R.string.player_teamplayer_no_history), color = Color(0xFF7D8497), fontSize = 12.sp, modifier = Modifier.padding(vertical = 10.dp))
             } else {
                 historico.forEach { data ->
                     val membro = data.first
                     val nomeEquipa = data.second
                     val isAtivo = membro.dataSaida == null && membro.estadoConvite == "aceite"
                     val startAno = membro.dataEntrada?.take(4) ?: "..."
-                    val endAno = membro.dataSaida?.take(4) ?: "Now"
+                    val endAno = membro.dataSaida?.take(4) ?: stringResource(R.string.player_common_now)
 
                     Row(
                         modifier = Modifier.fillMaxWidth().height(58.dp), verticalAlignment = Alignment.CenterVertically
@@ -239,7 +244,7 @@ fun TeamPlayerHistoryCard(historico: List<Pair<MembroEquipaSimplesDTO, String>>)
                         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
                             if (isAtivo) {
                                 Box(modifier = Modifier.clip(RoundedCornerShape(18.dp)).background(BrandGreen.copy(alpha = 0.12f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                                    Text("ACTIVE", color = BrandGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.player_common_active), color = BrandGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.width(6.dp))
                             }

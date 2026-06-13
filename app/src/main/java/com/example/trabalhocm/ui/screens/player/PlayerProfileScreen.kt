@@ -54,11 +54,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
@@ -73,9 +76,9 @@ private val TextDark = Color(0xFF303646)
 
 @Composable
 fun PlayerProfileScreen(
-    initialUsername: String = "A carregar...",
-    initialName: String = "A carregar...",
-    initialEmail: String = "A carregar...",
+    initialUsername: String = stringResource(R.string.player_common_loading),
+    initialName: String = stringResource(R.string.player_common_loading),
+    initialEmail: String = stringResource(R.string.player_common_loading),
     initialBio: String = "",
     initialPhotoUri: Uri? = null,
     memberSinceYear: String = "2024",
@@ -94,6 +97,7 @@ fun PlayerProfileScreen(
 ) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var username by remember(initialUsername) { mutableStateOf(initialUsername) }
     var bio by remember(initialBio) { mutableStateOf(initialBio) }
@@ -126,14 +130,14 @@ fun PlayerProfileScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Profile",
+                text = stringResource(R.string.player_common_profile),
                 color = BrandWhite,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
             Icon(
                 imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notificações",
+                contentDescription = stringResource(R.string.player_common_notifications),
                 tint = BrandWhite,
                 modifier = Modifier.clickable { onNotificationsClick() }
             )
@@ -146,7 +150,7 @@ fun PlayerProfileScreen(
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
             ProfileHeaderCard(
-                username = username.ifBlank { "Sem Username" },
+                username = username.ifBlank { stringResource(R.string.player_profile_no_username) },
                 memberSince = memberSinceYear,
                 roles = roles,
                 tier = tier,
@@ -156,44 +160,44 @@ fun PlayerProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SectionHeader(icon = Icons.Outlined.Person, title = "Account Settings")
+            SectionHeader(icon = Icons.Outlined.Person, title = stringResource(R.string.player_profile_section_account))
             Spacer(modifier = Modifier.height(16.dp))
 
-            CustomTextField(label = "USERNAME", value = username, onValueChange = { username = it }, readOnly = false)
+            CustomTextField(label = stringResource(R.string.player_profile_label_username), value = username, onValueChange = { username = it }, readOnly = false)
             Spacer(modifier = Modifier.height(12.dp))
 
-            CustomTextField(label = "FULL NAME", value = initialName, onValueChange = {}, readOnly = true)
+            CustomTextField(label = stringResource(R.string.player_profile_label_fullname), value = initialName, onValueChange = {}, readOnly = true)
             Spacer(modifier = Modifier.height(12.dp))
-            CustomTextField(label = "EMAIL ADDRESS", value = initialEmail, onValueChange = {}, readOnly = true)
+            CustomTextField(label = stringResource(R.string.player_profile_label_email), value = initialEmail, onValueChange = {}, readOnly = true)
             Spacer(modifier = Modifier.height(12.dp))
 
             CustomTextField(
-                label = "BIO",
+                label = stringResource(R.string.player_profile_label_bio),
                 value = bio,
                 onValueChange = { bio = it },
                 singleLine = false,
-                placeholder = "Sem biografia definida.",
+                placeholder = stringResource(R.string.player_profile_bio_placeholder),
                 modifier = Modifier.height(100.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            SectionHeader(icon = Icons.Outlined.Settings, title = "Preferences")
+            SectionHeader(icon = Icons.Outlined.Settings, title = stringResource(R.string.player_profile_section_preferences))
             Spacer(modifier = Modifier.height(16.dp))
-            Text("LANGUAGE", color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Text(stringResource(R.string.player_profile_label_language), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            LanguageOption(text = "English (US)", isSelected = true)
-            LanguageOption(text = "Portuguese (PT)", isSelected = false)
+            LanguageOption(text = stringResource(R.string.player_profile_lang_en), isSelected = true)
+            LanguageOption(text = stringResource(R.string.player_profile_lang_pt), isSelected = false)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            SectionHeader(icon = Icons.AutoMirrored.Outlined.List, title = "Active Dashboards")
+            SectionHeader(icon = Icons.AutoMirrored.Outlined.List, title = stringResource(R.string.player_profile_section_dashboards))
             Spacer(modifier = Modifier.height(16.dp))
             DashboardOption(onClick = onDashboardClick)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            SectionHeader(icon = Icons.Outlined.Lock, title = "Security")
+            SectionHeader(icon = Icons.Outlined.Lock, title = stringResource(R.string.player_profile_section_security))
             Spacer(modifier = Modifier.height(16.dp))
 
             Card(
@@ -217,7 +221,7 @@ fun PlayerProfileScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "CHANGE PASSWORD",
+                            text = stringResource(R.string.player_profile_change_password),
                             color = Color(0xFF3566C9),
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
@@ -232,7 +236,7 @@ fun PlayerProfileScreen(
             Button(
                 onClick = {
                     if (username.isBlank()) {
-                        mensagem = "O username não pode estar vazio."
+                        mensagem = context.getString(R.string.player_profile_err_empty_username)
                         isError = true
                         return@Button
                     }
@@ -246,16 +250,16 @@ fun PlayerProfileScreen(
 
                         resultado
                             .onSuccess {
-                                mensagem = "Perfil atualizado com sucesso!"
+                                mensagem = context.getString(R.string.player_profile_success)
                                 isError = false
                                 onSaveChanges(username, bio, selectedImageUri)
                             }
                             .onFailure { erro ->
                                 isError = true
                                 mensagem = if (erro.message?.contains("duplicate key") == true || erro.message?.contains("unique") == true) {
-                                    "Este username já está em uso! Escolhe outro."
+                                    context.getString(R.string.player_profile_err_username_taken)
                                 } else {
-                                    "Erro ao guardar: ${erro.message}"
+                                    context.getString(R.string.player_profile_err_save, erro.message ?: "")
                                 }
                             }
 
@@ -272,7 +276,7 @@ fun PlayerProfileScreen(
                 if (isLoading) {
                     CircularProgressIndicator(color = BrandWhite, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("SAVE CHANGES", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.player_profile_save), fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 }
             }
 
@@ -297,7 +301,7 @@ fun PlayerProfileScreen(
                 border = BorderStroke(1.dp, Color(0xFFC62828)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC62828))
             ) {
-                Text("LOG OUT", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(stringResource(R.string.player_profile_logout), fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -346,7 +350,7 @@ fun ProfileHeaderCard(
                 if (selectedImageUri != null) {
                     AsyncImage(
                         model = selectedImageUri,
-                        contentDescription = "User Photo",
+                        contentDescription = stringResource(R.string.player_common_photo),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -365,7 +369,7 @@ fun ProfileHeaderCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "MEMBER SINCE $memberSince",
+                text = stringResource(R.string.player_profile_member_since, memberSince),
                 color = BrandGreen,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
@@ -472,7 +476,7 @@ fun LanguageOption(text: String, isSelected: Boolean) {
     ) {
         Text(text = text, color = TextDark, fontSize = 14.sp)
         if (isSelected) {
-            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = "Selected", tint = Color(0xFF3566C9))
+            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = stringResource(R.string.player_common_selected), tint = Color(0xFF3566C9))
         }
     }
 }
@@ -497,8 +501,8 @@ fun DashboardOption(onClick: () -> Unit = {}) {
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text("Player", color = TextDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text("Personal career stats", color = TextGray, fontSize = 12.sp)
+            Text(stringResource(R.string.player_profile_dashboard_player), color = TextDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.player_profile_dashboard_subtitle), color = TextGray, fontSize = 12.sp)
         }
         Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = BrandGreen)
     }

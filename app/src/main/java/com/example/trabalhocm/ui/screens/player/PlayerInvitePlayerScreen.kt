@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,11 +62,13 @@ fun PlayerInvitePlayerScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val defaultMessage = stringResource(R.string.player_inviteplayer_default_message)
+
     var search by remember { mutableStateOf("") }
     var selectedPlayer by remember { mutableStateOf("Cristiano Ronaldo") }
     var selectedRole by remember { mutableStateOf("Midfielder") }
     var message by remember {
-        mutableStateOf("Hey! We'd love to have you on the squad...")
+        mutableStateOf(defaultMessage)
     }
 
     Column(
@@ -86,7 +89,7 @@ fun PlayerInvitePlayerScreen(
                 .padding(horizontal = 22.dp, vertical = 20.dp)
         ) {
             Text(
-                text = "TEAM RECRUITMENT",
+                text = stringResource(R.string.player_inviteplayer_eyebrow),
                 color = Color(0xFF0757C8),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -96,7 +99,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Invite a Player",
+                text = stringResource(R.string.player_inviteplayer_title),
                 color = BrandBlue,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
@@ -105,7 +108,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Find players and send them an invitation to join FC\nMancos.",
+                text = stringResource(R.string.player_inviteplayer_subtitle),
                 color = Color(0xFF6D7486),
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
@@ -119,7 +122,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = "SEARCH PLAYERS",
+                text = stringResource(R.string.player_inviteplayer_search_label),
                 color = Color(0xFF7D8497),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -137,7 +140,7 @@ fun PlayerInvitePlayerScreen(
                 singleLine = true,
                 placeholder = {
                     Text(
-                        text = "Search by name or ID...",
+                        text = stringResource(R.string.player_inviteplayer_search_placeholder),
                         color = Color(0xFF9EA4B3),
                         fontSize = 13.sp
                     )
@@ -167,7 +170,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = "RECOMMENDED",
+                text = stringResource(R.string.player_inviteplayer_recommended),
                 color = Color(0xFF7D8497),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -178,7 +181,7 @@ fun PlayerInvitePlayerScreen(
 
             RecommendedPlayerCard(
                 name = "Cristiano Ronaldo",
-                position = "Striker",
+                position = stringResource(R.string.player_pos_striker),
                 selected = selectedPlayer == "Cristiano Ronaldo",
                 onClick = {
                     selectedPlayer = "Cristiano Ronaldo"
@@ -189,7 +192,7 @@ fun PlayerInvitePlayerScreen(
 
             RecommendedPlayerCard(
                 name = "João Silva",
-                position = "Point Guard",
+                position = stringResource(R.string.player_pos_point_guard),
                 selected = selectedPlayer == "João Silva",
                 onClick = {
                     selectedPlayer = "João Silva"
@@ -200,7 +203,7 @@ fun PlayerInvitePlayerScreen(
 
             RecommendedPlayerCard(
                 name = "André Lima",
-                position = "Defender",
+                position = stringResource(R.string.player_pos_defender),
                 selected = selectedPlayer == "André Lima",
                 onClick = {
                     selectedPlayer = "André Lima"
@@ -210,7 +213,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "Invitation Details",
+                text = stringResource(R.string.player_inviteplayer_details_title),
                 color = BrandBlue,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
@@ -219,7 +222,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Customize the invitation before sending.",
+                text = stringResource(R.string.player_inviteplayer_details_subtitle),
                 color = Color(0xFF6D7486),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
@@ -228,7 +231,7 @@ fun PlayerInvitePlayerScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = "INTENDED ROLE",
+                text = stringResource(R.string.player_inviteplayer_role_label),
                 color = Color(0xFF7D8497),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -242,28 +245,28 @@ fun PlayerInvitePlayerScreen(
                 horizontalArrangement = Arrangement.spacedBy(7.dp)
             ) {
                 InviteRoleButton(
-                    text = "Striker",
+                    text = stringResource(R.string.player_pos_striker),
                     selected = selectedRole == "Striker",
                     onClick = { selectedRole = "Striker" },
                     modifier = Modifier.weight(1f)
                 )
 
                 InviteRoleButton(
-                    text = "Defender",
+                    text = stringResource(R.string.player_pos_defender),
                     selected = selectedRole == "Defender",
                     onClick = { selectedRole = "Defender" },
                     modifier = Modifier.weight(1f)
                 )
 
                 InviteRoleButton(
-                    text = "Midfielder",
+                    text = stringResource(R.string.player_pos_midfielder),
                     selected = selectedRole == "Midfielder",
                     onClick = { selectedRole = "Midfielder" },
                     modifier = Modifier.weight(1f)
                 )
 
                 InviteRoleButton(
-                    text = "Goalkeeper",
+                    text = stringResource(R.string.player_pos_goalkeeper),
                     selected = selectedRole == "Goalkeeper",
                     onClick = { selectedRole = "Goalkeeper" },
                     modifier = Modifier.weight(1f)
@@ -276,7 +279,7 @@ fun PlayerInvitePlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "PERSONAL MESSAGE",
+                    text = stringResource(R.string.player_inviteplayer_message_label),
                     color = Color(0xFF7D8497),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -286,7 +289,7 @@ fun PlayerInvitePlayerScreen(
                 Spacer(modifier = Modifier.width(4.dp))
 
                 Text(
-                    text = "Optional",
+                    text = stringResource(R.string.player_common_optional),
                     color = Color(0xFF7D8497),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium
@@ -327,7 +330,7 @@ fun PlayerInvitePlayerScreen(
                 )
             ) {
                 Text(
-                    text = "✈  SEND INVITE",
+                    text = "✈  ${stringResource(R.string.player_inviteplayer_send)}",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -373,7 +376,7 @@ fun InvitePlayerTopBar(
         Spacer(modifier = Modifier.width(14.dp))
 
         Text(
-            text = "Player Invite",
+            text = stringResource(R.string.player_inviteplayer_topbar),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -411,7 +414,7 @@ fun InviteSuccessBanner() {
         Spacer(modifier = Modifier.width(10.dp))
 
         Text(
-            text = "Invitation sent successfully",
+            text = stringResource(R.string.player_inviteplayer_success),
             color = BrandGreen,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
