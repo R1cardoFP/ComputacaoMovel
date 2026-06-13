@@ -150,7 +150,7 @@ fun PlayerNotificationsScreen(
                 .padding(horizontal = 22.dp, vertical = 20.dp)
         ) {
             Text(
-                text = "UPDATES CENTER",
+                text = stringResource(R.string.player_notif_eyebrow),
                 color = Color(0xFF4167C8),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -160,7 +160,7 @@ fun PlayerNotificationsScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "NOTIFICATIONS",
+                text = stringResource(R.string.player_notif_title),
                 color = BrandBlue,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Medium,
@@ -203,7 +203,7 @@ fun PlayerNotificationsScreen(
                         modifier = Modifier.fillMaxWidth().padding(40.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Sem notificações de momento.", color = Color.Gray)
+                        Text(text = stringResource(R.string.player_notif_empty), color = Color.Gray)
                     }
                 }
 
@@ -213,9 +213,9 @@ fun PlayerNotificationsScreen(
                         // 1. Mostrar os pedidos que os JOGADORES fizeram para entrar na Equipa do Capitão
                         pedidosParaCapitao.forEach { pedido ->
                             TeamInvitationNotificationCard(
-                                title = "Team Join Request",
-                                description = "O jogador ${pedido.nomeJogador} pediu para entrar na tua equipa ${pedido.nomeEquipa}.",
-                                time = "PENDING",
+                                title = stringResource(R.string.player_notif_join_request_title),
+                                description = stringResource(R.string.player_notif_join_request_desc, pedido.nomeJogador, pedido.nomeEquipa),
+                                time = stringResource(R.string.player_common_pending),
                                 equipaNome = pedido.nomeEquipa,
                                 equipaInfo = null,
                                 message = null,
@@ -227,10 +227,10 @@ fun PlayerNotificationsScreen(
                                         successMessage = ""
                                         equipaRepository.aceitarPedidoDeEntrada(pedido.idEquipa, pedido.idUtilizador)
                                             .onSuccess {
-                                                successMessage = "Pedido aceite. O jogador agora faz parte da equipa."
+                                                successMessage = context.getString(R.string.player_notif_success_request_accepted)
                                                 carregarDados()
                                             }
-                                            .onFailure { errorMessage = it.message ?: "Erro ao aceitar pedido." }
+                                            .onFailure { errorMessage = it.message ?: context.getString(R.string.player_notif_err_accept_request) }
                                         isActionLoading = false
                                     }
                                 },
@@ -241,10 +241,10 @@ fun PlayerNotificationsScreen(
                                         successMessage = ""
                                         equipaRepository.recusarPedidoDeEntrada(pedido.idEquipa, pedido.idUtilizador)
                                             .onSuccess {
-                                                successMessage = "Pedido recusado e eliminado."
+                                                successMessage = context.getString(R.string.player_notif_success_request_declined)
                                                 carregarDados()
                                             }
-                                            .onFailure { errorMessage = it.message ?: "Erro ao recusar pedido." }
+                                            .onFailure { errorMessage = it.message ?: context.getString(R.string.player_notif_err_decline_request) }
                                         isActionLoading = false
                                     }
                                 }
@@ -255,9 +255,9 @@ fun PlayerNotificationsScreen(
                         // 2. Mostrar os convites que O CAPITÃO enviou para o Jogador Logado
                         convitesEquipa.forEach { convite ->
                             TeamInvitationNotificationCard(
-                                title = "Team Invitation",
-                                description = "Foste convidado para entrar na equipa ${convite.nomeEquipa} como ${convite.posicao}.",
-                                time = "PENDING",
+                                title = stringResource(R.string.player_notif_invitation_title),
+                                description = stringResource(R.string.player_notif_invitation_desc, convite.nomeEquipa, convite.posicao),
+                                time = stringResource(R.string.player_common_pending),
                                 equipaNome = convite.nomeEquipa,
                                 equipaInfo = "${convite.modalidadeNome} · ${convite.divisao}",
                                 message = convite.mensagem,
@@ -269,10 +269,10 @@ fun PlayerNotificationsScreen(
                                         successMessage = ""
                                         equipaRepository.aceitarConviteEquipa(convite.idEquipa)
                                             .onSuccess {
-                                                successMessage = "Convite da equipa ${convite.nomeEquipa} aceite."
+                                                successMessage = context.getString(R.string.player_notif_success_invite_accepted, convite.nomeEquipa)
                                                 carregarDados()
                                             }
-                                            .onFailure { errorMessage = it.message ?: "Erro ao aceitar convite." }
+                                            .onFailure { errorMessage = it.message ?: context.getString(R.string.player_notif_err_accept_invite) }
                                         isActionLoading = false
                                     }
                                 },
@@ -283,10 +283,10 @@ fun PlayerNotificationsScreen(
                                         successMessage = ""
                                         equipaRepository.recusarConviteEquipa(convite.idEquipa)
                                             .onSuccess {
-                                                successMessage = "Convite da equipa ${convite.nomeEquipa} recusado."
+                                                successMessage = context.getString(R.string.player_notif_success_invite_declined, convite.nomeEquipa)
                                                 carregarDados()
                                             }
-                                            .onFailure { errorMessage = it.message ?: "Erro ao recusar convite." }
+                                            .onFailure { errorMessage = it.message ?: context.getString(R.string.player_notif_err_decline_invite) }
                                         isActionLoading = false
                                     }
                                 }
@@ -381,21 +381,22 @@ fun DesenharNotificacao(notificacao: Notificacao) {
     }
 }
 
+@Composable
 fun calcularTempoAtras(dataCriacao: String): String {
-    return try {
+    val minutos: Long? = try {
         val dataPassada = OffsetDateTime.parse(dataCriacao)
-        val agora = OffsetDateTime.now()
-        val minutos = Duration.between(dataPassada, agora).toMinutes()
-
-        when {
-            minutos < 1 -> "JUST NOW"
-            minutos < 60 -> "${minutos}M AGO"
-            minutos < 1440 -> "${minutos / 60}H AGO"
-            minutos < 2880 -> "YESTERDAY"
-            else -> "${minutos / 1440}D AGO"
-        }
+        Duration.between(dataPassada, OffsetDateTime.now()).toMinutes()
     } catch (e: Exception) {
-        "RECENTLY"
+        null
+    }
+
+    return when {
+        minutos == null -> stringResource(R.string.player_notif_recently)
+        minutos < 1 -> stringResource(R.string.player_notif_just_now)
+        minutos < 60 -> stringResource(R.string.player_notif_minutes_ago, minutos)
+        minutos < 1440 -> stringResource(R.string.player_notif_hours_ago, minutos / 60)
+        minutos < 2880 -> stringResource(R.string.player_notif_yesterday)
+        else -> stringResource(R.string.player_notif_days_ago, minutos / 1440)
     }
 }
 
@@ -420,7 +421,7 @@ fun NotificationsTopBar(onBackClick: () -> Unit) {
         Spacer(modifier = Modifier.width(14.dp))
 
         Text(
-            text = "Notifications",
+            text = stringResource(R.string.player_common_notifications),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -431,7 +432,7 @@ fun NotificationsTopBar(onBackClick: () -> Unit) {
 
         Icon(
             imageVector = Icons.Outlined.Notifications,
-            contentDescription = "Notifications",
+            contentDescription = stringResource(R.string.player_common_notifications),
             tint = BrandWhite,
             modifier = Modifier.size(26.dp)
         )
@@ -444,10 +445,10 @@ fun NotificationsTabs(selectedTab: String, onTabSelected: (String) -> Unit) {
         modifier = Modifier.fillMaxWidth().height(46.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFFF0F2FA)).padding(3.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        NotificationTabButton("ALL", selectedTab == "ALL", { onTabSelected("ALL") }, Modifier.weight(1f))
-        NotificationTabButton("MATCHES", selectedTab == "MATCHES", { onTabSelected("MATCHES") }, Modifier.weight(1f))
-        NotificationTabButton("TEAMS", selectedTab == "TEAMS", { onTabSelected("TEAMS") }, Modifier.weight(1f))
-        NotificationTabButton("SYSTEM", selectedTab == "SYSTEM", { onTabSelected("SYSTEM") }, Modifier.weight(1f))
+        NotificationTabButton(stringResource(R.string.player_notif_tab_all), selectedTab == "ALL", { onTabSelected("ALL") }, Modifier.weight(1f))
+        NotificationTabButton(stringResource(R.string.player_notif_tab_matches), selectedTab == "MATCHES", { onTabSelected("MATCHES") }, Modifier.weight(1f))
+        NotificationTabButton(stringResource(R.string.player_notif_tab_teams), selectedTab == "TEAMS", { onTabSelected("TEAMS") }, Modifier.weight(1f))
+        NotificationTabButton(stringResource(R.string.player_notif_tab_system), selectedTab == "SYSTEM", { onTabSelected("SYSTEM") }, Modifier.weight(1f))
     }
 }
 
@@ -533,11 +534,11 @@ fun TeamInvitationNotificationCard(
                         Button(
                             onClick = onAcceptClick, enabled = !isActionLoading, modifier = Modifier.width(82.dp).height(34.dp),
                             shape = RoundedCornerShape(2.dp), colors = ButtonDefaults.buttonColors(containerColor = BrandGreen, contentColor = BrandWhite)
-                        ) { Text("ACCEPT", fontSize = 9.sp, fontWeight = FontWeight.Bold) }
+                        ) { Text(stringResource(R.string.player_common_accept), fontSize = 9.sp, fontWeight = FontWeight.Bold) }
                         OutlinedButton(
                             onClick = onDeclineClick, enabled = !isActionLoading, modifier = Modifier.width(92.dp).height(34.dp),
                             shape = RoundedCornerShape(2.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF7D8497))
-                        ) { Text("DECLINE", fontSize = 8.sp, fontWeight = FontWeight.Bold) }
+                        ) { Text(stringResource(R.string.player_common_decline), fontSize = 8.sp, fontWeight = FontWeight.Bold) }
                     }
                 }
             }
@@ -561,12 +562,12 @@ fun EndOfFeed() {
     Column(modifier = Modifier.fillMaxWidth().padding(top = 28.dp, bottom = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(
             imageVector = Icons.Outlined.Notifications,
-            contentDescription = "End of feed",
+            contentDescription = stringResource(R.string.player_notif_end_of_feed),
             tint = Color(0xFF9EA4B3),
             modifier = Modifier.size(28.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text("END OF FEED", color = Color(0xFF9EA4B3), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+        Text(stringResource(R.string.player_notif_end_of_feed), color = Color(0xFF9EA4B3), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
     }
 }
 
