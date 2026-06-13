@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.trabalhocm.data.repository.TorneioRepository
 import com.example.trabalhocm.data.model.Torneio
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class CreateTournamentViewModel : ViewModel() {
     private val repository = TorneioRepository()
@@ -37,11 +39,13 @@ class CreateTournamentViewModel : ViewModel() {
             isLoading = true
             errorMessage = ""
 
+            // 1. Converter os prémios
             val p1 = prize1.filter { it.isDigit() }.toLongOrNull() ?: 0L
             val p2 = prize2.filter { it.isDigit() }.toLongOrNull() ?: 0L
             val p3 = prize3.filter { it.isDigit() }.toLongOrNull() ?: 0L
             val totalPrize = (p1 + p2 + p3).toDouble()
 
+            // 2. Mapear a modalidade corretamente para a BD
             val sportId = when (selectedSport) {
                 "Football" -> 1L
                 "Basketball" -> 2L
@@ -49,6 +53,7 @@ class CreateTournamentViewModel : ViewModel() {
                 else -> 1L
             }
 
+            // 3. Mapear o formato do torneio
             val dbFormato = when (selectedFormat) {
                 "League System", "Regular Season + Playoffs" -> "liga"
                 "Knockout", "Single Elimination Bracket", "Double Elimination" -> "eliminatorias"
@@ -56,29 +61,39 @@ class CreateTournamentViewModel : ViewModel() {
                 else -> "liga"
             }
 
-            val inputSdf = java.text.SimpleDateFormat("dd/MM/yy", java.util.Locale.getDefault())
-            val outputSdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            // 4. CORREÇÃO CRÍTICA DAS DATAS
+            // O calendário do Compose manda no formato "dd/MM/yy" mas o Supabase precisa de "yyyy-MM-dd"
+            val inputSdf = SimpleDateFormat("dd/MM/yy", Locale.getDefault())
+            val outputSdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
             val dbDataInicio = try {
-                val date = inputSdf.parse(startDate)
-                if (date != null) outputSdf.format(date) else "2026-01-01"
+                if (startDate.isNotBlank()) {
+                    val date = inputSdf.parse(startDate)
+                    if (date != null) outputSdf.format(date) else "2026-01-01"
+                } else {
+                    "2026-01-01"
+                }
             } catch (e: Exception) { "2026-01-01" }
 
             val dbDataFim = try {
-                val date = inputSdf.parse(endDate)
-                if (date != null) outputSdf.format(date) else null
+                if (endDate.isNotBlank()) {
+                    val date = inputSdf.parse(endDate)
+                    if (date != null) outputSdf.format(date) else null
+                } else {
+                    null
+                }
             } catch (e: Exception) { null }
 
             val torneioDados = Torneio(
                 id = 0L,
-                nome = tournamentName,
+                nome = tournamentName.ifBlank { "Untitled Tournament" },
                 descricao = description,
                 regras = notes,
-                local = venue,
+                local = venue.ifBlank { "Local por definir" },
                 dataInicio = dbDataInicio,
                 dataFim = dbDataFim,
                 formato = dbFormato,
-                taxaInscricao = entryFee.toDoubleOrNull() ?: 0.0,
+                taxaInscricao = entryFee.replace(",", ".").toDoubleOrNull() ?: 0.0,
                 premio = totalPrize,
                 estado = "aberto",
                 idOrganizador = "",
