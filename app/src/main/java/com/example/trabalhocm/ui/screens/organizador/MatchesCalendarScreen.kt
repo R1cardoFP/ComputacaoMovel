@@ -24,10 +24,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
+import com.example.trabalhocm.ui.screens.organizador.OrganizerCalendarViewModel
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 private val DarkBlue = Color(0xFF111827)
 private val PrimaryBlue = Color(0xFF0346B8)
@@ -52,20 +56,37 @@ data class MatchEvent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchesCalendarScreen(
+    viewModel: OrganizerCalendarViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    val today = 14
-    var selectedDay by remember { mutableStateOf(14) }
+    val today = remember { LocalDate.now().dayOfMonth }
+    var selectedDay by remember { mutableStateOf(today) }
 
-    val allMatches = listOf(
-        MatchEvent(14, "14:00", stringResource(R.string.sport_football), "Sporting", "Vianense", "2 - 1", "72'", stringResource(R.string.mock_loc_1), true),
-        MatchEvent(14, "16:30", stringResource(R.string.sport_basketball), "Benfica", "Sporting", "VS", stringResource(R.string.mock_time_1), stringResource(R.string.mock_loc_2), false),
-        MatchEvent(14, "16:30", stringResource(R.string.sport_volleyball), "Porto", "Sporting", "VS", stringResource(R.string.mock_time_1), stringResource(R.string.mock_loc_3), false),
-        MatchEvent(14, "19:00", stringResource(R.string.sport_volleyball), "Benfica", "Vianense", "VS", stringResource(R.string.mock_time_2), stringResource(R.string.mock_loc_4), false),
-        MatchEvent(3, "11:00", stringResource(R.string.sport_basketball), "Porto", "Benfica", "VS", stringResource(R.string.mock_time_3), stringResource(R.string.mock_loc_5), false),
-        MatchEvent(3, "18:00", stringResource(R.string.sport_volleyball), "Sporting", "Vianense", "VS", stringResource(R.string.mock_time_4), stringResource(R.string.mock_loc_6), false)
-    )
+    val sportFootball = stringResource(R.string.sport_football)
+    val sportBasketball = stringResource(R.string.sport_basketball)
+    val sportVolleyball = stringResource(R.string.sport_volleyball)
+    val sportDefault = stringResource(R.string.sport_default)
+    val liveLabel = stringResource(R.string.badge_live_now)
+
+    val allMatches = viewModel.jogos.map { g ->
+        MatchEvent(
+            day = g.dia,
+            time = g.hora,
+            sport = when (g.idModalidade) {
+                1L -> sportFootball
+                2L -> sportBasketball
+                3L -> sportVolleyball
+                else -> sportDefault
+            },
+            team1 = g.team1,
+            team2 = g.team2,
+            statusText = g.score,
+            subStatus = if (g.isLive) liveLabel else g.hora,
+            location = g.local,
+            isLive = g.isLive
+        )
+    }
 
     val daysWithEvents = allMatches.map { it.day }.distinct()
 
@@ -120,7 +141,13 @@ fun MatchesCalendarScreen(
                 )
             }
 
-            if (filteredMatches.isEmpty()) {
+            if (viewModel.isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = PrimaryBlue)
+                    }
+                }
+            } else if (filteredMatches.isEmpty()) {
                 item {
                     EmptyStateCard()
                 }
@@ -151,12 +178,18 @@ fun CalendarWidget(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            val hoje = remember { LocalDate.now() }
+            val nomeMes = remember {
+                hoje.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
+                    .replaceFirstChar { it.uppercase() }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(stringResource(R.string.mock_month_may), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("$nomeMes ${hoje.year}", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SmallIconButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft)
                     SmallIconButton(Icons.AutoMirrored.Filled.KeyboardArrowRight)
@@ -182,32 +215,38 @@ fun CalendarWidget(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            val calendarGrid = listOf(
-                listOf(27 to false, 28 to false, 29 to false, 30 to false, 1 to true, 2 to true, 3 to true),
-                listOf(4 to true, 5 to true, 6 to true, 7 to true, 8 to true, 9 to true, 10 to true),
-                listOf(11 to true, 12 to true, 13 to true, 14 to true, 15 to true, 16 to true, 17 to true),
-                listOf(18 to true, 19 to true, 20 to true, 21 to true, 22 to true, 23 to true, 24 to true),
-                listOf(25 to true, 26 to true, 27 to true, 28 to true, 29 to true, 30 to true, 31 to true)
-            )
+            // Grelha real do mês atual: dias nulos = células vazias de alinhamento
+            val calendarGrid = remember {
+                val primeiroDia = hoje.withDayOfMonth(1)
+                val diasNoMes = hoje.lengthOfMonth()
+                val offsetInicial = primeiroDia.dayOfWeek.value % 7 // Domingo = 0
+
+                val celulas = buildList<Int?> {
+                    repeat(offsetInicial) { add(null) }
+                    for (d in 1..diasNoMes) add(d)
+                    while (size % 7 != 0) add(null)
+                }
+                celulas.chunked(7)
+            }
 
             calendarGrid.forEach { week ->
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    week.forEach { (day, isCurrentMonth) ->
-                        val isSelected = (day == selectedDay && isCurrentMonth)
-                        val isToday = (day == today && isCurrentMonth)
-                        val hasEvent = daysWithEvents.contains(day) && isCurrentMonth
-
-                        DayCell(
-                            day = day,
-                            isCurrentMonth = isCurrentMonth,
-                            isSelected = isSelected,
-                            isToday = isToday,
-                            hasEvent = hasEvent,
-                            onClick = { if (isCurrentMonth) onDaySelected(day) }
-                        )
+                    week.forEach { day ->
+                        if (day == null) {
+                            Spacer(modifier = Modifier.width(36.dp))
+                        } else {
+                            DayCell(
+                                day = day,
+                                isCurrentMonth = true,
+                                isSelected = (day == selectedDay),
+                                isToday = (day == today),
+                                hasEvent = daysWithEvents.contains(day),
+                                onClick = { onDaySelected(day) }
+                            )
+                        }
                     }
                 }
             }
@@ -401,10 +440,3 @@ fun SmallIconButton(icon: androidx.compose.ui.graphics.vector.ImageVector) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun MatchesCalendarScreenPreview() {
-    MaterialTheme {
-        MatchesCalendarScreen()
-    }
-}
