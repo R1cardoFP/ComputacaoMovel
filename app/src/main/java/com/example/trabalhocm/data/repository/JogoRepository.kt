@@ -152,12 +152,13 @@ class JogoRepository {
         )
     }
 
-    /** Procura o primeiro jogo em direto (para o atalho do match center sem id). */
+    /** Procura o primeiro jogo "live": em_direto OU já dentro da janela início..+90min. */
     suspend fun obterPrimeiroJogoEmDireto(): Result<Long?> = runCatching {
+        val agora = java.time.LocalDateTime.now()
         client.from("jogo")
-            .select { filter { eq("estado_jogo", "em_direto") } }
+            .select()
             .decodeList<Jogo>()
-            .firstOrNull()
+            .firstOrNull { jogoEstaLivePorTempo(it, agora) }
             ?.id
     }
 
@@ -407,6 +408,23 @@ private fun JsonObject?.intOf(key: String): Int {
 
 private fun JsonObject.longOf(key: String): Long {
     return this[key]?.jsonPrimitive?.longOrNull ?: 0L
+}
+
+private val JOGO_ESTADOS_FINAIS = setOf("terminado", "cancelado", "concluido", "finalizado", "adiado")
+
+private fun jogoLiveStart(jogo: Jogo): java.time.LocalDateTime? {
+    val data = runCatching { java.time.LocalDate.parse(jogo.data.take(10)) }.getOrNull() ?: return null
+    val hora = runCatching { java.time.LocalTime.parse(jogo.hora.take(5)) }.getOrNull() ?: java.time.LocalTime.MIDNIGHT
+    return java.time.LocalDateTime.of(data, hora)
+}
+
+// Live se em_direto, ou se a hora de início já passou e ainda não passaram ~90 min.
+private fun jogoEstaLivePorTempo(jogo: Jogo, agora: java.time.LocalDateTime): Boolean {
+    val estado = jogo.estadoJogo.lowercase()
+    if (estado == "em_direto" || estado == "live" || estado == "em_decorrer" || estado == "a_decorrer") return true
+    if (estado in JOGO_ESTADOS_FINAIS) return false
+    val inicio = jogoLiveStart(jogo) ?: return false
+    return !agora.isBefore(inicio) && agora.isBefore(inicio.plusMinutes(90L))
 }
 
 @Serializable

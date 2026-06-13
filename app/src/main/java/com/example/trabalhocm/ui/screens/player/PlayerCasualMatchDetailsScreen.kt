@@ -153,10 +153,13 @@ fun PlayerCasualMatchDetailsScreen(
                         it.id == info.utilizadorAtualId
                     }
 
+                    val isLiveAgora = peladinhaEstaLiveAgora(peladinha.data, peladinha.hora, peladinha.estado)
+
                     val podeMostrarJoin =
                         estadoNormalizado == "aberta" ||
                                 estadoNormalizado == "em_direto" ||
-                                estadoNormalizado == "live"
+                                estadoNormalizado == "live" ||
+                                isLiveAgora
 
                     val podeEntrar =
                         podeMostrarJoin &&
@@ -331,18 +334,22 @@ fun CasualDetailsHeroCard(
         0f
     }
 
-    val statusText = when (estadoNormalizado) {
-        "aberta" -> "● OPEN"
-        "fechada" -> "● CLOSED"
-        "terminada" -> "● FINISHED"
-        "em_direto", "live" -> "● LIVE NOW"
+    val isLiveAgora = peladinhaEstaLiveAgora(peladinha.data, peladinha.hora, peladinha.estado)
+
+    val statusText = when {
+        isLiveAgora -> "● LIVE NOW"
+        estadoNormalizado == "aberta" -> "● OPEN"
+        estadoNormalizado == "fechada" -> "● CLOSED"
+        estadoNormalizado == "terminada" -> "● FINISHED"
+        estadoNormalizado == "em_direto" || estadoNormalizado == "live" -> "● LIVE NOW"
         else -> "● ${peladinha.estado.uppercase()}"
     }
 
-    val statusColor = when (estadoNormalizado) {
-        "aberta", "em_direto", "live" -> BrandGreen
-        "fechada" -> Color(0xFFD39A00)
-        "terminada" -> CasualDetailsMuted
+    val statusColor = when {
+        isLiveAgora -> BrandGreen
+        estadoNormalizado == "aberta" || estadoNormalizado == "em_direto" || estadoNormalizado == "live" -> BrandGreen
+        estadoNormalizado == "fechada" -> Color(0xFFD39A00)
+        estadoNormalizado == "terminada" -> CasualDetailsMuted
         else -> CasualDetailsBlue
     }
 
@@ -547,27 +554,32 @@ fun CasualDetailsSummaryCard(
         0f
     }
 
-    val statusText = when (estadoNormalizado) {
-        "aberta" -> "● OPEN"
-        "fechada" -> "● CLOSED"
-        "terminada" -> "● FINISHED"
-        "em_direto", "live" -> "● LIVE NOW"
+    val isLiveAgora = peladinhaEstaLiveAgora(peladinha.data, peladinha.hora, peladinha.estado)
+
+    val statusText = when {
+        isLiveAgora -> "● LIVE NOW"
+        estadoNormalizado == "aberta" -> "● OPEN"
+        estadoNormalizado == "fechada" -> "● CLOSED"
+        estadoNormalizado == "terminada" -> "● FINISHED"
+        estadoNormalizado == "em_direto" || estadoNormalizado == "live" -> "● LIVE NOW"
         else -> "● ${peladinha.estado.uppercase()}"
     }
 
-    val statusColor = when (estadoNormalizado) {
-        "aberta" -> BrandGreen
-        "em_direto", "live" -> BrandGreen
-        "fechada" -> Color(0xFFD39A00)
-        "terminada" -> Color(0xFF7D8497)
+    val statusColor = when {
+        isLiveAgora -> BrandGreen
+        estadoNormalizado == "aberta" -> BrandGreen
+        estadoNormalizado == "em_direto" || estadoNormalizado == "live" -> BrandGreen
+        estadoNormalizado == "fechada" -> Color(0xFFD39A00)
+        estadoNormalizado == "terminada" -> Color(0xFF7D8497)
         else -> CasualDetailsBlue
     }
 
-    val registrationText = when (estadoNormalizado) {
-        "aberta" -> "OPEN REGISTRATION"
-        "fechada" -> "REGISTRATION CLOSED"
-        "terminada" -> "FINISHED"
-        "em_direto", "live" -> "LIVE MATCH"
+    val registrationText = when {
+        isLiveAgora -> "LIVE MATCH"
+        estadoNormalizado == "aberta" -> "OPEN REGISTRATION"
+        estadoNormalizado == "fechada" -> "REGISTRATION CLOSED"
+        estadoNormalizado == "terminada" -> "FINISHED"
+        estadoNormalizado == "em_direto" || estadoNormalizado == "live" -> "LIVE MATCH"
         else -> peladinha.estado.uppercase()
     }
 

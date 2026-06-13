@@ -180,7 +180,9 @@ fun PlayerMatchesScreen(
                     playerMatchesCorrespondeEstado(
                         filtro = selectedStatus,
                         estado = item.peladinha.estado
-                    )
+                    ) ||
+                    (selectedStatus.equals("Live", ignoreCase = true) &&
+                            peladinhaEstaLiveAgora(item.peladinha.data, item.peladinha.hora, item.peladinha.estado))
 
         val regiaoOk =
             playerMatchesCorrespondeRegiao(
@@ -863,17 +865,21 @@ fun CasualMatchCard(
         0f
     }
 
-    val statusText = when (estadoNormalizado) {
-        "aberta" -> "OPEN"
-        "fechada" -> if (jogadores >= maxJogadores && maxJogadores > 0) "FULL" else "CLOSED"
-        "terminada" -> "FINISHED"
+    val isLiveAgora = peladinhaEstaLiveAgora(peladinha.data, peladinha.hora, peladinha.estado)
+
+    val statusText = when {
+        isLiveAgora -> "LIVE"
+        estadoNormalizado == "aberta" -> "OPEN"
+        estadoNormalizado == "fechada" -> if (jogadores >= maxJogadores && maxJogadores > 0) "FULL" else "CLOSED"
+        estadoNormalizado == "terminada" -> "FINISHED"
         else -> peladinha.estado.uppercase()
     }
 
-    val statusColor = when (estadoNormalizado) {
-        "aberta" -> BrandGreen
-        "fechada" -> Color(0xFFD39A00)
-        "terminada" -> Color(0xFF7D8497)
+    val statusColor = when {
+        isLiveAgora -> BrandGreen
+        estadoNormalizado == "aberta" -> BrandGreen
+        estadoNormalizado == "fechada" -> Color(0xFFD39A00)
+        estadoNormalizado == "terminada" -> Color(0xFF7D8497)
         else -> Color(0xFF0757C8)
     }
 
@@ -1192,6 +1198,21 @@ fun playerMatchesCorrespondeEstado(
                 estadoNormalizado.contains("em curso")
 
         else -> true
+    }
+}
+
+// Uma peladinha está "live" se a sua hora de início já passou e ainda não passaram
+// ~90 min (mesma lógica do AdminCasualMatchRepository). Canceladas nunca são live.
+fun peladinhaEstaLiveAgora(data: String?, hora: String?, estado: String): Boolean {
+    if (estado.lowercase() == "cancelada") return false
+    val d = runCatching { java.time.LocalDate.parse(data?.take(10).orEmpty()) }.getOrNull() ?: return false
+    val t = runCatching { java.time.LocalTime.parse(hora?.take(5).orEmpty()) }.getOrNull() ?: return false
+    return try {
+        val inicio = java.time.LocalDateTime.of(d, t)
+        val agora = java.time.LocalDateTime.now(java.time.ZoneId.of("Europe/Lisbon"))
+        java.time.temporal.ChronoUnit.MINUTES.between(inicio, agora) in 0..90
+    } catch (e: Exception) {
+        false
     }
 }
 

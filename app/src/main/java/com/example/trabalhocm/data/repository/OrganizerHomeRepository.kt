@@ -153,11 +153,10 @@ class OrganizerHomeRepository {
         equipasPorId: Map<Long, JsonObject>,
         torneiosPorId: Map<Long, JsonObject>
     ): OrganizerHomeLiveMatch? {
+        val agora = java.time.LocalDateTime.now()
         val jogo = jogos.firstOrNull { jogo ->
-            val estado = jogo.orgStringValue("estado_jogo")
             val idTorneio = jogo.orgLongValue("id_torneio")
-
-            estado == "em_direto" && idTorneio in idsTorneiosDoOrganizador
+            idTorneio in idsTorneiosDoOrganizador && orgJogoEstaLive(jogo, agora)
         } ?: return null
 
         val idJogo = jogo.orgLongValue("id")
@@ -186,7 +185,7 @@ class OrganizerHomeRepository {
             equipaFora = equipaFora?.orgStringValue("nome") ?: "Equipa Fora",
             pontosCasa = equipaCasaLinha.orgIntValue("pontos_marcados"),
             pontosFora = equipaForaLinha.orgIntValue("pontos_marcados"),
-            minuto = 75,
+            minuto = orgCalcularMinutoLive(jogo, agora),
             local = jogo.orgStringValue("local") ?: "Local por definir"
         )
     }
@@ -228,12 +227,13 @@ class OrganizerHomeRepository {
         jogoEquipasPorJogo: Map<Long, List<JsonObject>>,
         equipasPorId: Map<Long, JsonObject>
     ): List<OrganizerHomeFixture> {
+        val agora = java.time.LocalDateTime.now()
         return jogos
             .filter { jogo ->
                 val estado = jogo.orgStringValue("estado_jogo")
                 val idTorneio = jogo.orgLongValue("id_torneio")
 
-                estado == "agendado" && idTorneio in idsTorneiosDoOrganizador
+                estado == "agendado" && idTorneio in idsTorneiosDoOrganizador && !orgJogoEstaLive(jogo, agora)
             }
             .sortedWith(
                 compareBy<JsonObject> {
@@ -386,4 +386,27 @@ private fun orgParseTime(value: String?): LocalTime? {
     return runCatching {
         LocalTime.parse(value?.take(5).orEmpty())
     }.getOrNull()
+}
+
+private val ORG_ESTADOS_FINAIS = setOf("terminado", "cancelado", "concluido", "finalizado", "adiado")
+
+private fun orgJogoInicio(jogo: JsonObject): java.time.LocalDateTime? {
+    val data = orgParseDate(jogo.orgStringValue("data")) ?: return null
+    val hora = orgParseTime(jogo.orgStringValue("hora")) ?: LocalTime.MIDNIGHT
+    return java.time.LocalDateTime.of(data, hora)
+}
+
+// Live se em_direto, ou se a hora de início já passou e ainda não passaram ~90 min.
+private fun orgJogoEstaLive(jogo: JsonObject, agora: java.time.LocalDateTime): Boolean {
+    val estado = jogo.orgStringValue("estado_jogo")?.lowercase().orEmpty()
+    if (estado == "em_direto" || estado == "live" || estado == "em_decorrer" || estado == "a_decorrer") return true
+    if (estado in ORG_ESTADOS_FINAIS) return false
+    val inicio = orgJogoInicio(jogo) ?: return false
+    return !agora.isBefore(inicio) && agora.isBefore(inicio.plusMinutes(90L))
+}
+
+private fun orgCalcularMinutoLive(jogo: JsonObject, agora: java.time.LocalDateTime): Int {
+    val inicio = orgJogoInicio(jogo) ?: return 75
+    val mins = ChronoUnit.MINUTES.between(inicio, agora)
+    return mins.coerceIn(1L, 90L).toInt()
 }
