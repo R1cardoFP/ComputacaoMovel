@@ -1,6 +1,7 @@
 package com.example.trabalhocm.data.repository
 
 import com.example.trabalhocm.data.model.Equipa
+import com.example.trabalhocm.data.model.Jogo
 import com.example.trabalhocm.data.model.Torneio
 import com.example.trabalhocm.data.remote.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -8,7 +9,7 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// --- NOVOS MODELOS PARA A LIGA ---
+// --- NOVOS MODELOS PARA A LIGA E CLASSIFICAÇÃO ---
 data class EstatisticaEquipaLiga(
     val idEquipa: Long,
     val nomeEquipa: String,
@@ -19,18 +20,16 @@ data class EstatisticaEquipaLiga(
     val pontos: Int
 )
 
+// Mudámos para ler da tabela "classificacao"
 @Serializable
-private data class EstatisticaEquipaBD(
+private data class ClassificacaoBD(
     @SerialName("id_equipa") val idEquipa: Long,
     val vitorias: Int = 0,
     val empates: Int = 0,
     val derrotas: Int = 0,
-    val pontos: Int = 0,
-    @SerialName("num_jogos") val numJogos: Int? = null,
-    @SerialName("jogos_disputados") val jogosDisputados: Int? = null
+    val pontos: Int = 0
 )
 
-// Usa o nome da tabela correta no teu projeto: torneio_equipa
 @Serializable
 private data class TorneioEquipaDB(
     @SerialName("id_equipa") val idEquipa: Long,
@@ -64,16 +63,27 @@ class TorneioRepository {
         }
     }
 
-    // --- NOVA FUNÇÃO PARA OBTER A CLASSIFICAÇÃO DA LIGA ---
+    suspend fun obterJogosEliminatorias(idTorneio: Long): Result<List<Jogo>> {
+        return runCatching {
+            client.from("jogo")
+                .select {
+                    filter {
+                        eq("id_torneio", idTorneio)
+                    }
+                }
+                .decodeList<Jogo>()
+        }
+    }
+
+    // --- NOVA FUNÇÃO QUE LÊ DA TABELA CLASSIFICACAO ---
     suspend fun obterClassificacaoTorneio(idTorneio: Long): Result<List<EstatisticaEquipaLiga>> {
         return runCatching {
 
-            // Mudámos de 'inscricao' para 'torneio_equipa', que é a tabela que usas
             val inscricoes = client.from("torneio_equipa")
                 .select {
                     filter {
                         eq("id_torneio", idTorneio)
-                        neq("estado", "rejeitada") // Não mostra as equipas que foram rejeitadas
+                        neq("estado", "rejeitada")
                     }
                 }
                 .decodeList<TorneioEquipaDB>()
@@ -89,22 +99,29 @@ class TorneioRepository {
                 .decodeList<Equipa>()
                 .associateBy { it.id }
 
-            val estatisticasBD = client.from("estatistica_equipa")
+            // A MÁGICA ESTÁ AQUI: Agora lemos da tabela "classificacao"!
+            val classificacoesBD = client.from("classificacao")
                 .select {
-                    filter { isIn("id_equipa", idsEquipas) }
+                    filter {
+                        isIn("id_equipa", idsEquipas)
+                        eq("id_torneio", idTorneio)
+                    }
                 }
-                .decodeList<EstatisticaEquipaBD>()
+                .decodeList<ClassificacaoBD>()
                 .associateBy { it.idEquipa }
 
             idsEquipas.mapNotNull { idEquipa ->
                 val equipaNome = equipas[idEquipa]?.nome ?: return@mapNotNull null
-                val estatistica = estatisticasBD[idEquipa] ?: EstatisticaEquipaBD(idEquipa)
+
+                // Se a equipa não tiver linha na tabela classificacao para este torneio, cria uma virtual com zeros
+                val estatistica = classificacoesBD[idEquipa] ?: ClassificacaoBD(idEquipa)
 
                 val v = estatistica.vitorias
                 val e = estatistica.empates
                 val d = estatistica.derrotas
 
-                val jogos = estatistica.numJogos ?: estatistica.jogosDisputados ?: (v + e + d)
+                // Na tabela classificacao não tens a coluna jogos_disputados, por isso calculamos somando os resultados
+                val jogos = v + e + d
 
                 val pontos = estatistica.pontos
 

@@ -159,7 +159,7 @@ fun PlayerTournamentRegistrationScreen(
             }
         } else if (errorMessage.isNotBlank()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(text = errorMessage, color = Color.Red, fontWeight = FontWeight.Bold)
+                Text(text = errorMessage, color = Color.Red, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
             }
         } else {
             Column(
@@ -218,6 +218,7 @@ fun PlayerTournamentRegistrationScreen(
                             if (podeInscrever) {
                                 scope.launch {
                                     isSubmitting = true
+                                    errorMessage = "" // Limpa erros antigos
                                     try {
                                         SupabaseClient.client.from("torneio_equipa").insert(
                                             TorneioEquipaInsertDTO(
@@ -231,6 +232,7 @@ fun PlayerTournamentRegistrationScreen(
                                         onSubmitClick()
                                     } catch (e: Exception) {
                                         e.printStackTrace()
+                                        errorMessage = "Erro na Base de Dados: ${e.message}"
                                     }
                                     isSubmitting = false
                                 }
