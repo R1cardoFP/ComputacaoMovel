@@ -33,6 +33,7 @@ import com.example.trabalhocm.ui.theme.*
 @Composable
 fun OrganizerProfileScreen(
     initialName: String = "",
+    initialUsername: String = "",
     initialEmail: String = "",
     initialBio: String = "",
     memberSinceYear: String = "2026",
@@ -49,6 +50,7 @@ fun OrganizerProfileScreen(
     onProfileClick: () -> Unit = {}
 ) {
     var fullName by remember(initialName) { mutableStateOf(initialName) }
+    var username by remember(initialUsername) { mutableStateOf(initialUsername) }
     var email by remember(initialEmail) { mutableStateOf(initialEmail) }
     var bio by remember(initialBio) { mutableStateOf(initialBio) }
 
@@ -119,13 +121,15 @@ fun OrganizerProfileScreen(
                     Text(fullName.ifBlank { stringResource(R.string.msg_loading) }, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
 
                     Spacer(modifier = Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Surface(color = TealGreen, shape = RoundedCornerShape(16.dp)) {
-                            Text(stringResource(R.string.badge_organizer_player), color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
-                        }
-                        Surface(color = PrimaryBlue, shape = RoundedCornerShape(16.dp)) {
-                            Text(stringResource(R.string.badge_gold_tier), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
-                        }
+
+                    Surface(color = TealGreen, shape = RoundedCornerShape(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.badge_organizer_player),
+                            color = DarkBlue,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
                     }
                 }
             }
@@ -138,14 +142,27 @@ fun OrganizerProfileScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
+                ProfileSectionLabel("USERNAME")
+                Spacer(modifier = Modifier.height(8.dp))
+                ProfileTextField(value = username, onValueChange = { username = it })
+
+                Spacer(modifier = Modifier.height(16.dp))
                 ProfileSectionLabel(stringResource(R.string.label_full_name))
                 Spacer(modifier = Modifier.height(8.dp))
-                ProfileTextField(value = fullName, onValueChange = { fullName = it })
+                ProfileTextField(
+                    value = fullName,
+                    onValueChange = {},
+                    readOnly = true
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 ProfileSectionLabel(stringResource(R.string.label_email_address))
                 Spacer(modifier = Modifier.height(8.dp))
-                ProfileTextField(value = email, onValueChange = { email = it })
+                ProfileTextField(
+                    value = email,
+                    onValueChange = {},
+                    readOnly = true
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 ProfileSectionLabel(stringResource(R.string.label_bio))
@@ -283,7 +300,7 @@ fun OrganizerProfileScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
-                    onClick = { onSaveChanges(fullName, email, bio) },
+                    onClick = { onSaveChanges(username, email, bio) },
                     colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth().height(56.dp)
@@ -307,18 +324,29 @@ fun OrganizerProfileScreen(
 }
 
 @Composable
-fun ProfileTextField(value: String, onValueChange: (String) -> Unit, singleLine: Boolean = true, height: androidx.compose.ui.unit.Dp = 56.dp) {
+fun ProfileTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    singleLine: Boolean = true,
+    height: androidx.compose.ui.unit.Dp = 56.dp,
+    readOnly: Boolean = false
+) {
     TextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(8.dp)),
+        readOnly = readOnly,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height)
+            .clip(RoundedCornerShape(8.dp)),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = InputBg,
             unfocusedContainerColor = InputBg,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             focusedTextColor = DarkBlue,
-            unfocusedTextColor = DarkBlue
+            unfocusedTextColor = DarkBlue,
+            cursorColor = TealGreen
         ),
         singleLine = singleLine,
         maxLines = if (singleLine) 1 else 5

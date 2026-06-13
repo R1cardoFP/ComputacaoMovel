@@ -1101,6 +1101,7 @@ fun MatchLeagueApp() {
             val authRepository = remember { AuthRepository() }
 
             var nomeUtilizador by remember { mutableStateOf("") }
+            var usernameUtilizador by remember { mutableStateOf("") }
             var emailUtilizador by remember { mutableStateOf("") }
             var bioUtilizador by remember { mutableStateOf("") }
             var anoMembro by remember { mutableStateOf("2026") }
@@ -1112,6 +1113,7 @@ fun MatchLeagueApp() {
             LaunchedEffect(Unit) {
                 authRepository.obterUtilizadorAtual().onSuccess { utilizador ->
                     nomeUtilizador = utilizador.nome
+                    usernameUtilizador = utilizador.username
                     emailUtilizador = utilizador.email
                     userId = utilizador.id
 
@@ -1134,6 +1136,7 @@ fun MatchLeagueApp() {
 
             OrganizerProfileScreen(
                 initialName = nomeUtilizador,
+                initialUsername = usernameUtilizador,
                 initialEmail = emailUtilizador,
                 initialBio = bioUtilizador,
                 memberSinceYear = anoMembro,
@@ -1146,19 +1149,20 @@ fun MatchLeagueApp() {
                         }
                     }
                 },
-                onSaveChanges = { novoNome, _, novaBio ->
+                onSaveChanges = { novoUsername, _, novaBio ->
                     scope.launch {
                         sharedPrefs.edit {
                             putString("bio_$userId", novaBio)
                         }
 
-                        authRepository.atualizarNomeEBio(novoNome, novaBio)
+                        authRepository.atualizarPerfil(novoUsername, novaBio)
 
-                        nomeUtilizador = novoNome
+                        usernameUtilizador = novoUsername
                         bioUtilizador = novaBio
                     }
                 },
                 onPlayerDashboardClick = { navController.navigate("player_stats") },
+                onChangePasswordClick = { navController.navigate("change_password") },
                 onNotificationsClick = { navController.navigate("organizador_notifications") },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
