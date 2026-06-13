@@ -124,7 +124,7 @@ fun PlayerTournamentRegistrationScreen(
                     val equipasDesporto = SupabaseClient.client.from("equipa").select {
                         filter {
                             isIn("id", idsEquipasUser)
-                            eq("id_modalidade", t.idModalidade) // FILTRO MAGICO AQUI!
+                            eq("id_modalidade", t.idModalidade)
                         }
                     }.decodeList<EquipaRegDTO>()
 
@@ -169,6 +169,8 @@ fun PlayerTournamentRegistrationScreen(
                     .padding(horizontal = 22.dp, vertical = 18.dp)
             ) {
                 torneio?.let { info ->
+                    val isFree = (info.custo ?: 0.0) <= 0.0
+
                     RegistrationTournamentHeaderCard(torneio = info)
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -187,15 +189,20 @@ fun PlayerTournamentRegistrationScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    RegistrationPaymentMethodCard(
-                        selectedPayment = selectedPayment,
-                        onPaymentSelected = { selectedPayment = it }
-                    )
+                    if (!isFree) {
+                        RegistrationPaymentMethodCard(
+                            selectedPayment = selectedPayment,
+                            onPaymentSelected = { selectedPayment = it }
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    val paymentText = if (isFree) "None (Free Entry)"
+                    else if (selectedPayment == "MB Way") "MB Way"
+                    else "$selectedPayment / Card"
 
                     RegistrationSummaryCard(
-                        payment = if (selectedPayment == "MB Way") "MB Way" else "$selectedPayment / Card",
+                        payment = paymentText,
                         equipaNome = minhaEquipa?.nome ?: "None",
                         entryFee = info.custo ?: 0.0
                     )
@@ -217,7 +224,7 @@ fun PlayerTournamentRegistrationScreen(
                                                 idTorneio = info.id,
                                                 idEquipa = minhaEquipa!!.id,
                                                 estado = "pendente",
-                                                pagamentoEstado = "pendente",
+                                                pagamentoEstado = if (isFree) "isento" else "pendente",
                                                 mensagem = "Pedido de inscrição pendente."
                                             )
                                         )
@@ -538,7 +545,7 @@ data class EquipaRegDTO(
     val id: Long,
     val nome: String,
     val divisao: String? = null,
-    @SerialName("id_modalidade") val idModalidade: Int? = null // Adicionamos a modalidade para o filtro!
+    @SerialName("id_modalidade") val idModalidade: Int? = null
 )
 
 @Serializable
