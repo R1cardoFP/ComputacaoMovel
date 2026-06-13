@@ -198,14 +198,14 @@ class OrganizerHomeRepository {
             .filter { torneio ->
                 val estado = torneio.orgStringValue("estado")?.lowercase().orEmpty()
 
-                estado == "aberto" ||
-                        estado == "em_decorrer" ||
-                        estado == "ativo"
+                estado != "cancelado" &&
+                        estado != "cancelled" &&
+                        estado != "removido"
             }
-            .sortedBy {
+            .sortedByDescending {
                 it.orgStringValue("data_inicio").orEmpty()
             }
-            .take(3)
+            .take(5)
             .map { torneio ->
                 val progresso = calcularProgressoTorneio(
                     dataInicio = torneio.orgStringValue("data_inicio"),
