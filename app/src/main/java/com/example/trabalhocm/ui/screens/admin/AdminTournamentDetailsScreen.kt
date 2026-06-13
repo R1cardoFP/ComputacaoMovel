@@ -47,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.model.AdminTournamentDetails
+import com.example.trabalhocm.data.model.AdminTournamentStanding
 import com.example.trabalhocm.data.repository.AdminTournamentRepository
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
@@ -317,12 +318,16 @@ private fun AdminTournamentDetailsContent(
 
         item {
             DetailsWhiteCard(title = stringResource(R.string.admin_tournament_details_standings)) {
-                Text(
-                    text = stringResource(R.string.admin_tournament_details_no_standings),
-                    color = TextGray,
-                    fontSize = 12.sp,
-                    lineHeight = 17.sp
-                )
+                if (details.classificacao.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.admin_tournament_details_no_standings),
+                        color = TextGray,
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp
+                    )
+                } else {
+                    StandingsTable(standings = details.classificacao)
+                }
             }
         }
 
@@ -469,6 +474,131 @@ private fun DetailInfoRow(
             fontWeight = FontWeight.Bold
         )
     }
+}
+
+@Composable
+private fun StandingsTable(
+    standings: List<AdminTournamentStanding>
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFF1F5F9), RoundedCornerShape(5.dp))
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            StandingHeaderCell(
+                text = stringResource(R.string.admin_tournament_details_pos).uppercase(),
+                modifier = Modifier.weight(0.55f)
+            )
+            StandingHeaderCell(
+                text = stringResource(R.string.admin_tournament_details_team).uppercase(),
+                modifier = Modifier.weight(2.1f)
+            )
+            StandingHeaderCell(
+                text = stringResource(R.string.admin_tournament_details_played_short).uppercase(),
+                modifier = Modifier.weight(0.55f),
+                alignEnd = true
+            )
+            StandingHeaderCell(
+                text = stringResource(R.string.admin_tournament_details_wins_short).uppercase(),
+                modifier = Modifier.weight(0.55f),
+                alignEnd = true
+            )
+            StandingHeaderCell(
+                text = stringResource(R.string.admin_tournament_details_draws_short).uppercase(),
+                modifier = Modifier.weight(0.55f),
+                alignEnd = true
+            )
+            StandingHeaderCell(
+                text = stringResource(R.string.admin_tournament_details_losses_short).uppercase(),
+                modifier = Modifier.weight(0.55f),
+                alignEnd = true
+            )
+            StandingHeaderCell(
+                text = stringResource(R.string.admin_tournament_details_points_short).uppercase(),
+                modifier = Modifier.weight(0.65f),
+                alignEnd = true
+            )
+        }
+
+        standings.forEach { standing ->
+            StandingRow(standing = standing)
+        }
+    }
+}
+
+@Composable
+private fun StandingHeaderCell(
+    text: String,
+    modifier: Modifier = Modifier,
+    alignEnd: Boolean = false
+) {
+    Text(
+        text = text,
+        color = TextGray,
+        fontSize = 8.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier,
+        maxLines = 1,
+        textAlign = if (alignEnd) androidx.compose.ui.text.style.TextAlign.End else androidx.compose.ui.text.style.TextAlign.Start
+    )
+}
+
+@Composable
+private fun StandingRow(
+    standing: AdminTournamentStanding
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = standing.posicao.takeIf { it > 0 }?.toString() ?: "-",
+            color = BrandBlue,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.55f)
+        )
+
+        Text(
+            text = standing.equipa,
+            color = BrandBlue,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(2.1f),
+            maxLines = 1
+        )
+
+        StandingNumber(value = standing.jogos, modifier = Modifier.weight(0.55f))
+        StandingNumber(value = standing.vitorias, modifier = Modifier.weight(0.55f))
+        StandingNumber(value = standing.empates, modifier = Modifier.weight(0.55f))
+        StandingNumber(value = standing.derrotas, modifier = Modifier.weight(0.55f))
+        StandingNumber(
+            value = standing.pontos,
+            modifier = Modifier.weight(0.65f),
+            bold = true
+        )
+    }
+}
+
+@Composable
+private fun StandingNumber(
+    value: Int,
+    modifier: Modifier = Modifier,
+    bold: Boolean = false
+) {
+    Text(
+        text = value.toString(),
+        color = BrandBlue,
+        fontSize = 12.sp,
+        fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
+        modifier = modifier,
+        textAlign = androidx.compose.ui.text.style.TextAlign.End
+    )
 }
 
 @Composable
