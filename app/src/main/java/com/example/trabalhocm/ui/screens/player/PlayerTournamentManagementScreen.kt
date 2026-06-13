@@ -56,6 +56,10 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.Icon
 
 @Composable
 fun PlayerTournamentManagementScreen(
@@ -137,7 +141,9 @@ fun PlayerTournamentManagementScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        PlayerTournamentTopBar()
+        PlayerTournamentTopBar(
+            onNotificationsClick = onNotificationsClick
+        )
 
         Column(
             modifier = Modifier
@@ -286,7 +292,9 @@ fun PlayerTournamentManagementScreen(
 }
 
 @Composable
-fun PlayerTournamentTopBar() {
+fun PlayerTournamentTopBar(
+    onNotificationsClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -303,11 +311,13 @@ fun PlayerTournamentTopBar() {
             fontWeight = FontWeight.Bold
         )
 
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = Icons.Outlined.Notifications,
+            contentDescription = "Notifications",
+            tint = BrandWhite,
+            modifier = Modifier
+                .size(26.dp)
+                .clickable { onNotificationsClick() }
         )
     }
 }
