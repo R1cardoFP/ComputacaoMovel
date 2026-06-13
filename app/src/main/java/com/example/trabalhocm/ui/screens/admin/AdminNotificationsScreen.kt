@@ -456,7 +456,7 @@ private fun AdminNotificationCard(
                         Text(
                             text = notification.timeText,
                             color = TextGray,
-                            fontSize = 8.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )

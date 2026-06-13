@@ -31,6 +31,7 @@ class AdminProfileRepository {
 
             AdminProfile(
                 id = perfil.id,
+                username = perfil.username.orEmpty(),
                 nome = perfil.nome,
                 email = perfil.email,
                 bio = dados["bio"]?.jsonPrimitive?.content ?: "",
@@ -41,8 +42,7 @@ class AdminProfileRepository {
     }
 
     suspend fun atualizarPerfil(
-        nome: String,
-        email: String,
+        username: String,
         bio: String,
         language: String
     ): Result<Unit> {
@@ -56,8 +56,6 @@ class AdminProfileRepository {
             }
 
             val update = AdminProfileUpdate(
-                nome = nome,
-                email = email,
                 dadosPessoais = dadosPessoais
             )
 
@@ -79,6 +77,7 @@ class AdminProfileRepository {
 
 data class AdminProfile(
     val id: String,
+    val username: String,
     val nome: String,
     val email: String,
     val bio: String,
@@ -89,6 +88,7 @@ data class AdminProfile(
 @Serializable
 private data class AdminProfileDto(
     val id: String,
+    val username: String? = null,
     val nome: String,
     val email: String,
 
@@ -101,9 +101,6 @@ private data class AdminProfileDto(
 
 @Serializable
 private data class AdminProfileUpdate(
-    val nome: String,
-    val email: String,
-
     @SerialName("dados_pessoais")
     val dadosPessoais: JsonObject
 )

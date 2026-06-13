@@ -27,9 +27,9 @@ class AdminTournamentRepository {
                 .select()
                 .decodeList<OrganizadorArquivoAdminDto>()
 
-            val inscricoesEquipas = client.from("torneio_equipa")
+            val inscricoesEquipas = client.from("inscricao")
                 .select()
-                .decodeList<TorneioEquipaResumoDto>()
+                .decodeList<InscricaoTorneioResumoDto>()
 
             torneios.map { torneio ->
                 val modalidadeNome = modalidades
@@ -43,11 +43,7 @@ class AdminTournamentRepository {
                     ?: "Unknown organizer"
 
                 val teamsCount = inscricoesEquipas.count { inscricao ->
-                    inscricao.idTorneio == torneio.id &&
-                            (
-                                    inscricao.estado.equals("pendente", ignoreCase = true) ||
-                                            inscricao.estado.equals("aprovada", ignoreCase = true)
-                                    )
+                    inscricao.idTorneio == torneio.id
                 }
 
                 AdminTournament(
@@ -102,6 +98,51 @@ class AdminTournamentRepository {
                     .nome
             } ?: "Unknown organizer"
 
+            val inscricoesEquipas = client.from("inscricao")
+                .select {
+                    filter {
+                        eq("id_torneio", id)
+                    }
+                }
+                .decodeList<InscricaoTorneioResumoDto>()
+
+            val classificacoes = client.from("classificacao")
+                .select {
+                    filter {
+                        eq("id_torneio", id)
+                    }
+                }
+                .decodeList<ClassificacaoTorneioDto>()
+
+            val equipas = client.from("equipa")
+                .select()
+                .decodeList<EquipaClassificacaoDto>()
+
+            val classificacao = classificacoes
+                .map { linha ->
+                    val nomeEquipa = equipas
+                        .firstOrNull { equipa -> equipa.id == linha.idEquipa }
+                        ?.nome
+                        ?: "Equipa ${linha.idEquipa}"
+
+                    com.example.trabalhocm.data.model.AdminTournamentStanding(
+                        posicao = linha.posicao ?: 0,
+                        equipa = nomeEquipa,
+                        jogos = linha.vitorias + linha.empates + linha.derrotas,
+                        vitorias = linha.vitorias,
+                        empates = linha.empates,
+                        derrotas = linha.derrotas,
+                        pontos = linha.pontos
+                    )
+                }
+                .sortedWith(
+                    compareBy<com.example.trabalhocm.data.model.AdminTournamentStanding> { standing ->
+                        if (standing.posicao <= 0) Int.MAX_VALUE else standing.posicao
+                    }.thenByDescending { standing -> standing.pontos }
+                )
+
+            val totalEquipas = maxOf(inscricoesEquipas.size, classificacao.size)
+
             AdminTournamentDetails(
                 id = torneio.id.toString(),
                 nome = torneio.nome,
@@ -116,7 +157,8 @@ class AdminTournamentRepository {
                 local = torneio.local ?: "Local não definido",
                 premio = formatPrize(torneio.premio),
                 season = formatSeason(torneio.dataInicio, torneio.dataFim),
-                teamsCount = 0
+                teamsCount = totalEquipas,
+                classificacao = classificacao
             )
         }
     }
@@ -438,7 +480,19 @@ private data class OrganizadorArquivoAdminDto(
 )
 
 @Serializable
-private data class TorneioEquipaResumoDto(
+private data class InscricaoTorneioResumoDto(
+    @SerialName("id_inscricao")
+    val idInscricao: Long? = null,
+
+    @SerialName("id_torneio")
+    val idTorneio: Int,
+
+    @SerialName("id_equipa")
+    val idEquipa: Int
+)
+
+@Serializable
+private data class ClassificacaoTorneioDto(
     val id: Long? = null,
 
     @SerialName("id_torneio")
@@ -447,5 +501,15 @@ private data class TorneioEquipaResumoDto(
     @SerialName("id_equipa")
     val idEquipa: Int,
 
-    val estado: String = ""
+    val pontos: Int = 0,
+    val vitorias: Int = 0,
+    val empates: Int = 0,
+    val derrotas: Int = 0,
+    val posicao: Int? = null
+)
+
+@Serializable
+private data class EquipaClassificacaoDto(
+    val id: Int,
+    val nome: String
 )

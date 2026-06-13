@@ -1,7 +1,6 @@
 package com.example.trabalhocm.ui.screens.admin
 
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,6 +31,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.core.os.LocaleListCompat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,12 +44,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.AdminProfileRepository
 import com.example.trabalhocm.ui.theme.AppIcons
 import kotlinx.coroutines.launch
@@ -59,6 +61,7 @@ private val AdminGreen = Color(0xFF008D7D)
 private val AdminBackground = Color(0xFFF4F5FA)
 private val TextMuted = Color(0xFF6F7A8A)
 private val CardWhite = Color.White
+private val ErrorRed = Color(0xFFC53030)
 
 @Composable
 fun AdminProfileScreen(
@@ -76,6 +79,13 @@ fun AdminProfileScreen(
     val repository = remember { AdminProfileRepository() }
     val scope = rememberCoroutineScope()
 
+    val defaultBioText = stringResource(R.string.admin_profile_default_bio)
+    val errorLoadingProfileText = stringResource(R.string.admin_profile_error_loading)
+    val usernameEmptyErrorText = stringResource(R.string.admin_profile_username_empty_error)
+    val saveSuccessText = stringResource(R.string.admin_profile_save_success)
+    val saveErrorText = stringResource(R.string.admin_profile_save_error)
+
+    var username by remember { mutableStateOf("") }
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
@@ -84,19 +94,20 @@ fun AdminProfileScreen(
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
     var mensagem by remember { mutableStateOf("") }
+    var mensagemIsError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         repository.carregarPerfilAtual()
             .onSuccess { perfil ->
+                username = perfil.username
                 nome = perfil.nome
                 email = perfil.email
-                bio = perfil.bio.ifBlank {
-                    "Platform administrator. Overseeing global league operations and user management."
-                }
+                bio = perfil.bio.ifBlank { defaultBioText }
                 language = perfil.language
             }
             .onFailure { erro ->
-                mensagem = "Erro ao carregar perfil: ${erro.message}"
+                mensagem = "$errorLoadingProfileText: ${erro.message}"
+                mensagemIsError = true
             }
 
         isLoading = false
@@ -106,7 +117,7 @@ fun AdminProfileScreen(
         containerColor = AdminBackground,
         topBar = {
             AdminProfileTopBar(
-                title = "Profile",
+                title = stringResource(R.string.admin_profile_title),
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )
@@ -150,29 +161,42 @@ fun AdminProfileScreen(
 
                 item {
                     ProfileSectionCard(
-                        title = "Account Settings",
+                        title = stringResource(R.string.admin_profile_account_settings),
                         icon = AppIcons.Profile
                     ) {
                         ProfileInput(
-                            label = "FULL NAME",
-                            value = nome,
-                            onValueChange = { nome = it }
+                            label = stringResource(R.string.admin_profile_username).uppercase(),
+                            value = username,
+                            onValueChange = { username = it },
+                            enabled = true,
+                            readOnly = false
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
 
                         ProfileInput(
-                            label = "EMAIL ADDRESS",
+                            label = stringResource(R.string.admin_profile_full_name).uppercase(),
+                            value = nome,
+                            onValueChange = {},
+                            enabled = true,
+                            readOnly = true
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        ProfileInput(
+                            label = stringResource(R.string.admin_profile_email_address).uppercase(),
                             value = email,
                             onValueChange = {},
                             enabled = true,
+                            readOnly = true,
                             keyboardType = KeyboardType.Email
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
 
                         ProfileInput(
-                            label = "BIO",
+                            label = stringResource(R.string.admin_profile_bio).uppercase(),
                             value = bio,
                             onValueChange = { bio = it },
                             singleLine = false
@@ -182,11 +206,11 @@ fun AdminProfileScreen(
 
                 item {
                     ProfileSectionCard(
-                        title = "Preferences",
+                        title = stringResource(R.string.admin_profile_preferences),
                         icon = AppIcons.Settings
                     ) {
                         Text(
-                            text = "LANGUAGE",
+                            text = stringResource(R.string.admin_profile_language).uppercase(),
                             color = TextMuted,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
@@ -203,7 +227,7 @@ fun AdminProfileScreen(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             LanguageButton(
-                                text = "Português",
+                                text = stringResource(R.string.admin_profile_language_portuguese),
                                 selected = isPortugues,
                                 modifier = Modifier.weight(1f),
                                 onClick = {
@@ -215,7 +239,7 @@ fun AdminProfileScreen(
                             )
 
                             LanguageButton(
-                                text = "English",
+                                text = stringResource(R.string.admin_profile_language_english),
                                 selected = !isPortugues,
                                 modifier = Modifier.weight(1f),
                                 onClick = {
@@ -231,18 +255,16 @@ fun AdminProfileScreen(
 
                 item {
                     ProfileSectionCard(
-                        title = "Active Dashboards",
+                        title = stringResource(R.string.admin_profile_active_dashboards),
                         icon = AppIcons.Home
                     ) {
-                        DashboardOption(
-                            onClick = onDashboardClick
-                        )
+                        DashboardOption()
                     }
                 }
 
                 item {
                     ProfileSectionCard(
-                        title = "Security",
+                        title = stringResource(R.string.admin_profile_security),
                         icon = AppIcons.Security
                     ) {
                         Row(
@@ -255,7 +277,7 @@ fun AdminProfileScreen(
                         ) {
                             Icon(
                                 imageVector = AppIcons.Edit,
-                                contentDescription = "Change password",
+                                contentDescription = stringResource(R.string.admin_profile_change_password),
                                 tint = Color(0xFF0057C8),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -263,7 +285,7 @@ fun AdminProfileScreen(
                             Spacer(modifier = Modifier.size(6.dp))
 
                             Text(
-                                text = "CHANGE PASSWORD",
+                                text = stringResource(R.string.admin_profile_change_password).uppercase(),
                                 color = Color(0xFF0057C8),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -278,24 +300,27 @@ fun AdminProfileScreen(
                             scope.launch {
                                 isSaving = true
                                 mensagem = ""
+                                mensagemIsError = false
 
-                                if (nome.isBlank() || email.isBlank()) {
-                                    mensagem = "O nome e o email não podem estar vazios."
+                                if (username.isBlank()) {
+                                    mensagem = usernameEmptyErrorText
+                                    mensagemIsError = true
                                     isSaving = false
                                     return@launch
                                 }
 
                                 repository.atualizarPerfil(
-                                    nome = nome.trim(),
-                                    email = email.trim(),
+                                    username = username.trim(),
                                     bio = bio,
                                     language = language
                                 )
                                     .onSuccess {
-                                        mensagem = "Perfil atualizado com sucesso."
+                                        mensagem = saveSuccessText
+                                        mensagemIsError = false
                                     }
                                     .onFailure { erro ->
-                                        mensagem = "Erro ao guardar: ${erro.message}"
+                                        mensagem = "$saveErrorText: ${erro.message}"
+                                        mensagemIsError = true
                                     }
 
                                 isSaving = false
@@ -319,7 +344,7 @@ fun AdminProfileScreen(
                             )
                         } else {
                             Text(
-                                text = "SAVE CHANGES",
+                                text = stringResource(R.string.admin_profile_save_changes).uppercase(),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.4.sp
@@ -342,11 +367,11 @@ fun AdminProfileScreen(
                         shape = RoundedCornerShape(2.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.White,
-                            contentColor = Color(0xFFC53030)
+                            contentColor = ErrorRed
                         )
                     ) {
                         Text(
-                            text = "LOG OUT",
+                            text = stringResource(R.string.admin_profile_logout).uppercase(),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.4.sp
@@ -357,7 +382,7 @@ fun AdminProfileScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = mensagem,
-                            color = if (mensagem.startsWith("Erro")) Color(0xFFC53030) else AdminGreen,
+                            color = if (mensagemIsError) ErrorRed else AdminGreen,
                             fontSize = 12.sp
                         )
                     }
@@ -390,7 +415,7 @@ private fun AdminProfileHeader(nome: String) {
             ) {
                 Icon(
                     imageVector = AppIcons.Profile,
-                    contentDescription = "Perfil do administrador",
+                    contentDescription = stringResource(R.string.admin_profile_admin_content_description),
                     tint = AdminBlue,
                     modifier = Modifier.size(42.dp)
                 )
@@ -399,7 +424,7 @@ private fun AdminProfileHeader(nome: String) {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = nome.ifBlank { "Administrador" },
+                text = nome.ifBlank { stringResource(R.string.admin_profile_admin_default_name) },
                 color = Color.White,
                 fontSize = 23.sp,
                 fontWeight = FontWeight.Normal
@@ -414,7 +439,7 @@ private fun AdminProfileHeader(nome: String) {
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "ADMINISTRATOR",
+                    text = stringResource(R.string.admin_profile_admin_role).uppercase(),
                     color = Color.White,
                     fontSize = 8.sp,
                     fontWeight = FontWeight.Bold
@@ -439,30 +464,16 @@ private fun AdminProfileTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onBackClick() }
-        ) {
-            Icon(
-                imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-
-            Spacer(modifier = Modifier.size(8.dp))
-
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier
                 .size(23.dp)
@@ -528,6 +539,7 @@ private fun ProfileInput(
     value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean = true,
+    readOnly: Boolean = false,
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
@@ -546,6 +558,7 @@ private fun ProfileInput(
             value = value,
             onValueChange = onValueChange,
             enabled = enabled,
+            readOnly = readOnly,
             singleLine = singleLine,
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType
@@ -620,17 +633,12 @@ private fun LanguageButton(
 }
 
 @Composable
-private fun DashboardOption(
-    onClick: () -> Unit = {}
-) {
+private fun DashboardOption() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
             .background(Color(0xFFEAF3FF), RoundedCornerShape(3.dp))
-            .clickable {
-                onClick()
-            }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -642,7 +650,7 @@ private fun DashboardOption(
         ) {
             Icon(
                 imageVector = AppIcons.Home,
-                contentDescription = "Dashboard admin",
+                contentDescription = stringResource(R.string.admin_profile_dashboard_content_description),
                 tint = Color.White,
                 modifier = Modifier.size(19.dp)
             )
@@ -654,25 +662,18 @@ private fun DashboardOption(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = "Admin",
+                text = stringResource(R.string.admin_profile_dashboard_title),
                 color = AdminBlue,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "Global league management",
+                text = stringResource(R.string.admin_profile_dashboard_desc),
                 color = TextMuted,
                 fontSize = 10.sp
             )
         }
-
-        Icon(
-            imageVector = AppIcons.ChevronRight,
-            contentDescription = "Abrir dashboard",
-            tint = AdminBlue,
-            modifier = Modifier.size(22.dp)
-        )
     }
 }
 
@@ -694,11 +695,11 @@ private fun AdminProfileBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AdminProfileBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        AdminProfileBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        AdminProfileBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        AdminProfileBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        AdminProfileBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        AdminProfileBottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        AdminProfileBottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        AdminProfileBottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        AdminProfileBottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        AdminProfileBottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 
