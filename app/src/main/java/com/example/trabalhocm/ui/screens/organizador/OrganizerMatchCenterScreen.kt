@@ -44,7 +44,7 @@ private val WarningYellow = Color(0xFFF59E0B)
 @Composable
 fun OrganizerMatchCenterScreen(
     onLiveMatchClick: () -> Unit = {},
-    onCasualMatchClick: () -> Unit = {},
+    onCasualMatchClick: (Long) -> Unit = {},
     onCalendarClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     onCreateCasualMatchClick: () -> Unit = {},
@@ -667,7 +667,7 @@ fun PickupMatchesFromDatabaseSection(
     peladinhas: List<PeladinhaComInfo>,
     isLoading: Boolean,
     errorMessage: String,
-    onCasualMatchClick: () -> Unit
+    onCasualMatchClick: (Long) -> Unit
 ) {
     val suffixCasualMatch = stringResource(R.string.suffix_casual_match)
     val dateTbd = stringResource(R.string.date_tbd)
@@ -751,8 +751,8 @@ fun PickupMatchesFromDatabaseSection(
                     timeLocation = obterDataHoraLocalPeladinha(info, dateTbd, locTbd),
                     playersJoined = info.jogadoresInscritos,
                     maxPlayers = maxJogadores,
-                    onViewDetailsClick = onCasualMatchClick,
-                    onActionClick = onCasualMatchClick,
+                    onViewDetailsClick = { onCasualMatchClick(info.peladinha.id) },
+                    onActionClick = { onCasualMatchClick(info.peladinha.id) },
                     actionText = when {
                         inviteOnly -> btnInviteOnlyLocked
                         status == "FULL" -> btnFull

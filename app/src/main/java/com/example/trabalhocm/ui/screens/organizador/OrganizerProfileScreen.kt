@@ -40,6 +40,7 @@ fun OrganizerProfileScreen(
     onLogoutClick: () -> Unit = {},
     onPlayerDashboardClick: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onSaveChanges: (String, String, String) -> Unit = { _, _, _ -> },
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -56,8 +57,7 @@ fun OrganizerProfileScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_profile), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    // Sem o trevo - Apenas o Sino (mesmo não navegando, fica esteticamente limpo e pronto para o futuro)
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onNotificationsClick) {
                         Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_notifications), tint = Color.White)
                     }
                 },
