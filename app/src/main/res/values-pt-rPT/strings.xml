@@ -746,7 +746,7 @@
 
     <string name="admin_profile_preferences">Preferências</string>
     <string name="admin_profile_language">Idioma</string>
-    <string name="admin_profile_language_english">Inglês (EUA)</string>
+    <string name="admin_profile_language_english">Inglês (US)</string>
     <string name="admin_profile_language_portuguese">Português (PT)</string>
 
     <string name="admin_profile_active_dashboards">Painéis Ativos</string>
@@ -1236,6 +1236,16 @@
     <string name="admin_archive_prize">Prémio</string>
     <string name="admin_archive_season">Época</string>
 
+    <string name="admin_profile_full_name">Nome Completo</string>
+    <string name="admin_profile_username_empty_error">O nome de utilizador não pode estar vazio.</string>
+
+    <string name="admin_tournament_details_pos">POS</string>
+    <string name="admin_tournament_details_team">EQUIPA</string>
+    <string name="admin_tournament_details_played_short">J</string>
+    <string name="admin_tournament_details_wins_short">V</string>
+    <string name="admin_tournament_details_draws_short">E</string>
+    <string name="admin_tournament_details_losses_short">D</string>
+    <string name="admin_tournament_details_points_short">PTS</string>
 
     <!-- ============================ PLAYER ============================ -->
 

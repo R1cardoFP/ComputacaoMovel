@@ -1231,6 +1231,16 @@
     <string name="admin_archive_prize">Prize</string>
     <string name="admin_archive_season">Season</string>
 
+    <string name="admin_profile_full_name">Full Name</string>
+    <string name="admin_profile_username_empty_error">Username cannot be empty.</string>
+
+    <string name="admin_tournament_details_pos">POS</string>
+    <string name="admin_tournament_details_team">TEAM</string>
+    <string name="admin_tournament_details_played_short">P</string>
+    <string name="admin_tournament_details_wins_short">W</string>
+    <string name="admin_tournament_details_draws_short">D</string>
+    <string name="admin_tournament_details_losses_short">L</string>
+    <string name="admin_tournament_details_points_short">PTS</string>
 
     <!-- ============================ PLAYER ============================ -->
 

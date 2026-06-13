@@ -300,20 +300,18 @@ fun PlayerTeamsTopBar(onNotificationsClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
+            .height(78.dp)
             .background(BrandBlue)
-            .padding(horizontal = 24.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 28.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = stringResource(R.string.player_teams_topbar_title),
             color = BrandWhite,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.weight(1f))
 
         Icon(
             imageVector = Icons.Outlined.Notifications,

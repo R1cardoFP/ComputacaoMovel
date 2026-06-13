@@ -20,7 +20,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -34,7 +34,7 @@ object AppIcons {
     // Navegação principal
     val Home = Icons.Filled.Home
     val Search = Icons.Filled.Search
-    val Notifications = Icons.Filled.Notifications
+    val Notifications = Icons.Outlined.Notifications
     val Profile = Icons.Filled.Person
     val Settings = Icons.Filled.Settings
 

@@ -68,8 +68,9 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onLoginSuccess: () -> Unit = {},
     onCreateAccount: () -> Unit = {},
-    onForgotPassword: () -> Unit = {}
-) {
+    onForgotPassword: () -> Unit = {},
+    onSuspendedAccount: () -> Unit = {}
+){
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
 
@@ -231,7 +232,16 @@ fun LoginScreen(
                                     onLoginSuccess()
                                 }
                                 .onFailure { erro ->
-                                    mensagem = "Login error: ${erro.message}"
+                                    val erroTexto = erro.message.orEmpty()
+
+                                    if (
+                                        erroTexto.contains("suspended", ignoreCase = true) ||
+                                        erroTexto.contains("suspensa", ignoreCase = true)
+                                    ) {
+                                        onSuspendedAccount()
+                                    } else {
+                                        mensagem = "Login error: ${erro.message}"
+                                    }
                                 }
 
                             isLoading = false

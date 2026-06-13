@@ -14,5 +14,16 @@ data class AdminTournamentDetails(
     val local: String,
     val premio: String,
     val season: String,
-    val teamsCount: Int
+    val teamsCount: Int,
+    val classificacao: List<AdminTournamentStanding> = emptyList()
+)
+
+data class AdminTournamentStanding(
+    val posicao: Int,
+    val equipa: String,
+    val jogos: Int,
+    val vitorias: Int,
+    val empates: Int,
+    val derrotas: Int,
+    val pontos: Int
 )

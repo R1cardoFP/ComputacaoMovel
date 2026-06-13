@@ -123,23 +123,26 @@ fun PlayerProfileScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .height(78.dp)
                 .background(BrandBlue)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 28.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = stringResource(R.string.player_common_profile),
                 color = BrandWhite,
-                fontSize = 18.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
+
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = stringResource(R.string.player_common_notifications),
                 tint = BrandWhite,
-                modifier = Modifier.clickable { onNotificationsClick() }
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable { onNotificationsClick() }
             )
         }
 

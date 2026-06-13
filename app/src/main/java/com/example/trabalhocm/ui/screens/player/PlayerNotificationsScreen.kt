@@ -56,6 +56,9 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.OffsetDateTime
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.Icon
 
 @Composable
 fun PlayerNotificationsScreen(
@@ -399,14 +402,39 @@ fun calcularTempoAtras(dataCriacao: String): String {
 @Composable
 fun NotificationsTopBar(onBackClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().height(72.dp).background(BrandBlue).padding(horizontal = 24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(BrandBlue)
+            .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("←", color = BrandWhite, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onBackClick() })
+        Text(
+            text = "←",
+            color = BrandWhite,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.clickable { onBackClick() }
+        )
+
         Spacer(modifier = Modifier.width(14.dp))
-        Text("Notifications", color = BrandWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+
+        Text(
+            text = "Notifications",
+            color = BrandWhite,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.3.sp
+        )
+
         Spacer(modifier = Modifier.weight(1f))
-        Text("♧", color = BrandWhite, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+
+        Icon(
+            imageVector = Icons.Outlined.Notifications,
+            contentDescription = "Notifications",
+            tint = BrandWhite,
+            modifier = Modifier.size(26.dp)
+        )
     }
 }
 
@@ -531,7 +559,12 @@ fun NotificationsMessageCard(text: String, isError: Boolean) {
 @Composable
 fun EndOfFeed() {
     Column(modifier = Modifier.fillMaxWidth().padding(top = 28.dp, bottom = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("♧", color = Color(0xFF9EA4B3), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Icon(
+            imageVector = Icons.Outlined.Notifications,
+            contentDescription = "End of feed",
+            tint = Color(0xFF9EA4B3),
+            modifier = Modifier.size(28.dp)
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text("END OF FEED", color = Color(0xFF9EA4B3), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
     }
