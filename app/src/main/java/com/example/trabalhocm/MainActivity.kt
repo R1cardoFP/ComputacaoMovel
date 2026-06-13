@@ -36,6 +36,7 @@ import androidx.navigation.navArgument
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.ui.screens.BrowseTeamsScreen
 import com.example.trabalhocm.ui.screens.CreateTeamScreen
+import com.example.trabalhocm.ui.screens.MatchesCalendarScreen
 import com.example.trabalhocm.ui.screens.TeamManagementScreen
 import com.example.trabalhocm.ui.screens.OfflineScreen
 import com.example.trabalhocm.ui.screens.admin.AdminCasualMatchDetailsScreen
@@ -1087,7 +1088,7 @@ fun MatchLeagueApp() {
                             putString("bio_$userId", novaBio)
                         }
 
-                        authRepository.atualizarPerfil(novoNome, novaBio)
+                        authRepository.atualizarNomeEBio(novoNome, novaBio)
 
                         nomeUtilizador = novoNome
                         bioUtilizador = novaBio
@@ -1173,12 +1174,20 @@ fun MatchLeagueApp() {
             OrganizerMatchCenterScreen(
                 onLiveMatchClick = { navController.navigate("organizador_live_match") },
                 onHistoryClick = { navController.navigate("organizador_matches") },
+                onCalendarClick = { navController.navigate("organizador_matches_calendar") },
                 onHomeClick = { navController.navigate("home") },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { },
                 onTeamsClick = { navController.navigate("teams") },
                 onProfileClick = { navController.navigate("organizador_profile") },
                 onCreateCasualMatchClick = { navController.navigate("organizador_create_casual") }
+            )
+        }
+
+        composable("organizador_matches_calendar") {
+            MatchesCalendarScreen(
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") }
             )
         }
 

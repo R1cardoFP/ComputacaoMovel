@@ -1,0 +1,93 @@
+package com.example.trabalhocm.ui.screens.organizador
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.trabalhocm.data.remote.SupabaseClient
+import com.example.trabalhocm.data.repository.EquipaRepository
+import com.example.trabalhocm.data.repository.JogoRepository
+import com.example.trabalhocm.data.repository.TorneioRepository
+import io.github.jan.supabase.auth.auth
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+
+data class CalendarGame(
+    val dia: Int,
+    val hora: String,
+    val idModalidade: Long,
+    val team1: String,
+    val team2: String,
+    val score: String,
+    val estado: String,
+    val local: String,
+    val isLive: Boolean
+)
+
+class OrganizerCalendarViewModel : ViewModel() {
+    private val jogoRepository = JogoRepository()
+    private val torneioRepository = TorneioRepository()
+    private val equipaRepository = EquipaRepository()
+
+    var jogos by mutableStateOf<List<CalendarGame>>(emptyList())
+    var isLoading by mutableStateOf(true)
+
+    init {
+        carregar()
+    }
+
+    fun carregar() {
+        viewModelScope.launch {
+            isLoading = true
+            val userId = SupabaseClient.client.auth.currentUserOrNull()?.id
+            val hoje = LocalDate.now()
+
+            val torneios = torneioRepository.listarTorneios().getOrNull().orEmpty()
+            val meusTorneios = torneios.filter { it.idOrganizador == userId }
+            val idsMeusTorneios = meusTorneios.map { it.id }.toSet()
+            val modalidadePorTorneio = meusTorneios.associate { it.id to it.idModalidade }
+
+            val jogosDb = jogoRepository.listarJogos().getOrNull().orEmpty()
+            val jogoEquipas = jogoRepository.listarJogoEquipas().getOrNull().orEmpty()
+            val equipas = equipaRepository.listarTodasEquipas().getOrNull().orEmpty()
+
+            val equipasPorId = equipas.associateBy { it.id }
+            val jePorJogo = jogoEquipas.groupBy { it.idJogo }
+
+            jogos = jogosDb
+                .filter { it.idTorneio in idsMeusTorneios }
+                .mapNotNull { jogo ->
+                    val data = runCatching { LocalDate.parse(jogo.data.take(10)) }.getOrNull()
+                        ?: return@mapNotNull null
+
+                    // Apenas jogos do mês atual (evita colisões de dia entre meses)
+                    if (data.month != hoje.month || data.year != hoje.year) {
+                        return@mapNotNull null
+                    }
+
+                    val equipasDoJogo = jePorJogo[jogo.id].orEmpty()
+                    val casa = equipasDoJogo.firstOrNull { it.papelEquipa == "casa" } ?: return@mapNotNull null
+                    val fora = equipasDoJogo.firstOrNull { it.papelEquipa == "fora" } ?: return@mapNotNull null
+
+                    val isLive = jogo.estadoJogo == "em_direto"
+                    val score = if (jogo.estadoJogo == "agendado") "VS"
+                    else "${casa.pontosMarcados} - ${fora.pontosMarcados}"
+
+                    CalendarGame(
+                        dia = data.dayOfMonth,
+                        hora = jogo.hora.take(5),
+                        idModalidade = modalidadePorTorneio[jogo.idTorneio] ?: 0L,
+                        team1 = equipasPorId[casa.idEquipa]?.nome ?: "TBD",
+                        team2 = equipasPorId[fora.idEquipa]?.nome ?: "TBD",
+                        score = score,
+                        estado = jogo.estadoJogo,
+                        local = jogo.local ?: "",
+                        isLive = isLive
+                    )
+                }
+
+            isLoading = false
+        }
+    }
+}

@@ -217,6 +217,26 @@ class AuthRepository {
         }
     }
 
+    /** Atualiza o nome (coluna `nome`) e a bio — usado pelo perfil de organizador. */
+    suspend fun atualizarNomeEBio(nome: String, bio: String): Result<Unit> {
+        return runCatching {
+            val userId = client.auth.currentUserOrNull()?.id
+                ?: throw Exception("User not authenticated.")
+
+            client.from("utilizador")
+                .update(
+                    AtualizarNomeRequest(
+                        nome = nome,
+                        bio = bio
+                    )
+                ) {
+                    filter {
+                        eq("id", userId)
+                    }
+                }
+        }
+    }
+
     suspend fun atualizarFotoPerfil(imageBytes: ByteArray): Result<String> {
         return runCatching {
             val userId = client.auth.currentUserOrNull()?.id
@@ -432,6 +452,12 @@ private data class AtualizarUltimoLogin(
 @Serializable
 private data class AtualizarPerfilRequest(
     val username: String,
+    val bio: String
+)
+
+@Serializable
+private data class AtualizarNomeRequest(
+    val nome: String,
     val bio: String
 )
 
