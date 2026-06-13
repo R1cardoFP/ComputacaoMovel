@@ -171,11 +171,10 @@ class PlayerHomeRepository {
         equipasPorId: Map<Long, JsonObject>,
         torneiosPorId: Map<Long, JsonObject>
     ): PlayerHomeLiveMatch? {
-        // Agora procura qualquer variação de "live" ou "em_direto"
-        val jogo = jogos.firstOrNull {
-            val estado = it.homeStringValue("estado_jogo")?.lowercase()
-            estado == "em_direto" || estado == "live" || estado == "em_decorrer" || estado == "a_decorrer"
-        } ?: return null
+        // Considera "live" um jogo marcado em_direto OU cuja hora de início já passou
+        // e ainda está dentro da duração (~90 min).
+        val agora = java.time.LocalDateTime.now()
+        val jogo = jogos.firstOrNull { homeJogoEstaLive(it, agora) } ?: return null
 
         val idJogo = jogo.homeLongValue("id")
         val equipasDoJogo = jogoEquipasPorJogo[idJogo].orEmpty()
@@ -204,8 +203,8 @@ class PlayerHomeRepository {
         val pontosC = equipaCasaLinha.homeIntValue("pontos_marcados").takeIf { it > 0 } ?: equipaCasaLinha.homeIntValue("pontos").takeIf { it > 0 } ?: equipaCasaLinha.homeIntValue("golos")
         val pontosF = equipaForaLinha.homeIntValue("pontos_marcados").takeIf { it > 0 } ?: equipaForaLinha.homeIntValue("pontos").takeIf { it > 0 } ?: equipaForaLinha.homeIntValue("golos")
 
-        // Lê o minuto real da BD, ou usa 45 como fallback dinâmico
-        val minutoBD = jogo.homeIntValue("minuto_atual").takeIf { it > 0 } ?: jogo.homeIntValue("minuto").takeIf { it > 0 } ?: 45
+        // Lê o minuto real da BD, ou calcula-o a partir da hora de início do jogo
+        val minutoBD = jogo.homeIntValue("minuto_atual").takeIf { it > 0 } ?: jogo.homeIntValue("minuto").takeIf { it > 0 } ?: homeCalcularMinutoLive(jogo, agora)
 
         return PlayerHomeLiveMatch(
             idJogo = idJogo,
@@ -262,10 +261,13 @@ class PlayerHomeRepository {
         jogoEquipasPorJogo: Map<Long, List<JsonObject>>,
         equipasPorId: Map<Long, JsonObject>
     ): List<PlayerHomeFixture> {
+        val agora = java.time.LocalDateTime.now()
         return jogos
             .filter { jogo ->
                 val estado = jogo.homeStringValue("estado_jogo")?.lowercase()
-                estado == "agendado" || estado == "pendente" || estado == "scheduled"
+                val agendado = estado == "agendado" || estado == "pendente" || estado == "scheduled"
+                // Um jogo que já está a decorrer (live por tempo) não deve aparecer em "próximos"
+                agendado && !homeJogoEstaLive(jogo, agora)
             }
             .sortedWith(
                 compareBy<JsonObject> {
@@ -418,4 +420,27 @@ private fun homeParseTime(value: String?): LocalTime? {
     return runCatching {
         LocalTime.parse(value?.take(5).orEmpty())
     }.getOrNull()
+}
+
+private val HOME_ESTADOS_FINAIS = setOf("terminado", "cancelado", "concluido", "finalizado", "adiado")
+
+private fun homeJogoInicio(jogo: JsonObject): java.time.LocalDateTime? {
+    val data = homeParseDate(jogo.homeStringValue("data")) ?: return null
+    val hora = homeParseTime(jogo.homeStringValue("hora")) ?: LocalTime.MIDNIGHT
+    return java.time.LocalDateTime.of(data, hora)
+}
+
+// Live se em_direto, ou se a hora de início já passou e ainda não passaram ~90 min.
+private fun homeJogoEstaLive(jogo: JsonObject, agora: java.time.LocalDateTime): Boolean {
+    val estado = jogo.homeStringValue("estado_jogo")?.lowercase().orEmpty()
+    if (estado == "em_direto" || estado == "live" || estado == "em_decorrer" || estado == "a_decorrer") return true
+    if (estado in HOME_ESTADOS_FINAIS) return false
+    val inicio = homeJogoInicio(jogo) ?: return false
+    return !agora.isBefore(inicio) && agora.isBefore(inicio.plusMinutes(90L))
+}
+
+private fun homeCalcularMinutoLive(jogo: JsonObject, agora: java.time.LocalDateTime): Int {
+    val inicio = homeJogoInicio(jogo) ?: return 45
+    val mins = ChronoUnit.MINUTES.between(inicio, agora)
+    return mins.coerceIn(1L, 90L).toInt()
 }

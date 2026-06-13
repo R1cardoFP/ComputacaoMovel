@@ -7,6 +7,10 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 data class LiveMatchInfo(
     val idJogo: Long,
@@ -52,9 +56,11 @@ class LiveMatchRepository {
             val torneiosPorId = torneios.associateBy { it.longValue("id") }
             val jogoEquipasPorJogo = jogoEquipas.groupBy { it.longValue("id_jogo") }
 
+            val agora = LocalDateTime.now()
+
             jogos
                 .filter { jogo ->
-                    jogo.stringValue("estado_jogo") == "em_direto"
+                    jogoEstaLive(jogo, agora)
                 }
                 .mapNotNull { jogo ->
                     val idJogo = jogo.longValue("id")
@@ -82,7 +88,7 @@ class LiveMatchRepository {
                         equipaFora = equipaFora?.stringValue("nome") ?: "Equipa Fora",
                         pontosCasa = equipaCasaLinha.intValue("pontos_marcados"),
                         pontosFora = equipaForaLinha.intValue("pontos_marcados"),
-                        minuto = 75,
+                        minuto = calcularMinutoLive(jogo, agora),
                         local = jogo.stringValue("local") ?: "Local por definir",
                         torneioNome = torneio?.stringValue("nome") ?: "Atlantic Cup 2026"
                     )
@@ -128,4 +134,31 @@ private fun JsonObject.longValue(key: String): Long {
 
 private fun JsonObject.intValue(key: String): Int {
     return this[key]?.jsonPrimitive?.intOrNull ?: 0
+}
+
+private const val DURACAO_JOGO_MIN = 90L
+
+// Estados que indicam que o jogo já não está a decorrer.
+private val ESTADOS_FINAIS = setOf("terminado", "cancelado", "concluido", "finalizado", "adiado")
+
+private fun jogoInicioLive(jogo: JsonObject): LocalDateTime? {
+    val data = runCatching { LocalDate.parse(jogo.stringValue("data")?.take(10).orEmpty()) }.getOrNull() ?: return null
+    val hora = runCatching { LocalTime.parse(jogo.stringValue("hora")?.take(5).orEmpty()) }.getOrNull() ?: LocalTime.MIDNIGHT
+    return LocalDateTime.of(data, hora)
+}
+
+// Um jogo está "live" se estiver marcado em_direto, OU se a sua hora de início já
+// passou e ainda não passaram ~90 min (duração de um jogo de futebol).
+private fun jogoEstaLive(jogo: JsonObject, agora: LocalDateTime): Boolean {
+    val estado = jogo.stringValue("estado_jogo")?.lowercase().orEmpty()
+    if (estado == "em_direto" || estado == "live" || estado == "a_decorrer" || estado == "em_decorrer") return true
+    if (estado in ESTADOS_FINAIS) return false
+    val inicio = jogoInicioLive(jogo) ?: return false
+    return !agora.isBefore(inicio) && agora.isBefore(inicio.plusMinutes(DURACAO_JOGO_MIN))
+}
+
+private fun calcularMinutoLive(jogo: JsonObject, agora: LocalDateTime): Int {
+    val inicio = jogoInicioLive(jogo) ?: return 75
+    val mins = ChronoUnit.MINUTES.between(inicio, agora)
+    return mins.coerceIn(1L, DURACAO_JOGO_MIN).toInt()
 }
