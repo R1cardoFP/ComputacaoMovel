@@ -12,12 +12,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -28,12 +27,20 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,28 +52,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminTournament
 import com.example.trabalhocm.data.repository.AdminTournamentRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
-import com.example.trabalhocm.ui.theme.BrandBlue
-import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
-import com.example.trabalhocm.ui.theme.LightBlueBadge
-import com.example.trabalhocm.ui.theme.TextGray
-import androidx.compose.material3.LinearProgressIndicator
-import com.example.trabalhocm.ui.theme.WarningYellow
+import com.example.trabalhocm.ui.theme.DarkBlue
 import com.example.trabalhocm.ui.theme.ErrorRed
+import com.example.trabalhocm.ui.theme.InputBg
+import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
+import com.example.trabalhocm.ui.theme.TextGray
+import com.example.trabalhocm.ui.theme.WarningYellow
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
-import com.example.trabalhocm.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminTournamentsScreen(
     onBackClick: () -> Unit = {},
@@ -91,12 +99,11 @@ fun AdminTournamentsScreen(
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
     var tournamentToDelete by remember { mutableStateOf<AdminTournament?>(null) }
+    var actionMessageIsError by remember { mutableStateOf(false) }
 
     val errorLoadingTournamentsText = stringResource(R.string.admin_tournaments_error_loading)
     val tournamentDeletedSuccessText = stringResource(R.string.admin_tournaments_delete_success)
     val deleteTournamentErrorText = stringResource(R.string.admin_tournaments_delete_error)
-
-    var actionMessageIsError by remember { mutableStateOf(false) }
 
     fun carregarTorneios() {
         scope.launch {
@@ -181,7 +188,7 @@ fun AdminTournamentsScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.admin_tournaments_delete_button),
-                        color = Color(0xFFDC2626)
+                        color = ErrorRed
                     )
                 }
             },
@@ -198,223 +205,220 @@ fun AdminTournamentsScreen(
     }
 
     Scaffold(
-        containerColor = BgLight,
         topBar = {
-            AdminTournamentsTopBar(
-                title = stringResource(R.string.admin_tournaments_title),
-                onBackClick = onBackClick,
-                onNotificationsClick = onNotificationsClick
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.admin_tournaments_title),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = stringResource(R.string.admin_common_notifications),
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
         },
         bottomBar = {
-            AdminTournamentsBottomBar(
-                selected = "tournaments",
+            MatchLeagueBottomBar(
+                selectedTab = "TOURNAMENTS",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
                 onProfileClick = onProfileClick
             )
-        }
+        },
+        containerColor = BgLight
     ) { innerPadding ->
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = BrandGreen)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp),
+            contentPadding = PaddingValues(bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = stringResource(R.string.admin_tournaments_all_title),
+                    color = DarkBlue,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    lineHeight = 32.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.admin_tournaments_description),
+                    color = TextGray,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(
-                    start = 20.dp,
-                    end = 20.dp,
-                    top = 18.dp,
-                    bottom = 28.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                item {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.admin_tournaments_console).uppercase(),
-                            color = BrandGreen,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
-                        )
 
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = stringResource(R.string.admin_tournaments_all_title),
-                            color = BrandBlue,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = stringResource(R.string.admin_tournaments_description),
-                            color = TextGray,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-
-                item {
-                    AdminTournamentSearchBox(
-                        value = searchText,
-                        onValueChange = {
-                            searchText = it
-                        }
-                    )
-                }
-
-                item {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        TournamentChip(stringResource(R.string.admin_tournaments_filter_all), selectedChip == "All") {
-                            selectedChip = "All"
-                        }
-
-                        TournamentChip(stringResource(R.string.admin_tournaments_filter_live), selectedChip == "Live") {
-                            selectedChip = "Live"
-                        }
-
-                        TournamentChip(stringResource(R.string.admin_tournaments_filter_open), selectedChip == "Open") {
-                            selectedChip = "Open"
-                        }
-
-                        TournamentChip(stringResource(R.string.admin_tournaments_filter_completed), selectedChip == "Completed") {
-                            selectedChip = "Completed"
-                        }
-                    }
-                }
-
-                if (errorMessage.isNotBlank()) {
-                    item {
-                        Text(
-                            text = errorMessage,
-                            color = Color(0xFFDC2626),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                if (actionMessage.isNotBlank()) {
-                    item {
-                        Text(
-                            text = actionMessage,
-                            color = if (actionMessageIsError) {
-                                Color(0xFFDC2626)
-                            } else {
-                                BrandGreen
-                            },
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                if (filteredTournaments.isEmpty()) {
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = CardBg),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.admin_tournaments_no_found),
-                                color = TextGray,
-                                fontSize = 13.sp,
-                                modifier = Modifier.padding(18.dp)
-                            )
-                        }
-                    }
-                }
-
-                items(filteredTournaments.size) { index ->
-                    AdminTournamentMainCard(
-                        tournament = filteredTournaments[index],
-                        onDetailsClick = {
-                            onTournamentDetailsClick(filteredTournaments[index].id)
-                        },
-                        onManageRegistrationClick = {
-                            onManageRegistrationClick(filteredTournaments[index].id)
-                        },
-                        onDeleteTournamentClick = {
-                            tournamentToDelete = filteredTournaments[index]
-                        }
-                    )
-                }
-
-                item {
-                    Button(
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
                         onClick = onArchiveClick,
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, InputBg),
+                        colors = ButtonDefaults.outlinedButtonColors(containerColor = CardBg),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.admin_tournaments_archive_button),
+                            color = DarkBlue,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            carregarTorneios()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.desc_refresh),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+
+            item {
+                AdminTournamentSearchBox(
+                    value = searchText,
+                    onValueChange = {
+                        searchText = it
+                    }
+                )
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TournamentChip(
+                        text = stringResource(R.string.admin_tournaments_filter_all),
+                        selected = selectedChip == "All",
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        selectedChip = "All"
+                    }
+
+                    TournamentChip(
+                        text = stringResource(R.string.admin_tournaments_filter_live),
+                        selected = selectedChip == "Live",
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        selectedChip = "Live"
+                    }
+
+                    TournamentChip(
+                        text = stringResource(R.string.admin_tournaments_filter_open),
+                        selected = selectedChip == "Open",
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        selectedChip = "Open"
+                    }
+
+                    TournamentChip(
+                        text = stringResource(R.string.admin_tournaments_filter_completed),
+                        selected = selectedChip == "Completed",
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        selectedChip = "Completed"
+                    }
+                }
+            }
+
+            if (errorMessage.isNotBlank()) {
+                item {
+                    AdminMessageCard(
+                        text = errorMessage,
+                        isError = true
+                    )
+                }
+            }
+
+            if (actionMessage.isNotBlank()) {
+                item {
+                    AdminMessageCard(
+                        text = actionMessage,
+                        isError = actionMessageIsError
+                    )
+                }
+            }
+
+            if (isLoading) {
+                item {
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(44.dp),
-                        shape = RoundedCornerShape(4.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF0057C8),
-                            contentColor = Color.White
-                        )
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = TealGreen)
+                    }
+                }
+            } else if (filteredTournaments.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = stringResource(R.string.admin_tournaments_archive_button).uppercase(),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.7.sp
+                            text = stringResource(R.string.admin_tournaments_no_found),
+                            color = TextGray,
+                            fontSize = 14.sp
                         )
                     }
                 }
+            } else {
+                items(filteredTournaments) { tournament ->
+                    AdminTournamentMainCard(
+                        tournament = tournament,
+                        onDetailsClick = {
+                            onTournamentDetailsClick(tournament.id)
+                        },
+                        onManageRegistrationClick = {
+                            onManageRegistrationClick(tournament.id)
+                        },
+                        onDeleteTournamentClick = {
+                            tournamentToDelete = tournament
+                        }
+                    )
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
-    }
-}
-
-@Composable
-private fun AdminTournamentsTopBar(
-    title: String,
-    onBackClick: () -> Unit,
-    onNotificationsClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandBlue)
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = title,
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Icon(
-            imageVector = AppIcons.Notifications,
-            contentDescription = stringResource(R.string.admin_common_notifications),
-            tint = Color.White,
-            modifier = Modifier
-                .size(23.dp)
-                .clickable {
-                    onNotificationsClick()
-                }
-        )
     }
 }
 
@@ -423,21 +427,22 @@ private fun AdminTournamentSearchBox(
     value: String,
     onValueChange: (String) -> Unit
 ) {
-    OutlinedTextField(
+    TextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = {
             Text(
                 text = stringResource(R.string.admin_tournaments_search_placeholder),
                 color = TextGray,
-                fontSize = 13.sp
+                fontSize = 14.sp
             )
         },
         leadingIcon = {
             Text(
                 text = "⌕",
                 color = TextGray,
-                fontSize = 18.sp
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
             )
         },
         keyboardOptions = KeyboardOptions(
@@ -446,16 +451,15 @@ private fun AdminTournamentSearchBox(
         singleLine = true,
         modifier = Modifier
             .fillMaxWidth()
-            .height(54.dp),
-        shape = RoundedCornerShape(8.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            focusedTextColor = BrandBlue,
-            unfocusedTextColor = BrandBlue,
-            cursorColor = BrandGreen
+            .clip(RoundedCornerShape(8.dp)),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = CardBg,
+            unfocusedContainerColor = CardBg,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedTextColor = DarkBlue,
+            unfocusedTextColor = DarkBlue,
+            cursorColor = TealGreen
         )
     )
 }
@@ -464,23 +468,49 @@ private fun AdminTournamentSearchBox(
 private fun TournamentChip(
     text: String,
     selected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(if (selected) Color(0xFF0057C8) else Color(0xFFE8EEF9))
+    Surface(
+        color = if (selected) PrimaryBlue else CardBg,
+        shape = RoundedCornerShape(12.dp),
+        border = if (selected) null else BorderStroke(1.dp, InputBg),
+        modifier = modifier
+            .height(36.dp)
             .clickable {
                 onClick()
             }
-            .padding(horizontal = 13.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = text,
+                color = if (selected) Color.White else TextGray,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdminMessageCard(
+    text: String,
+    isError: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) ErrorRed.copy(alpha = 0.08f) else TealGreen.copy(alpha = 0.08f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Text(
             text = text,
-            color = if (selected) Color.White else Color(0xFF0057C8),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            color = if (isError) ErrorRed else TealGreen,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(14.dp)
         )
     }
 }
@@ -493,44 +523,43 @@ private fun AdminTournamentMainCard(
     onDeleteTournamentClick: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
+    val statusColor = tournamentStatusColor(tournament.estado)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(14.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    StatusBadge(status = tournament.estado)
-
-                    SmallBadge(
-                        text = stringResource(R.string.admin_tournaments_pro_league).uppercase(),
-                        background = Color(0xFFEAF2F5),
-                        textColor = TextGray
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TourneyBadge(
+                        text = "• ${statusText(tournament.estado)}",
+                        textColor = statusColor,
+                        bgColor = statusColor.copy(alpha = 0.1f)
                     )
-
-                    SmallBadge(
-                        text = tournament.modalidade,
-                        background = LightBlueBadge,
-                        textColor = TextGray
+                    TourneyBadge(
+                        text = stringResource(R.string.admin_tournaments_pro_league).uppercase(),
+                        textColor = PrimaryBlue,
+                        bgColor = PrimaryBlue.copy(alpha = 0.1f)
+                    )
+                    TourneyBadge(
+                        text = tournament.modalidade.uppercase(),
+                        textColor = TextGray,
+                        bgColor = InputBg
                     )
                 }
 
                 Box {
                     Text(
                         text = "⋮",
-                        color = BrandBlue,
-                        fontSize = 20.sp,
+                        color = DarkBlue,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             menuExpanded = true
@@ -549,14 +578,14 @@ private fun AdminTournamentMainCard(
                                 Icon(
                                     imageVector = AppIcons.Delete,
                                     contentDescription = null,
-                                    tint = Color(0xFFDC2626),
+                                    tint = ErrorRed,
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
                             text = {
                                 Text(
                                     text = stringResource(R.string.admin_tournaments_delete_title),
-                                    color = Color(0xFFDC2626),
+                                    color = ErrorRed,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -570,12 +599,22 @@ private fun AdminTournamentMainCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = stringResource(R.string.admin_tournaments_console),
+                color = TealGreen,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = tournament.nome,
-                color = BrandBlue,
-                fontSize = 15.sp,
+                color = DarkBlue,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -588,41 +627,50 @@ private fun AdminTournamentMainCard(
                     tournament.organizerName
                 ),
                 color = TextGray,
-                fontSize = 11.sp
+                fontSize = 12.sp
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
                     Text(
                         text = stringResource(R.string.admin_tournaments_teams).uppercase(),
-                        color = TextGray,
-                        fontSize = 9.sp,
+                        color = DarkBlue,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.7.sp
+                        letterSpacing = 1.sp
                     )
-
                     Text(
                         text = tournament.teamsCount.toString(),
-                        color = BrandBlue,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
+                        color = DarkBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
 
-                Text(
-                    text = "${tournament.teamsCount}/${tournament.maxTeams}",
-                    color = BrandBlue,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "CAPACIDADE",
+                        color = DarkBlue,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = "${tournament.teamsCount}/${tournament.maxTeams}",
+                        color = PrimaryBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(7.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             LinearProgressIndicator(
                 progress = {
@@ -633,57 +681,47 @@ private fun AdminTournamentMainCard(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(5.dp)
-                    .clip(RoundedCornerShape(20.dp)),
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp)),
                 color = tournamentOccupancyColor(
                     teamsCount = tournament.teamsCount,
                     maxTeams = tournament.maxTeams
                 ),
-                trackColor = Color(0xFFE5E7EB)
+                trackColor = InputBg
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(
                     onClick = onDetailsClick,
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, PrimaryBlue),
                     modifier = Modifier
                         .weight(1f)
-                        .height(38.dp),
-                    shape = RoundedCornerShape(3.dp),
-                    border = BorderStroke(1.dp, Color(0xFF0057C8)),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFF0057C8)
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        .height(40.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.admin_tournaments_details).uppercase(),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        text = stringResource(R.string.admin_tournaments_details),
+                        color = PrimaryBlue,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
                     )
                 }
 
                 Button(
                     onClick = onManageRegistrationClick,
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                     modifier = Modifier
-                        .weight(1.4f)
-                        .height(38.dp),
-                    shape = RoundedCornerShape(3.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0057C8),
-                        contentColor = Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        .weight(1.25f)
+                        .height(40.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.admin_tournaments_manage_registration).uppercase(),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        text = stringResource(R.string.admin_tournaments_manage_registration),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
                     )
                 }
             }
@@ -692,26 +730,30 @@ private fun AdminTournamentMainCard(
 }
 
 @Composable
-private fun StatusBadge(status: String) {
+private fun TourneyBadge(
+    text: String,
+    textColor: Color,
+    bgColor: Color
+) {
+    Surface(
+        color = bgColor,
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+}
+
+@Composable
+private fun statusText(status: String): String {
     val normalized = status.lowercase()
 
-    val background = when {
-        normalized.contains("aberto") || normalized.contains("open") -> Color(0xFFEAF8F5)
-        normalized.contains("decorrer") || normalized.contains("live") -> Color(0xFFFEE2E2)
-        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") -> Color(0xFFEAF2F5)
-        normalized.contains("cancelado") -> Color(0xFFFEE2E2)
-        else -> Color(0xFFEAF3FF)
-    }
-
-    val textColor = when {
-        normalized.contains("aberto") || normalized.contains("open") -> BrandGreen
-        normalized.contains("decorrer") || normalized.contains("live") -> Color(0xFFDC2626)
-        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") -> TextGray
-        normalized.contains("cancelado") -> Color(0xFFDC2626)
-        else -> Color(0xFF0057C8)
-    }
-
-    val text = when {
+    return when {
         normalized.contains("aberto") || normalized.contains("open") ->
             stringResource(R.string.admin_status_open).uppercase()
 
@@ -729,94 +771,18 @@ private fun StatusBadge(status: String) {
 
         else -> status.uppercase()
     }
-
-    SmallBadge(
-        text = text,
-        background = background,
-        textColor = textColor
-    )
 }
 
-@Composable
-private fun SmallBadge(
-    text: String,
-    background: Color,
-    textColor: Color
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(background)
-            .padding(horizontal = 9.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.4.sp
-        )
-    }
-}
+private fun tournamentStatusColor(status: String): Color {
+    val normalized = status.lowercase()
 
-@Composable
-private fun AdminTournamentsBottomBar(
-    selected: String,
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .navigationBarsPadding()
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
-        BottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
-        BottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
-        BottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
-        BottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
-    }
-}
-
-@Composable
-private fun BottomItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
-
-    Column(
-        modifier = Modifier.clickable {
-            onClick()
-        },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = label,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.6.sp
-        )
+    return when {
+        normalized.contains("aberto") || normalized.contains("open") -> TealGreen
+        normalized.contains("decorrer") || normalized.contains("live") -> ErrorRed
+        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") -> TextGray
+        normalized.contains("cancelado") -> ErrorRed
+        normalized.contains("rascunho") -> WarningYellow
+        else -> PrimaryBlue
     }
 }
 
@@ -842,7 +808,7 @@ private fun tournamentOccupancyColor(
     )
 
     return when {
-        progress < 0.5f -> BrandGreen
+        progress < 0.5f -> TealGreen
         progress < 0.8f -> WarningYellow
         else -> ErrorRed
     }
@@ -851,5 +817,7 @@ private fun tournamentOccupancyColor(
 @Preview(showBackground = true)
 @Composable
 fun AdminTournamentsScreenPreview() {
-    AdminTournamentsScreen()
+    MaterialTheme {
+        AdminTournamentsScreen()
+    }
 }
