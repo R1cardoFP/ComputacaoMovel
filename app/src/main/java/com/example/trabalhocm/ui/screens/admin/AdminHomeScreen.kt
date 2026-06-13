@@ -65,6 +65,7 @@ fun AdminHomeScreen(
     onManageTeamsClick: () -> Unit = {},
     onManageTournamentsClick: () -> Unit = {},
     onReviewRequestsClick: () -> Unit = {},
+    onOfflineResultsClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -115,6 +116,7 @@ fun AdminHomeScreen(
         onManageTeamsClick = onManageTeamsClick,
         onManageTournamentsClick = onManageTournamentsClick,
         onReviewRequestsClick = onReviewRequestsClick,
+        onOfflineResultsClick = onOfflineResultsClick,
         onHomeClick = onHomeClick,
         onNotificationsClick = onNotificationsClick,
         onTournamentsClick = onTournamentsClick,
@@ -135,13 +137,14 @@ private fun AdminHomeContent(
     onManageTeamsClick: () -> Unit = {},
     onManageTournamentsClick: () -> Unit = {},
     onReviewRequestsClick: () -> Unit = {},
+    onOfflineResultsClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
-) {
+){
     Scaffold(
         topBar = {
             TopAppBar(
@@ -198,7 +201,8 @@ private fun AdminHomeContent(
                 onManageUsersClick = onManageUsersClick,
                 onManageTeamsClick = onManageTeamsClick,
                 onManageTournamentsClick = onManageTournamentsClick,
-                onReviewRequestsClick = onReviewRequestsClick
+                onReviewRequestsClick = onReviewRequestsClick,
+                onOfflineResultsClick = onOfflineResultsClick
             )
 
             AdminManagementSection(
@@ -355,8 +359,9 @@ private fun AdminQuickActionsSection(
     onManageUsersClick: () -> Unit,
     onManageTeamsClick: () -> Unit,
     onManageTournamentsClick: () -> Unit,
-    onReviewRequestsClick: () -> Unit
-) {
+    onReviewRequestsClick: () -> Unit,
+    onOfflineResultsClick: () -> Unit
+){
     Column {
         AdminSectionTitle(stringResource(R.string.admin_home_global_actions))
 
@@ -405,6 +410,15 @@ private fun AdminQuickActionsSection(
                 onClick = onReviewRequestsClick
             )
         }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        AdminQuickActionCard(
+            modifier = Modifier.fillMaxWidth(),
+            icon = AppIcons.Notifications,
+            title = "MODO OFFLINE",
+            tint = EmeraldGreen,
+            onClick = onOfflineResultsClick
+        )
     }
 }
 

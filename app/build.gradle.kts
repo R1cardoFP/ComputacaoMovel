@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    id("org.jetbrains.kotlin.kapt")
 }
 
 val localProperties = Properties().apply {
@@ -15,7 +16,8 @@ val localProperties = Properties().apply {
     }
 }
 
-val supabaseUrl = localProperties.getProperty("SUPABASE_URL")    ?: throw GradleException("Falta SUPABASE_URL no ficheiro local.properties")
+val supabaseUrl = localProperties.getProperty("SUPABASE_URL")
+    ?: throw GradleException("Falta SUPABASE_URL no ficheiro local.properties")
 
 val supabaseKey = localProperties.getProperty("SUPABASE_KEY")
     ?: throw GradleException("Falta SUPABASE_KEY no ficheiro local.properties")
@@ -84,6 +86,11 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.github.jan-tennert.supabase:compose-auth")
     implementation("io.github.jan-tennert.supabase:storage-kt")
+
+    // Room para guardar resultados offline no dispositivo
+    implementation("androidx.room:room-runtime:2.8.2")
+    implementation("androidx.room:room-ktx:2.8.2")
+    kapt("androidx.room:room-compiler:2.8.2")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
