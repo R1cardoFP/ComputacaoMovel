@@ -12,23 +12,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,28 +47,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminLiveCasualMatch
 import com.example.trabalhocm.data.model.AdminLiveCasualPlayer
 import com.example.trabalhocm.data.model.AdminLiveCasualPoint
 import com.example.trabalhocm.data.repository.AdminLiveCasualMatchRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
-import com.example.trabalhocm.ui.theme.BrandBlue
-import com.example.trabalhocm.ui.theme.BrandGreen
-import com.example.trabalhocm.ui.theme.BrandWhite
 import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.DarkBlue
 import com.example.trabalhocm.ui.theme.ErrorRed
+import com.example.trabalhocm.ui.theme.InputBg
 import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminLiveCasualMatchScreen(
     matchId: String,
@@ -125,23 +133,47 @@ fun AdminLiveCasualMatchScreen(
     }
 
     Scaffold(
-        containerColor = BgLight,
         topBar = {
-            AdminLiveCasualMatchTopBar(
-                onBackClick = onBackClick,
-                onNotificationsClick = onNotificationsClick
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.admin_live_match_top_title),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.admin_common_back),
+                            tint = Color.White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = stringResource(R.string.admin_common_notifications),
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
         },
         bottomBar = {
-            AdminLiveCasualMatchBottomBar(
-                selected = "matches",
+            MatchLeagueBottomBar(
+                selectedTab = "MATCHES",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
                 onProfileClick = onProfileClick
             )
-        }
+        },
+        containerColor = BgLight
     ) { innerPadding ->
         when {
             isLoading -> {
@@ -151,7 +183,7 @@ fun AdminLiveCasualMatchScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = BrandGreen)
+                    CircularProgressIndicator(color = TealGreen)
                 }
             }
 
@@ -160,15 +192,10 @@ fun AdminLiveCasualMatchScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
-                        .padding(20.dp),
+                        .padding(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = errorMessage,
-                        color = ErrorRed,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    AdminLiveErrorCard(errorMessage = errorMessage)
                 }
             }
 
@@ -297,55 +324,36 @@ private fun AdminLiveCasualMatchContent(
             .fillMaxSize()
             .padding(innerPadding),
         contentPadding = PaddingValues(
-            start = 18.dp,
-            end = 18.dp,
-            top = 16.dp,
-            bottom = 28.dp
+            start = 24.dp,
+            end = 24.dp,
+            top = 20.dp,
+            bottom = 32.dp
         ),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            Text(
-                text = stringResource(R.string.admin_live_match_admin_view).uppercase(),
-                color = BrandGreen,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
-            )
-        }
-
         item {
             LiveScoreCard(
                 match = match,
                 homeScore = homeScoreWithPending,
-                awayScore = awayScoreWithPending
+                awayScore = awayScoreWithPending,
+                pendingCount = pendingPoints.size
             )
         }
 
         item {
-            Text(
-                text = stringResource(R.string.admin_live_match_points),
-                color = BrandBlue,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+            AdminLiveSectionHeader(
+                title = stringResource(R.string.admin_live_match_points),
+                subtitle = if (pendingPoints.isEmpty()) {
+                    stringResource(R.string.admin_live_match_admin_view)
+                } else {
+                    "${pendingPoints.size} ${stringResource(R.string.admin_live_match_pending).lowercase()}"
+                }
             )
         }
 
         if (match.points.isEmpty() && pendingPoints.isEmpty()) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(9.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.admin_live_match_no_points),
-                        color = TextGray,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                EmptyLivePointsCard()
             }
         }
 
@@ -371,15 +379,9 @@ private fun AdminLiveCasualMatchContent(
 
         if (actionMessage.isNotBlank()) {
             item {
-                Text(
-                    text = actionMessage,
-                    color = if (actionMessageIsError) {
-                        ErrorRed
-                    } else {
-                        BrandGreen
-                    },
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                AdminLiveActionMessageCard(
+                    message = actionMessage,
+                    isError = actionMessageIsError
                 )
             }
         }
@@ -387,6 +389,7 @@ private fun AdminLiveCasualMatchContent(
         item {
             LiveConfirmActionsCard(
                 hasPendingChanges = pendingPoints.isNotEmpty(),
+                pendingCount = pendingPoints.size,
                 isSaving = isSaving,
                 onConfirmChangesClick = onConfirmChangesClick,
                 onDiscardChangesClick = onDiscardChangesClick
@@ -399,35 +402,43 @@ private fun AdminLiveCasualMatchContent(
 private fun LiveScoreCard(
     match: AdminLiveCasualMatch,
     homeScore: Int,
-    awayScore: Int
+    awayScore: Int,
+    pendingCount: Int
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(22.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = ErrorRed,
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = stringResource(R.string.admin_live_match_live).uppercase(),
-                    color = BrandWhite,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                LiveBadge()
+
+                if (pendingCount > 0) {
+                    Surface(
+                        color = Color.White.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(50.dp)
+                    ) {
+                        Text(
+                            text = "+$pendingCount ${stringResource(R.string.admin_live_match_pending).uppercase()}",
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -438,12 +449,25 @@ private fun LiveScoreCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                Text(
-                    text = "$homeScore : $awayScore",
-                    color = BrandWhite,
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 14.dp)
+                ) {
+                    Text(
+                        text = "$homeScore : $awayScore",
+                        color = Color.White,
+                        fontSize = 38.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+
+                    Text(
+                        text = stringResource(R.string.admin_live_match_live).uppercase(),
+                        color = Color.White.copy(alpha = 0.68f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    )
+                }
 
                 TeamScoreColumn(
                     name = match.awayTeamName,
@@ -451,14 +475,49 @@ private fun LiveScoreCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(18.dp))
+
+            HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
                 text = match.title,
-                color = Color(0xFFB9C4D8),
-                fontSize = 11.sp,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun LiveBadge() {
+    Surface(
+        color = ErrorRed,
+        shape = RoundedCornerShape(50.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+            )
+
+            Spacer(modifier = Modifier.width(6.dp))
+
+            Text(
+                text = stringResource(R.string.admin_live_match_live).uppercase(),
+                color = Color.White,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
             )
         }
     }
@@ -475,25 +534,25 @@ private fun TeamScoreColumn(
     ) {
         Box(
             modifier = Modifier
-                .size(42.dp)
+                .size(52.dp)
                 .clip(CircleShape)
-                .background(PrimaryBlue),
+                .background(Color.White.copy(alpha = 0.14f)),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = initials(name),
-                color = BrandWhite,
-                fontSize = 12.sp,
+                color = Color.White,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = name.uppercase(),
-            color = BrandWhite,
-            fontSize = 11.sp,
+            text = name,
+            color = Color.White,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -502,113 +561,175 @@ private fun TeamScoreColumn(
 }
 
 @Composable
-private fun PointRow(point: AdminLiveCasualPoint) {
-    Card(
+private fun AdminLiveSectionHeader(
+    title: String,
+    subtitle: String
+) {
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(13.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Text(
+            text = title,
+            color = DarkBlue,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Surface(
+            color = InputBg,
+            shape = RoundedCornerShape(50.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(CircleShape)
-                    .background(BrandGreen),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = point.scorerInitials,
-                    color = BrandWhite,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Column {
-                Text(
-                    text = stringResource(R.string.admin_live_match_point).uppercase(),
-                    color = BrandBlue,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = "${point.scorerName} · ${point.teamName}",
-                    color = TextGray,
-                    fontSize = 11.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            Text(
+                text = subtitle.uppercase(),
+                color = TextGray,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+            )
         }
     }
 }
 
 @Composable
-private fun PendingPointRow(point: PendingPoint) {
+private fun EmptyLivePointsCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF8F5)),
-        border = BorderStroke(1.dp, BrandGreen),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(InputBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = AppIcons.Games,
+                    contentDescription = null,
+                    tint = TextGray,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = stringResource(R.string.admin_live_match_no_points),
+                color = TextGray,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+private fun PointRow(point: AdminLiveCasualPoint) {
+    LivePointCard(
+        initials = point.scorerInitials,
+        title = stringResource(R.string.admin_live_match_point).uppercase(),
+        subtitle = "${point.scorerName} · ${point.teamName}",
+        badgeText = null,
+        containerColor = CardBg,
+        avatarColor = TealGreen,
+        borderColor = null
+    )
+}
+
+@Composable
+private fun PendingPointRow(point: PendingPoint) {
+    LivePointCard(
+        initials = point.playerInitials,
+        title = stringResource(R.string.admin_live_match_point).uppercase(),
+        subtitle = "${point.playerName} · ${point.teamName}",
+        badgeText = stringResource(R.string.admin_live_match_pending).uppercase(),
+        containerColor = Color(0xFFEAF8F5),
+        avatarColor = TealGreen,
+        borderColor = TealGreen
+    )
+}
+
+@Composable
+private fun LivePointCard(
+    initials: String,
+    title: String,
+    subtitle: String,
+    badgeText: String?,
+    containerColor: Color,
+    avatarColor: Color,
+    borderColor: Color?
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = borderColor?.let { BorderStroke(1.dp, it.copy(alpha = 0.55f)) },
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(13.dp),
+                .padding(15.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(42.dp)
                     .clip(CircleShape)
-                    .background(BrandGreen),
+                    .background(avatarColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = point.playerInitials,
-                    color = BrandWhite,
-                    fontSize = 11.sp,
+                    text = initials,
+                    color = Color.White,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.admin_live_match_point).uppercase(),
-                    color = BrandBlue,
+                    text = title,
+                    color = DarkBlue,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "${point.playerName} · ${point.teamName}",
+                    text = subtitle,
                     color = TextGray,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Text(
-                text = stringResource(R.string.admin_live_match_pending).uppercase(),
-                color = BrandGreen,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (badgeText != null) {
+                Surface(
+                    color = TealGreen.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(50.dp)
+                ) {
+                    Text(
+                        text = badgeText,
+                        color = TealGreen,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -629,38 +750,32 @@ private fun AddPointCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(15.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
-            Text(
-                text = stringResource(R.string.admin_live_match_register_point),
-                color = BrandBlue,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold
+            AdminLiveCardTitle(
+                title = stringResource(R.string.admin_live_match_register_point),
+                icon = AppIcons.Confirm
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = stringResource(R.string.admin_live_match_team).uppercase(),
-                color = TextGray,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
+            AdminLiveFieldLabel(text = stringResource(R.string.admin_live_match_team))
 
-            Spacer(modifier = Modifier.height(7.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 TeamSideChip(
                     text = match.homeTeamName,
                     selected = selectedSide == "casa",
+                    modifier = Modifier.weight(1f),
                     onClick = {
                         onSideSelected("casa")
                     }
@@ -669,32 +784,34 @@ private fun AddPointCard(
                 TeamSideChip(
                     text = match.awayTeamName,
                     selected = selectedSide == "fora",
+                    modifier = Modifier.weight(1f),
                     onClick = {
                         onSideSelected("fora")
                     }
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            Text(
-                text = stringResource(R.string.admin_live_match_player).uppercase(),
-                color = TextGray,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
+            AdminLiveFieldLabel(text = stringResource(R.string.admin_live_match_player))
 
-            Spacer(modifier = Modifier.height(7.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             if (playersFromSelectedSide.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.admin_live_match_no_players_team),
-                    color = TextGray,
-                    fontSize = 12.sp
-                )
+                Surface(
+                    color = InputBg,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.admin_live_match_no_players_team),
+                        color = TextGray,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
             } else {
-                playersFromSelectedSide.forEach { player ->
+                playersFromSelectedSide.forEachIndexed { index, player ->
                     PlayerPointOption(
                         player = player,
                         selected = selectedPlayer?.id == player.id,
@@ -703,29 +820,35 @@ private fun AddPointCard(
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    if (index != playersFromSelectedSide.lastIndex) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             Button(
                 onClick = onAddPointClick,
                 enabled = !isSaving && !match.isCanceled && playersFromSelectedSide.isNotEmpty(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(50.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandGreen,
-                    contentColor = BrandWhite,
-                    disabledContainerColor = TextGray,
-                    disabledContentColor = BrandWhite
+                    containerColor = TealGreen,
+                    contentColor = Color.White,
+                    disabledContainerColor = TextGray.copy(alpha = 0.28f),
+                    disabledContentColor = Color.White
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = if (isSaving) stringResource(R.string.admin_live_match_adding).uppercase() else stringResource(R.string.admin_live_match_add_point).uppercase(),
+                    text = if (isSaving) {
+                        stringResource(R.string.admin_live_match_adding).uppercase()
+                    } else {
+                        stringResource(R.string.admin_live_match_add_point).uppercase()
+                    },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -738,28 +861,32 @@ private fun AddPointCard(
 private fun TeamSideChip(
     text: String,
     selected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .background(
-                color = if (selected) PrimaryBlue else Color(0xFFE9EEF8),
-                shape = RoundedCornerShape(6.dp)
-            )
-            .clickable {
-                onClick()
-            }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = modifier
+            .height(46.dp)
+            .clickable { onClick() },
+        color = if (selected) PrimaryBlue else InputBg,
+        shape = RoundedCornerShape(14.dp),
+        border = if (selected) null else BorderStroke(1.dp, Color(0xFFE5EAF2))
     ) {
-        Text(
-            text = text,
-            color = if (selected) BrandWhite else PrimaryBlue,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                color = if (selected) Color.White else PrimaryBlue,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
@@ -773,58 +900,64 @@ private fun PlayerPointOption(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = if (selected) Color(0xFFEAF8F5) else Color(0xFFF8FAFC),
-                shape = RoundedCornerShape(8.dp)
+                color = if (selected) Color(0xFFEAF8F5) else InputBg,
+                shape = RoundedCornerShape(16.dp)
             )
-            .clickable {
-                onClick()
-            }
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .clickable { onClick() }
+            .padding(horizontal = 13.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(34.dp)
+                .size(40.dp)
                 .clip(CircleShape)
-                .background(if (selected) BrandGreen else PrimaryBlue),
+                .background(if (selected) TealGreen else PrimaryBlue),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = player.initials,
-                color = BrandWhite,
-                fontSize = 10.sp,
+                color = Color.White,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(
             modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = player.nome,
-                color = BrandBlue,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
+                color = DarkBlue,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             Text(
                 text = player.email,
                 color = TextGray,
-                fontSize = 10.sp,
+                fontSize = 11.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
         if (selected) {
-            Text(
-                text = stringResource(R.string.admin_live_match_selected).uppercase(),
-                color = BrandGreen,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Surface(
+                color = TealGreen.copy(alpha = 0.12f),
+                shape = RoundedCornerShape(50.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.admin_live_match_selected).uppercase(),
+                    color = TealGreen,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
         }
     }
 }
@@ -832,50 +965,68 @@ private fun PlayerPointOption(
 @Composable
 private fun LiveConfirmActionsCard(
     hasPendingChanges: Boolean,
+    pendingCount: Int,
     isSaving: Boolean,
     onConfirmChangesClick: () -> Unit,
     onDiscardChangesClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF8F5)),
-        border = BorderStroke(1.dp, BrandGreen),
+        border = BorderStroke(1.dp, TealGreen.copy(alpha = 0.45f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(15.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
-            Text(
-                text = stringResource(R.string.admin_live_match_admin_actions),
-                color = BrandGreen,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                AdminLiveCardTitle(
+                    title = stringResource(R.string.admin_live_match_admin_actions),
+                    icon = AppIcons.Confirm,
+                    iconColor = TealGreen
+                )
 
-            Spacer(modifier = Modifier.height(13.dp))
+                Surface(
+                    color = Color.White,
+                    shape = RoundedCornerShape(50.dp)
+                ) {
+                    Text(
+                        text = "$pendingCount ${stringResource(R.string.admin_live_match_pending).uppercase()}",
+                        color = TealGreen,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
 
-            Button(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
                 onClick = onDiscardChangesClick,
                 enabled = hasPendingChanges && !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
-                border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandWhite,
-                    contentColor = BrandBlue,
-                    disabledContainerColor = Color(0xFFE5E7EB),
+                    .height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, Color(0xFFD7E2EA)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.White,
+                    contentColor = DarkBlue,
+                    disabledContainerColor = Color.White.copy(alpha = 0.55f),
                     disabledContentColor = TextGray
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                )
             ) {
                 Icon(
                     imageVector = AppIcons.Cancel,
                     contentDescription = stringResource(R.string.admin_live_match_discard_changes),
-                    tint = if (hasPendingChanges && !isSaving) BrandBlue else TextGray,
-                    modifier = Modifier.size(16.dp)
+                    tint = if (hasPendingChanges && !isSaving) DarkBlue else TextGray,
+                    modifier = Modifier.size(17.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -887,34 +1038,38 @@ private fun LiveConfirmActionsCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(9.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Button(
                 onClick = onConfirmChangesClick,
                 enabled = hasPendingChanges && !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(48.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PrimaryBlue,
-                    contentColor = BrandWhite,
-                    disabledContainerColor = TextGray,
-                    disabledContentColor = BrandWhite
+                    contentColor = Color.White,
+                    disabledContainerColor = TextGray.copy(alpha = 0.28f),
+                    disabledContentColor = Color.White
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Icon(
                     imageVector = AppIcons.Confirm,
                     contentDescription = stringResource(R.string.admin_live_match_confirm_changes),
-                    tint = BrandWhite,
-                    modifier = Modifier.size(16.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(17.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = if (isSaving) stringResource(R.string.admin_live_match_saving).uppercase() else stringResource(R.string.admin_live_match_confirm_changes).uppercase(),
+                    text = if (isSaving) {
+                        stringResource(R.string.admin_live_match_saving).uppercase()
+                    } else {
+                        stringResource(R.string.admin_live_match_confirm_changes).uppercase()
+                    },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -924,113 +1079,112 @@ private fun LiveConfirmActionsCard(
 }
 
 @Composable
-private fun AdminLiveCasualMatchTopBar(
-    onBackClick: () -> Unit,
-    onNotificationsClick: () -> Unit
+private fun AdminLiveActionMessageCard(
+    message: String,
+    isError: Boolean
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandBlue)
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        ) {
-            Icon(
-                imageVector = AppIcons.Back,
-                contentDescription = stringResource(R.string.admin_common_back),
-                tint = BrandWhite,
-                modifier = Modifier.size(22.dp)
-            )
+    val color = if (isError) ErrorRed else TealGreen
+    val background = if (isError) Color(0xFFFFEEF0) else Color(0xFFEAF8F5)
 
-            Spacer(modifier = Modifier.width(8.dp))
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = background,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.32f))
+    ) {
+        Text(
+            text = message,
+            color = color,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
+        )
+    }
+}
+
+@Composable
+private fun AdminLiveErrorCard(errorMessage: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFFFEEF0)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = AppIcons.Cancel,
+                    contentDescription = null,
+                    tint = ErrorRed,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = stringResource(R.string.admin_live_match_top_title).uppercase(),
-                color = BrandWhite,
-                fontSize = 16.sp,
+                text = errorMessage,
+                color = ErrorRed,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
         }
-
-        Icon(
-            imageVector = AppIcons.Notifications,
-            contentDescription = stringResource(R.string.admin_common_notifications),
-            tint = BrandWhite,
-            modifier = Modifier
-                .size(23.dp)
-                .clickable {
-                    onNotificationsClick()
-                }
-        )
     }
 }
 
 @Composable
-private fun AdminLiveCasualMatchBottomBar(
-    selected: String,
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
+private fun AdminLiveCardTitle(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconColor: Color = PrimaryBlue
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandWhite)
-            .navigationBarsPadding()
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomLiveMatchItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
-        BottomLiveMatchItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
-        BottomLiveMatchItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
-        BottomLiveMatchItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
-        BottomLiveMatchItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(RoundedCornerShape(11.dp))
+                .background(iconColor.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Text(
+            text = title,
+            color = DarkBlue,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
 @Composable
-private fun BottomLiveMatchItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) PrimaryBlue else TextGray
-
-    Column(
-        modifier = Modifier.clickable {
-            onClick()
-        },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = label,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.6.sp
-        )
-    }
+private fun AdminLiveFieldLabel(text: String) {
+    Text(
+        text = text.uppercase(),
+        color = TextGray,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp
+    )
 }
 
 private fun initials(name: String): String {

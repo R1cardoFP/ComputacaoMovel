@@ -119,15 +119,6 @@ fun AdminCasualMatchesScreen(
                         fontWeight = FontWeight.Bold
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.desc_back),
-                            tint = Color.White
-                        )
-                    }
-                },
                 actions = {
                     IconButton(onClick = onNotificationsClick) {
                         Icon(

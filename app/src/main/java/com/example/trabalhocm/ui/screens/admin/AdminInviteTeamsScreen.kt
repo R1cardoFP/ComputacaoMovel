@@ -12,26 +12,28 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,31 +45,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminInviteTeam
 import com.example.trabalhocm.data.model.AdminInviteTeamsData
 import com.example.trabalhocm.data.repository.AdminInviteTeamRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
-import com.example.trabalhocm.ui.theme.BrandBlue
-import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
-import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.DarkBlue
 import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.InputBg
 import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminInviteTeamsScreen(
     tournamentId: String,
@@ -110,23 +113,49 @@ fun AdminInviteTeamsScreen(
     }
 
     Scaffold(
-        containerColor = BgLight,
         topBar = {
-            InviteTeamsTopBar(
-                onBackClick = onBackClick,
-                onNotificationsClick = onNotificationsClick
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.admin_invite_teams_title),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = AppIcons.Back,
+                            contentDescription = stringResource(R.string.admin_common_back),
+                            tint = Color.White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = stringResource(R.string.admin_common_notifications),
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
         },
         bottomBar = {
-            InviteTeamsBottomBar(
-                selected = "tournaments",
+            MatchLeagueBottomBar(
+                selectedTab = "TOURNAMENTS",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
                 onProfileClick = onProfileClick
             )
-        }
+        },
+        containerColor = BgLight
     ) { innerPadding ->
         when {
             isLoading -> {
@@ -136,25 +165,15 @@ fun AdminInviteTeamsScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = BrandGreen)
+                    CircularProgressIndicator(color = TealGreen)
                 }
             }
 
             errorMessage.isNotBlank() -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(20.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = errorMessage,
-                        color = ErrorRed,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                AdminInviteTeamsErrorState(
+                    innerPadding = innerPadding,
+                    message = errorMessage
+                )
             }
 
             data != null -> {
@@ -171,115 +190,101 @@ fun AdminInviteTeamsScreen(
                         .fillMaxSize()
                         .padding(innerPadding),
                     contentPadding = PaddingValues(
-                        start = 18.dp,
-                        end = 18.dp,
-                        top = 18.dp,
-                        bottom = 28.dp
+                        start = 24.dp,
+                        end = 24.dp,
+                        top = 20.dp,
+                        bottom = 32.dp
                     ),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        Column {
-                            Text(
-                                text = stringResource(R.string.admin_invite_teams_console).uppercase(),
-                                color = BrandGreen,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 2.sp
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = stringResource(R.string.admin_invite_teams_title),
-                                color = BrandBlue,
-                                fontSize = 27.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Text(
-                                text = stringResource(R.string.admin_invite_teams_description, screenData.tournamentName),
-                                color = TextGray,
-                                fontSize = 12.sp
-                            )
-                        }
+                        AdminInviteTeamsHeroCard(
+                            data = screenData,
+                            availableTeamsCount = filteredTeams.size
+                        )
                     }
 
                     item {
-                        InviteTeamsHero(data = screenData)
+                        AdminInviteTeamsSummaryCard(data = screenData)
                     }
 
                     item {
-                        SectionTitleInvite(stringResource(R.string.admin_invite_teams_search_teams).uppercase())
-                    }
-
-                    item {
-                        InviteTeamsSearchBox(
+                        AdminInviteTeamsSearchBox(
                             value = searchText,
-                            onValueChange = {
-                                searchText = it
-                            }
+                            onValueChange = { searchText = it }
                         )
                     }
 
                     if (actionMessage.isNotBlank()) {
                         item {
-                            Text(
-                                text = actionMessage,
-                                color = if (actionMessageIsError) ErrorRed else BrandGreen,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
+                            AdminInviteTeamsActionMessage(
+                                message = actionMessage,
+                                isError = actionMessageIsError
                             )
                         }
                     }
 
                     item {
-                        SectionTitleInvite(stringResource(R.string.admin_invite_teams_suggested_teams).uppercase())
+                        AdminSectionHeader(
+                            title = stringResource(R.string.admin_invite_teams_suggested_teams),
+                            subtitle = stringResource(R.string.admin_invite_teams_search_teams)
+                        )
                     }
 
                     if (filteredTeams.isEmpty()) {
                         item {
-                            EmptyInviteCard(stringResource(R.string.admin_invite_teams_no_teams_available))
+                            AdminInviteTeamsEmptyCard(
+                                text = stringResource(R.string.admin_invite_teams_no_teams_available)
+                            )
+                        }
+                    } else {
+                        items(filteredTeams) { team ->
+                            AdminInviteTeamCard(
+                                team = team,
+                                onInviteClick = {
+                                    scope.launch {
+                                        repository.convidarEquipa(
+                                            tournamentId = tournamentId,
+                                            teamId = team.teamId
+                                        )
+                                            .onSuccess {
+                                                actionMessage = context.getString(
+                                                    R.string.admin_invite_teams_invitation_sent_to,
+                                                    team.teamName
+                                                )
+                                                actionMessageIsError = false
+                                                refreshKey++
+                                            }
+                                            .onFailure {
+                                                actionMessage = "$inviteErrorText: ${it.message}"
+                                                actionMessageIsError = true
+                                            }
+                                    }
+                                }
+                            )
                         }
                     }
 
-                    items(filteredTeams) { team ->
-                        InviteTeamCard(
-                            team = team,
-                            onInviteClick = {
-                                scope.launch {
-                                    repository.convidarEquipa(
-                                        tournamentId = tournamentId,
-                                        teamId = team.teamId
-                                    )
-                                        .onSuccess {
-                                            actionMessage = context.getString(R.string.admin_invite_teams_invitation_sent_to, team.teamName)
-                                            actionMessageIsError = false
-                                            refreshKey++
-                                        }
-                                        .onFailure {
-                                            actionMessage = "$inviteErrorText: ${it.message}"
-                                            actionMessageIsError = true
-                                        }
-                                }
-                            }
-                        )
-                    }
-
                     item {
-                        SectionTitleInvite(stringResource(R.string.admin_invite_teams_sent_invitations_count, screenData.sentInvitations.size).uppercase())
+                        AdminSectionHeader(
+                            title = stringResource(
+                                R.string.admin_invite_teams_sent_invitations_count,
+                                screenData.sentInvitations.size
+                            ),
+                            subtitle = stringResource(R.string.admin_invite_teams_invite_only)
+                        )
                     }
 
                     if (screenData.sentInvitations.isEmpty()) {
                         item {
-                            EmptyInviteCard(stringResource(R.string.admin_invite_teams_no_invitations_sent))
+                            AdminInviteTeamsEmptyCard(
+                                text = stringResource(R.string.admin_invite_teams_no_invitations_sent)
+                            )
                         }
-                    }
-
-                    items(screenData.sentInvitations) { team ->
-                        SentInvitationCard(team = team)
+                    } else {
+                        items(screenData.sentInvitations) { team ->
+                            AdminSentInvitationTeamCard(team = team)
+                        }
                     }
                 }
             }
@@ -288,114 +293,172 @@ fun AdminInviteTeamsScreen(
 }
 
 @Composable
-private fun InviteTeamsTopBar(
-    onBackClick: () -> Unit,
-    onNotificationsClick: () -> Unit
+private fun AdminInviteTeamsHeroCard(
+    data: AdminInviteTeamsData,
+    availableTeamsCount: Int
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandBlue)
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
+        Column(
+            modifier = Modifier.padding(20.dp)
         ) {
-            Icon(
-                imageVector = AppIcons.Back,
-                contentDescription = stringResource(R.string.admin_common_back),
-                tint = BrandWhite,
-                modifier = Modifier.size(22.dp)
+            Text(
+                text = stringResource(R.string.admin_invite_teams_console).uppercase(),
+                color = TealGreen,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.4.sp
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = stringResource(R.string.admin_invite_teams_title),
-                color = BrandWhite,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                color = Color.White,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                lineHeight = 30.sp
             )
-        }
 
-        Icon(
-            imageVector = AppIcons.Notifications,
-            contentDescription = stringResource(R.string.admin_common_notifications),
-            tint = BrandWhite,
-            modifier = Modifier
-                .size(23.dp)
-                .clickable {
-                    onNotificationsClick()
-                }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(
+                    R.string.admin_invite_teams_description,
+                    data.tournamentName
+                ),
+                color = Color.White.copy(alpha = 0.78f),
+                fontSize = 13.sp,
+                lineHeight = 19.sp
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                InviteTeamsStatPill(
+                    value = data.slotsRemaining.toString(),
+                    label = stringResource(R.string.admin_invite_teams_slots_remaining),
+                    modifier = Modifier.weight(1f)
+                )
+
+                InviteTeamsStatPill(
+                    value = availableTeamsCount.toString(),
+                    label = stringResource(R.string.admin_invite_teams_suggested_teams),
+                    modifier = Modifier.weight(1f)
+                )
+
+                InviteTeamsStatPill(
+                    value = data.sentInvitations.size.toString(),
+                    label = stringResource(
+                        R.string.admin_invite_teams_sent_invitations_count,
+                        data.sentInvitations.size
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InviteTeamsStatPill(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.12f))
+            .padding(horizontal = 12.dp, vertical = 11.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 19.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
+            text = label.uppercase(),
+            color = Color.White.copy(alpha = 0.70f),
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
 
 @Composable
-private fun InviteTeamsHero(data: AdminInviteTeamsData) {
+private fun AdminInviteTeamsSummaryCard(data: AdminInviteTeamsData) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(LightBlueBadge),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = AppIcons.Tournaments,
+                    contentDescription = null,
+                    tint = PrimaryBlue,
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.admin_invite_teams_slots_remaining).uppercase(),
-                    color = Color(0xFFB9C4D8),
-                    fontSize = 10.sp,
+                    text = data.tournamentName,
+                    color = DarkBlue,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Row(
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = data.slotsRemaining.toString(),
-                        color = BrandWhite,
-                        fontSize = 31.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.width(5.dp))
-
-                    Text(
-                        text = "/${data.maxTeams}",
-                        color = Color(0xFFB9C4D8),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.admin_invite_teams_invite_only),
+                    color = TextGray,
+                    fontSize = 12.sp
+                )
             }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(BrandWhite)
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                contentAlignment = Alignment.Center
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = TealGreen.copy(alpha = 0.12f),
+                border = BorderStroke(1.dp, TealGreen.copy(alpha = 0.22f))
             ) {
                 Text(
-                    text = stringResource(R.string.admin_invite_teams_invite_only).uppercase(),
-                    color = BrandGreen,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold
+                    text = "${data.slotsRemaining}/${data.maxTeams}",
+                    color = TealGreen,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
                 )
             }
         }
@@ -403,29 +466,18 @@ private fun InviteTeamsHero(data: AdminInviteTeamsData) {
 }
 
 @Composable
-private fun SectionTitleInvite(text: String) {
-    Text(
-        text = text,
-        color = TextGray,
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.5.sp
-    )
-}
-
-@Composable
-private fun InviteTeamsSearchBox(
+private fun AdminInviteTeamsSearchBox(
     value: String,
     onValueChange: (String) -> Unit
 ) {
-    OutlinedTextField(
+    TextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = {
             Text(
                 text = stringResource(R.string.admin_invite_teams_search_placeholder),
                 color = TextGray,
-                fontSize = 12.sp
+                fontSize = 13.sp
             )
         },
         leadingIcon = {
@@ -433,92 +485,129 @@ private fun InviteTeamsSearchBox(
                 imageVector = AppIcons.Search,
                 contentDescription = stringResource(R.string.admin_invite_teams_search_content_description),
                 tint = TextGray,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(19.dp)
             )
         },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text
-        ),
         singleLine = true,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(9.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = BrandWhite,
-            unfocusedContainerColor = BrandWhite,
-            focusedBorderColor = InputBg,
-            unfocusedBorderColor = InputBg,
-            focusedTextColor = BrandBlue,
-            unfocusedTextColor = BrandBlue,
-            cursorColor = BrandGreen
+            .height(56.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = InputBg,
+            unfocusedContainerColor = InputBg,
+            disabledContainerColor = InputBg,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            focusedTextColor = DarkBlue,
+            unfocusedTextColor = DarkBlue,
+            cursorColor = TealGreen
         )
     )
 }
 
 @Composable
-private fun InviteTeamCard(
+private fun AdminSectionHeader(
+    title: String,
+    subtitle: String
+) {
+    Column {
+        Text(
+            text = title.uppercase(),
+            color = DarkBlue,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+
+        Spacer(modifier = Modifier.height(3.dp))
+
+        Text(
+            text = subtitle,
+            color = TextGray,
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
+private fun AdminInviteTeamCard(
     team: AdminInviteTeam,
     onInviteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(13.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TeamInviteAvatar(team.teamName)
+                TeamInviteAvatar(
+                    name = team.teamName,
+                    size = 50.dp
+                )
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(13.dp))
 
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = team.teamName,
-                        color = BrandBlue,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        color = DarkBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = stringResource(R.string.admin_invite_teams_captain_division, team.captainName, team.division),
+                        text = stringResource(
+                            R.string.admin_invite_teams_captain_division,
+                            team.captainName,
+                            team.division
+                        ),
                         color = TextGray,
-                        fontSize = 10.sp
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
+
+                InviteStatusBadge(isInvited = team.isInvited)
             }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             Button(
                 onClick = onInviteClick,
                 enabled = !team.isInvited,
                 modifier = Modifier
-                    .height(36.dp)
-                    .width(82.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .fillMaxWidth()
+                    .height(46.dp),
+                shape = RoundedCornerShape(15.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (team.isInvited) InputBg else BrandGreen,
-                    contentColor = if (team.isInvited) TextGray else BrandWhite,
+                    containerColor = TealGreen,
+                    contentColor = BrandWhite,
                     disabledContainerColor = InputBg,
                     disabledContentColor = TextGray
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = if (team.isInvited) stringResource(R.string.admin_invite_teams_invited).uppercase() else stringResource(R.string.admin_invite_teams_invite).uppercase(),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
+                    text = if (team.isInvited) {
+                        stringResource(R.string.admin_invite_teams_invited)
+                    } else {
+                        stringResource(R.string.admin_invite_teams_invite)
+                    }.uppercase(),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
         }
@@ -526,62 +615,230 @@ private fun InviteTeamCard(
 }
 
 @Composable
-private fun SentInvitationCard(team: AdminInviteTeam) {
+private fun InviteStatusBadge(isInvited: Boolean) {
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = if (isInvited) InputBg else TealGreen.copy(alpha = 0.12f),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (isInvited) TextGray.copy(alpha = 0.20f) else TealGreen.copy(alpha = 0.25f)
+        )
+    ) {
+        Text(
+            text = if (isInvited) {
+                stringResource(R.string.admin_invite_teams_invited)
+            } else {
+                stringResource(R.string.admin_invite_teams_invite)
+            }.uppercase(),
+            color = if (isInvited) TextGray else TealGreen,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+        )
+    }
+}
+
+@Composable
+private fun AdminSentInvitationTeamCard(team: AdminInviteTeam) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = LightBlueBadge),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(LightBlueBadge),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = AppIcons.Info,
+                    contentDescription = stringResource(R.string.admin_invite_teams_sent_invitation_content_description),
+                    tint = PrimaryBlue,
+                    modifier = Modifier.size(21.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = team.teamName,
+                    color = DarkBlue,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(
+                        R.string.admin_invite_teams_invited_awaiting_response,
+                        team.teamName,
+                        team.invitedAgo.ifBlank { stringResource(R.string.admin_invite_teams_recently) }
+                    ),
+                    color = TextGray,
+                    fontSize = 12.sp,
+                    lineHeight = 17.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdminInviteTeamsActionMessage(
+    message: String,
+    isError: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) ErrorRed.copy(alpha = 0.10f) else TealGreen.copy(alpha = 0.10f)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
-            modifier = Modifier.padding(13.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = AppIcons.Info,
-                contentDescription = stringResource(R.string.admin_invite_teams_sent_invitation_content_description),
-                tint = PrimaryBlue,
-                modifier = Modifier.size(19.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(if (isError) ErrorRed.copy(alpha = 0.12f) else TealGreen.copy(alpha = 0.14f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = AppIcons.Info,
+                    contentDescription = null,
+                    tint = if (isError) ErrorRed else TealGreen,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.width(10.dp))
 
             Text(
-                text = stringResource(
-                    R.string.admin_invite_teams_invited_awaiting_response,
-                    team.teamName,
-                    team.invitedAgo.ifBlank { stringResource(R.string.admin_invite_teams_recently) }
-                ),
-                color = PrimaryBlue,
+                text = message,
+                color = if (isError) ErrorRed else TealGreen,
                 fontSize = 12.sp,
-                lineHeight = 16.sp
+                fontWeight = FontWeight.Bold,
+                lineHeight = 17.sp
             )
         }
     }
 }
 
 @Composable
-private fun EmptyInviteCard(text: String) {
+private fun AdminInviteTeamsEmptyCard(text: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Text(
-            text = text,
-            color = TextGray,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(16.dp)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(InputBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = AppIcons.Info,
+                    contentDescription = null,
+                    tint = TextGray,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = text,
+                color = TextGray,
+                fontSize = 13.sp,
+                lineHeight = 18.sp
+            )
+        }
     }
 }
 
 @Composable
-private fun TeamInviteAvatar(name: String) {
+private fun AdminInviteTeamsErrorState(
+    innerPadding: PaddingValues,
+    message: String
+) {
     Box(
         modifier = Modifier
-            .size(44.dp)
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(54.dp)
+                        .clip(CircleShape)
+                        .background(ErrorRed.copy(alpha = 0.10f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Info,
+                        contentDescription = null,
+                        tint = ErrorRed,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = message,
+                    color = ErrorRed,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeamInviteAvatar(
+    name: String,
+    size: Dp = 44.dp
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
             .clip(CircleShape)
             .background(avatarColor(name)),
         contentAlignment = Alignment.Center
@@ -589,7 +846,7 @@ private fun TeamInviteAvatar(name: String) {
         Text(
             text = initials(name),
             color = BrandWhite,
-            fontSize = 13.sp,
+            fontSize = if (size > 44.dp) 14.sp else 13.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -609,70 +866,11 @@ private fun initials(name: String): String {
 
 private fun avatarColor(name: String): Color {
     return when (name.length % 5) {
-        0 -> BrandGreen
+        0 -> TealGreen
         1 -> PrimaryBlue
         2 -> TextGray
         3 -> Color(0xFFEAB308)
         else -> ErrorRed
-    }
-}
-
-@Composable
-private fun InviteTeamsBottomBar(
-    selected: String,
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandWhite)
-            .navigationBarsPadding()
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BottomInviteItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
-        BottomInviteItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
-        BottomInviteItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
-        BottomInviteItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
-        BottomInviteItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
-    }
-}
-
-@Composable
-private fun BottomInviteItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) PrimaryBlue else TextGray
-
-    Column(
-        modifier = Modifier.clickable {
-            onClick()
-        },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = label,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
@@ -683,4 +881,3 @@ fun AdminInviteTeamsScreenPreview() {
         tournamentId = "1"
     )
 }
-
