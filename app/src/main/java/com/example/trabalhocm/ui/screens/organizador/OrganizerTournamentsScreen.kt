@@ -171,6 +171,8 @@ fun OrganizerTournamentsScreen(
                             else -> sportDefault
                         }
                         val statusColor = if (torneio.estado == "aberto") TealGreen else WarningYellow
+                        val numEquipas = viewModel.equipasPorTorneio[torneio.id] ?: 0
+                        val jogosHoje = viewModel.jogosHojePorTorneio[torneio.id] ?: 0
 
                         if (isOrganizer) {
                             OrganizerTournamentCard(
@@ -179,8 +181,8 @@ fun OrganizerTournamentsScreen(
                                 tags = listOf(torneio.formato.uppercase(), sportName),
                                 title = torneio.nome,
                                 dates = "${torneio.dataInicio} — ${torneio.dataFim ?: tbdText}",
-                                teams = 0,
-                                gamesToday = 0,
+                                teams = numEquipas,
+                                gamesToday = jogosHoje,
                                 onDetailsClick = { onDetailsClick(torneio.id) },
                                 onInviteTeamsClick = { onInviteTeamsClick(torneio.id) },
                                 onManageRegistrationClick = { onManageRegistrationClick(torneio.id) },
@@ -193,7 +195,7 @@ fun OrganizerTournamentsScreen(
                                 tags = listOf(torneio.formato.uppercase(), sportName),
                                 title = torneio.nome,
                                 dates = stringResource(R.string.format_start_date, torneio.dataInicio),
-                                registered = 0,
+                                registered = numEquipas,
                                 capacity = 32,
                                 actionText = if (torneio.estado == "aberto") stringResource(R.string.btn_register_now) else stringResource(R.string.btn_view_details),
                                 actionColor = if (torneio.estado == "aberto") TealGreen else InputBg,

@@ -1,6 +1,5 @@
 package com.example.trabalhocm.ui.screens.organizador
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,28 +8,33 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.model.Utilizador
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.*
-
-data class JoinedPlayer(val name: String, val joinedTime: String, val isYou: Boolean = false)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CasualMatchDetailsScreen(
+    idPeladinha: Long,
+    viewModel: CasualMatchDetailsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
@@ -38,12 +42,9 @@ fun CasualMatchDetailsScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    val players = listOf(
-        JoinedPlayer("Cristiano Ronaldo", stringResource(R.string.joined_2h_ago), isYou = true),
-        JoinedPlayer("André Lima", stringResource(R.string.joined_yesterday)),
-        JoinedPlayer("Joana Costa", stringResource(R.string.joined_yesterday)),
-        JoinedPlayer("Maria Santos", stringResource(R.string.joined_2_days_ago))
-    )
+    LaunchedEffect(idPeladinha) {
+        viewModel.carregar(idPeladinha)
+    }
 
     Scaffold(
         topBar = {
@@ -74,6 +75,26 @@ fun CasualMatchDetailsScreen(
         },
         containerColor = BgLight
     ) { paddingValues ->
+        if (viewModel.isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = TealGreen)
+            }
+            return@Scaffold
+        }
+
+        val detalhes = viewModel.detalhes
+        if (detalhes == null) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(24.dp), contentAlignment = Alignment.Center) {
+                Text(viewModel.errorMessage.ifBlank { stringResource(R.string.msg_no_tournaments_found) }, color = TextGray, fontSize = 14.sp)
+            }
+            return@Scaffold
+        }
+
+        val peladinha = detalhes.peladinha
+        val inscritos = detalhes.jogadoresInscritos
+        val capacidade = peladinha.maxJogadores.coerceAtLeast(1)
+        val vagas = (peladinha.maxJogadores - inscritos).coerceAtLeast(0)
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -82,13 +103,13 @@ fun CasualMatchDetailsScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
             Column {
                 Text(stringResource(R.string.tag_pickup_game), color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Beach Volley Mix", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(stringResource(R.string.desc_match_subtitle), color = TextGray, fontSize = 14.sp, lineHeight = 20.sp)
+                Text(
+                    peladinha.descricao?.ifBlank { null } ?: detalhes.modalidadeNome,
+                    color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold
+                )
             }
 
             Card(
@@ -99,11 +120,9 @@ fun CasualMatchDetailsScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        MatchDetailsTag(stringResource(R.string.tag_live_now), TealGreen, TealGreen.copy(alpha = 0.1f))
-                        MatchDetailsTag(stringResource(R.string.tag_open_registration), PrimaryBlue, PrimaryBlue.copy(alpha = 0.1f))
+                        MatchDetailsTag(peladinha.estado.uppercase(), TealGreen, TealGreen.copy(alpha = 0.1f))
+                        MatchDetailsTag(detalhes.modalidadeNome.uppercase(), TextGray, InputBg)
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    MatchDetailsTag(stringResource(R.string.sport_volleyball), TextGray, InputBg)
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -113,15 +132,15 @@ fun CasualMatchDetailsScreen(
                     ) {
                         Column {
                             Text(stringResource(R.string.label_spots_left), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                            Text("4", color = PrimaryBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                            Text("$vagas", color = PrimaryBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                         }
                         Column {
                             Text(stringResource(R.string.label_joined), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                            Text("8", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                            Text("$inscritos", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                         }
                         Column {
                             Text(stringResource(R.string.label_capacity), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                            Text("10", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                            Text("${peladinha.maxJogadores}", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                         }
                     }
 
@@ -129,11 +148,11 @@ fun CasualMatchDetailsScreen(
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(stringResource(R.string.label_registration), color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                        Text("8/10", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text("$inscritos/${peladinha.maxJogadores}", color = DarkBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(
-                        progress = { 0.8f },
+                        progress = { inscritos.toFloat() / capacidade.toFloat() },
                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                         color = TealGreen,
                         trackColor = InputBg,
@@ -141,12 +160,7 @@ fun CasualMatchDetailsScreen(
                 }
             }
 
-            Card(
-                colors = CardDefaults.cardColors(containerColor = CardBg),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.DateRange, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
@@ -154,121 +168,43 @@ fun CasualMatchDetailsScreen(
                         Text(stringResource(R.string.title_schedule), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    DetailRow(stringResource(R.string.label_date), "14 May 2026")
-                    DetailRow(stringResource(R.string.label_start_time), "19:30")
-                    DetailRow(stringResource(R.string.label_end_time), "21:30")
-                    DetailRow(stringResource(R.string.label_duration), stringResource(R.string.val_2_hours), valueColor = PrimaryBlue)
+                    DetailRow(stringResource(R.string.label_date), peladinha.data ?: "—")
+                    DetailRow(stringResource(R.string.label_start_time), peladinha.hora?.take(5) ?: "—")
+                    DetailRow(stringResource(R.string.label_cost), "€ ${peladinha.preco ?: 0.0}", valueColor = TealGreen)
                 }
             }
 
-            Card(
-                colors = CardDefaults.cardColors(containerColor = CardBg),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Info, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.title_match_info), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    DetailRow(stringResource(R.string.label_skill_level), stringResource(R.string.val_intermediary), isBadge = true)
-                    DetailRow(stringResource(R.string.label_format), "4 vs 4")
-                    DetailRow(stringResource(R.string.label_equipment), stringResource(R.string.val_provided))
-                    DetailRow(stringResource(R.string.label_cost), "€ 5.00", valueColor = TealGreen)
-                }
-            }
-
-            Card(
-                colors = CardDefaults.cardColors(containerColor = CardBg),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            if (!peladinha.local.isNullOrBlank()) {
+                Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Place, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.title_location), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(peladinha.local, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("Riverside Beach Courts", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text("Av. 25 de abril, Viana do Castelo", color = TextGray, fontSize = 12.sp)
+                }
+            }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(140.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF94A3B8)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Surface(
-                            color = ErrorRed,
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.Place, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Riverside Courts", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            detalhes.organizador?.let { host ->
+                Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(R.string.title_host), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(InputBg), contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Person, contentDescription = null, tint = TextGray)
                             }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedButton(
-                        onClick = { },
-                        shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, InputBg),
-                        modifier = Modifier.fillMaxWidth().height(40.dp)
-                    ) {
-                        Icon(Icons.Outlined.Place, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.btn_open_in_maps), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    }
-                }
-            }
-
-            Card(
-                colors = CardDefaults.cardColors(containerColor = CardBg),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Person, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.title_host), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(InputBg), contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Person, contentDescription = null, tint = TextGray)
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text("João Silva", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text(stringResource(R.string.mock_host_stats), color = TextGray, fontSize = 12.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(host.nome.ifBlank { host.username }, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             }
 
-            Card(
-                colors = CardDefaults.cardColors(containerColor = CardBg),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Card(colors = CardDefaults.cardColors(containerColor = CardBg), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -277,73 +213,19 @@ fun CasualMatchDetailsScreen(
                     ) {
                         Text(stringResource(R.string.title_joined_players), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Surface(color = PrimaryBlue.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
-                            Text("8 / 10", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                            Text("$inscritos/${peladinha.maxJogadores}", color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    players.forEach { player ->
-                        JoinedPlayerRow(player)
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    OutlinedButton(
-                        onClick = { },
-                        shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, InputBg),
-                        modifier = Modifier.fillMaxWidth().height(40.dp)
-                    ) {
-                        Text(stringResource(R.string.btn_load_more), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    }
-                }
-            }
-
-            Column {
-                Text(stringResource(R.string.title_about_match), color = DarkBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    stringResource(R.string.desc_about_match),
-                    color = TextGray, fontSize = 14.sp, lineHeight = 20.sp
-                )
-            }
-
-            Surface(
-                color = PrimaryBlue.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-                    Icon(Icons.Outlined.Info, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(stringResource(R.string.desc_disclaimer), color = PrimaryBlue, fontSize = 12.sp, lineHeight = 16.sp)
-                }
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(
-                    onClick = { },
-                    colors = ButtonDefaults.buttonColors(containerColor = TealGreen),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.btn_join_match), fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    }
-                }
-
-                OutlinedButton(
-                    onClick = { },
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, InputBg),
-                    colors = ButtonDefaults.outlinedButtonColors(containerColor = CardBg),
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Share, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.btn_share_match), color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    if (detalhes.participantes.isEmpty()) {
+                        Text(stringResource(R.string.msg_no_members), color = TextGray, fontSize = 13.sp)
+                    } else {
+                        detalhes.participantes.forEach { jogador ->
+                            JoinedPlayerRow(jogador, isYou = jogador.id == detalhes.utilizadorAtualId)
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
             }
@@ -361,25 +243,19 @@ private fun MatchDetailsTag(text: String, textColor: Color, bgColor: Color) {
 }
 
 @Composable
-private fun DetailRow(label: String, value: String, valueColor: Color = DarkBlue, isBadge: Boolean = false) {
+private fun DetailRow(label: String, value: String, valueColor: Color = DarkBlue) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(label, color = TextGray, fontSize = 14.sp)
-        if (isBadge) {
-            Surface(color = PrimaryBlue.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
-                Text(value, color = PrimaryBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
-            }
-        } else {
-            Text(value, color = valueColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-        }
+        Text(value, color = valueColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-private fun JoinedPlayerRow(player: JoinedPlayer) {
+private fun JoinedPlayerRow(jogador: Utilizador, isYou: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -387,27 +263,19 @@ private fun JoinedPlayerRow(player: JoinedPlayer) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(InputBg), contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Person, contentDescription = null, tint = TextGray)
+                Text(jogador.nome.take(1).uppercase().ifBlank { "?" }, color = DarkBlue, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-                Text(player.name, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                Text(player.joinedTime, color = TextGray, fontSize = 12.sp)
+                Text(jogador.nome.ifBlank { jogador.username }, color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text("@${jogador.username}", color = TextGray, fontSize = 12.sp)
             }
         }
 
-        if (player.isYou) {
+        if (isYou) {
             Surface(color = TealGreen.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
                 Text(stringResource(R.string.badge_you), color = TealGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CasualMatchDetailsScreenPreview() {
-    MaterialTheme {
-        CasualMatchDetailsScreen()
     }
 }
