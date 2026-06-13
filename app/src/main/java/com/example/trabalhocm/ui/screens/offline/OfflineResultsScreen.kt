@@ -1,18 +1,20 @@
 package com.example.trabalhocm.ui.screens.offline
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -21,10 +23,16 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -43,11 +52,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.local.offline.OfflineResultEntity
 import com.example.trabalhocm.data.repository.OfflineResultRepository
+import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.DarkBlue
+import com.example.trabalhocm.ui.theme.InputBg
+import com.example.trabalhocm.ui.theme.TealGreen
+import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OfflineResultsScreen(
     onBackClick: () -> Unit = {}
@@ -66,76 +82,67 @@ fun OfflineResultsScreen(
     var mensagem by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
-            .statusBarsPadding()
-            .navigationBarsPadding()
-    ) {
-        OfflineResultsTopBar(
-            onBackClick = onBackClick
-        )
-
+    Scaffold(
+        containerColor = BgLight,
+        topBar = {
+            OfflineResultsTopBar(onBackClick = onBackClick)
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
+                .background(BgLight)
+                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 22.dp, vertical = 20.dp)
+                .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
-            Text(
-                text = "OFFLINE MODE",
-                color = Color(0xFF4167C8),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
+            OfflineHeroCard(
+                pendingCount = resultadosPendentes.size
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            if (mensagem.isNotBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Registo de resultados",
-                color = BrandBlue,
-                fontSize = 27.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Guarda resultados localmente quando não existe ligação à Internet e sincroniza mais tarde com a API.",
-                color = Color(0xFF51607A),
-                fontSize = 13.sp,
-                lineHeight = 19.sp,
-                fontWeight = FontWeight.Medium
-            )
+                OfflineMessageCard(
+                    message = mensagem,
+                    isError = mensagem.contains("Erro", ignoreCase = true) ||
+                            mensagem.contains("Preenche", ignoreCase = true)
+                )
+            }
 
             Spacer(modifier = Modifier.height(18.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp)
+                    modifier = Modifier.padding(20.dp)
                 ) {
+                    SectionHeader(
+                        title = "Novo resultado",
+                        subtitle = "Regista os dados principais do jogo para sincronizar mais tarde."
+                    )
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
                     OfflineInput(
-                        label = "NOME DO JOGO",
+                        label = "Nome do jogo",
                         value = nomeJogo,
                         onValueChange = { nomeJogo = it },
                         placeholder = "Ex: Elite 5v5 Pickup",
                         keyboardType = KeyboardType.Text
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         OfflineInput(
-                            label = "EQUIPA A",
+                            label = "Equipa A",
                             value = resultadoA,
                             onValueChange = { resultadoA = it },
                             placeholder = "0",
@@ -144,7 +151,7 @@ fun OfflineResultsScreen(
                         )
 
                         OfflineInput(
-                            label = "EQUIPA B",
+                            label = "Equipa B",
                             value = resultadoB,
                             onValueChange = { resultadoB = it },
                             placeholder = "0",
@@ -153,17 +160,17 @@ fun OfflineResultsScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     OfflineInput(
-                        label = "OBSERVAÇÕES",
+                        label = "Observações",
                         value = observacoes,
                         onValueChange = { observacoes = it },
                         placeholder = "Ex: Resultado registado sem Internet",
                         keyboardType = KeyboardType.Text
                     )
 
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
                         onClick = {
@@ -199,19 +206,20 @@ fun OfflineResultsScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
+                            .height(52.dp),
                         enabled = !isLoading,
-                        shape = RoundedCornerShape(5.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandGreen,
-                            contentColor = BrandWhite
+                            containerColor = TealGreen,
+                            contentColor = BrandWhite,
+                            disabledContainerColor = TealGreen.copy(alpha = 0.55f),
+                            disabledContentColor = BrandWhite
                         )
                     ) {
                         Text(
-                            text = "GUARDAR OFFLINE",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
+                            text = "Guardar offline",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -219,94 +227,111 @@ fun OfflineResultsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    scope.launch {
-                        isLoading = true
-                        mensagem = ""
-
-                        repository.sincronizarResultadosPendentes()
-                            .onSuccess { total ->
-                                mensagem = if (total > 0) {
-                                    "$total resultado(s) sincronizado(s) com a API."
-                                } else {
-                                    "Não existem resultados pendentes para sincronizar."
-                                }
-                            }
-                            .onFailure { erro ->
-                                mensagem = "Erro na sincronização: ${erro.message}"
-                            }
-
-                       
-                        isLoading = false
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                enabled = !isLoading,
-                shape = RoundedCornerShape(5.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandBlue,
-                    contentColor = BrandWhite
-                )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        color = BrandWhite,
-                        strokeWidth = 2.dp
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    SectionHeader(
+                        title = "Sincronização",
+                        subtitle = "Envia para a API todos os resultados que ficaram guardados localmente."
                     )
-                } else {
-                    Text(
-                        text = "SINCRONIZAR COM API",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Pendentes",
+                            color = TextGray,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Surface(
+                            color = InputBg,
+                            shape = RoundedCornerShape(50.dp)
+                        ) {
+                            Text(
+                                text = "${resultadosPendentes.size} resultado(s)",
+                                color = DarkBlue,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                mensagem = ""
+
+                                repository.sincronizarResultadosPendentes()
+                                    .onSuccess { total ->
+                                        mensagem = if (total > 0) {
+                                            "$total resultado(s) sincronizado(s) com a API."
+                                        } else {
+                                            "Não existem resultados pendentes para sincronizar."
+                                        }
+                                    }
+                                    .onFailure { erro ->
+                                        mensagem = "Erro na sincronização: ${erro.message}"
+                                    }
+
+                                isLoading = false
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        enabled = !isLoading,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DarkBlue,
+                            contentColor = BrandWhite,
+                            disabledContainerColor = DarkBlue.copy(alpha = 0.55f),
+                            disabledContentColor = BrandWhite
+                        )
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = BrandWhite,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "Sincronizar com API",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
-            }
-
-            if (mensagem.isNotBlank()) {
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Text(
-                    text = mensagem,
-                    color = if (mensagem.contains("Erro", ignoreCase = true)) {
-                        Color(0xFFD01818)
-                    } else {
-                        BrandGreen
-                    },
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "RESULTADOS PENDENTES",
-                color = BrandBlue,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
+            SectionHeader(
+                title = "Resultados pendentes",
+                subtitle = "Lista de resultados guardados localmente neste dispositivo."
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             if (resultadosPendentes.isEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = BrandWhite),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Text(
-                        text = "Não existem resultados pendentes.",
-                        color = Color(0xFF6D7486),
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                EmptyPendingResultsCard()
             } else {
                 resultadosPendentes.forEach { resultado ->
                     OfflineResultPendingCard(
@@ -318,40 +343,168 @@ fun OfflineResultsScreen(
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OfflineResultsTopBar(
+    onBackClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = "Offline Results",
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Text(
+                    text = "‹",
+                    color = BrandWhite,
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = DarkBlue
+        )
+    )
+}
+
+@Composable
+fun OfflineHeroCard(
+    pendingCount: Int
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(22.dp)
+        ) {
+            Surface(
+                color = BrandWhite.copy(alpha = 0.12f),
+                shape = RoundedCornerShape(50.dp)
+            ) {
+                Text(
+                    text = "OFFLINE MODE",
+                    color = BrandWhite,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.5.sp,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Text(
+                text = "Registo de resultados",
+                color = BrandWhite,
+                fontSize = 27.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 32.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Guarda resultados localmente quando não existe ligação à Internet e sincroniza mais tarde com a API.",
+                color = BrandWhite.copy(alpha = 0.82f),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OfflineHeroMetric(
+                    label = "Pendentes",
+                    value = pendingCount.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                OfflineHeroMetric(
+                    label = "Estado",
+                    value = "Local",
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
 }
 
 @Composable
-fun OfflineResultsTopBar(
-    onBackClick: () -> Unit
+fun OfflineHeroMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .background(BrandBlue)
-            .padding(horizontal = 22.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        modifier = modifier,
+        color = BrandWhite.copy(alpha = 0.10f),
+        shape = RoundedCornerShape(18.dp)
     ) {
-        Text(
-            text = "←",
-            color = BrandWhite,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(end = 14.dp)
-                .clickable { onBackClick() }
-        )
+        Column(
+            modifier = Modifier.padding(14.dp)
+        ) {
+            Text(
+                text = value,
+                color = BrandWhite,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
 
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = label,
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+fun SectionHeader(
+    title: String,
+    subtitle: String
+) {
+    Column {
         Text(
-            text = "Offline Results",
-            color = BrandWhite,
+            text = title,
+            color = DarkBlue,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = subtitle,
+            color = TextGray,
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+            fontWeight = FontWeight.Medium
         )
     }
 }
@@ -370,15 +523,14 @@ fun OfflineInput(
     ) {
         Text(
             text = label,
-            color = Color(0xFF7D8497),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
+            color = TextGray,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
+        TextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier
@@ -388,22 +540,113 @@ fun OfflineInput(
             placeholder = {
                 Text(
                     text = placeholder,
-                    color = Color(0xFFA7ACBA),
+                    color = TextGray.copy(alpha = 0.65f),
                     fontSize = 13.sp
                 )
             },
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            shape = RoundedCornerShape(5.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF1F2FB),
-                unfocusedContainerColor = Color(0xFFF1F2FB),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                focusedTextColor = BrandBlue,
-                unfocusedTextColor = BrandBlue,
-                cursorColor = BrandGreen
+            shape = RoundedCornerShape(16.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = InputBg,
+                unfocusedContainerColor = InputBg,
+                disabledContainerColor = InputBg,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedTextColor = DarkBlue,
+                unfocusedTextColor = DarkBlue,
+                cursorColor = TealGreen
             )
         )
+    }
+}
+
+@Composable
+fun OfflineMessageCard(
+    message: String,
+    isError: Boolean
+) {
+    val color = if (isError) Color(0xFFD01818) else TealGreen
+    val backgroundColor = if (isError) Color(0xFFFFEEEE) else Color(0xFFEAF8F2)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(color)
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Text(
+                text = message,
+                color = color,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 18.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun EmptyPendingResultsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(CircleShape)
+                    .background(InputBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "0",
+                    color = DarkBlue,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "Não existem resultados pendentes.",
+                color = DarkBlue,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Quando guardares resultados offline, eles vão aparecer aqui.",
+                color = TextGray,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -414,52 +657,105 @@ fun OfflineResultPendingCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
-            Text(
-                text = "Jogo: ${resultado.nomeJogo}",
-                color = BrandBlue,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .background(InputBg),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = resultado.nomeJogo.take(1).uppercase(),
+                        color = DarkBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-            Text(
-                text = "Resultado: ${resultado.resultadoEquipaA} - ${resultado.resultadoEquipaB}",
-                color = Color(0xFF51607A),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
-            )
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = resultado.nomeJogo,
+                        color = DarkBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 20.sp
+                    )
 
-            if (resultado.observacoes.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    text = resultado.observacoes,
-                    color = Color(0xFF7D8497),
-                    fontSize = 12.sp
-                )
+                    Text(
+                        text = "Resultado pendente",
+                        color = TextGray,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Surface(
+                    color = InputBg,
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text(
+                        text = "${resultado.resultadoEquipaA} - ${resultado.resultadoEquipaB}",
+                        color = DarkBlue,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            if (resultado.observacoes.isNotBlank()) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = BgLight,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = resultado.observacoes,
+                        color = TextGray,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             OutlinedButton(
                 onClick = onRemoveClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(38.dp),
-                shape = RoundedCornerShape(5.dp)
+                    .height(44.dp),
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, Color(0xFFD01818).copy(alpha = 0.35f)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color(0xFFD01818),
+                    containerColor = Color.Transparent
+                )
             ) {
                 Text(
-                    text = "REMOVER PENDENTE",
-                    color = Color(0xFFD01818),
-                    fontSize = 11.sp,
+                    text = "Remover pendente",
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
             }

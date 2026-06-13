@@ -73,6 +73,7 @@ import com.example.trabalhocm.ui.theme.TextGray
 import com.example.trabalhocm.ui.theme.WarningYellow
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -271,18 +272,20 @@ fun AdminTournamentsScreen(
                 ) {
                     OutlinedButton(
                         onClick = onArchiveClick,
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, InputBg),
                         colors = ButtonDefaults.outlinedButtonColors(containerColor = CardBg),
                         modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp)
+                            .weight(1.15f)
+                            .height(58.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.admin_tournaments_archive_button),
                             color = DarkBlue,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 16.sp
                         )
                     }
 
@@ -294,7 +297,7 @@ fun AdminTournamentsScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp)
+                            .height(58.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.desc_refresh),
@@ -655,7 +658,7 @@ private fun AdminTournamentMainCard(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "CAPACIDADE",
+                        text = stringResource(R.string.admin_tournaments_capacity).uppercase(),
                         color = DarkBlue,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
