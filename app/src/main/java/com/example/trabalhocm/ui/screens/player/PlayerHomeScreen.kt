@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -146,7 +147,7 @@ fun PlayerHomeScreen(
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    SectionTitle(title = "QUICK ACTIONS")
+                    SectionTitle(title = stringResource(R.string.player_home_quick_actions))
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -157,14 +158,14 @@ fun PlayerHomeScreen(
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Outlined.EmojiEvents,
-                            title = "TOURNAMENTS",
+                            title = stringResource(R.string.player_home_qa_tournaments),
                             onClick = onTournamentsClick
                         )
 
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Outlined.AddCircleOutline,
-                            title = "CASUAL MATCHES",
+                            title = stringResource(R.string.player_home_qa_casual),
                             onClick = onCasualMatchesClick
                         )
                     }
@@ -178,14 +179,14 @@ fun PlayerHomeScreen(
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.RssFeed,
-                            title = "LIVE MATCHES",
+                            title = stringResource(R.string.player_home_qa_live),
                             onClick = onLiveMatchesClick
                         )
 
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Outlined.Groups,
-                            title = "TEAMS",
+                            title = stringResource(R.string.player_home_qa_teams),
                             onClick = onTeamsClick
                         )
                     }
@@ -197,10 +198,10 @@ fun PlayerHomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        SectionTitle(title = "ACTIVE TOURNAMENTS")
+                        SectionTitle(title = stringResource(R.string.player_home_active_tournaments))
 
                         Text(
-                            text = "VIEW ALL",
+                            text = stringResource(R.string.player_common_view_all),
                             color = Color(0xFF4167C8),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -213,7 +214,7 @@ fun PlayerHomeScreen(
                     val torneiosAtivos = dados?.activeTournaments.orEmpty()
 
                     if (torneiosAtivos.isEmpty()) {
-                        PlayerHomeEmptyCard("Ainda não existem torneios ativos.")
+                        PlayerHomeEmptyCard(stringResource(R.string.player_home_no_active_tournaments))
                     } else {
                         torneiosAtivos.forEachIndexed { index, torneio ->
                             ActiveTournamentCard(
@@ -228,7 +229,7 @@ fun PlayerHomeScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SectionTitle(title = "UPCOMING FIXTURES")
+                    SectionTitle(title = stringResource(R.string.player_home_upcoming))
 
                     Spacer(modifier = Modifier.height(14.dp))
 
@@ -239,7 +240,7 @@ fun PlayerHomeScreen(
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    SectionTitle(title = "PERFORMANCE INSIGHTS")
+                    SectionTitle(title = stringResource(R.string.player_home_perf))
 
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -260,10 +261,10 @@ fun PlayerHomeScreen(
                     }
 
                     val pontuacaoLabel = when (selectedPerfSport) {
-                        "FOOTBALL" -> "GOALS"
-                        "BASKETBALL" -> "POINTS"
-                        "VOLLEYBALL" -> "SPIKES"
-                        else -> "POINTS"
+                        "FOOTBALL" -> stringResource(R.string.player_home_label_goals)
+                        "BASKETBALL" -> stringResource(R.string.player_home_label_points)
+                        "VOLLEYBALL" -> stringResource(R.string.player_home_label_spikes)
+                        else -> stringResource(R.string.player_home_label_points)
                     }
 
                     PlayerOfWeekCard(
@@ -313,10 +314,10 @@ fun PerformanceSportTabs(selectedSport: String, onSportSelected: (String) -> Uni
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        PerformanceTabButton("ALL", selectedSport == "ALL", { onSportSelected("ALL") }, Modifier.weight(1f))
-        PerformanceTabButton("FOOTBALL", selectedSport == "FOOTBALL", { onSportSelected("FOOTBALL") }, Modifier.weight(1f))
-        PerformanceTabButton("BASKET", selectedSport == "BASKETBALL", { onSportSelected("BASKETBALL") }, Modifier.weight(1f))
-        PerformanceTabButton("VOLLEY", selectedSport == "VOLLEYBALL", { onSportSelected("VOLLEYBALL") }, Modifier.weight(1f))
+        PerformanceTabButton(stringResource(R.string.player_home_tab_all), selectedSport == "ALL", { onSportSelected("ALL") }, Modifier.weight(1f))
+        PerformanceTabButton(stringResource(R.string.player_home_tab_football), selectedSport == "FOOTBALL", { onSportSelected("FOOTBALL") }, Modifier.weight(1f))
+        PerformanceTabButton(stringResource(R.string.player_home_tab_basket), selectedSport == "BASKETBALL", { onSportSelected("BASKETBALL") }, Modifier.weight(1f))
+        PerformanceTabButton(stringResource(R.string.player_home_tab_volley), selectedSport == "VOLLEYBALL", { onSportSelected("VOLLEYBALL") }, Modifier.weight(1f))
     }
 }
 
@@ -352,7 +353,7 @@ fun Top3LeaderboardCard(top3: List<PlayerHomePlayerStats>, pontuacaoLabel: Strin
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "GLOBAL TOP SCORERS",
+                text = stringResource(R.string.player_home_top_scorers),
                 color = Color(0xFF7D8497),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
@@ -460,7 +461,7 @@ fun PlayerHomeTopBar(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Home",
+            text = stringResource(R.string.player_home_title),
             color = BrandWhite,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold
@@ -468,7 +469,7 @@ fun PlayerHomeTopBar(
 
        Icon(
             imageVector = Icons.Outlined.Notifications,
-            contentDescription = "Notifications",
+            contentDescription = stringResource(R.string.player_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(26.dp)
@@ -510,7 +511,7 @@ fun PlayerLiveCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "NO LIVE MATCH",
+                        text = stringResource(R.string.player_home_no_live),
                         color = BrandGreen,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -520,7 +521,7 @@ fun PlayerLiveCard(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "There are no live matches available right now.",
+                        text = stringResource(R.string.player_home_no_live_sub),
                         color = Color(0xFFA6AFBD),
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center
@@ -543,7 +544,7 @@ fun PlayerLiveCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "LIVE\nNOW",
+                                text = stringResource(R.string.player_home_live_now),
                                 color = Color(0xFF9DF4E9),
                                 fontSize = 12.sp,
                                 lineHeight = 14.sp,
@@ -556,7 +557,7 @@ fun PlayerLiveCard(
                         Spacer(modifier = Modifier.width(18.dp))
 
                         Text(
-                            text = "${liveMatch.torneioNome.uppercase()} • GW\n26",
+                            text = stringResource(R.string.player_home_live_gw, liveMatch.torneioNome.uppercase()),
                             color = Color(0xFFA6AFBD),
                             fontSize = 12.sp,
                             lineHeight = 18.sp,
@@ -633,7 +634,7 @@ fun PlayerLiveCard(
                         )
                     ) {
                         Text(
-                            text = "WATCH STREAM",
+                            text = stringResource(R.string.player_home_watch_stream),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.5.sp
@@ -796,7 +797,7 @@ fun ActiveTournamentCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "PROGRESS",
+                        text = stringResource(R.string.player_home_progress),
                         color = Color(0xFF6D7486),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
@@ -839,7 +840,7 @@ fun UpcomingFixturesCard(
     ) {
         if (fixtures.isEmpty()) {
             Text(
-                text = "Ainda não existem jogos agendados.",
+                text = stringResource(R.string.player_home_no_fixtures),
                 color = Color(0xFF6D7486),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
@@ -915,7 +916,7 @@ fun FixtureRow(
         Spacer(modifier = Modifier.width(20.dp))
 
         Text(
-            text = "VS",
+            text = stringResource(R.string.player_common_vs),
             color = Color(0xFFD2D6E3),
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold
@@ -968,7 +969,7 @@ fun PlayerOfWeekCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "PLAYER OF THE WEEK",
+                text = stringResource(R.string.player_home_potw),
                 color = BrandGreen,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -985,7 +986,7 @@ fun PlayerOfWeekCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Ainda não existem estatísticas suficientes.",
+                        text = stringResource(R.string.player_home_no_stats),
                         color = BrandWhite,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
@@ -1032,7 +1033,7 @@ fun PlayerOfWeekCard(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "${playerStats.username} • PLAYER",
+                    text = stringResource(R.string.player_home_potw_player, playerStats.username),
                     color = BrandGreen,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -1052,12 +1053,12 @@ fun PlayerOfWeekCard(
 
                     PlayerStat(
                         value = playerStats.vitorias.toString().padStart(2, '0'),
-                        label = "WINS"
+                        label = stringResource(R.string.player_home_stat_wins)
                     )
 
                     PlayerStat(
                         value = String.format(Locale.US, "%.1f", playerStats.rating),
-                        label = "RATING"
+                        label = stringResource(R.string.player_home_stat_rating)
                     )
                 }
             }
@@ -1128,7 +1129,7 @@ fun GlobalRankCard(
 
             Column {
                 Text(
-                    text = "YOUR GLOBAL RANK",
+                    text = stringResource(R.string.player_home_global_rank),
                     color = Color(0xFF7D8497),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
