@@ -33,6 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -42,10 +44,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.model.Jogo
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.data.repository.TorneioRepository
 import com.example.trabalhocm.data.repository.EstatisticaEquipaLiga
-import com.example.trabalhocm.data.repository.Torneio // IMPORTANTE: Agora usa o modelo correto!
+import com.example.trabalhocm.data.repository.Torneio
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
@@ -66,6 +69,7 @@ fun PlayerTournamentDetailsScreen(
 
     var torneioAtual by remember { mutableStateOf<Torneio?>(null) }
     var classificacao by remember { mutableStateOf<List<EstatisticaEquipaLiga>>(emptyList()) }
+    var jogosEliminatorias by remember { mutableStateOf<List<Jogo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(idTorneio) {
@@ -76,6 +80,10 @@ fun PlayerTournamentDetailsScreen(
                 if (torneio.formato?.lowercase() == "liga") {
                     torneioRepository.obterClassificacaoTorneio(idTorneio).onSuccess { standings ->
                         classificacao = standings
+                    }
+                } else if (torneio.formato?.lowercase() == "eliminatorias" || torneio.formato?.lowercase() == "knockout") {
+                    torneioRepository.obterJogosEliminatorias(idTorneio).onSuccess { jogos ->
+                        jogosEliminatorias = jogos
                     }
                 }
 
@@ -149,6 +157,9 @@ fun PlayerTournamentDetailsScreen(
 
                     if (t.formato?.lowercase() == "liga") {
                         TournamentDetailsStandingsCard(classificacao = classificacao)
+                        Spacer(modifier = Modifier.height(22.dp))
+                    } else if (t.formato?.lowercase() == "eliminatorias" || t.formato?.lowercase() == "knockout") {
+                        TournamentBracketCard(jogos = jogosEliminatorias)
                         Spacer(modifier = Modifier.height(22.dp))
                     }
                 }
@@ -440,6 +451,109 @@ fun StandingLogo(nomeEquipa: String, accent: Color) {
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
+        }
+    }
+}
+
+@Composable
+fun TournamentBracketCard(jogos: List<Jogo>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text("Knockout Stage", color = BrandBlue, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(14.dp))
+
+            if (jogos.isEmpty()) {
+                Text(
+                    text = "No knockout fixtures scheduled yet.",
+                    color = Color(0xFF6D7486),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        BracketMatchNode("TBD", "TBD", "Q1", true)
+                        BracketMatchNode("TBD", "TBD", "Q2", true)
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .height(80.dp)
+                            .drawBehind {
+                                drawLine(
+                                    color = Color(0xFFE8EAF2),
+                                    start = Offset(0f, size.height / 4),
+                                    end = Offset(size.width / 2, size.height / 4),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                                drawLine(
+                                    color = Color(0xFFE8EAF2),
+                                    start = Offset(0f, size.height * 0.75f),
+                                    end = Offset(size.width / 2, size.height * 0.75f),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                                drawLine(
+                                    color = Color(0xFFE8EAF2),
+                                    start = Offset(size.width / 2, size.height / 4),
+                                    end = Offset(size.width / 2, size.height * 0.75f),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                                drawLine(
+                                    color = Color(0xFFE8EAF2),
+                                    start = Offset(size.width / 2, size.height / 2),
+                                    end = Offset(size.width, size.height / 2),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                            }
+                    )
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        BracketMatchNode("TBD", "TBD", "SF1", false)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BracketMatchNode(team1: String, team2: String, label: String, isLeft: Boolean) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF4F5FA)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(team1, color = BrandBlue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text("-", color = Color(0xFF6D7486), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFE8EAF2)))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(team2, color = BrandBlue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text("-", color = Color(0xFF6D7486), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
