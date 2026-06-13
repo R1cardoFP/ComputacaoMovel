@@ -51,6 +51,15 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+private val PlayerCalendarBg = Color(0xFFF6F7FB)
+private val PlayerCalendarCardBg = Color.White
+private val PlayerCalendarInputBg = Color(0xFFF0F3F8)
+private val PlayerCalendarTextGray = Color(0xFF657089)
+private val PlayerCalendarMuted = Color(0xFF8A92A6)
+private val PlayerCalendarDarkCard = Color(0xFF111827)
+private val PlayerCalendarBlue = Color(0xFF0757C8)
+private val PlayerCalendarRed = Color(0xFFE53935)
+
 @Composable
 fun PlayerCalendarMatchDetailsScreen(
     idJogo: Long,
@@ -91,7 +100,7 @@ fun PlayerCalendarMatchDetailsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(PlayerCalendarBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -103,14 +112,14 @@ fun PlayerCalendarMatchDetailsScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 18.dp)
+                .padding(horizontal = 24.dp, vertical = 18.dp)
         ) {
             when {
                 isLoading -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(260.dp),
+                            .height(280.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = BrandGreen)
@@ -120,45 +129,16 @@ fun PlayerCalendarMatchDetailsScreen(
                 mensagemErro.isNotBlank() -> {
                     PlayerCalendarDetailsMessageCard(
                         text = mensagemErro,
-                        color = Color(0xFFD01818)
+                        color = PlayerCalendarRed
                     )
                 }
 
                 jogo != null -> {
                     val info = jogo!!
 
-                    Text(
-                        text = info.torneioNome.uppercase(),
-                        color = Color(0xFF0757C8),
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.3.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(5.dp))
-
-                    Text(
-                        text = "${info.equipaCasa} vs ${info.equipaFora}",
-                        color = BrandBlue,
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "Detalhes do jogo marcado no calendário.",
-                        color = Color(0xFF51607A),
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    PlayerCalendarDetailsHeroCard(info)
 
                     Spacer(modifier = Modifier.height(18.dp))
-
-                    PlayerCalendarDetailsScoreCard(info)
-
-                    Spacer(modifier = Modifier.height(14.dp))
 
                     PlayerCalendarDetailsScheduleCard(info)
 
@@ -178,62 +158,14 @@ fun PlayerCalendarMatchDetailsScreen(
 
                     PlayerCalendarDetailsAboutCard(info)
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                    if (info.isLive) {
-                        Button(
-                            onClick = { onWatchLiveClick(info.idJogo) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(6.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = BrandGreen,
-                                contentColor = BrandWhite
-                            )
-                        ) {
-                            Text(
-                                text = "WATCH LIVE",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    } else {
-                        Button(
-                            onClick = { reminderSet = !reminderSet },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(6.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (reminderSet) BrandGreen else Color(0xFF0757C8),
-                                contentColor = BrandWhite
-                            )
-                        ) {
-                            Text(
-                                text = if (reminderSet) "REMINDER SET" else "SET REMINDER",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedButton(
-                        onClick = {},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(6.dp)
-                    ) {
-                        Text(
-                            text = "↗  SHARE MATCH",
-                            color = BrandBlue,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    PlayerCalendarDetailsActionsCard(
+                        jogo = info,
+                        reminderSet = reminderSet,
+                        onReminderClick = { reminderSet = !reminderSet },
+                        onWatchLiveClick = { onWatchLiveClick(info.idJogo) }
+                    )
                 }
             }
 
@@ -258,9 +190,9 @@ fun PlayerCalendarDetailsTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
-            .background(BrandBlue)
-            .padding(horizontal = 20.dp),
+            .height(66.dp)
+            .background(PlayerCalendarDarkCard)
+            .padding(horizontal = 22.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -274,10 +206,10 @@ fun PlayerCalendarDetailsTopBar(
         Text(
             text = "Details",
             color = BrandWhite,
-            fontSize = 17.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             fontStyle = FontStyle.Italic,
-            modifier = Modifier.padding(start = 6.dp)
+            modifier = Modifier.padding(start = 8.dp)
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -285,25 +217,71 @@ fun PlayerCalendarDetailsTopBar(
         Text(
             text = "♧",
             color = BrandWhite,
-            fontSize = 27.sp,
+            fontSize = 25.sp,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-fun PlayerCalendarDetailsScoreCard(
+fun PlayerCalendarDetailsHeroCard(
     jogo: PlayerCalendarMatchInfo
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCalendarDarkCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(54.dp)
+                        .height(54.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.13f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "⚑",
+                        color = BrandWhite,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = jogo.torneioNome.uppercase(),
+                        color = BrandGreen,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    Text(
+                        text = "${jogo.equipaCasa} vs ${jogo.equipaFora}",
+                        color = BrandWhite,
+                        fontSize = 22.sp,
+                        lineHeight = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -313,76 +291,139 @@ fun PlayerCalendarDetailsScoreCard(
                         jogo.isFinished -> "● COMPLETED"
                         else -> "● UPCOMING"
                     },
-                    backgroundColor = if (jogo.isLive) BrandGreen.copy(alpha = 0.12f) else Color(0xFFEAF0FB),
-                    textColor = if (jogo.isLive) BrandGreen else Color(0xFF0757C8)
+                    backgroundColor = when {
+                        jogo.isLive -> BrandGreen.copy(alpha = 0.16f)
+                        jogo.isFinished -> Color.White.copy(alpha = 0.12f)
+                        else -> PlayerCalendarBlue.copy(alpha = 0.18f)
+                    },
+                    textColor = when {
+                        jogo.isLive -> BrandGreen
+                        jogo.isFinished -> Color(0xFFDCE3F2)
+                        else -> Color(0xFFBBD2FF)
+                    }
                 )
 
                 PlayerCalendarDetailsBadge(
                     text = jogo.modalidadeNome.uppercase(),
-                    backgroundColor = Color(0xFFEFF1F6),
-                    textColor = Color(0xFF6D7486)
+                    backgroundColor = Color.White.copy(alpha = 0.11f),
+                    textColor = Color(0xFFDCE3F2)
                 )
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            PlayerCalendarDetailsScoreLine(jogo)
+
+            Spacer(modifier = Modifier.height(18.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                PlayerCalendarDetailsTeamBlock(
-                    teamName = jogo.equipaCasa,
+                PlayerCalendarDetailsHeroMetric(
+                    label = "DATA",
+                    value = calendarDetailsFormatDate(jogo.data),
                     modifier = Modifier.weight(1f)
                 )
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (jogo.isLive || jogo.isFinished) {
-                        Text(
-                            text = "${jogo.pontosCasa} - ${jogo.pontosFora}",
-                            color = BrandBlue,
-                            fontSize = 31.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        if (jogo.isLive) {
-                            Text(
-                                text = "75'",
-                                color = Color(0xFFE53935),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        } else {
-                            Text(
-                                text = "Full Time",
-                                color = Color(0xFF6D7486),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    } else {
-                        Text(
-                            text = "VS",
-                            color = BrandBlue,
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = "in ${jogo.hora.take(5)}",
-                            color = Color(0xFF6D7486),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                PlayerCalendarDetailsTeamBlock(
-                    teamName = jogo.equipaFora,
+                PlayerCalendarDetailsHeroMetric(
+                    label = "HORA",
+                    value = jogo.hora.take(5),
+                    modifier = Modifier.weight(1f)
+                )
+                PlayerCalendarDetailsHeroMetric(
+                    label = "JOGO",
+                    value = "#${jogo.idJogo}",
                     modifier = Modifier.weight(1f)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun PlayerCalendarDetailsScoreLine(
+    jogo: PlayerCalendarMatchInfo
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PlayerCalendarDetailsTeamBlockDark(
+            teamName = jogo.equipaCasa,
+            modifier = Modifier.weight(1f)
+        )
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (jogo.isLive || jogo.isFinished) {
+                Text(
+                    text = "${jogo.pontosCasa} - ${jogo.pontosFora}",
+                    color = BrandWhite,
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = if (jogo.isLive) "75'" else "Full Time",
+                    color = if (jogo.isLive) PlayerCalendarRed else Color(0xFFDCE3F2),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            } else {
+                Text(
+                    text = "VS",
+                    color = BrandWhite,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "in ${jogo.hora.take(5)}",
+                    color = Color(0xFFDCE3F2),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        PlayerCalendarDetailsTeamBlockDark(
+            teamName = jogo.equipaFora,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun PlayerCalendarDetailsHeroMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(alpha = 0.13f))
+            .padding(horizontal = 10.dp, vertical = 12.dp)
+    ) {
+        Column {
+            Text(
+                text = value,
+                color = BrandWhite,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+
+            Spacer(modifier = Modifier.height(5.dp))
+
+            Text(
+                text = label,
+                color = Color(0xFFDCE3F2),
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.7.sp
+            )
         }
     }
 }
@@ -392,12 +433,13 @@ fun PlayerCalendarDetailsScheduleCard(
     jogo: PlayerCalendarMatchInfo
 ) {
     PlayerCalendarDetailsSectionCard(
-        title = "▣  Schedule"
+        title = "Schedule",
+        icon = "▣"
     ) {
         PlayerCalendarDetailsInfoRow("Date", calendarDetailsFormatDate(jogo.data))
         PlayerCalendarDetailsInfoRow("Start Time", jogo.hora.take(5))
         PlayerCalendarDetailsInfoRow("End Time", calendarDetailsEndTime(jogo.hora))
-        PlayerCalendarDetailsInfoRow("Duration", "2 hours", valueColor = Color(0xFF0757C8))
+        PlayerCalendarDetailsInfoRow("Duration", "2 hours", valueColor = PlayerCalendarBlue)
     }
 }
 
@@ -406,7 +448,8 @@ fun PlayerCalendarDetailsMatchInfoCard(
     jogo: PlayerCalendarMatchInfo
 ) {
     PlayerCalendarDetailsSectionCard(
-        title = "◉  Match Info"
+        title = "Match Info",
+        icon = "◉"
     ) {
         PlayerCalendarDetailsInfoRow("Tournament", jogo.torneioNome)
         PlayerCalendarDetailsInfoRow("Sport", jogo.modalidadeNome)
@@ -417,7 +460,7 @@ fun PlayerCalendarDetailsMatchInfoCard(
                 jogo.isFinished -> "COMPLETED"
                 else -> "UPCOMING"
             },
-            valueColor = if (jogo.isLive) BrandGreen else Color(0xFF0757C8)
+            valueColor = if (jogo.isLive) BrandGreen else PlayerCalendarBlue
         )
         PlayerCalendarDetailsInfoRow("Match ID", "#${jogo.idJogo}")
     }
@@ -428,12 +471,13 @@ fun PlayerCalendarDetailsLocationCard(
     jogo: PlayerCalendarMatchInfo
 ) {
     PlayerCalendarDetailsSectionCard(
-        title = "⌖  Location"
+        title = "Location",
+        icon = "⌖"
     ) {
         Text(
             text = jogo.local,
             color = BrandBlue,
-            fontSize = 14.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold
         )
 
@@ -442,16 +486,16 @@ fun PlayerCalendarDetailsLocationCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(115.dp)
-                .clip(RoundedCornerShape(7.dp))
-                .background(Color(0xFFAFC4D4)),
+                .height(120.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(Color(0xFFD8E1EE)),
             contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFFD01818))
-                    .padding(horizontal = 14.dp, vertical = 7.dp),
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(PlayerCalendarRed)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -463,14 +507,17 @@ fun PlayerCalendarDetailsLocationCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
             onClick = {},
             modifier = Modifier
                 .fillMaxWidth()
-                .height(38.dp),
-            shape = RoundedCornerShape(5.dp)
+                .height(44.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = BrandBlue
+            )
         ) {
             Text(
                 text = "⌖  OPEN IN MAPS",
@@ -487,7 +534,8 @@ fun PlayerCalendarDetailsTeamsCard(
     jogo: PlayerCalendarMatchInfo
 ) {
     PlayerCalendarDetailsSectionCard(
-        title = "Teams"
+        title = "Teams",
+        icon = "⚑"
     ) {
         PlayerCalendarDetailsInfoRow("Home Team", jogo.equipaCasa)
         PlayerCalendarDetailsInfoRow("Away Team", jogo.equipaFora)
@@ -504,38 +552,145 @@ fun PlayerCalendarDetailsAboutCard(
     jogo: PlayerCalendarMatchInfo
 ) {
     PlayerCalendarDetailsSectionCard(
-        title = "About this match"
+        title = "About this match",
+        icon = "i"
     ) {
         Text(
             text = "This match belongs to ${jogo.torneioNome}. It is scheduled at ${jogo.local} and will be played between ${jogo.equipaCasa} and ${jogo.equipaFora}.",
-            color = Color(0xFF51607A),
-            fontSize = 12.sp,
-            lineHeight = 18.sp,
+            color = PlayerCalendarTextGray,
+            fontSize = 13.sp,
+            lineHeight = 19.sp,
             fontWeight = FontWeight.Medium
         )
     }
 }
 
 @Composable
-fun PlayerCalendarDetailsSectionCard(
-    title: String,
-    content: @Composable () -> Unit
+fun PlayerCalendarDetailsActionsCard(
+    jogo: PlayerCalendarMatchInfo,
+    reminderSet: Boolean,
+    onReminderClick: () -> Unit,
+    onWatchLiveClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCalendarCardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = title,
+                text = "Ações",
                 color = BrandBlue,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
             )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            if (jogo.isLive) {
+                Button(
+                    onClick = onWatchLiveClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BrandGreen,
+                        contentColor = BrandWhite
+                    )
+                ) {
+                    Text(
+                        text = "WATCH LIVE",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                Button(
+                    onClick = onReminderClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (reminderSet) BrandGreen else PlayerCalendarBlue,
+                        contentColor = BrandWhite
+                    )
+                ) {
+                    Text(
+                        text = if (reminderSet) "REMINDER SET" else "SET REMINDER",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text(
+                    text = "↗  SHARE MATCH",
+                    color = BrandBlue,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PlayerCalendarDetailsSectionCard(
+    title: String,
+    icon: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCalendarCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(34.dp)
+                        .height(34.dp)
+                        .clip(RoundedCornerShape(11.dp))
+                        .background(BrandGreen.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon,
+                        color = BrandGreen,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    text = title,
+                    color = BrandBlue,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -553,12 +708,12 @@ fun PlayerCalendarDetailsInfoRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 3.dp),
+            .padding(vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            color = Color(0xFF6D7486),
+            color = PlayerCalendarTextGray,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium
         )
@@ -585,8 +740,8 @@ fun PlayerCalendarDetailsTeamBlock(
     ) {
         Box(
             modifier = Modifier
-                .width(44.dp)
-                .height(44.dp)
+                .width(48.dp)
+                .height(48.dp)
                 .clip(CircleShape)
                 .background(Color(0xFFEAF0FB)),
             contentAlignment = Alignment.Center
@@ -599,11 +754,47 @@ fun PlayerCalendarDetailsTeamBlock(
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(7.dp))
 
         Text(
             text = teamName,
             color = BrandBlue,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun PlayerCalendarDetailsTeamBlockDark(
+    teamName: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .width(48.dp)
+                .height(48.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.13f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = calendarDetailsInitials(teamName),
+                color = BrandWhite,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(7.dp))
+
+        Text(
+            text = teamName,
+            color = BrandWhite,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold
         )
@@ -620,7 +811,7 @@ fun PlayerCalendarDetailsBadge(
         modifier = Modifier
             .clip(RoundedCornerShape(18.dp))
             .background(backgroundColor)
-            .padding(horizontal = 9.dp, vertical = 5.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -640,8 +831,8 @@ fun PlayerCalendarDetailsMessageCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCalendarCardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Text(

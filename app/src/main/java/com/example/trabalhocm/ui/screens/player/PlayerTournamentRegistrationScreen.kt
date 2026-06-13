@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
@@ -60,6 +59,16 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+private val ScreenBg = Color(0xFFF4F6FB)
+private val CardBg = Color.White
+private val InputBg = Color(0xFFEFF3F8)
+private val TextMuted = Color(0xFF6D7486)
+private val BorderLine = Color(0xFFE6EAF2)
+private val SoftGreen = Color(0xFFEAF8F5)
+private val SoftBlue = Color(0xFFEAF1FF)
+private val SoftWarning = Color(0xFFFFF4D8)
+private val WarningText = Color(0xFF8A6500)
 
 @Composable
 fun PlayerTournamentRegistrationScreen(
@@ -147,137 +156,174 @@ fun PlayerTournamentRegistrationScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(ScreenBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
         RegistrationTopBar(onBackClick = onBackClick)
 
-        if (isLoading) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = BrandGreen)
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = BrandGreen)
+                }
             }
-        } else if (errorMessage.isNotBlank()) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(text = errorMessage, color = Color.Red, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
+
+            errorMessage.isNotBlank() -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    RegistrationFeedbackCard(
+                        title = "Não foi possível carregar a inscrição",
+                        message = errorMessage,
+                        isError = true
+                    )
+                }
             }
-        } else {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 22.dp, vertical = 18.dp)
-            ) {
-                torneio?.let { info ->
-                    val isFree = (info.custo ?: 0.0) <= 0.0
 
-                    RegistrationTournamentHeaderCard(torneio = info)
+            else -> {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp, vertical = 20.dp)
+                ) {
+                    torneio?.let { info ->
+                        val isFree = (info.custo ?: 0.0) <= 0.0
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                        RegistrationTournamentHeaderCard(torneio = info)
 
-                    RegistrationProgressCard(
-                        inscritos = equipasInscritas,
-                        maxEquipas = info.maxEquipas ?: 16
-                    )
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    RegistrationTeamSelectionCard(
-                        equipa = minhaEquipa,
-                        isCapitao = souCapitao
-                    )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    if (!isFree) {
-                        RegistrationPaymentMethodCard(
-                            selectedPayment = selectedPayment,
-                            onPaymentSelected = { selectedPayment = it }
+                        RegistrationProgressCard(
+                            inscritos = equipasInscritas,
+                            maxEquipas = info.maxEquipas ?: 16
                         )
+
                         Spacer(modifier = Modifier.height(14.dp))
-                    }
 
-                    val paymentText = if (isFree) "None (Free Entry)"
-                    else if (selectedPayment == "MB Way") "MB Way"
-                    else "$selectedPayment / Card"
-
-                    RegistrationSummaryCard(
-                        payment = paymentText,
-                        equipaNome = minhaEquipa?.nome ?: "None",
-                        entryFee = info.custo ?: 0.0
-                    )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    val maxEquipasInt = info.maxEquipas ?: 16
-                    val isCheio = equipasInscritas >= maxEquipasInt
-                    val podeInscrever = minhaEquipa != null && souCapitao && !isSubmitting && !isCheio
-
-                    Button(
-                        onClick = {
-                            if (podeInscrever) {
-                                scope.launch {
-                                    isSubmitting = true
-                                    errorMessage = "" // Limpa erros antigos
-                                    try {
-                                        SupabaseClient.client.from("torneio_equipa").insert(
-                                            TorneioEquipaInsertDTO(
-                                                idTorneio = info.id,
-                                                idEquipa = minhaEquipa!!.id,
-                                                estado = "pendente",
-                                                pagamentoEstado = if (isFree) "isento" else "pendente",
-                                                mensagem = "Pedido de inscrição pendente."
-                                            )
-                                        )
-                                        onSubmitClick()
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                        errorMessage = "Erro na Base de Dados: ${e.message}"
-                                    }
-                                    isSubmitting = false
-                                }
-                            }
-                        },
-                        enabled = podeInscrever,
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        shape = RoundedCornerShape(6.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandGreen,
-                            contentColor = BrandWhite,
-                            disabledContainerColor = Color(0xFFDDE1EA),
-                            disabledContentColor = Color(0xFF7D8497)
+                        RegistrationTeamSelectionCard(
+                            equipa = minhaEquipa,
+                            isCapitao = souCapitao
                         )
-                    ) {
-                        if (isSubmitting) {
-                            CircularProgressIndicator(color = BrandWhite, modifier = Modifier.size(24.dp))
-                        } else {
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        if (!isFree) {
+                            RegistrationPaymentMethodCard(
+                                selectedPayment = selectedPayment,
+                                onPaymentSelected = { selectedPayment = it }
+                            )
+                            Spacer(modifier = Modifier.height(14.dp))
+                        }
+
+                        val paymentText = if (isFree) "None (Free Entry)"
+                        else if (selectedPayment == "MB Way") "MB Way"
+                        else "$selectedPayment / Card"
+
+                        RegistrationSummaryCard(
+                            payment = paymentText,
+                            equipaNome = minhaEquipa?.nome ?: "None",
+                            entryFee = info.custo ?: 0.0
+                        )
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        val maxEquipasInt = info.maxEquipas ?: 16
+                        val isCheio = equipasInscritas >= maxEquipasInt
+                        val podeInscrever = minhaEquipa != null && souCapitao && !isSubmitting && !isCheio
+
+                        Button(
+                            onClick = {
+                                if (podeInscrever) {
+                                    scope.launch {
+                                        isSubmitting = true
+                                        errorMessage = "" // Limpa erros antigos
+                                        try {
+                                            SupabaseClient.client.from("torneio_equipa").insert(
+                                                TorneioEquipaInsertDTO(
+                                                    idTorneio = info.id,
+                                                    idEquipa = minhaEquipa!!.id,
+                                                    estado = "pendente",
+                                                    pagamentoEstado = if (isFree) "pago" else "pendente",
+                                                    mensagem = "Pedido de inscrição pendente."
+                                                )
+                                            )
+                                            onSubmitClick()
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                            errorMessage = "Erro na Base de Dados: ${e.message}"
+                                        }
+                                        isSubmitting = false
+                                    }
+                                }
+                            },
+                            enabled = podeInscrever,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(58.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BrandGreen,
+                                contentColor = BrandWhite,
+                                disabledContainerColor = Color(0xFFD8DDE7),
+                                disabledContentColor = Color(0xFF7D8497)
+                            )
+                        ) {
+                            if (isSubmitting) {
+                                CircularProgressIndicator(
+                                    color = BrandWhite,
+                                    modifier = Modifier.size(22.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = when {
+                                        isCheio -> "TOURNAMENT FULL"
+                                        minhaEquipa == null -> "NO COMPATIBLE TEAM"
+                                        !souCapitao -> "ONLY CAPTAINS CAN REGISTER"
+                                        else -> "SUBMIT REGISTRATION  →"
+                                    },
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.8.sp
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        OutlinedButton(
+                            onClick = onBackClick,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, BorderLine),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = CardBg,
+                                contentColor = BrandBlue
+                            )
+                        ) {
                             Text(
-                                text = when {
-                                    isCheio -> "TOURNAMENT FULL"
-                                    minhaEquipa == null -> "NO COMPATIBLE TEAM"
-                                    !souCapitao -> "ONLY CAPTAINS CAN REGISTER"
-                                    else -> "⊙  SUBMIT REGISTRATION"
-                                },
-                                fontSize = 14.sp,
+                                text = "BACK",
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.5.sp
+                                letterSpacing = 0.8.sp
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(22.dp))
                     }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    OutlinedButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.fillMaxWidth().height(54.dp),
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, Color(0xFFD5DAE5)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = BrandBlue)
-                    ) {
-                        Text("←  BACK", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
@@ -296,25 +342,59 @@ fun PlayerTournamentRegistrationScreen(
 @Composable
 fun RegistrationTopBar(onBackClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().height(72.dp).background(BrandBlue).padding(horizontal = 24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(66.dp)
+            .background(BrandBlue)
+            .padding(horizontal = 22.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("←", color = BrandWhite, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onBackClick() })
-        Spacer(modifier = Modifier.width(16.dp))
-        Text("Registration", color = BrandWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
-        Spacer(modifier = Modifier.weight(1f))
-        Image(
-            painter = painterResource(id = R.drawable.logo),
-            contentDescription = "MatchLeague Logo",
-            modifier = Modifier.size(28.dp),
-            contentScale = ContentScale.Fit
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                color = BrandWhite,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Text(
+            text = "Registration",
+            color = BrandWhite,
+            fontSize = 19.sp,
+            fontWeight = FontWeight.Bold
         )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "MatchLeague Logo",
+                modifier = Modifier.size(24.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
     }
 }
 
 @Composable
 fun RegistrationTournamentHeaderCard(torneio: TorneioRegDTO) {
-    val modalidade = when(torneio.idModalidade) {
+    val modalidade = when (torneio.idModalidade) {
         1 -> "FOOTBALL"
         2 -> "BASKETBALL"
         3 -> "VOLLEYBALL"
@@ -322,31 +402,84 @@ fun RegistrationTournamentHeaderCard(torneio: TorneioRegDTO) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth().height(132.dp),
-        shape = RoundedCornerShape(9.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = BrandBlue),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF17345D), Color(0xFF0B1F3A)))).padding(horizontal = 20.dp, vertical = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF17345D),
+                            Color(0xFF0B1F3A)
+                        )
+                    )
+                )
+                .padding(22.dp)
         ) {
             Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RegistrationBadge(text = torneio.estado?.uppercase() ?: "OPEN", color = BrandGreen, light = true)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    RegistrationBadge(text = modalidade, color = Color(0xFF9EA8BA), light = false)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RegistrationBadge(
+                        text = torneio.estado?.uppercase() ?: "OPEN",
+                        color = BrandGreen,
+                        light = true
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    RegistrationBadge(
+                        text = modalidade,
+                        color = Color(0xFFB8C2D6),
+                        light = false
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(torneio.nome, color = BrandWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("${torneio.local ?: "TBD"} · ${torneio.dataInicio ?: "TBD"}", color = Color(0xFF9EA8BA), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.height(18.dp))
 
-                Spacer(modifier = Modifier.height(14.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    RegistrationHeaderInfo("PRIZE POOL", "€ ${torneio.premio ?: "0.0"}")
-                    RegistrationHeaderInfo("ENTRY FEE", "€ ${torneio.custo ?: "0.0"}")
-                    RegistrationHeaderInfo("FORMAT", torneio.formato ?: "League")
+                Text(
+                    text = torneio.nome,
+                    color = BrandWhite,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 26.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "${torneio.local ?: "TBD"} · ${torneio.dataInicio ?: "TBD"}",
+                    color = Color(0xFFB8C2D6),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    RegistrationHeaderInfo(
+                        label = "PRIZE",
+                        value = "€ ${torneio.premio ?: "0.0"}",
+                        modifier = Modifier.weight(1f)
+                    )
+                    RegistrationHeaderInfo(
+                        label = "ENTRY",
+                        value = "€ ${torneio.custo ?: "0.0"}",
+                        modifier = Modifier.weight(1f)
+                    )
+                    RegistrationHeaderInfo(
+                        label = "FORMAT",
+                        value = torneio.formato ?: "League",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }
@@ -356,19 +489,45 @@ fun RegistrationTournamentHeaderCard(torneio: TorneioRegDTO) {
 @Composable
 fun RegistrationBadge(text: String, color: Color, light: Boolean) {
     Box(
-        modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(if (light) color.copy(alpha = 0.15f) else Color(0xFF2B3F60)).padding(horizontal = 10.dp, vertical = 4.dp),
+        modifier = Modifier
+            .clip(RoundedCornerShape(50.dp))
+            .background(if (light) color.copy(alpha = 0.16f) else Color.White.copy(alpha = 0.12f))
+            .padding(horizontal = 11.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text("● $text", color = color, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp)
+        Text(
+            text = "● $text",
+            color = color,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.6.sp
+        )
     }
 }
 
 @Composable
-fun RegistrationHeaderInfo(label: String, value: String) {
-    Column {
-        Text(label, color = Color(0xFF9EA8BA), fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
-        Spacer(modifier = Modifier.height(3.dp))
-        Text(value, color = BrandWhite, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+fun RegistrationHeaderInfo(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.10f))
+            .padding(horizontal = 10.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = label,
+            color = Color(0xFFB8C2D6),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            color = BrandWhite,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1
+        )
     }
 }
 
@@ -378,24 +537,68 @@ fun RegistrationProgressCard(inscritos: Int, maxEquipas: Int) {
     val lugaresLivres = maxEquipas - inscritos
 
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("$inscritos / $maxEquipas Teams Registered", color = BrandBlue, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                Box(modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(BrandGreen.copy(alpha = 0.12f)).padding(horizontal = 12.dp, vertical = 5.dp)) {
-                    Text(if (lugaresLivres > 0) "$lugaresLivres spots left" else "FULL", color = BrandGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Tournament capacity",
+                        color = BrandBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = "$inscritos / $maxEquipas teams registered",
+                        color = TextMuted,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50.dp))
+                        .background(if (lugaresLivres > 0) SoftGreen else SoftWarning)
+                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                ) {
+                    Text(
+                        text = if (lugaresLivres > 0) "$lugaresLivres spots left" else "FULL",
+                        color = if (lugaresLivres > 0) BrandGreen else WarningText,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(10.dp))
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             LinearProgressIndicator(
                 progress = { progresso.coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth().height(5.dp).clip(RoundedCornerShape(10.dp)),
-                color = BrandGreen, trackColor = Color(0xFFECEEF7)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(7.dp)
+                    .clip(RoundedCornerShape(50.dp)),
+                color = BrandGreen,
+                trackColor = InputBg
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("◷  Registration open", color = Color(0xFF8B92A5), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Registration is open while there are available spots.",
+                color = TextMuted,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
@@ -403,33 +606,92 @@ fun RegistrationProgressCard(inscritos: Int, maxEquipas: Int) {
 @Composable
 fun RegistrationTeamSelectionCard(equipa: EquipaRegDTO?, isCapitao: Boolean) {
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)) {
-            Text("SELECT YOUR TEAM", color = BrandGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = "SELECT YOUR TEAM",
+                color = BrandGreen,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Choose which team to register for this\ntournament.", color = Color(0xFF7D8497), fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium)
+
+            Text(
+                text = "Choose which team to register for this tournament.",
+                color = TextMuted,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                fontWeight = FontWeight.Medium
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             if (equipa != null) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).border(1.dp, BrandGreen, RoundedCornerShape(8.dp)).background(BrandGreen.copy(alpha = 0.08f)).padding(horizontal = 14.dp, vertical = 14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .border(1.dp, if (isCapitao) BrandGreen else BorderLine, RoundedCornerShape(18.dp))
+                        .background(if (isCapitao) SoftGreen else InputBg)
+                        .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xFF9AA1A6)), contentAlignment = Alignment.Center) {
-                        Text(equipa.nome.take(2).uppercase(), color = BrandWhite, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(BrandBlue),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = equipa.nome.take(2).uppercase(),
+                            color = BrandWhite,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
+
                     Spacer(modifier = Modifier.width(14.dp))
+
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(equipa.nome, color = BrandBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text("${equipa.divisao ?: "Unranked"} ${if(!isCapitao) "· (Not Captain)" else ""}", color = if(!isCapitao) Color.Red else Color(0xFF7D8497), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                        Text(
+                            text = equipa.nome,
+                            color = BrandBlue,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "${equipa.divisao ?: "Unranked"}${if (!isCapitao) " · Not Captain" else " · Captain"}",
+                            color = if (!isCapitao) Color(0xFFE15C5C) else TextMuted,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
+
                     SelectionCircle(selected = isCapitao)
                 }
             } else {
-                Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(Color(0xFFF0F2FA)).padding(16.dp), contentAlignment = Alignment.Center) {
-                    Text("You don't have an active team for this sport.", color = BrandBlue, fontWeight = FontWeight.Medium)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(InputBg)
+                        .padding(18.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "You don't have an active team for this sport.",
+                        color = BrandBlue,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
         }
@@ -439,19 +701,54 @@ fun RegistrationTeamSelectionCard(equipa: EquipaRegDTO?, isCapitao: Boolean) {
 @Composable
 fun RegistrationPaymentMethodCard(selectedPayment: String, onPaymentSelected: (String) -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)) {
-            Text("CHOOSE PAYMENT METHOD", color = Color(0xFF7D8497), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp)
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = "CHOOSE PAYMENT METHOD",
+                color = BrandBlue,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
             Spacer(modifier = Modifier.height(14.dp))
-            PaymentMethodOption("Revolut", "Instant transfer", BrandBlue, selectedPayment == "Revolut") { onPaymentSelected("Revolut") }
+
+            PaymentMethodOption(
+                name = "Revolut",
+                description = "Instant transfer",
+                color = BrandBlue,
+                selected = selectedPayment == "Revolut"
+            ) { onPaymentSelected("Revolut") }
+
             Spacer(modifier = Modifier.height(10.dp))
-            PaymentMethodOption("MB Way", "Confirm via phone", BrandGreen, selectedPayment == "MB Way") { onPaymentSelected("MB Way") }
+
+            PaymentMethodOption(
+                name = "MB Way",
+                description = "Confirm via phone",
+                color = BrandGreen,
+                selected = selectedPayment == "MB Way"
+            ) { onPaymentSelected("MB Way") }
+
             Spacer(modifier = Modifier.height(10.dp))
-            PaymentMethodOption("Credit Card", "Visa, Mastercard", Color(0xFF3B4A66), selectedPayment == "Credit Card") { onPaymentSelected("Credit Card") }
+
+            PaymentMethodOption(
+                name = "Credit Card",
+                description = "Visa, Mastercard",
+                color = Color(0xFF3B4A66),
+                selected = selectedPayment == "Credit Card"
+            ) { onPaymentSelected("Credit Card") }
+
             Spacer(modifier = Modifier.height(10.dp))
-            PaymentMethodOption("Apple Pay", "Fast payment", Color(0xFF101010), selectedPayment == "Apple Pay") { onPaymentSelected("Apple Pay") }
+
+            PaymentMethodOption(
+                name = "Apple Pay",
+                description = "Fast payment",
+                color = Color(0xFF101010),
+                selected = selectedPayment == "Apple Pay"
+            ) { onPaymentSelected("Apple Pay") }
         }
     }
 }
@@ -459,15 +756,48 @@ fun RegistrationPaymentMethodCard(selectedPayment: String, onPaymentSelected: (S
 @Composable
 fun PaymentMethodOption(name: String, description: String, color: Color, selected: Boolean, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().height(68.dp).clip(RoundedCornerShape(8.dp)).background(BrandWhite).border(1.dp, Color(0xFFE1E5EE), RoundedCornerShape(8.dp)).clickable { onClick() }.padding(horizontal = 14.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(if (selected) SoftBlue else InputBg)
+            .border(1.dp, if (selected) BrandBlue.copy(alpha = 0.35f) else BorderLine, RoundedCornerShape(18.dp))
+            .clickable { onClick() }
+            .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(modifier = Modifier.size(46.dp).clip(RoundedCornerShape(7.dp)).background(color))
-        Spacer(modifier = Modifier.width(14.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(name, color = BrandBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text(description, color = Color(0xFF7D8497), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(color),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = name.take(1),
+                color = BrandWhite,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = name,
+                color = BrandBlue,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                color = TextMuted,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
         SelectionCircle(selected = selected)
     }
 }
@@ -475,33 +805,76 @@ fun PaymentMethodOption(name: String, description: String, color: Color, selecte
 @Composable
 fun SelectionCircle(selected: Boolean) {
     Box(
-        modifier = Modifier.size(22.dp).clip(CircleShape).border(width = 2.dp, color = if (selected) BrandGreen else Color(0xFFC5CBD6), shape = CircleShape),
+        modifier = Modifier
+            .size(22.dp)
+            .clip(CircleShape)
+            .border(
+                width = 2.dp,
+                color = if (selected) BrandGreen else Color(0xFFC5CBD6),
+                shape = CircleShape
+            ),
         contentAlignment = Alignment.Center
     ) {
-        if (selected) Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(BrandGreen))
+        if (selected) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(BrandGreen)
+            )
+        }
     }
 }
 
 @Composable
 fun RegistrationSummaryCard(payment: String, equipaNome: String, entryFee: Double) {
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)) {
-            Text("REGISTRATION SUMMARY", color = BrandGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
-            Spacer(modifier = Modifier.height(14.dp))
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = "REGISTRATION SUMMARY",
+                color = BrandGreen,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             SummaryRow("Team", equipaNome)
             SummaryRow("Entry Fee", "€ $entryFee", valueColor = BrandGreen)
             SummaryRow("Payment", payment)
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 9.dp),
-                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Status after submission", color = Color(0xFF7D8497), fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                Box(modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(Color(0xFFFFF3CD)).padding(horizontal = 12.dp, vertical = 5.dp)) {
-                    Text("Pending Approval", color = Color(0xFF856404), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "Status after submission",
+                    color = TextMuted,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50.dp))
+                        .background(SoftWarning)
+                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                ) {
+                    Text(
+                        text = "Pending Approval",
+                        color = WarningText,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -511,13 +884,61 @@ fun RegistrationSummaryCard(payment: String, equipaNome: String, entryFee: Doubl
 @Composable
 fun SummaryRow(label: String, value: String, valueColor: Color = BrandBlue) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 9.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, color = Color(0xFF7D8497), fontSize = 13.sp, fontWeight = FontWeight.Medium)
-        Text(value, color = valueColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = label,
+            color = TextMuted,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium
+        )
+        Text(
+            text = value,
+            color = valueColor,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
-    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFE8EAF2)))
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(BorderLine)
+    )
+}
+
+@Composable
+fun RegistrationFeedbackCard(title: String, message: String, isError: Boolean) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFFFEFEF) else SoftGreen
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = title,
+                color = if (isError) Color(0xFFD64A4A) else BrandGreen,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = message,
+                color = if (isError) Color(0xFF9A3A3A) else TextMuted,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
 }
 
 // --- DTOs PARA A BASE DE DADOS ---

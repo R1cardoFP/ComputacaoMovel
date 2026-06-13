@@ -61,6 +61,15 @@ import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
 
+private val ScreenBg = Color(0xFFF6F7FB)
+private val CardBg = Color.White
+private val InputBg = Color(0xFFF0F2F7)
+private val TextMuted = Color(0xFF687086)
+private val LightBorder = Color(0xFFE4E8F0)
+private val AccentBlue = Color(0xFF0757C8)
+private val SoftGreen = Color(0xFFE7F8F0)
+private val SoftBlue = Color(0xFFEAF2FF)
+
 @Composable
 fun PlayerBecomeOrganizerScreen(
     onBackClick: () -> Unit = {},
@@ -111,7 +120,7 @@ fun PlayerBecomeOrganizerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(ScreenBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -123,41 +132,15 @@ fun PlayerBecomeOrganizerScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 22.dp, vertical = 18.dp)
+                .padding(horizontal = 24.dp, vertical = 18.dp)
         ) {
-            Text(
-                text = stringResource(R.string.player_org_tag),
-                color = Color(0xFF0757C8),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
-            )
+            OrganizerHeroCard()
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = stringResource(R.string.player_org_title),
-                color = BrandBlue,
-                fontSize = 28.sp,
-                lineHeight = 31.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = stringResource(R.string.player_org_subtitle),
-                color = Color(0xFF6D7486),
-                fontSize = 15.sp,
-                lineHeight = 21.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             OrganizerInfoBanner()
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             OrganizerUserInfoCard(
                 name = userName,
@@ -168,180 +151,35 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            OrganizerSectionTitle(stringResource(R.string.player_org_sport_label))
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OrganizerSportCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "⚽",
-                    title = stringResource(R.string.player_sport_football),
-                    selected = sport == "Football",
-                    onClick = { sport = "Football" }
-                )
-
-                OrganizerSportCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "🏐",
-                    title = stringResource(R.string.player_sport_volleyball),
-                    selected = sport == "Volleyball",
-                    onClick = { sport = "Volleyball" }
-                )
-
-                OrganizerSportCard(
-                    modifier = Modifier.weight(1f),
-                    icon = "🏀",
-                    title = stringResource(R.string.player_sport_basketball),
-                    selected = sport == "Basketball",
-                    onClick = { sport = "Basketball" }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            OrganizerSectionTitle(stringResource(R.string.player_org_exp_label))
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OrganizerExperienceOption(
-                title = stringResource(R.string.player_org_exp_intermediate_title),
-                subtitle = stringResource(R.string.player_org_exp_intermediate_sub),
-                selected = experience == "Intermediate",
-                onClick = { experience = "Intermediate" }
+            OrganizerFormCard(
+                sport = sport,
+                onSportChange = { sport = it },
+                experience = experience,
+                onExperienceChange = { experience = it },
+                tournamentsPerYear = tournamentsPerYear,
+                onTournamentsPerYearChange = { tournamentsPerYear = it },
+                dropdownOptions = dropdownOptions,
+                isDropdownExpanded = isDropdownExpanded,
+                onDropdownExpandedChange = { isDropdownExpanded = it },
+                motivation = motivation,
+                onMotivationChange = { if (it.length <= 500) motivation = it },
+                reference = reference,
+                onReferenceChange = { reference = it }
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OrganizerExperienceOption(
-                title = stringResource(R.string.player_org_exp_beginner_title),
-                subtitle = stringResource(R.string.player_org_exp_beginner_sub),
-                selected = experience == "Beginner",
-                onClick = { experience = "Beginner" }
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OrganizerExperienceOption(
-                title = stringResource(R.string.player_org_exp_experienced_title),
-                subtitle = stringResource(R.string.player_org_exp_experienced_sub),
-                selected = experience == "Experienced",
-                onClick = { experience = "Experienced" }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            OrganizerSectionTitle(stringResource(R.string.player_org_freq_label))
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Box(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = tournamentsPerYear,
-                    onValueChange = {},
-                    readOnly = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp)
-                        .clickable { isDropdownExpanded = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = stringResource(R.string.player_org_select_freq),
-                            modifier = Modifier.clickable { isDropdownExpanded = true }
-                        )
-                    },
-                    shape = RoundedCornerShape(7.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFEFF1F6),
-                        unfocusedContainerColor = Color(0xFFEFF1F6),
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedTextColor = BrandBlue,
-                        unfocusedTextColor = BrandBlue
-                    )
-                )
-
-                DropdownMenu(
-                    expanded = isDropdownExpanded,
-                    onDismissRequest = { isDropdownExpanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth(0.85f)
-                        .background(BrandWhite)
-                ) {
-                    dropdownOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(text = option, color = BrandBlue) },
-                            onClick = {
-                                tournamentsPerYear = option
-                                isDropdownExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            OrganizerSectionTitle(stringResource(R.string.player_org_motivation_label))
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OrganizerSimpleInputBox(
-                value = motivation,
-                onValueChange = { if (it.length <= 500) motivation = it },
-                minHeight = 118
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = stringResource(R.string.player_org_char_count, motivation.length),
-                color = Color(0xFF7D8497),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.align(Alignment.End)
-            )
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OrganizerSectionTitle(stringResource(R.string.player_org_reference_label))
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                Text(
-                    text = stringResource(R.string.player_common_optional),
-                    color = Color(0xFF7D8497),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OrganizerSimpleInputBox(
-                value = reference,
-                onValueChange = { reference = it },
-                minHeight = 64
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             OrganizerTermsBox(
                 checked = acceptedTerms,
                 onCheckedChange = { acceptedTerms = !acceptedTerms }
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
+            OrganizerActionsCard(
+                isSubmitting = isSubmitting,
+                canSubmit = acceptedTerms && motivation.isNotBlank() && !isSubmitting,
+                onSubmit = {
                     scope.launch {
                         isSubmitting = true
 
@@ -360,52 +198,14 @@ fun PlayerBecomeOrganizerScreen(
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                enabled = acceptedTerms && motivation.isNotBlank() && !isSubmitting,
-                shape = RoundedCornerShape(6.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandGreen,
-                    contentColor = BrandWhite,
-                    disabledContainerColor = Color(0xFFDDE1EA),
-                    disabledContentColor = Color(0xFF7D8497)
-                )
-            ) {
-                Text(
-                    text = if (isSubmitting) stringResource(R.string.player_org_submitting) else stringResource(R.string.player_org_submit),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.4.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OutlinedButton(
-                onClick = onCancelClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp),
-                shape = RoundedCornerShape(6.dp),
-                border = BorderStroke(1.dp, Color(0xFFE1E5EE)),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = BrandBlue
-                )
-            ) {
-                Text(
-                    text = stringResource(R.string.player_common_cancel),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
-            }
+                onCancelClick = onCancelClick
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = stringResource(R.string.player_org_disclaimer),
-                color = Color(0xFF7D8497),
+                color = TextMuted,
                 fontSize = 11.sp,
                 lineHeight = 16.sp,
                 fontWeight = FontWeight.Medium,
@@ -433,39 +233,175 @@ fun BecomeOrganizerTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
+            .height(64.dp)
             .background(BrandBlue)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "←",
-            color = BrandWhite,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        )
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "←",
+                color = BrandWhite,
+                fontSize = 25.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Text(
             text = stringResource(R.string.player_org_topbar),
             color = BrandWhite,
             fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.4.sp
+            fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(18.dp))
+                .background(Color.White.copy(alpha = 0.12f))
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stringResource(R.string.player_org_player_badge),
+                color = BrandWhite,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun OrganizerHeroCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(22.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🏆",
+                        fontSize = 23.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = stringResource(R.string.player_org_tag),
+                        color = BrandGreen,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.6.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = stringResource(R.string.player_org_title),
+                        color = BrandWhite,
+                        fontSize = 24.sp,
+                        lineHeight = 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = stringResource(R.string.player_org_subtitle),
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OrganizerHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    value = "1",
+                    label = stringResource(R.string.player_org_player_badge)
+                )
+
+                OrganizerHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    value = "3",
+                    label = stringResource(R.string.player_org_sport_label)
+                )
+
+                OrganizerHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    value = "500",
+                    label = stringResource(R.string.player_org_char_count, 0)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OrganizerHeroMetric(
+    modifier: Modifier = Modifier,
+    value: String,
+    label: String
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(alpha = 0.10f))
+            .padding(horizontal = 10.dp, vertical = 10.dp)
+    ) {
+        Column {
+            Text(
+                text = value,
+                color = BrandWhite,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(3.dp))
+
+            Text(
+                text = label.uppercase(),
+                color = BrandWhite.copy(alpha = 0.62f),
+                fontSize = 8.sp,
+                lineHeight = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp
+            )
+        }
     }
 }
 
@@ -474,26 +410,36 @@ fun OrganizerInfoBanner() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(7.dp))
-            .background(BrandGreen.copy(alpha = 0.12f))
-            .padding(horizontal = 14.dp, vertical = 13.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .background(SoftGreen)
+            .border(1.dp, BrandGreen.copy(alpha = 0.18f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 15.dp, vertical = 14.dp),
         verticalAlignment = Alignment.Top
     ) {
-        Text(
-            text = "○",
-            color = BrandGreen,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier
+                .size(30.dp)
+                .clip(CircleShape)
+                .background(BrandGreen.copy(alpha = 0.14f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "i",
+                color = BrandGreen,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Text(
             text = stringResource(R.string.player_org_banner),
-            color = BrandGreen,
+            color = Color(0xFF21734F),
             fontSize = 13.sp,
-            lineHeight = 17.sp,
-            fontWeight = FontWeight.Medium
+            lineHeight = 18.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -507,9 +453,10 @@ fun OrganizerUserInfoCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, LightBorder.copy(alpha = 0.7f))
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)
@@ -517,12 +464,18 @@ fun OrganizerUserInfoCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "♙",
-                    color = Color(0xFF0757C8),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(SoftBlue),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "👤",
+                        fontSize = 16.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(10.dp))
 
@@ -545,19 +498,19 @@ fun OrganizerUserInfoCard(
                         contentDescription = stringResource(R.string.player_common_photo),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(52.dp)
+                            .size(58.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF0F2FA))
+                            .background(InputBg)
                     )
                 } else {
                     Box(
                         modifier = Modifier
-                            .size(52.dp)
+                            .size(58.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF0F2FA)),
+                            .background(InputBg),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("👤", fontSize = 24.sp)
+                        Text("👤", fontSize = 25.sp)
                     }
                 }
 
@@ -569,13 +522,15 @@ fun OrganizerUserInfoCard(
                     Text(
                         text = name,
                         color = BrandBlue,
-                        fontSize = 16.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
 
+                    Spacer(modifier = Modifier.height(3.dp))
+
                     Text(
                         text = stringResource(R.string.player_org_member_since, email, memberSince),
-                        color = Color(0xFF7D8497),
+                        color = TextMuted,
                         fontSize = 11.sp,
                         lineHeight = 15.sp,
                         fontWeight = FontWeight.Medium
@@ -585,13 +540,13 @@ fun OrganizerUserInfoCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFFEAF0FF))
-                        .padding(horizontal = 12.dp, vertical = 5.dp),
+                        .background(SoftBlue)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = stringResource(R.string.player_org_player_badge),
-                        color = Color(0xFF0757C8),
+                        color = AccentBlue,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -602,13 +557,207 @@ fun OrganizerUserInfoCard(
 }
 
 @Composable
+fun OrganizerFormCard(
+    sport: String,
+    onSportChange: (String) -> Unit,
+    experience: String,
+    onExperienceChange: (String) -> Unit,
+    tournamentsPerYear: String,
+    onTournamentsPerYearChange: (String) -> Unit,
+    dropdownOptions: List<String>,
+    isDropdownExpanded: Boolean,
+    onDropdownExpandedChange: (Boolean) -> Unit,
+    motivation: String,
+    onMotivationChange: (String) -> Unit,
+    reference: String,
+    onReferenceChange: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, LightBorder.copy(alpha = 0.7f))
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            OrganizerSectionTitle(stringResource(R.string.player_org_sport_label))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OrganizerSportCard(
+                    modifier = Modifier.weight(1f),
+                    icon = "⚽",
+                    title = stringResource(R.string.player_sport_football),
+                    selected = sport == "Football",
+                    onClick = { onSportChange("Football") }
+                )
+
+                OrganizerSportCard(
+                    modifier = Modifier.weight(1f),
+                    icon = "🏐",
+                    title = stringResource(R.string.player_sport_volleyball),
+                    selected = sport == "Volleyball",
+                    onClick = { onSportChange("Volleyball") }
+                )
+
+                OrganizerSportCard(
+                    modifier = Modifier.weight(1f),
+                    icon = "🏀",
+                    title = stringResource(R.string.player_sport_basketball),
+                    selected = sport == "Basketball",
+                    onClick = { onSportChange("Basketball") }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            OrganizerSectionTitle(stringResource(R.string.player_org_exp_label))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OrganizerExperienceOption(
+                title = stringResource(R.string.player_org_exp_intermediate_title),
+                subtitle = stringResource(R.string.player_org_exp_intermediate_sub),
+                selected = experience == "Intermediate",
+                onClick = { onExperienceChange("Intermediate") }
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OrganizerExperienceOption(
+                title = stringResource(R.string.player_org_exp_beginner_title),
+                subtitle = stringResource(R.string.player_org_exp_beginner_sub),
+                selected = experience == "Beginner",
+                onClick = { onExperienceChange("Beginner") }
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OrganizerExperienceOption(
+                title = stringResource(R.string.player_org_exp_experienced_title),
+                subtitle = stringResource(R.string.player_org_exp_experienced_sub),
+                selected = experience == "Experienced",
+                onClick = { onExperienceChange("Experienced") }
+            )
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            OrganizerSectionTitle(stringResource(R.string.player_org_freq_label))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = tournamentsPerYear,
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(58.dp)
+                        .clickable { onDropdownExpandedChange(true) },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = stringResource(R.string.player_org_select_freq),
+                            tint = BrandBlue,
+                            modifier = Modifier.clickable { onDropdownExpandedChange(true) }
+                        )
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = InputBg,
+                        unfocusedContainerColor = InputBg,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedTextColor = BrandBlue,
+                        unfocusedTextColor = BrandBlue,
+                        cursorColor = BrandGreen
+                    )
+                )
+
+                DropdownMenu(
+                    expanded = isDropdownExpanded,
+                    onDismissRequest = { onDropdownExpandedChange(false) },
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .background(BrandWhite)
+                ) {
+                    dropdownOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(text = option, color = BrandBlue) },
+                            onClick = {
+                                onTournamentsPerYearChange(option)
+                                onDropdownExpandedChange(false)
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            OrganizerSectionTitle(stringResource(R.string.player_org_motivation_label))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OrganizerSimpleInputBox(
+                value = motivation,
+                onValueChange = onMotivationChange,
+                minHeight = 122
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(R.string.player_org_char_count, motivation.length),
+                color = TextMuted,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.align(Alignment.End)
+            )
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OrganizerSectionTitle(stringResource(R.string.player_org_reference_label))
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                Text(
+                    text = stringResource(R.string.player_common_optional),
+                    color = TextMuted,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OrganizerSimpleInputBox(
+                value = reference,
+                onValueChange = onReferenceChange,
+                minHeight = 70
+            )
+        }
+    }
+}
+
+@Composable
 fun OrganizerSectionTitle(text: String) {
     Text(
-        text = text,
-        color = Color(0xFF7D8497),
+        text = text.uppercase(),
+        color = TextMuted,
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
-        letterSpacing = 1.8.sp
+        letterSpacing = 1.5.sp
     )
 }
 
@@ -620,33 +769,35 @@ fun OrganizerSportCard(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val borderColor = if (selected) BrandGreen else Color.Transparent
+    val borderColor = if (selected) BrandGreen else LightBorder
+    val background = if (selected) SoftGreen else InputBg
 
     Card(
         modifier = modifier
-            .height(70.dp)
-            .border(1.dp, borderColor, RoundedCornerShape(3.dp))
+            .height(76.dp)
+            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(3.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = background),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = icon,
-                color = BrandGreen,
-                fontSize = 18.sp
+                fontSize = 20.sp
             )
 
             Spacer(modifier = Modifier.height(7.dp))
 
             Text(
                 text = title,
-                color = Color(0xFF303646),
+                color = if (selected) BrandGreen else BrandBlue,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -661,15 +812,15 @@ fun OrganizerExperienceOption(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val background = if (selected) Color(0xFFEAF2FF) else BrandWhite
-    val borderColor = if (selected) Color(0xFF0757C8) else Color(0xFFE1E5EE)
+    val background = if (selected) SoftBlue else InputBg
+    val borderColor = if (selected) AccentBlue else LightBorder
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(background)
-            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 15.dp),
         verticalAlignment = Alignment.Top
@@ -688,7 +839,7 @@ fun OrganizerExperienceOption(
 
             Text(
                 text = subtitle,
-                color = Color(0xFF6D7486),
+                color = TextMuted,
                 fontSize = 12.sp,
                 lineHeight = 17.sp,
                 fontWeight = FontWeight.Medium
@@ -705,21 +856,22 @@ fun OrganizerRadio(
 ) {
     Box(
         modifier = Modifier
-            .size(22.dp)
+            .size(24.dp)
             .clip(CircleShape)
             .border(
                 width = 2.dp,
-                color = if (selected) Color(0xFF0757C8) else Color(0xFFD1D6E0),
+                color = if (selected) AccentBlue else Color(0xFFD1D6E0),
                 shape = CircleShape
-            ),
+            )
+            .background(if (selected) Color.White else Color.Transparent),
         contentAlignment = Alignment.Center
     ) {
         if (selected) {
-            Text(
-                text = "✓",
-                color = Color(0xFF0757C8),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
+            Box(
+                modifier = Modifier
+                    .size(11.dp)
+                    .clip(CircleShape)
+                    .background(AccentBlue)
             )
         }
     }
@@ -748,10 +900,10 @@ fun OrganizerSimpleInputBox(
                 )
             }
         },
-        shape = RoundedCornerShape(7.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFEFF1F6),
-            unfocusedContainerColor = Color(0xFFEFF1F6),
+            focusedContainerColor = InputBg,
+            unfocusedContainerColor = InputBg,
             focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent,
             cursorColor = BrandGreen,
@@ -769,25 +921,30 @@ fun OrganizerTermsBox(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(7.dp))
-            .background(Color(0xFFEFF1F6))
+            .clip(RoundedCornerShape(18.dp))
+            .background(if (checked) SoftGreen else CardBg)
+            .border(
+                width = 1.dp,
+                color = if (checked) BrandGreen.copy(alpha = 0.45f) else LightBorder,
+                shape = RoundedCornerShape(18.dp)
+            )
             .clickable { onCheckedChange() }
-            .padding(horizontal = 14.dp, vertical = 14.dp),
+            .padding(horizontal = 15.dp, vertical = 15.dp),
         verticalAlignment = Alignment.Top
     ) {
         Box(
             modifier = Modifier
-                .size(18.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(if (checked) BrandGreen else BrandWhite)
-                .border(1.dp, BrandGreen, RoundedCornerShape(2.dp)),
+                .size(22.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (checked) BrandGreen else InputBg)
+                .border(1.dp, if (checked) BrandGreen else LightBorder, RoundedCornerShape(6.dp)),
             contentAlignment = Alignment.Center
         ) {
             if (checked) {
                 Text(
                     text = "✓",
                     color = BrandWhite,
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -797,11 +954,76 @@ fun OrganizerTermsBox(
 
         Text(
             text = stringResource(R.string.player_org_terms),
-            color = Color(0xFF6D7486),
+            color = if (checked) Color(0xFF21734F) else TextMuted,
             fontSize = 12.sp,
             lineHeight = 17.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f)
         )
+    }
+}
+
+@Composable
+fun OrganizerActionsCard(
+    isSubmitting: Boolean,
+    canSubmit: Boolean,
+    onSubmit: () -> Unit,
+    onCancelClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, LightBorder.copy(alpha = 0.7f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Button(
+                onClick = onSubmit,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                enabled = canSubmit,
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BrandGreen,
+                    contentColor = BrandWhite,
+                    disabledContainerColor = Color(0xFFDDE1EA),
+                    disabledContentColor = TextMuted
+                )
+            ) {
+                Text(
+                    text = if (isSubmitting) stringResource(R.string.player_org_submitting) else stringResource(R.string.player_org_submit),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.1.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedButton(
+                onClick = onCancelClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, LightBorder),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = BrandBlue,
+                    containerColor = CardBg
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.player_common_cancel),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.0.sp
+                )
+            }
+        }
     }
 }
 
