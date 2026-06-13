@@ -298,23 +298,6 @@ fun PlayerCasualMatchDetailsScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    OutlinedButton(
-                        onClick = {},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(6.dp)
-                    ) {
-                        Text(
-                            text = "↗  SHARE MATCH",
-                            color = BrandBlue,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
                     }
                 }
             }
@@ -645,23 +628,6 @@ fun CasualDetailsLocationCard(
                     fontWeight = FontWeight.Bold
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedButton(
-            onClick = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(38.dp),
-            shape = RoundedCornerShape(5.dp)
-        ) {
-            Text(
-                text = "⌖  OPEN IN MAPS",
-                color = BrandBlue,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
