@@ -580,4 +580,656 @@
     <string name="nav_matches">MATCHES</string>
     <string name="nav_teams">TEAMS</string>
     <string name="nav_profile">PROFILE</string>
+
+
+    <string name="admin_home_top_title">Admin Dashboard</string>
+    <string name="admin_common_notifications">Notifications</string>
+
+    <string name="admin_home_console">Admin Console</string>
+    <string name="admin_home_management_dashboard">Management Dashboard</string>
+    <string name="admin_home_management_description">Control users, teams, tournaments, and organizer requests in one place.</string>
+
+    <string name="admin_home_quick_overview">Quick Overview</string>
+    <string name="admin_home_global_actions">Global admin actions</string>
+    <string name="admin_home_live">Live</string>
+
+    <string name="admin_home_users_label">Users</string>
+    <string name="admin_home_teams_label">Teams</string>
+    <string name="admin_home_tournaments_label">Tournaments</string>
+
+    <string name="admin_home_user_management">User Management</string>
+    <string name="admin_home_user_management_desc">Oversee all accounts and roles.</string>
+    <string name="admin_home_manage_users">Manage Users</string>
+
+    <string name="admin_home_teams_management">Teams Management</string>
+    <string name="admin_home_teams_management_desc">View teams, rosters, and status.</string>
+    <string name="admin_home_manage_teams">Manage Teams</string>
+
+    <string name="admin_home_tournaments_management">Tournaments Management</string>
+    <string name="admin_home_tournaments_management_desc">Create, edit, and monitor leagues.</string>
+    <string name="admin_home_manage_tournaments">Manage Tournaments</string>
+
+    <string name="admin_home_organizer_requests">Organizer Requests</string>
+    <string name="admin_home_organizer_requests_desc">Review and approve new organizers.</string>
+    <string name="admin_home_review_requests">Review Requests</string>
+    <string name="admin_home_pending">Pending</string>
+
+    <string name="admin_nav_home">Home</string>
+    <string name="admin_nav_tournaments">Tournaments</string>
+    <string name="admin_nav_matches">Matches</string>
+    <string name="admin_nav_teams">Teams</string>
+    <string name="admin_nav_profile">Profile</string>
+    <string name="admin_tournaments_title">Tournaments</string>
+    <string name="admin_tournaments_console">Admin Console</string>
+    <string name="admin_tournaments_all_title">All Tournaments</string>
+    <string name="admin_tournaments_description">Global oversight of every league on the platform.</string>
+    <string name="admin_tournaments_search_placeholder">Search any tournament...</string>
+
+    <string name="admin_tournaments_filter_all">All</string>
+    <string name="admin_tournaments_filter_live">Live</string>
+    <string name="admin_tournaments_filter_open">Open</string>
+    <string name="admin_tournaments_filter_completed">Completed</string>
+
+    <string name="admin_tournaments_no_found">No tournaments found.</string>
+    <string name="admin_tournaments_archive_button">View Global Tournaments Archive</string>
+
+    <string name="admin_tournaments_delete_title">Delete Tournament</string>
+    <string name="admin_tournaments_delete_message">Are you sure you want to delete the tournament %1$s?</string>
+    <string name="admin_tournaments_delete_button">Delete</string>
+    <string name="admin_common_cancel">Cancel</string>
+    <string name="admin_common_back">Back</string>
+
+    <string name="admin_tournaments_error_loading">Error loading tournaments</string>
+    <string name="admin_tournaments_delete_success">Tournament deleted successfully.</string>
+    <string name="admin_tournaments_delete_error">Error deleting tournament</string>
+
+    <string name="admin_tournaments_pro_league">Pro League</string>
+    <string name="admin_tournaments_season_organizer">Season %1$s · Organizer: %2$s</string>
+    <string name="admin_tournaments_teams">Teams</string>
+    <string name="admin_tournaments_details">Details</string>
+    <string name="admin_tournaments_manage_registration">Manage Registration</string>
+
+    <string name="admin_status_open">Open</string>
+    <string name="admin_status_live">Live</string>
+    <string name="admin_status_completed">Completed</string>
+    <string name="admin_status_cancelled">Cancelled</string>
+    <string name="admin_status_draft">Draft</string>
+    <string name="admin_teams_title">Teams</string>
+    <string name="admin_teams_console">Admin Console</string>
+    <string name="admin_teams_all_title">All Teams</string>
+    <string name="admin_teams_description">Manage every team registered on the platform.</string>
+    <string name="admin_teams_search_placeholder">Search any team...</string>
+
+    <string name="admin_teams_filter_all">All Teams</string>
+    <string name="admin_teams_filter_football">Football</string>
+    <string name="admin_teams_filter_basketball">Basketball</string>
+    <string name="admin_teams_filter_volleyball">Volleyball</string>
+
+    <string name="admin_teams_no_found">No teams found.</string>
+    <string name="admin_teams_error_loading">Error loading teams</string>
+    <string name="admin_teams_delete_success">Team deleted successfully.</string>
+    <string name="admin_teams_delete_error">Error deleting team</string>
+
+    <string name="admin_teams_delete_title">Delete Team</string>
+    <string name="admin_teams_delete_message">Are you sure you want to delete %1$s?</string>
+    <string name="admin_teams_delete_button">Delete</string>
+
+    <string name="admin_teams_search_content_description">Search</string>
+    <string name="admin_teams_options_content_description">Options</string>
+
+    <string name="admin_teams_players">Players</string>
+    <string name="admin_teams_wins">Wins</string>
+    <string name="admin_teams_losses">Losses</string>
+    <string name="admin_teams_streak">Streak</string>
+
+    <string name="admin_teams_view_details">View Details</string>
+    <string name="admin_teams_manage_team">Manage Team</string>
+    <string name="admin_matches_error_loading_calendar">Error loading calendar</string>
+
+    <string name="admin_matches_console">Admin Console</string>
+    <string name="admin_matches_title">Matches Calendar</string>
+    <string name="admin_matches_description">View every match scheduled across the platform.</string>
+    <string name="admin_matches_calendar_label">Calendar</string>
+    <string name="admin_matches_calendar_top_title">Calendar</string>
+
+    <string name="admin_matches_date_format">dd MMMM yyyy</string>
+    <string name="admin_matches_month_format">MMMM yyyy</string>
+
+    <string name="admin_weekday_mon">MON</string>
+    <string name="admin_weekday_tue">TUE</string>
+    <string name="admin_weekday_wed">WED</string>
+    <string name="admin_weekday_thu">THU</string>
+    <string name="admin_weekday_fri">FRI</string>
+    <string name="admin_weekday_sat">SAT</string>
+    <string name="admin_weekday_sun">SUN</string>
+
+    <string name="admin_matches_no_matches_day">No matches scheduled for this day.</string>
+
+    <string name="admin_matches_live_now">Live now</string>
+    <string name="admin_matches_watch_live">Watch Live</string>
+    <string name="admin_matches_view_details">View Details</string>
+    <string name="admin_matches_edit">Edit</string>
+
+    <string name="admin_matches_status_live_now">Live Now</string>
+    <string name="admin_matches_status_canceled">Canceled</string>
+    <string name="admin_matches_status_closed">Closed</string>
+    <string name="admin_matches_status_upcoming">Upcoming</string>
+    <string name="admin_notifications_title">Notifications</string>
+    <string name="admin_notifications_console">Admin Console</string>
+    <string name="admin_notifications_description">Platform alerts, moderation queue and system events.</string>
+
+    <string name="admin_notifications_filter_all">All</string>
+    <string name="admin_notifications_filter_moderation">Moderation</string>
+    <string name="admin_notifications_filter_system">System</string>
+
+    <string name="admin_notifications_empty">No notifications to show.</string>
+    <string name="admin_notifications_error_loading">Error loading notifications</string>
+    <string name="admin_notifications_error_updating">Error updating notification</string>
+    <string name="admin_notifications_missing_target">Could not open this notification destination. Missing associated ID.</string>
+
+    <string name="admin_notifications_action_view_user_profile">View User Profile</string>
+    <string name="admin_notifications_action_view_tournament_details">View Tournament Details</string>
+    <string name="admin_notifications_action_view_team_details">View Team Details</string>
+
+    <string name="admin_profile_title">Profile</string>
+    <string name="admin_profile_default_bio">Platform administrator. Overseeing global league operations and user management.</string>
+    <string name="admin_profile_error_loading">Error loading profile</string>
+    <string name="admin_profile_empty_error">Name and email cannot be empty.</string>
+    <string name="admin_profile_save_success">Profile updated successfully.</string>
+    <string name="admin_profile_save_error">Error saving profile</string>
+
+    <string name="admin_profile_account_settings">Account Settings</string>
+    <string name="admin_profile_username">Username</string>
+    <string name="admin_profile_email_address">Email Address</string>
+    <string name="admin_profile_bio">Bio</string>
+
+    <string name="admin_profile_preferences">Preferences</string>
+    <string name="admin_profile_language">Language</string>
+    <string name="admin_profile_language_english">English (US)</string>
+    <string name="admin_profile_language_portuguese">Portuguese (PT)</string>
+
+    <string name="admin_profile_active_dashboards">Active Dashboards</string>
+    <string name="admin_profile_security">Security</string>
+    <string name="admin_profile_change_password">Change Password</string>
+    <string name="admin_profile_save_changes">Save Changes</string>
+    <string name="admin_profile_logout">Log Out</string>
+
+    <string name="admin_profile_admin_content_description">Administrator profile</string>
+    <string name="admin_profile_admin_default_name">Administrator</string>
+    <string name="admin_profile_admin_role">Administrator</string>
+
+
+    <string name="admin_profile_dashboard_content_description">Admin dashboard</string>
+    <string name="admin_profile_dashboard_title">Admin</string>
+    <string name="admin_profile_dashboard_desc">Global league management</string>
+
+    <string name="admin_tournament_details_title">Details</string>
+    <string name="admin_tournament_details_error_loading">Error loading details</string>
+    <string name="admin_tournament_details_delete_title">Delete Tournament</string>
+    <string name="admin_tournament_details_delete_message">Are you sure you want to delete this tournament? This action cannot be undone.</string>
+    <string name="admin_tournament_details_delete_button">Delete</string>
+    <string name="admin_tournament_details_deleting">Deleting...</string>
+    <string name="admin_tournament_details_delete_error">Error deleting tournament</string>
+    <string name="admin_tournament_details_about">About</string>
+    <string name="admin_tournament_details_schedule">Schedule</string>
+    <string name="admin_tournament_details_start_date">Start Date</string>
+    <string name="admin_tournament_details_end_date">End Date</string>
+    <string name="admin_tournament_details_registration_closes">Registration Closes</string>
+    <string name="admin_tournament_details_format">Format</string>
+    <string name="admin_tournament_details_organizer">Organizer</string>
+    <string name="admin_tournament_details_location">Location</string>
+    <string name="admin_tournament_details_standings">Standings</string>
+    <string name="admin_tournament_details_no_standings">There is no standings data associated with this tournament yet.</string>
+    <string name="admin_tournament_details_admin_view">Admin View</string>
+    <string name="admin_tournament_details_season">Season</string>
+    <string name="admin_tournament_details_prize_pool">Prize Pool</string>
+    <string name="admin_tournament_details_teams">Teams</string>
+    <string name="admin_tournament_details_admin_controls">Admin Controls</string>
+    <string name="admin_tournament_details_admin_controls_desc">Full oversight of this tournament</string>
+    <string name="admin_tournament_details_manage_registration">Manage Registration</string>
+    <string name="admin_tournament_details_edit_tournament">Edit Tournament</string>
+    <string name="admin_tournament_details_status_in_progress">In Progress</string>
+
+    <string name="admin_tournament_edit_top_title">Tournament Details</string>
+    <string name="admin_tournament_edit_error_loading">Error loading tournament</string>
+    <string name="admin_tournament_edit_name_empty_error">Error: tournament name cannot be empty.</string>
+    <string name="admin_tournament_edit_save_success">Changes saved successfully.</string>
+    <string name="admin_tournament_edit_save_error">Error saving</string>
+
+    <string name="admin_tournament_edit_console">Admin Console</string>
+    <string name="admin_tournament_edit_title">Edit Tournament details</string>
+    <string name="admin_tournament_edit_description">Update schedule, registration, and tournament settings.</string>
+
+    <string name="admin_tournament_edit_default_sport">Sport</string>
+    <string name="admin_tournament_edit_default_tournament_name">Tournament name</string>
+
+    <string name="admin_tournament_edit_section_identity">Tournament name</string>
+    <string name="admin_tournament_edit_label_tournament_name">Tournament Name</string>
+    <string name="admin_tournament_edit_label_sport">Sport</string>
+    <string name="admin_tournament_edit_locked">Locked</string>
+    <string name="admin_tournament_edit_sport_locked_message">The sport can only be changed when the tournament is in draft or open state.</string>
+
+    <string name="admin_tournament_edit_label_format">Format</string>
+    <string name="admin_tournament_edit_format_league">League System</string>
+    <string name="admin_tournament_edit_format_knockout">Knockout</string>
+    <string name="admin_tournament_edit_format_groups">Groups</string>
+
+    <string name="admin_tournament_edit_section_schedule">Schedule</string>
+    <string name="admin_tournament_edit_label_start_date">Start Date</string>
+    <string name="admin_tournament_edit_label_end_date">End Date</string>
+
+    <string name="admin_tournament_edit_section_location_organizer">Location and organizer</string>
+    <string name="admin_tournament_edit_label_venue">Venue</string>
+    <string name="admin_tournament_edit_label_organizer">Organizer</string>
+
+    <string name="admin_tournament_edit_section_description_rules">Description and rules</string>
+    <string name="admin_tournament_edit_label_description_rules">Description and Rules</string>
+
+    <string name="admin_tournament_edit_section_prize_pool">Prize pool</string>
+    <string name="admin_tournament_edit_label_prize_pool">Prize Pool (€)</string>
+    <string name="admin_tournament_edit_status_auto_message">Tournament status is calculated automatically based on the dates.</string>
+
+    <string name="admin_tournament_edit_admin_actions">Admin Actions</string>
+    <string name="admin_tournament_edit_saving">Saving...</string>
+    <string name="admin_tournament_edit_save_changes">Save Changes</string>
+    <string name="admin_tournament_edit_discard_changes">Discard Changes</string>
+
+    <string name="admin_tournament_edit_select_date">Select date</string>
+    <string name="admin_tournament_edit_confirm">Confirm</string>
+
+    <string name="admin_team_details_title">Team Details</string>
+    <string name="admin_team_details_error_loading">Error loading team details</string>
+
+    <string name="admin_team_details_admin_view">Admin View</string>
+    <string name="admin_team_details_season_win_rate">Season Win Rate</string>
+    <string name="admin_team_details_total_goals">Total Goals</string>
+    <string name="admin_team_details_matches_played">Matches Played</string>
+    <string name="admin_team_details_record_format">%1$dW · %2$dD · %3$dL</string>
+
+    <string name="admin_team_details_active_roster">Active Roster</string>
+    <string name="admin_team_details_manage_team">Manage Team</string>
+    <string name="admin_team_details_view_details">View Details</string>
+    <string name="admin_team_details_captain">Captain</string>
+    <string name="admin_team_details_no_players">No players found for this team.</string>
+
+    <string name="admin_manage_team_title">Manage Team</string>
+    <string name="admin_manage_team_error_loading">Error loading team</string>
+    <string name="admin_manage_team_remove_success">Player removed from team successfully.</string>
+    <string name="admin_manage_team_remove_error">Error removing player</string>
+
+    <string name="admin_manage_team_console">Admin Tool</string>
+    <string name="admin_manage_team_description">Manage roster, invite players and oversee team composition.</string>
+    <string name="admin_manage_team_invite_player">Invite Player</string>
+
+    <string name="admin_manage_team_search_content_description">Search</string>
+    <string name="admin_manage_team_search_placeholder">Search roster...</string>
+    <string name="admin_manage_team_roster_count">Roster (%1$d)</string>
+    <string name="admin_manage_team_no_players_found">No players found.</string>
+
+    <string name="admin_manage_team_players">Players</string>
+    <string name="admin_manage_team_player_options">Player options</string>
+    <string name="admin_manage_team_remove_from_team">Remove from team</string>
+    <string name="admin_manage_team_remove_content_description">Remove</string>
+
+    <string name="admin_invite_player_manage_team_title">Manage Team</string>
+    <string name="admin_invite_player_error_loading">Error loading players</string>
+    <string name="admin_invite_player_default_message">Welcome to %1$s. Looking forward to having you on the team.</string>
+    <string name="admin_invite_player_select_player_first">Please select a player first.</string>
+    <string name="admin_invite_player_invite_sent_to">Invite sent to %1$s.</string>
+    <string name="admin_invite_player_error_sending_invite">Error sending invite</string>
+
+    <string name="admin_invite_player_console">Admin Tool</string>
+    <string name="admin_invite_player_title">Invite a Player</string>
+    <string name="admin_invite_player_description">Find players and assign them to this team on the platform.</string>
+
+    <string name="admin_invite_player_search_players">Search Players</string>
+    <string name="admin_invite_player_search_content_description">Search</string>
+    <string name="admin_invite_player_search_placeholder">Search by name or ID...</string>
+
+    <string name="admin_invite_player_available_players_count">Available Players (%1$d)</string>
+    <string name="admin_invite_player_no_available_players">No available players found.</string>
+    <string name="admin_invite_player_pending_invites_count">Pending Invites (%1$d)</string>
+
+    <string name="admin_invite_player_invitation_details">Invitation Details</string>
+    <string name="admin_invite_player_invitation_desc">Customize the invitation before sending.</string>
+    <string name="admin_invite_player_personal_message">Personal Message (Optional)</string>
+    <string name="admin_invite_player_message_placeholder">Write a message...</string>
+
+    <string name="admin_invite_player_send_invite_content_description">Send invite</string>
+    <string name="admin_invite_player_sending">Sending...</string>
+    <string name="admin_invite_player_send_invite">Send Invite</string>
+
+    <string name="admin_invite_player_target_team">Target Team</string>
+    <string name="admin_invite_player_selected">Selected</string>
+    <string name="admin_invite_player_invited">Invited</string>
+
+    <string name="admin_users_top_title">Manage Users</string>
+    <string name="admin_users_console">Admin Console</string>
+    <string name="admin_users_title">User Management</string>
+    <string name="admin_users_description">Oversee every account on the platform.</string>
+
+    <string name="admin_users_error_loading">Error loading users</string>
+    <string name="admin_users_generic_error">Error</string>
+    <string name="admin_users_delete_success">User deleted successfully.</string>
+    <string name="admin_users_delete_error">Error deleting user</string>
+
+    <string name="admin_users_make_admin_success">User promoted to administrator.</string>
+    <string name="admin_users_make_organizer_success">User promoted to organizer.</string>
+    <string name="admin_users_revoke_admin_success">Administrator role removed.</string>
+    <string name="admin_users_revoke_organizer_success">Organizer role removed.</string>
+
+    <string name="admin_users_delete_title">Delete User</string>
+    <string name="admin_users_delete_message">Are you sure you want to delete %1$s?</string>
+    <string name="admin_users_delete_button">Delete</string>
+
+    <string name="admin_users_search_placeholder">Search users by name or email...</string>
+    <string name="admin_users_search_content_description">Search</string>
+    <string name="admin_users_results_found">%1$d results found</string>
+
+    <string name="admin_users_filter_all">All</string>
+    <string name="admin_users_filter_admins">Admins</string>
+    <string name="admin_users_filter_organizers">Organizers</string>
+    <string name="admin_users_filter_players">Players</string>
+
+    <string name="admin_users_options_content_description">Options</string>
+    <string name="admin_users_make_administrator">Make Administrator</string>
+    <string name="admin_users_make_organizer">Make Organizer</string>
+    <string name="admin_users_revoke_administrator">Revoke Administrator</string>
+    <string name="admin_users_revoke_organizer">Revoke Organizer</string>
+
+    <string name="admin_users_role_administrator">Administrator</string>
+    <string name="admin_users_role_organizer">Organizer</string>
+    <string name="admin_users_role_player">Player</string>
+
+    <string name="admin_users_load_more">Load More</string>
+
+    <string name="admin_player_details_top_title">Player Profile</string>
+    <string name="admin_player_details_error_loading">Error loading player details</string>
+
+    <string name="admin_player_details_reset_email_sent">Reset email sent to</string>
+    <string name="admin_player_details_reset_email_error">Error sending reset email</string>
+    <string name="admin_player_details_reactivated_success">Account reactivated successfully.</string>
+    <string name="admin_player_details_reactivated_error">Error reactivating account</string>
+    <string name="admin_player_details_suspended_success">Account suspended successfully.</string>
+    <string name="admin_player_details_suspended_error">Error suspending account</string>
+
+    <string name="admin_player_details_season_stats">Season Stats</string>
+    <string name="admin_player_details_points">Points</string>
+    <string name="admin_player_details_current_teams">Current Teams</string>
+
+    <string name="admin_player_details_age">Age</string>
+    <string name="admin_player_details_height">Height</string>
+    <string name="admin_player_details_number">Number</string>
+
+    <string name="admin_player_details_account_information">Account Information</string>
+    <string name="admin_player_details_active">Active</string>
+    <string name="admin_player_details_suspended">Suspended</string>
+    <string name="admin_player_details_email">Email</string>
+    <string name="admin_player_details_user_id">User ID</string>
+    <string name="admin_player_details_member_since">Member since</string>
+    <string name="admin_player_details_last_active">Last active</string>
+    <string name="admin_player_details_account_status">Account status</string>
+
+    <string name="admin_player_details_admin_actions">Admin Actions</string>
+    <string name="admin_player_details_send_reset_email">Send Reset Email</string>
+    <string name="admin_player_details_reactivate_account">Reactivate Account</string>
+    <string name="admin_player_details_suspend_account">Suspend Account</string>
+
+    <string name="admin_organizer_requests_title">Organizer Requests</string>
+    <string name="admin_organizer_requests_console">Admin Console</string>
+    <string name="admin_organizer_requests_description">Review and approve players who applied to become organizers.</string>
+
+    <string name="admin_organizer_requests_error_loading">Error loading requests</string>
+    <string name="admin_organizer_requests_rejected_success">Request rejected.</string>
+    <string name="admin_organizer_requests_approved_success">Request approved and user promoted to organizer.</string>
+    <string name="admin_organizer_requests_reject_error">Error rejecting</string>
+    <string name="admin_organizer_requests_approve_error">Error approving</string>
+
+    <string name="admin_organizer_requests_pending_review">Pending Review</string>
+    <string name="admin_organizer_requests_this_week">This Week</string>
+    <string name="admin_organizer_requests_new_requests">+%1$d new requests</string>
+
+    <string name="admin_organizer_requests_search_placeholder">Search applicants...</string>
+    <string name="admin_organizer_requests_search_content_description">Search</string>
+
+    <string name="admin_organizer_requests_filter_pending">Pending</string>
+    <string name="admin_organizer_requests_filter_approved">Approved</string>
+    <string name="admin_organizer_requests_filter_rejected">Rejected</string>
+    <string name="admin_organizer_requests_approval_section">%1$s approval (%2$d)</string>
+    <string name="admin_organizer_requests_empty">No requests to show.</string>
+
+    <string name="admin_organizer_requests_sport">Sport</string>
+    <string name="admin_organizer_requests_experience">Experience</string>
+    <string name="admin_organizer_requests_frequency">Frequency</string>
+    <string name="admin_organizer_requests_applied">Applied</string>
+
+    <string name="admin_organizer_requests_reject">Reject</string>
+    <string name="admin_organizer_requests_approve">Approve</string>
+
+    <string name="admin_organizer_requests_status_pending">Pending</string>
+    <string name="admin_organizer_requests_status_approved">Approved</string>
+    <string name="admin_organizer_requests_status_rejected">Rejected</string>
+
+    <string name="admin_organizer_requests_info_content_description">Information</string>
+    <string name="admin_organizer_requests_info_message">Approving a request immediately grants the user organizer permissions and notifies them by email.</string>
+
+    <string name="admin_manage_registration_title">Manage Registration</string>
+    <string name="admin_manage_registration_console">Admin Tool</string>
+    <string name="admin_manage_registration_description">Review applications and manage participating teams.</string>
+
+    <string name="admin_manage_registration_error_loading">Error loading registrations</string>
+    <string name="admin_manage_registration_rejected_success">Request rejected.</string>
+    <string name="admin_manage_registration_approved_success">Request approved.</string>
+    <string name="admin_manage_registration_removed_success">Team removed from tournament.</string>
+    <string name="admin_manage_registration_reject_error">Error rejecting</string>
+    <string name="admin_manage_registration_approve_error">Error approving</string>
+    <string name="admin_manage_registration_remove_error">Error removing</string>
+
+    <string name="admin_manage_registration_invite_team">Invite Team</string>
+    <string name="admin_manage_registration_invite_team_content_description">Invite team</string>
+    <string name="admin_manage_registration_search_placeholder">Search teams or captains...</string>
+    <string name="admin_manage_registration_search_content_description">Search</string>
+
+    <string name="admin_manage_registration_tab_all">All</string>
+    <string name="admin_manage_registration_tab_pending">Pending</string>
+    <string name="admin_manage_registration_tab_approved">Approved</string>
+
+    <string name="admin_manage_registration_pending_approval">Pending Approval (%1$d)</string>
+    <string name="admin_manage_registration_approved_teams">Approved Teams (%1$d)</string>
+    <string name="admin_manage_registration_rejected_teams">Rejected Teams (%1$d)</string>
+
+    <string name="admin_manage_registration_empty_pending">No pending requests.</string>
+    <string name="admin_manage_registration_empty_approved">No approved teams.</string>
+    <string name="admin_manage_registration_empty_rejected">No rejected teams.</string>
+
+    <string name="admin_manage_registration_teams_registered">Teams Registered</string>
+    <string name="admin_manage_registration_captain_division">Captain: %1$s · %2$s</string>
+
+    <string name="admin_manage_registration_status_pending">Pending</string>
+    <string name="admin_manage_registration_status_confirmed">Confirmed</string>
+    <string name="admin_manage_registration_status_rejected">Rejected</string>
+
+    <string name="admin_manage_registration_players">Players</string>
+    <string name="admin_manage_registration_win_rate">Win Rate</string>
+    <string name="admin_manage_registration_applied">Applied</string>
+    <string name="admin_manage_registration_payment">Payment</string>
+    <string name="admin_manage_registration_paid">Paid</string>
+    <string name="admin_manage_registration_unpaid">Unpaid</string>
+
+    <string name="admin_manage_registration_reject">Reject</string>
+    <string name="admin_manage_registration_approve">Approve</string>
+    <string name="admin_manage_registration_details">Details</string>
+    <string name="admin_manage_registration_remove_team_content_description">Remove team</string>
+
+    <string name="admin_invite_teams_title">Invite Teams</string>
+    <string name="admin_invite_teams_error_loading">Error loading teams</string>
+    <string name="admin_invite_teams_error_inviting">Error inviting team</string>
+    <string name="admin_invite_teams_invitation_sent_to">Invitation sent to %1$s.</string>
+
+    <string name="admin_invite_teams_console">Admin Tool</string>
+    <string name="admin_invite_teams_description">Send invitations for %1$s.</string>
+
+    <string name="admin_invite_teams_search_teams">Search Teams</string>
+    <string name="admin_invite_teams_search_placeholder">Search by team name or captain...</string>
+    <string name="admin_invite_teams_search_content_description">Search</string>
+
+    <string name="admin_invite_teams_suggested_teams">Suggested Teams</string>
+    <string name="admin_invite_teams_no_teams_available">No teams available for this tournament.</string>
+
+    <string name="admin_invite_teams_sent_invitations_count">Sent Invitations (%1$d)</string>
+    <string name="admin_invite_teams_no_invitations_sent">No invitations have been sent yet.</string>
+
+    <string name="admin_invite_teams_slots_remaining">Slots Remaining</string>
+    <string name="admin_invite_teams_invite_only">Invite Only</string>
+
+    <string name="admin_invite_teams_captain_division">Captain: %1$s · %2$s</string>
+    <string name="admin_invite_teams_invite">Invite</string>
+    <string name="admin_invite_teams_invited">Invited</string>
+
+    <string name="admin_invite_teams_sent_invitation_content_description">Invitation sent</string>
+    <string name="admin_invite_teams_recently">recently</string>
+    <string name="admin_invite_teams_invited_awaiting_response">%1$s was invited %2$s. Awaiting response.</string>
+
+    <string name="admin_casual_matches_title">Casual Matches</string>
+    <string name="admin_casual_matches_console">Admin Console</string>
+    <string name="admin_casual_matches_description">Monitor every match across the platform in real time.</string>
+    <string name="admin_casual_matches_error_loading">Error loading matches</string>
+
+    <string name="admin_casual_matches_calendar_content_description">Calendar</string>
+    <string name="admin_casual_matches_calendar_button">Matches Calendar</string>
+
+    <string name="admin_casual_matches_search_content_description">Search</string>
+    <string name="admin_casual_matches_search_placeholder">Search matches...</string>
+
+    <string name="admin_casual_matches_filter_all">All</string>
+    <string name="admin_casual_matches_filter_live">Live</string>
+    <string name="admin_casual_matches_filter_open">Open</string>
+    <string name="admin_casual_matches_filter_canceled">Canceled</string>
+
+    <string name="admin_casual_matches_no_found">No casual matches found.</string>
+
+    <string name="admin_casual_matches_players_joined">Players Joined</string>
+    <string name="admin_casual_matches_watch_live">Watch Live</string>
+    <string name="admin_casual_matches_view_details">View Details</string>
+    <string name="admin_casual_matches_edit">Edit</string>
+
+    <string name="admin_casual_matches_status_live_now">Live Now</string>
+    <string name="admin_casual_matches_status_open">Open</string>
+    <string name="admin_casual_matches_status_closed">Closed</string>
+    <string name="admin_casual_matches_status_canceled">Canceled</string>
+
+    <string name="admin_casual_match_details_title">Match Details</string>
+    <string name="admin_casual_match_details_error_loading">Error loading match details</string>
+    <string name="admin_casual_match_details_cancel_success">Match cancelled successfully.</string>
+    <string name="admin_casual_match_details_cancel_error">Error cancelling match</string>
+
+    <string name="admin_casual_match_details_console">Admin Console</string>
+    <string name="admin_casual_match_details_schedule">Schedule</string>
+    <string name="admin_casual_match_details_date">Date</string>
+    <string name="admin_casual_match_details_time">Time</string>
+    <string name="admin_casual_match_details_location">Location</string>
+    <string name="admin_casual_match_details_status">Status</string>
+
+    <string name="admin_casual_match_details_host">Host</string>
+    <string name="admin_casual_match_details_hosted_matches">Hosted %1$d matches</string>
+
+    <string name="admin_casual_match_details_joined_players">Joined Players</string>
+    <string name="admin_casual_match_details_no_players">No players joined yet.</string>
+    <string name="admin_casual_match_details_show_less_players">Show Less Players</string>
+    <string name="admin_casual_match_details_load_more_players">Load More Players</string>
+
+    <string name="admin_casual_match_details_admin_actions">Admin Actions</string>
+    <string name="admin_casual_match_details_edit_match">Edit Match</string>
+    <string name="admin_casual_match_details_cancel_match">Cancel Match</string>
+    <string name="admin_casual_match_details_match_canceled">Match Canceled</string>
+
+    <string name="admin_casual_match_details_status_open">Open</string>
+    <string name="admin_casual_match_details_status_closed">Closed</string>
+    <string name="admin_casual_match_details_status_canceled">Canceled</string>
+
+    <string name="admin_edit_casual_match_top_title">Edit Match</string>
+    <string name="admin_edit_casual_match_error_loading">Error loading match</string>
+    <string name="admin_edit_casual_match_empty_name_error">Please write a match name or description.</string>
+    <string name="admin_edit_casual_match_missing_fields_error">Please fill date, time and location.</string>
+    <string name="admin_edit_casual_match_update_success">Match updated successfully.</string>
+    <string name="admin_edit_casual_match_save_error">Error saving match</string>
+    <string name="admin_edit_casual_match_cancel_success">Match canceled successfully.</string>
+    <string name="admin_edit_casual_match_cancel_error">Error canceling match</string>
+
+    <string name="admin_edit_casual_match_console">Admin Console</string>
+    <string name="admin_edit_casual_match_title">Edit Casual Match</string>
+    <string name="admin_edit_casual_match_description">Update name, date, time and location for this casual match.</string>
+    <string name="admin_edit_casual_match_canceled_locked_message">This match is canceled and can no longer be edited.</string>
+
+    <string name="admin_edit_casual_match_default_title">Casual Match</string>
+    <string name="admin_edit_casual_match_match_information">Match Information</string>
+    <string name="admin_edit_casual_match_label_name_description">Name / Description</string>
+    <string name="admin_edit_casual_match_placeholder_name">Beach Volley Mix</string>
+    <string name="admin_edit_casual_match_label_date">Date</string>
+    <string name="admin_edit_casual_match_label_time">Time</string>
+    <string name="admin_edit_casual_match_label_location">Location</string>
+    <string name="admin_edit_casual_match_placeholder_location">Praia da Apúlia</string>
+
+    <string name="admin_edit_casual_match_admin_actions">Admin Actions</string>
+    <string name="admin_edit_casual_match_saving">Saving...</string>
+    <string name="admin_edit_casual_match_save_changes">Save Changes</string>
+    <string name="admin_edit_casual_match_discard_changes">Discard Changes</string>
+    <string name="admin_edit_casual_match_cancel_match">Cancel Match</string>
+    <string name="admin_edit_casual_match_canceled">Match Canceled</string>
+
+    <string name="admin_edit_casual_match_ok">OK</string>
+    <string name="admin_edit_casual_match_select_time">Select time</string>
+
+    <string name="admin_edit_casual_match_status_open">Open</string>
+    <string name="admin_edit_casual_match_status_closed">Closed</string>
+    <string name="admin_edit_casual_match_status_canceled">Canceled</string>
+
+    <string name="admin_live_match_top_title">Live Match</string>
+    <string name="admin_live_match_error_loading">Error loading live match</string>
+    <string name="admin_live_match_select_player_first">Please select a player first.</string>
+    <string name="admin_live_match_point_added_locally">Point added locally. Confirm changes to save.</string>
+    <string name="admin_live_match_no_changes_confirm">There are no changes to confirm.</string>
+    <string name="admin_live_match_unknown_error">Unknown error</string>
+    <string name="admin_live_match_error_confirming_changes">Error confirming changes</string>
+    <string name="admin_live_match_changes_confirmed">Changes confirmed successfully.</string>
+    <string name="admin_live_match_no_changes_discard">There are no changes to discard.</string>
+    <string name="admin_live_match_changes_discarded">Changes discarded.</string>
+
+    <string name="admin_live_match_admin_view">Admin View</string>
+    <string name="admin_live_match_live">Live</string>
+    <string name="admin_live_match_points">Points</string>
+    <string name="admin_live_match_no_points">No points registered yet.</string>
+    <string name="admin_live_match_point">Point!</string>
+    <string name="admin_live_match_pending">Pending</string>
+
+    <string name="admin_live_match_register_point">Register Point</string>
+    <string name="admin_live_match_team">Team</string>
+    <string name="admin_live_match_player">Player</string>
+    <string name="admin_live_match_no_players_team">No players assigned to this team.</string>
+    <string name="admin_live_match_adding">Adding...</string>
+    <string name="admin_live_match_add_point">Add Point</string>
+    <string name="admin_live_match_selected">Selected</string>
+
+    <string name="admin_live_match_admin_actions">Admin Actions</string>
+    <string name="admin_live_match_discard_changes">Discard Changes</string>
+    <string name="admin_live_match_confirm_changes">Confirm Changes</string>
+    <string name="admin_live_match_saving">Saving...</string>
+
+    <string name="admin_archive_top_title">Tournaments Archive</string>
+    <string name="admin_archive_error_loading">Error loading tournaments</string>
+
+    <string name="admin_archive_console">Admin Console</string>
+    <string name="admin_archive_title">Global Tournament Archive</string>
+    <string name="admin_archive_description">Every tournament that has ever existed on the platform.</string>
+
+    <string name="admin_archive_search_placeholder">Search archive...</string>
+    <string name="admin_archive_search_content_description">Search</string>
+    <string name="admin_archive_no_tournaments_found">No tournaments found.</string>
+
+    <string name="admin_archive_organizer_matches">Organizer: %1$s · %2$d matches</string>
+    <string name="admin_archive_champion">Champion</string>
+    <string name="admin_archive_prize">Prize</string>
+    <string name="admin_archive_season">Season</string>
+
+
 </resources>

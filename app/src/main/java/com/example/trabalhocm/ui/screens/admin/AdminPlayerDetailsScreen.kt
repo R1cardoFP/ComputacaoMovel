@@ -58,6 +58,8 @@ import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
 import com.example.trabalhocm.data.repository.AuthRepository
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 
 @Composable
 fun AdminPlayerDetailsScreen(
@@ -80,7 +82,16 @@ fun AdminPlayerDetailsScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
     var refreshKey by remember { mutableStateOf(0) }
+
+    val errorLoadingPlayerText = stringResource(R.string.admin_player_details_error_loading)
+    val resetEmailSentText = stringResource(R.string.admin_player_details_reset_email_sent)
+    val resetEmailErrorText = stringResource(R.string.admin_player_details_reset_email_error)
+    val accountReactivatedSuccessText = stringResource(R.string.admin_player_details_reactivated_success)
+    val accountReactivatedErrorText = stringResource(R.string.admin_player_details_reactivated_error)
+    val accountSuspendedSuccessText = stringResource(R.string.admin_player_details_suspended_success)
+    val accountSuspendedErrorText = stringResource(R.string.admin_player_details_suspended_error)
 
     LaunchedEffect(playerId, teamId, refreshKey) {
         isLoading = true
@@ -91,7 +102,7 @@ fun AdminPlayerDetailsScreen(
                 player = it
             }
             .onFailure {
-                errorMessage = "Error loading player details: ${it.message}"
+                errorMessage = "$errorLoadingPlayerText: ${it.message}"
             }
 
         isLoading = false
@@ -150,14 +161,17 @@ fun AdminPlayerDetailsScreen(
                     player = player!!,
                     innerPadding = innerPadding,
                     actionMessage = actionMessage,
+                    actionMessageIsError = actionMessageIsError,
                     onResetPasswordClick = { email ->
                         scope.launch {
                             authRepository.recuperarPassword(email)
                                 .onSuccess {
-                                    actionMessage = "Reset email sent to $email."
+                                    actionMessage = "$resetEmailSentText $email."
+                                    actionMessageIsError = false
                                 }
                                 .onFailure {
-                                    actionMessage = "Error sending reset email: ${it.message}"
+                                    actionMessage = "$resetEmailErrorText: ${it.message}"
+                                    actionMessageIsError = true
                                 }
                         }
                     },
@@ -168,20 +182,24 @@ fun AdminPlayerDetailsScreen(
                             if (currentPlayer?.suspended == true) {
                                 repository.reativarUtilizador(id)
                                     .onSuccess {
-                                        actionMessage = "Account reactivated successfully."
+                                        actionMessage = accountReactivatedSuccessText
+                                        actionMessageIsError = false
                                         refreshKey++
                                     }
                                     .onFailure {
-                                        actionMessage = "Error reactivating account: ${it.message}"
+                                        actionMessage = "$accountReactivatedErrorText: ${it.message}"
+                                        actionMessageIsError = true
                                     }
                             } else {
                                 repository.suspenderUtilizador(id)
                                     .onSuccess {
-                                        actionMessage = "Account suspended successfully."
+                                        actionMessage = accountSuspendedSuccessText
+                                        actionMessageIsError = false
                                         refreshKey++
                                     }
                                     .onFailure {
-                                        actionMessage = "Error suspending account: ${it.message}"
+                                        actionMessage = "$accountSuspendedErrorText: ${it.message}"
+                                        actionMessageIsError = true
                                     }
                             }
                         }
@@ -197,6 +215,7 @@ private fun AdminPlayerDetailsContent(
     player: AdminPlayerDetails,
     innerPadding: PaddingValues,
     actionMessage: String,
+    actionMessageIsError: Boolean,
     onResetPasswordClick: (String) -> Unit,
     onSuspendUserClick: (String) -> Unit
 ) {
@@ -222,7 +241,7 @@ private fun AdminPlayerDetailsContent(
 
         item {
             Text(
-                text = "Season Stats",
+                text = stringResource(R.string.admin_player_details_season_stats),
                 color = BrandBlue,
                 fontSize = 21.sp,
                 fontWeight = FontWeight.Bold
@@ -232,7 +251,7 @@ private fun AdminPlayerDetailsContent(
         item {
             PlayerStatCard(
                 modifier = Modifier.fillMaxWidth(),
-                title = "POINTS",
+                title = stringResource(R.string.admin_player_details_points).uppercase(),
                 value = player.points.toString()
             )
         }
@@ -241,7 +260,7 @@ private fun AdminPlayerDetailsContent(
             item {
                 Text(
                     text = actionMessage,
-                    color = if (actionMessage.startsWith("Error")) ErrorRed else BrandGreen,
+                    color = if (actionMessageIsError) ErrorRed else BrandGreen,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -320,7 +339,7 @@ private fun PlayerProfileHeader(player: AdminPlayerDetails) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "CURRENT TEAMS",
+                        text = stringResource(R.string.admin_player_details_current_teams).uppercase(),
                         color = TextGray,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
@@ -345,17 +364,17 @@ private fun PlayerProfileHeader(player: AdminPlayerDetails) {
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 PlayerMainInfo(
-                    label = "AGE",
+                    label = stringResource(R.string.admin_player_details_age).uppercase(),
                     value = player.age
                 )
 
                 PlayerMainInfo(
-                    label = "HEIGHT",
+                    label = stringResource(R.string.admin_player_details_height).uppercase(),
                     value = player.height
                 )
 
                 PlayerMainInfo(
-                    label = "NUMBER",
+                    label = stringResource(R.string.admin_player_details_number).uppercase(),
                     value = player.number
                 )
             }
@@ -441,14 +460,14 @@ private fun AccountInformationCard(player: AdminPlayerDetails) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Account Information",
+                        text = stringResource(R.string.admin_player_details_account_information),
                         color = BrandBlue,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
 
                     SmallPlayerBadge(
-                        text = if (player.suspended) "SUSPENDED" else "ACTIVE",
+                        text = if (player.suspended) stringResource(R.string.admin_player_details_suspended).uppercase() else stringResource(R.string.admin_player_details_active).uppercase(),
                         background = if (player.suspended) Color(0xFFFEF3C7) else Color(0xFFEAF8F5),
                         textColor = if (player.suspended) Color(0xFFEAB308) else BrandGreen
                     )
@@ -456,13 +475,13 @@ private fun AccountInformationCard(player: AdminPlayerDetails) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                AccountInfoRow("Email", player.email)
-                AccountInfoRow("User ID", "#${player.id.take(8).uppercase()}")
-                AccountInfoRow("Member since", player.memberSince)
-                AccountInfoRow("Last active", player.lastActive)
+                AccountInfoRow(stringResource(R.string.admin_player_details_email), player.email)
+                AccountInfoRow(stringResource(R.string.admin_player_details_user_id), "#${player.id.take(8).uppercase()}")
+                AccountInfoRow(stringResource(R.string.admin_player_details_member_since), player.memberSince)
+                AccountInfoRow(stringResource(R.string.admin_player_details_last_active), player.lastActive)
                 AccountInfoRow(
-                    label = "Account status",
-                    value = if (player.suspended) "SUSPENDED" else player.accountStatus.uppercase(),
+                    label = stringResource(R.string.admin_player_details_account_status),
+                    value = if (player.suspended) stringResource(R.string.admin_player_details_suspended).uppercase() else player.accountStatus.uppercase(),
                     valueBadge = true,
                     badgePositive = !player.suspended
                 )
@@ -551,7 +570,7 @@ private fun AdminActionsCard(
     onSuspendUserClick: (String) -> Unit
 ) {
     val suspendColor = if (player.suspended) BrandGreen else Color(0xFFEAB308)
-    val suspendText = if (player.suspended) "REACTIVATE ACCOUNT" else "SUSPEND ACCOUNT"
+    val suspendText = if (player.suspended) stringResource(R.string.admin_player_details_reactivate_account).uppercase() else stringResource(R.string.admin_player_details_suspend_account).uppercase()
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -568,7 +587,7 @@ private fun AdminActionsCard(
             ) {
                 Icon(
                     imageVector = AppIcons.Security,
-                    contentDescription = "Admin actions",
+                    contentDescription = stringResource(R.string.admin_player_details_admin_actions),
                     tint = BrandGreen,
                     modifier = Modifier.size(20.dp)
                 )
@@ -576,7 +595,7 @@ private fun AdminActionsCard(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "Admin Actions",
+                    text = stringResource(R.string.admin_player_details_admin_actions),
                     color = BrandGreen,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -600,7 +619,7 @@ private fun AdminActionsCard(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = "SEND RESET EMAIL",
+                    text = stringResource(R.string.admin_player_details_send_reset_email).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -655,7 +674,7 @@ private fun AdminPlayerDetailsTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -663,7 +682,7 @@ private fun AdminPlayerDetailsTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Player Profile",
+                text = stringResource(R.string.admin_player_details_top_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -672,7 +691,7 @@ private fun AdminPlayerDetailsTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -701,11 +720,11 @@ private fun AdminPlayerDetailsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomPlayerDetailsItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomPlayerDetailsItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomPlayerDetailsItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomPlayerDetailsItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomPlayerDetailsItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomPlayerDetailsItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomPlayerDetailsItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomPlayerDetailsItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomPlayerDetailsItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomPlayerDetailsItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

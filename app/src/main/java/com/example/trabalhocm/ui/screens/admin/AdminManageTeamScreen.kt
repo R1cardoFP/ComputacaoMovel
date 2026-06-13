@@ -62,6 +62,8 @@ import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 
 @Composable
 fun AdminManageTeamScreen(
@@ -84,7 +86,12 @@ fun AdminManageTeamScreen(
     var errorMessage by remember { mutableStateOf("") }
     var searchText by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
     var refreshKey by remember { mutableStateOf(0) }
+
+    val errorLoadingTeamText = stringResource(R.string.admin_manage_team_error_loading)
+    val playerRemovedSuccessText = stringResource(R.string.admin_manage_team_remove_success)
+    val removePlayerErrorText = stringResource(R.string.admin_manage_team_remove_error)
 
     LaunchedEffect(teamId, refreshKey) {
         isLoading = true
@@ -95,7 +102,7 @@ fun AdminManageTeamScreen(
                 team = it
             }
             .onFailure {
-                errorMessage = "Error loading team: ${it.message}"
+                errorMessage = "$errorLoadingTeamText: ${it.message}"
             }
 
         isLoading = false
@@ -158,17 +165,20 @@ fun AdminManageTeamScreen(
                     onSearchChange = { searchText = it },
                     innerPadding = innerPadding,
                     actionMessage = actionMessage,
+                    actionMessageIsError = actionMessageIsError,
                     onInvitePlayerClick = onInvitePlayerClick,
                     onPlayerClick = onPlayerClick,
                     onRemovePlayerClick = { playerId ->
                         scope.launch {
                             repository.removerJogadorDaEquipa(currentTeam.id, playerId)
                                 .onSuccess {
-                                    actionMessage = "Player removed from team successfully."
+                                    actionMessage = playerRemovedSuccessText
+                                    actionMessageIsError = false
                                     refreshKey++
                                 }
                                 .onFailure {
-                                    actionMessage = "Error removing player: ${it.message}"
+                                    actionMessage = "$removePlayerErrorText: ${it.message}"
+                                    actionMessageIsError = true
                                 }
                         }
                     }
@@ -185,6 +195,7 @@ private fun AdminManageTeamContent(
     onSearchChange: (String) -> Unit,
     innerPadding: PaddingValues,
     actionMessage: String,
+    actionMessageIsError: Boolean,
     onInvitePlayerClick: (String) -> Unit,
     onPlayerClick: (String) -> Unit,
     onRemovePlayerClick: (String) -> Unit
@@ -210,7 +221,7 @@ private fun AdminManageTeamContent(
     ) {
         item {
             Text(
-                text = "ADMIN TOOL",
+                text = stringResource(R.string.admin_manage_team_console).uppercase(),
                 color = BrandGreen,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -220,7 +231,7 @@ private fun AdminManageTeamContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Manage Team",
+                text = stringResource(R.string.admin_manage_team_title),
                 color = BrandBlue,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
@@ -229,7 +240,7 @@ private fun AdminManageTeamContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Manage roster, invite players and oversee team composition.",
+                text = stringResource(R.string.admin_manage_team_description),
                 color = TextGray,
                 fontSize = 12.sp
             )
@@ -255,7 +266,7 @@ private fun AdminManageTeamContent(
             ) {
                 Icon(
                     imageVector = AppIcons.Add,
-                    contentDescription = "Invite player",
+                    contentDescription = stringResource(R.string.admin_manage_team_invite_player),
                     tint = BrandWhite,
                     modifier = Modifier.size(17.dp)
                 )
@@ -263,7 +274,7 @@ private fun AdminManageTeamContent(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "INVITE PLAYER",
+                    text = stringResource(R.string.admin_manage_team_invite_player).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -282,14 +293,14 @@ private fun AdminManageTeamContent(
                 leadingIcon = {
                     Icon(
                         imageVector = AppIcons.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(R.string.admin_manage_team_search_content_description),
                         tint = TextGray,
                         modifier = Modifier.size(18.dp)
                     )
                 },
                 placeholder = {
                     Text(
-                        text = "Search roster...",
+                        text = stringResource(R.string.admin_manage_team_search_placeholder),
                         color = TextGray,
                         fontSize = 12.sp
                     )
@@ -305,7 +316,7 @@ private fun AdminManageTeamContent(
 
         item {
             Text(
-                text = "ROSTER (${filteredPlayers.size})",
+                text = stringResource(R.string.admin_manage_team_roster_count, filteredPlayers.size).uppercase(),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -317,7 +328,7 @@ private fun AdminManageTeamContent(
             item {
                 Text(
                     text = actionMessage,
-                    color = if (actionMessage.startsWith("Error")) ErrorRed else BrandGreen,
+                    color = if (actionMessageIsError) ErrorRed else BrandGreen,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -333,7 +344,7 @@ private fun AdminManageTeamContent(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Text(
-                        text = "No players found.",
+                        text = stringResource(R.string.admin_manage_team_no_players_found),
                         color = TextGray,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(18.dp)
@@ -415,7 +426,7 @@ private fun TeamManageHeroCard(team: AdminManageTeam) {
                 )
 
                 Text(
-                    text = "PLAYERS",
+                    text = stringResource(R.string.admin_manage_team_players).uppercase(),
                     color = Color(0xFFB9C4D8),
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold
@@ -497,7 +508,7 @@ private fun RosterPlayerCard(
                 ) {
                     Icon(
                         imageVector = AppIcons.MoreVert,
-                        contentDescription = "Player options",
+                        contentDescription = stringResource(R.string.admin_manage_team_player_options),
                         tint = BrandBlue,
                         modifier = Modifier.size(20.dp)
                     )
@@ -512,7 +523,7 @@ private fun RosterPlayerCard(
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = "Remove from team",
+                                text = stringResource(R.string.admin_manage_team_remove_from_team),
                                 color = ErrorRed,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
@@ -521,7 +532,7 @@ private fun RosterPlayerCard(
                         leadingIcon = {
                             Icon(
                                 imageVector = AppIcons.Delete,
-                                contentDescription = "Remove",
+                                contentDescription = stringResource(R.string.admin_manage_team_remove_content_description),
                                 tint = ErrorRed,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -559,7 +570,7 @@ private fun AdminManageTeamTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -567,7 +578,7 @@ private fun AdminManageTeamTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Manage Team",
+                text = stringResource(R.string.admin_manage_team_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -576,7 +587,7 @@ private fun AdminManageTeamTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -605,11 +616,11 @@ private fun AdminManageTeamBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomManageTeamItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomManageTeamItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomManageTeamItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomManageTeamItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomManageTeamItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomManageTeamItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomManageTeamItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomManageTeamItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomManageTeamItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomManageTeamItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

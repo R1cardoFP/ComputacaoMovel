@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.model.AdminStats
 import com.example.trabalhocm.data.repository.AdminRepository
 import com.example.trabalhocm.ui.theme.AppIcons
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 
 private val AdminBlue = Color(0xFF0B1F3A)
 private val AdminGreen = Color(0xFF008D7D)
@@ -139,7 +141,7 @@ private fun AdminHomeContent(
         containerColor = AdminBackground,
         topBar = {
             AdminTopBar(
-                title = "Admin Dashboard",
+                title = stringResource(R.string.admin_home_top_title),
                 onNotificationsClick = onNotificationsClick
             )
         },
@@ -169,7 +171,7 @@ private fun AdminHomeContent(
             item {
                 Column {
                     Text(
-                        text = "ADMIN CONSOLE",
+                        text = stringResource(R.string.admin_home_console).uppercase(),
                         color = AdminGreen,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -179,7 +181,7 @@ private fun AdminHomeContent(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = "Management Dashboard",
+                        text = stringResource(R.string.admin_home_management_dashboard),
                         color = AdminBlue,
                         fontSize = 26.sp,
                         lineHeight = 30.sp,
@@ -189,7 +191,7 @@ private fun AdminHomeContent(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Control users, teams, tournaments, and organizer\nrequests in one place.",
+                        text = stringResource(R.string.admin_home_management_description),
                         color = TextMuted,
                         fontSize = 13.sp,
                         lineHeight = 19.sp
@@ -208,12 +210,12 @@ private fun AdminHomeContent(
             item {
                 AdminManagementCard(
                     icon = AppIcons.Profile,
-                    title = "User Management",
-                    description = "Oversee all accounts and roles.",
+                    title = stringResource(R.string.admin_home_user_management),
+                    description = stringResource(R.string.admin_home_user_management_desc),
                     badge = usersText,
                     iconColor = Color(0xFF0057C8),
                     iconBackground = Color(0xFFF0F5FF),
-                    buttonText = "MANAGE USERS",
+                    buttonText = stringResource(R.string.admin_home_manage_users).uppercase(),
                     buttonColor = Color.White,
                     buttonTextColor = AdminBlue,
                     onClick = onManageUsersClick
@@ -223,12 +225,12 @@ private fun AdminHomeContent(
             item {
                 AdminManagementCard(
                     icon = AppIcons.Teams,
-                    title = "Teams Management",
-                    description = "View teams, rosters, and status.",
+                    title = stringResource(R.string.admin_home_teams_management),
+                    description = stringResource(R.string.admin_home_teams_management_desc),
                     badge = teamsText,
                     iconColor = AdminGreen,
                     iconBackground = Color(0xFFEAF8F5),
-                    buttonText = "MANAGE TEAMS",
+                    buttonText = stringResource(R.string.admin_home_manage_teams).uppercase(),
                     buttonColor = AdminGreen,
                     buttonTextColor = Color.White,
                     onClick = onManageTeamsClick
@@ -238,12 +240,12 @@ private fun AdminHomeContent(
             item {
                 AdminManagementCard(
                     icon = AppIcons.Tournaments,
-                    title = "Tournaments Management",
-                    description = "Create, edit, and monitor leagues.",
+                    title = stringResource(R.string.admin_home_tournaments_management),
+                    description = stringResource(R.string.admin_home_tournaments_management_desc),
                     badge = tournamentsText,
                     iconColor = Color(0xFF0057C8),
                     iconBackground = Color(0xFFF0F5FF),
-                    buttonText = "MANAGE TOURNAMENTS",
+                    buttonText = stringResource(R.string.admin_home_manage_tournaments).uppercase(),
                     buttonColor = Color(0xFF0057C8),
                     buttonTextColor = Color.White,
                     onClick = onManageTournamentsClick
@@ -253,14 +255,15 @@ private fun AdminHomeContent(
             item {
                 AdminManagementCard(
                     icon = AppIcons.Notifications,
-                    title = "Organizer Requests",
-                    description = "Review and approve new organizers.",
-                    badge = "$organizerRequestsText PENDING",
+                    title = stringResource(R.string.admin_home_organizer_requests),
+                    description = stringResource(R.string.admin_home_organizer_requests_desc),
+                    badge = "$organizerRequestsText ${stringResource(R.string.admin_home_pending).uppercase()}",
                     iconColor = Color(0xFFE2A600),
                     iconBackground = Color(0xFFFFF7DE),
-                    buttonText = "REVIEW REQUESTS",
+                    buttonText = stringResource(R.string.admin_home_review_requests).uppercase(),
                     buttonColor = Color.White,
                     buttonTextColor = AdminBlue,
+                    badgeTextColor = AdminGreen,
                     onClick = onReviewRequestsClick
                 )
             }
@@ -295,7 +298,7 @@ private fun AdminTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier
                 .size(23.dp)
@@ -328,14 +331,14 @@ private fun QuickOverviewCard(
             ) {
                 Column {
                     Text(
-                        text = "Quick Overview",
+                        text = stringResource(R.string.admin_home_quick_overview),
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
 
                     Text(
-                        text = "Global admin actions",
+                        text = stringResource(R.string.admin_home_global_actions),
                         color = Color(0xFFB9C4D8),
                         fontSize = 11.sp
                     )
@@ -348,7 +351,7 @@ private fun QuickOverviewCard(
                         .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
                     Text(
-                        text = "LIVE",
+                        text = stringResource(R.string.admin_home_live).uppercase(),
                         color = Color.White,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
@@ -362,9 +365,9 @@ private fun QuickOverviewCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(28.dp)
             ) {
-                OverviewNumber(number = users, label = "USERS")
-                OverviewNumber(number = teams, label = "TEAMS")
-                OverviewNumber(number = tournaments, label = "TOURNAMENTS")
+                OverviewNumber(number = users, label = stringResource(R.string.admin_home_users_label).uppercase())
+                OverviewNumber(number = teams, label = stringResource(R.string.admin_home_teams_label).uppercase())
+                OverviewNumber(number = tournaments, label = stringResource(R.string.admin_home_tournaments_label).uppercase())
             }
         }
     }
@@ -401,6 +404,7 @@ private fun AdminManagementCard(
     buttonText: String,
     buttonColor: Color,
     buttonTextColor: Color,
+    badgeTextColor: Color = TextMuted,
     onClick: () -> Unit
 ) {
     val hasLightButton = buttonColor == Color.White
@@ -460,7 +464,7 @@ private fun AdminManagementCard(
                 ) {
                     Text(
                         text = badge,
-                        color = if (badge.contains("PENDING")) AdminGreen else TextMuted,
+                        color = badgeTextColor,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -517,11 +521,11 @@ private fun AdminBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

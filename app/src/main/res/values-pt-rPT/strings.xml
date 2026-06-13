@@ -581,4 +581,660 @@
     <string name="nav_matches">JOGOS</string>
     <string name="nav_teams">EQUIPAS</string>
     <string name="nav_profile">PERFIL</string>
+
+
+    <string name="admin_home_top_title">Painel Admin</string>
+    <string name="admin_common_notifications">Notificações</string>
+
+    <string name="admin_home_console">Consola Admin</string>
+    <string name="admin_home_management_dashboard">Painel de Gestão</string>
+    <string name="admin_home_management_description">Controla utilizadores, equipas, torneios e pedidos de organizador num único local.</string>
+
+    <string name="admin_home_quick_overview">Resumo Rápido</string>
+    <string name="admin_home_global_actions">Ações globais de administração</string>
+    <string name="admin_home_live">Ativo</string>
+
+    <string name="admin_home_users_label">Utilizadores</string>
+    <string name="admin_home_teams_label">Equipas</string>
+    <string name="admin_home_tournaments_label">Torneios</string>
+
+    <string name="admin_home_user_management">Gestão de Utilizadores</string>
+    <string name="admin_home_user_management_desc">Gerir contas e papéis dos utilizadores.</string>
+    <string name="admin_home_manage_users">Gerir Utilizadores</string>
+
+    <string name="admin_home_teams_management">Gestão de Equipas</string>
+    <string name="admin_home_teams_management_desc">Ver equipas, plantéis e estado.</string>
+    <string name="admin_home_manage_teams">Gerir Equipas</string>
+
+    <string name="admin_home_tournaments_management">Gestão de Torneios</string>
+    <string name="admin_home_tournaments_management_desc">Criar, editar e monitorizar torneios.</string>
+    <string name="admin_home_manage_tournaments">Gerir Torneios</string>
+
+    <string name="admin_home_organizer_requests">Pedidos de Organizador</string>
+    <string name="admin_home_organizer_requests_desc">Rever e aprovar novos organizadores.</string>
+    <string name="admin_home_review_requests">Rever Pedidos</string>
+    <string name="admin_home_pending">Pendentes</string>
+
+    <string name="admin_nav_home">Início</string>
+    <string name="admin_nav_tournaments">Torneios</string>
+    <string name="admin_nav_matches">Jogos</string>
+    <string name="admin_nav_teams">Equipas</string>
+    <string name="admin_nav_profile">Perfil</string>
+    <string name="admin_tournaments_title">Torneios</string>
+    <string name="admin_tournaments_console">Consola Admin</string>
+    <string name="admin_tournaments_all_title">Todos os Torneios</string>
+    <string name="admin_tournaments_description">Supervisão global de todos os torneios da plataforma.</string>
+    <string name="admin_tournaments_search_placeholder">Pesquisar torneio...</string>
+
+    <string name="admin_tournaments_filter_all">Todos</string>
+    <string name="admin_tournaments_filter_live">Ativos</string>
+    <string name="admin_tournaments_filter_open">Abertos</string>
+    <string name="admin_tournaments_filter_completed">Terminados</string>
+
+    <string name="admin_tournaments_no_found">Nenhum torneio encontrado.</string>
+    <string name="admin_tournaments_archive_button">Ver Arquivo Global de Torneios</string>
+
+    <string name="admin_tournaments_delete_title">Apagar Torneio</string>
+    <string name="admin_tournaments_delete_message">Tens a certeza que queres apagar o torneio %1$s?</string>
+    <string name="admin_tournaments_delete_button">Apagar</string>
+    <string name="admin_common_cancel">Cancelar</string>
+    <string name="admin_common_back">Voltar</string>
+
+    <string name="admin_tournaments_error_loading">Erro ao carregar torneios</string>
+    <string name="admin_tournaments_delete_success">Torneio apagado com sucesso.</string>
+    <string name="admin_tournaments_delete_error">Erro ao apagar torneio</string>
+
+    <string name="admin_tournaments_pro_league">Liga Pro</string>
+    <string name="admin_tournaments_season_organizer">Época %1$s · Organizador: %2$s</string>
+    <string name="admin_tournaments_teams">Equipas</string>
+    <string name="admin_tournaments_details">Detalhes</string>
+    <string name="admin_tournaments_manage_registration">Gerir Inscrições</string>
+
+    <string name="admin_status_open">Aberto</string>
+    <string name="admin_status_live">Ativo</string>
+    <string name="admin_status_completed">Terminado</string>
+    <string name="admin_status_cancelled">Cancelado</string>
+    <string name="admin_status_draft">Rascunho</string>
+    <string name="admin_teams_title">Equipas</string>
+    <string name="admin_teams_console">Consola Admin</string>
+    <string name="admin_teams_all_title">Todas as Equipas</string>
+    <string name="admin_teams_description">Gerir todas as equipas registadas na plataforma.</string>
+    <string name="admin_teams_search_placeholder">Pesquisar equipa...</string>
+
+    <string name="admin_teams_filter_all">Todas</string>
+    <string name="admin_teams_filter_football">Futebol</string>
+    <string name="admin_teams_filter_basketball">Basquetebol</string>
+    <string name="admin_teams_filter_volleyball">Voleibol</string>
+
+    <string name="admin_teams_no_found">Nenhuma equipa encontrada.</string>
+    <string name="admin_teams_error_loading">Erro ao carregar equipas</string>
+    <string name="admin_teams_delete_success">Equipa apagada com sucesso.</string>
+    <string name="admin_teams_delete_error">Erro ao apagar equipa</string>
+
+    <string name="admin_teams_delete_title">Apagar Equipa</string>
+    <string name="admin_teams_delete_message">Tens a certeza que queres apagar %1$s?</string>
+    <string name="admin_teams_delete_button">Apagar</string>
+
+    <string name="admin_teams_search_content_description">Pesquisar</string>
+    <string name="admin_teams_options_content_description">Opções</string>
+
+    <string name="admin_teams_players">Jogadores</string>
+    <string name="admin_teams_wins">Vitórias</string>
+    <string name="admin_teams_losses">Derrotas</string>
+    <string name="admin_teams_streak">Sequência</string>
+
+    <string name="admin_teams_view_details">Ver Detalhes</string>
+    <string name="admin_teams_manage_team">Gerir Equipa</string>
+    <string name="admin_matches_error_loading_calendar">Erro ao carregar calendário</string>
+
+    <string name="admin_matches_console">Consola Admin</string>
+    <string name="admin_matches_title">Calendário de Jogos</string>
+    <string name="admin_matches_description">Ver todos os jogos agendados na plataforma.</string>
+    <string name="admin_matches_calendar_label">Calendário</string>
+    <string name="admin_matches_calendar_top_title">Calendário</string>
+
+    <string name="admin_matches_date_format">dd MMMM yyyy</string>
+    <string name="admin_matches_month_format">MMMM yyyy</string>
+
+    <string name="admin_weekday_mon">SEG</string>
+    <string name="admin_weekday_tue">TER</string>
+    <string name="admin_weekday_wed">QUA</string>
+    <string name="admin_weekday_thu">QUI</string>
+    <string name="admin_weekday_fri">SEX</string>
+    <string name="admin_weekday_sat">SÁB</string>
+    <string name="admin_weekday_sun">DOM</string>
+
+    <string name="admin_matches_no_matches_day">Não existem jogos agendados para este dia.</string>
+
+    <string name="admin_matches_live_now">Em direto</string>
+    <string name="admin_matches_watch_live">Ver Direto</string>
+    <string name="admin_matches_view_details">Ver Detalhes</string>
+    <string name="admin_matches_edit">Editar</string>
+
+    <string name="admin_matches_status_live_now">Em Direto</string>
+    <string name="admin_matches_status_canceled">Cancelado</string>
+    <string name="admin_matches_status_closed">Fechado</string>
+    <string name="admin_matches_status_upcoming">Agendado</string>
+    <string name="admin_notifications_title">Notificações</string>
+    <string name="admin_notifications_console">Consola Admin</string>
+    <string name="admin_notifications_description">Alertas da plataforma, moderação e eventos do sistema.</string>
+
+    <string name="admin_notifications_filter_all">Todas</string>
+    <string name="admin_notifications_filter_moderation">Moderação</string>
+    <string name="admin_notifications_filter_system">Sistema</string>
+
+    <string name="admin_notifications_empty">Não existem notificações para mostrar.</string>
+    <string name="admin_notifications_error_loading">Erro ao carregar notificações</string>
+    <string name="admin_notifications_error_updating">Erro ao atualizar notificação</string>
+    <string name="admin_notifications_missing_target">Não foi possível abrir o destino desta notificação. Falta o ID associado.</string>
+
+    <string name="admin_notifications_action_view_user_profile">Ver Perfil do Utilizador</string>
+    <string name="admin_notifications_action_view_tournament_details">Ver Detalhes do Torneio</string>
+    <string name="admin_notifications_action_view_team_details">Ver Detalhes da Equipa</string>
+
+    <string name="admin_profile_title">Perfil</string>
+    <string name="admin_profile_default_bio">Administrador da plataforma. Responsável pela supervisão global dos torneios e pela gestão de utilizadores.</string>
+    <string name="admin_profile_error_loading">Erro ao carregar perfil</string>
+    <string name="admin_profile_empty_error">O nome e o email não podem estar vazios.</string>
+    <string name="admin_profile_save_success">Perfil atualizado com sucesso.</string>
+    <string name="admin_profile_save_error">Erro ao guardar perfil</string>
+
+    <string name="admin_profile_account_settings">Definições da Conta</string>
+    <string name="admin_profile_username">Nome de utilizador</string>
+    <string name="admin_profile_email_address">Endereço de email</string>
+    <string name="admin_profile_bio">Biografia</string>
+
+    <string name="admin_profile_preferences">Preferências</string>
+    <string name="admin_profile_language">Idioma</string>
+    <string name="admin_profile_language_english">Inglês (EUA)</string>
+    <string name="admin_profile_language_portuguese">Português (PT)</string>
+
+    <string name="admin_profile_active_dashboards">Painéis Ativos</string>
+    <string name="admin_profile_security">Segurança</string>
+    <string name="admin_profile_change_password">Alterar Palavra-passe</string>
+    <string name="admin_profile_save_changes">Guardar Alterações</string>
+    <string name="admin_profile_logout">Terminar Sessão</string>
+
+    <string name="admin_profile_admin_content_description">Perfil do administrador</string>
+    <string name="admin_profile_admin_default_name">Administrador</string>
+    <string name="admin_profile_admin_role">Administrador</string>
+
+    <string name="admin_profile_dashboard_content_description">Painel admin</string>
+    <string name="admin_profile_dashboard_title">Administrador</string>
+    <string name="admin_profile_dashboard_desc">Gestão global dos torneios</string>
+
+    <string name="admin_tournament_details_title">Detalhes</string>
+    <string name="admin_tournament_details_error_loading">Erro ao carregar detalhes</string>
+
+    <string name="admin_tournament_details_delete_title">Apagar Torneio</string>
+    <string name="admin_tournament_details_delete_message">Tens a certeza que queres apagar este torneio? Esta ação não pode ser anulada.</string>
+    <string name="admin_tournament_details_delete_button">Apagar</string>
+    <string name="admin_tournament_details_deleting">A apagar...</string>
+    <string name="admin_tournament_details_delete_error">Erro ao apagar torneio</string>
+
+    <string name="admin_tournament_details_about">Sobre</string>
+    <string name="admin_tournament_details_schedule">Calendário</string>
+    <string name="admin_tournament_details_start_date">Data de Início</string>
+    <string name="admin_tournament_details_end_date">Data de Fim</string>
+    <string name="admin_tournament_details_registration_closes">Fecho das Inscrições</string>
+    <string name="admin_tournament_details_format">Formato</string>
+    <string name="admin_tournament_details_organizer">Organizador</string>
+    <string name="admin_tournament_details_location">Localização</string>
+    <string name="admin_tournament_details_standings">Classificação</string>
+    <string name="admin_tournament_details_no_standings">Ainda não existem dados de classificação associados a este torneio.</string>
+
+    <string name="admin_tournament_details_admin_view">Vista Admin</string>
+    <string name="admin_tournament_details_season">Época</string>
+    <string name="admin_tournament_details_prize_pool">Prémio</string>
+    <string name="admin_tournament_details_teams">Equipas</string>
+
+    <string name="admin_tournament_details_admin_controls">Controlos Admin</string>
+    <string name="admin_tournament_details_admin_controls_desc">Supervisão completa deste torneio</string>
+    <string name="admin_tournament_details_manage_registration">Gerir Inscrições</string>
+    <string name="admin_tournament_details_edit_tournament">Editar Torneio</string>
+
+    <string name="admin_tournament_details_status_in_progress">Em Decorrer</string>
+
+    <string name="admin_tournament_edit_top_title">Detalhes do Torneio</string>
+    <string name="admin_tournament_edit_error_loading">Erro ao carregar torneio</string>
+    <string name="admin_tournament_edit_name_empty_error">Erro: o nome do torneio não pode estar vazio.</string>
+    <string name="admin_tournament_edit_save_success">Alterações guardadas com sucesso.</string>
+    <string name="admin_tournament_edit_save_error">Erro ao guardar</string>
+
+    <string name="admin_tournament_edit_console">Consola Admin</string>
+    <string name="admin_tournament_edit_title">Editar detalhes do Torneio</string>
+    <string name="admin_tournament_edit_description">Atualiza o calendário, inscrições e definições do torneio.</string>
+
+    <string name="admin_tournament_edit_default_sport">Modalidade</string>
+    <string name="admin_tournament_edit_default_tournament_name">Nome do torneio</string>
+
+    <string name="admin_tournament_edit_section_identity">Nome do torneio</string>
+    <string name="admin_tournament_edit_label_tournament_name">Nome do Torneio</string>
+    <string name="admin_tournament_edit_label_sport">Modalidade</string>
+    <string name="admin_tournament_edit_locked">Bloqueado</string>
+    <string name="admin_tournament_edit_sport_locked_message">A modalidade só pode ser alterada quando o torneio está em rascunho ou aberto.</string>
+
+    <string name="admin_tournament_edit_label_format">Formato</string>
+    <string name="admin_tournament_edit_format_league">Sistema de Liga</string>
+    <string name="admin_tournament_edit_format_knockout">Eliminatórias</string>
+    <string name="admin_tournament_edit_format_groups">Grupos</string>
+
+    <string name="admin_tournament_edit_section_schedule">Calendário</string>
+    <string name="admin_tournament_edit_label_start_date">Data de Início</string>
+    <string name="admin_tournament_edit_label_end_date">Data de Fim</string>
+
+    <string name="admin_tournament_edit_section_location_organizer">Localização e organizador</string>
+    <string name="admin_tournament_edit_label_venue">Local</string>
+    <string name="admin_tournament_edit_label_organizer">Organizador</string>
+
+    <string name="admin_tournament_edit_section_description_rules">Descrição e regras</string>
+    <string name="admin_tournament_edit_label_description_rules">Descrição e Regras</string>
+
+    <string name="admin_tournament_edit_section_prize_pool">Prémio</string>
+    <string name="admin_tournament_edit_label_prize_pool">Prémio (€)</string>
+    <string name="admin_tournament_edit_status_auto_message">O estado do torneio é calculado automaticamente com base nas datas.</string>
+
+    <string name="admin_tournament_edit_admin_actions">Ações Admin</string>
+    <string name="admin_tournament_edit_saving">A guardar...</string>
+    <string name="admin_tournament_edit_save_changes">Guardar Alterações</string>
+    <string name="admin_tournament_edit_discard_changes">Descartar Alterações</string>
+
+    <string name="admin_tournament_edit_select_date">Selecionar data</string>
+    <string name="admin_tournament_edit_confirm">Confirmar</string>
+
+    <string name="admin_team_details_title">Detalhes da Equipa</string>
+    <string name="admin_team_details_error_loading">Erro ao carregar detalhes da equipa</string>
+
+    <string name="admin_team_details_admin_view">Vista Admin</string>
+    <string name="admin_team_details_season_win_rate">Taxa de Vitória da Época</string>
+    <string name="admin_team_details_total_goals">Total de Golos</string>
+    <string name="admin_team_details_matches_played">Jogos Realizados</string>
+    <string name="admin_team_details_record_format">%1$dV · %2$dE · %3$dD</string>
+
+    <string name="admin_team_details_active_roster">Plantel Ativo</string>
+    <string name="admin_team_details_manage_team">Gerir Equipa</string>
+    <string name="admin_team_details_view_details">Ver Detalhes</string>
+    <string name="admin_team_details_captain">Capitão</string>
+    <string name="admin_team_details_no_players">Nenhum jogador encontrado para esta equipa.</string>
+
+    <string name="admin_manage_team_title">Gerir Equipa</string>
+    <string name="admin_manage_team_error_loading">Erro ao carregar equipa</string>
+    <string name="admin_manage_team_remove_success">Jogador removido da equipa com sucesso.</string>
+    <string name="admin_manage_team_remove_error">Erro ao remover jogador</string>
+
+    <string name="admin_manage_team_console">Ferramenta Admin</string>
+    <string name="admin_manage_team_description">Gerir plantel, convidar jogadores e supervisionar a composição da equipa.</string>
+    <string name="admin_manage_team_invite_player">Convidar Jogador</string>
+
+    <string name="admin_manage_team_search_content_description">Pesquisar</string>
+    <string name="admin_manage_team_search_placeholder">Pesquisar plantel...</string>
+    <string name="admin_manage_team_roster_count">Plantel (%1$d)</string>
+    <string name="admin_manage_team_no_players_found">Nenhum jogador encontrado.</string>
+
+    <string name="admin_manage_team_players">Jogadores</string>
+    <string name="admin_manage_team_player_options">Opções do jogador</string>
+    <string name="admin_manage_team_remove_from_team">Remover da equipa</string>
+    <string name="admin_manage_team_remove_content_description">Remover</string>
+
+    <string name="admin_invite_player_manage_team_title">Gerir Equipa</string>
+    <string name="admin_invite_player_error_loading">Erro ao carregar jogadores</string>
+    <string name="admin_invite_player_default_message">Bem-vindo à equipa %1$s. Estamos ansiosos por te ter connosco.</string>
+    <string name="admin_invite_player_select_player_first">Seleciona primeiro um jogador.</string>
+    <string name="admin_invite_player_invite_sent_to">Convite enviado para %1$s.</string>
+    <string name="admin_invite_player_error_sending_invite">Erro ao enviar convite</string>
+
+    <string name="admin_invite_player_console">Ferramenta Admin</string>
+    <string name="admin_invite_player_title">Convidar Jogador</string>
+    <string name="admin_invite_player_description">Encontra jogadores e atribui-os a esta equipa na plataforma.</string>
+
+    <string name="admin_invite_player_search_players">Pesquisar Jogadores</string>
+    <string name="admin_invite_player_search_content_description">Pesquisar</string>
+    <string name="admin_invite_player_search_placeholder">Pesquisar por nome ou ID...</string>
+
+    <string name="admin_invite_player_available_players_count">Jogadores Disponíveis (%1$d)</string>
+    <string name="admin_invite_player_no_available_players">Nenhum jogador disponível encontrado.</string>
+    <string name="admin_invite_player_pending_invites_count">Convites Pendentes (%1$d)</string>
+
+    <string name="admin_invite_player_invitation_details">Detalhes do Convite</string>
+    <string name="admin_invite_player_invitation_desc">Personaliza o convite antes de enviar.</string>
+    <string name="admin_invite_player_personal_message">Mensagem Pessoal (Opcional)</string>
+    <string name="admin_invite_player_message_placeholder">Escreve uma mensagem...</string>
+
+    <string name="admin_invite_player_send_invite_content_description">Enviar convite</string>
+    <string name="admin_invite_player_sending">A enviar...</string>
+    <string name="admin_invite_player_send_invite">Enviar Convite</string>
+
+    <string name="admin_invite_player_target_team">Equipa de Destino</string>
+    <string name="admin_invite_player_selected">Selecionado</string>
+    <string name="admin_invite_player_invited">Convidado</string>
+
+    <string name="admin_users_top_title">Gerir Utilizadores</string>
+    <string name="admin_users_console">Consola Admin</string>
+    <string name="admin_users_title">Gestão de Utilizadores</string>
+    <string name="admin_users_description">Gerir todas as contas da plataforma.</string>
+
+    <string name="admin_users_error_loading">Erro ao carregar utilizadores</string>
+    <string name="admin_users_generic_error">Erro</string>
+    <string name="admin_users_delete_success">Utilizador apagado com sucesso.</string>
+    <string name="admin_users_delete_error">Erro ao apagar utilizador</string>
+
+    <string name="admin_users_make_admin_success">Utilizador promovido a administrador.</string>
+    <string name="admin_users_make_organizer_success">Utilizador promovido a organizador.</string>
+    <string name="admin_users_revoke_admin_success">Papel de administrador removido.</string>
+    <string name="admin_users_revoke_organizer_success">Papel de organizador removido.</string>
+
+    <string name="admin_users_delete_title">Apagar Utilizador</string>
+    <string name="admin_users_delete_message">Tens a certeza que queres apagar %1$s?</string>
+    <string name="admin_users_delete_button">Apagar</string>
+
+    <string name="admin_users_search_placeholder">Pesquisar utilizadores por nome ou email...</string>
+    <string name="admin_users_search_content_description">Pesquisar</string>
+    <string name="admin_users_results_found">%1$d resultados encontrados</string>
+
+    <string name="admin_users_filter_all">Todos</string>
+    <string name="admin_users_filter_admins">Admins</string>
+    <string name="admin_users_filter_organizers">Organizadores</string>
+    <string name="admin_users_filter_players">Jogadores</string>
+
+    <string name="admin_users_options_content_description">Opções</string>
+    <string name="admin_users_make_administrator">Tornar Administrador</string>
+    <string name="admin_users_make_organizer">Tornar Organizador</string>
+    <string name="admin_users_revoke_administrator">Remover Administrador</string>
+    <string name="admin_users_revoke_organizer">Remover Organizador</string>
+
+    <string name="admin_users_role_administrator">Administrador</string>
+    <string name="admin_users_role_organizer">Organizador</string>
+    <string name="admin_users_role_player">Jogador</string>
+
+    <string name="admin_users_load_more">Carregar Mais</string>
+
+    <string name="admin_player_details_top_title">Perfil do Jogador</string>
+    <string name="admin_player_details_error_loading">Erro ao carregar detalhes do jogador</string>
+
+    <string name="admin_player_details_reset_email_sent">Email de recuperação enviado para</string>
+    <string name="admin_player_details_reset_email_error">Erro ao enviar email de recuperação</string>
+    <string name="admin_player_details_reactivated_success">Conta reativada com sucesso.</string>
+    <string name="admin_player_details_reactivated_error">Erro ao reativar conta</string>
+    <string name="admin_player_details_suspended_success">Conta suspensa com sucesso.</string>
+    <string name="admin_player_details_suspended_error">Erro ao suspender conta</string>
+
+    <string name="admin_player_details_season_stats">Estatísticas da Época</string>
+    <string name="admin_player_details_points">Pontos</string>
+    <string name="admin_player_details_current_teams">Equipas Atuais</string>
+
+    <string name="admin_player_details_age">Idade</string>
+    <string name="admin_player_details_height">Altura</string>
+    <string name="admin_player_details_number">Número</string>
+
+    <string name="admin_player_details_account_information">Informação da Conta</string>
+    <string name="admin_player_details_active">Ativa</string>
+    <string name="admin_player_details_suspended">Suspensa</string>
+    <string name="admin_player_details_email">Email</string>
+    <string name="admin_player_details_user_id">ID do Utilizador</string>
+    <string name="admin_player_details_member_since">Membro desde</string>
+    <string name="admin_player_details_last_active">Última atividade</string>
+    <string name="admin_player_details_account_status">Estado da conta</string>
+
+    <string name="admin_player_details_admin_actions">Ações Admin</string>
+    <string name="admin_player_details_send_reset_email">Enviar Email de Recuperação</string>
+    <string name="admin_player_details_reactivate_account">Reativar Conta</string>
+    <string name="admin_player_details_suspend_account">Suspender Conta</string>
+
+    <string name="admin_organizer_requests_title">Pedidos de Organizador</string>
+    <string name="admin_organizer_requests_console">Consola Admin</string>
+    <string name="admin_organizer_requests_description">Rever e aprovar jogadores que pediram para se tornar organizadores.</string>
+
+    <string name="admin_organizer_requests_error_loading">Erro ao carregar pedidos</string>
+    <string name="admin_organizer_requests_rejected_success">Pedido rejeitado.</string>
+    <string name="admin_organizer_requests_approved_success">Pedido aprovado e utilizador promovido a organizador.</string>
+    <string name="admin_organizer_requests_reject_error">Erro ao rejeitar</string>
+    <string name="admin_organizer_requests_approve_error">Erro ao aprovar</string>
+
+    <string name="admin_organizer_requests_pending_review">Por Rever</string>
+    <string name="admin_organizer_requests_this_week">Esta Semana</string>
+    <string name="admin_organizer_requests_new_requests">+%1$d novos pedidos</string>
+
+    <string name="admin_organizer_requests_search_placeholder">Pesquisar candidatos...</string>
+    <string name="admin_organizer_requests_search_content_description">Pesquisar</string>
+
+    <string name="admin_organizer_requests_filter_pending">Pendentes</string>
+    <string name="admin_organizer_requests_filter_approved">Aprovados</string>
+    <string name="admin_organizer_requests_filter_rejected">Rejeitados</string>
+    <string name="admin_organizer_requests_approval_section">%1$s (%2$d)</string>
+    <string name="admin_organizer_requests_empty">Sem pedidos para mostrar.</string>
+
+    <string name="admin_organizer_requests_sport">Modalidade</string>
+    <string name="admin_organizer_requests_experience">Experiência</string>
+    <string name="admin_organizer_requests_frequency">Frequência</string>
+    <string name="admin_organizer_requests_applied">Candidatura</string>
+
+    <string name="admin_organizer_requests_reject">Rejeitar</string>
+    <string name="admin_organizer_requests_approve">Aprovar</string>
+
+    <string name="admin_organizer_requests_status_pending">Pendente</string>
+    <string name="admin_organizer_requests_status_approved">Aprovado</string>
+    <string name="admin_organizer_requests_status_rejected">Rejeitado</string>
+
+    <string name="admin_organizer_requests_info_content_description">Informação</string>
+    <string name="admin_organizer_requests_info_message">A aprovação de um pedido atribui imediatamente permissões de organizador ao utilizador e envia uma notificação por email.</string>
+
+    <string name="admin_manage_registration_title">Gerir Inscrições</string>
+    <string name="admin_manage_registration_console">Ferramenta Admin</string>
+    <string name="admin_manage_registration_description">Rever candidaturas e gerir equipas participantes.</string>
+
+    <string name="admin_manage_registration_error_loading">Erro ao carregar inscrições</string>
+    <string name="admin_manage_registration_rejected_success">Pedido rejeitado.</string>
+    <string name="admin_manage_registration_approved_success">Pedido aprovado.</string>
+    <string name="admin_manage_registration_removed_success">Equipa removida do torneio.</string>
+    <string name="admin_manage_registration_reject_error">Erro ao rejeitar</string>
+    <string name="admin_manage_registration_approve_error">Erro ao aprovar</string>
+    <string name="admin_manage_registration_remove_error">Erro ao remover</string>
+
+    <string name="admin_manage_registration_invite_team">Convidar Equipa</string>
+    <string name="admin_manage_registration_invite_team_content_description">Convidar equipa</string>
+    <string name="admin_manage_registration_search_placeholder">Pesquisar equipas ou capitães...</string>
+    <string name="admin_manage_registration_search_content_description">Pesquisar</string>
+
+    <string name="admin_manage_registration_tab_all">Todas</string>
+    <string name="admin_manage_registration_tab_pending">Pendentes</string>
+    <string name="admin_manage_registration_tab_approved">Aprovadas</string>
+
+    <string name="admin_manage_registration_pending_approval">A Aprovar (%1$d)</string>
+    <string name="admin_manage_registration_approved_teams">Equipas Aprovadas (%1$d)</string>
+    <string name="admin_manage_registration_rejected_teams">Equipas Rejeitadas (%1$d)</string>
+
+    <string name="admin_manage_registration_empty_pending">Sem pedidos pendentes.</string>
+    <string name="admin_manage_registration_empty_approved">Sem equipas aprovadas.</string>
+    <string name="admin_manage_registration_empty_rejected">Sem equipas rejeitadas.</string>
+
+    <string name="admin_manage_registration_teams_registered">Equipas Inscritas</string>
+    <string name="admin_manage_registration_captain_division">Capitão: %1$s · %2$s</string>
+
+    <string name="admin_manage_registration_status_pending">Pendente</string>
+    <string name="admin_manage_registration_status_confirmed">Confirmada</string>
+    <string name="admin_manage_registration_status_rejected">Rejeitada</string>
+
+    <string name="admin_manage_registration_players">Jogadores</string>
+    <string name="admin_manage_registration_win_rate">Taxa de Vitória</string>
+    <string name="admin_manage_registration_applied">Candidatura</string>
+    <string name="admin_manage_registration_payment">Pagamento</string>
+    <string name="admin_manage_registration_paid">Pago</string>
+    <string name="admin_manage_registration_unpaid">Não Pago</string>
+
+    <string name="admin_manage_registration_reject">Rejeitar</string>
+    <string name="admin_manage_registration_approve">Aprovar</string>
+    <string name="admin_manage_registration_details">Detalhes</string>
+    <string name="admin_manage_registration_remove_team_content_description">Remover equipa</string>
+
+    <string name="admin_invite_teams_title">Convidar Equipas</string>
+    <string name="admin_invite_teams_error_loading">Erro ao carregar equipas</string>
+    <string name="admin_invite_teams_error_inviting">Erro ao convidar equipa</string>
+    <string name="admin_invite_teams_invitation_sent_to">Convite enviado para %1$s.</string>
+
+    <string name="admin_invite_teams_console">Ferramenta Admin</string>
+    <string name="admin_invite_teams_description">Enviar convites para %1$s.</string>
+
+    <string name="admin_invite_teams_search_teams">Pesquisar Equipas</string>
+    <string name="admin_invite_teams_search_placeholder">Pesquisar por nome da equipa ou capitão...</string>
+    <string name="admin_invite_teams_search_content_description">Pesquisar</string>
+
+    <string name="admin_invite_teams_suggested_teams">Equipas Sugeridas</string>
+    <string name="admin_invite_teams_no_teams_available">Não existem equipas disponíveis para este torneio.</string>
+
+    <string name="admin_invite_teams_sent_invitations_count">Convites Enviados (%1$d)</string>
+    <string name="admin_invite_teams_no_invitations_sent">Ainda não foi enviado nenhum convite.</string>
+
+    <string name="admin_invite_teams_slots_remaining">Vagas Restantes</string>
+    <string name="admin_invite_teams_invite_only">Apenas por Convite</string>
+
+    <string name="admin_invite_teams_captain_division">Capitão: %1$s · %2$s</string>
+    <string name="admin_invite_teams_invite">Convidar</string>
+    <string name="admin_invite_teams_invited">Convidada</string>
+
+    <string name="admin_invite_teams_sent_invitation_content_description">Convite enviado</string>
+    <string name="admin_invite_teams_recently">recentemente</string>
+    <string name="admin_invite_teams_invited_awaiting_response">%1$s foi convidada %2$s. A aguardar resposta.</string>
+
+    <string name="admin_casual_matches_title">Jogos Casuais</string>
+    <string name="admin_casual_matches_console">Consola Admin</string>
+    <string name="admin_casual_matches_description">Monitorizar todos os jogos da plataforma em tempo real.</string>
+    <string name="admin_casual_matches_error_loading">Erro ao carregar jogos</string>
+
+    <string name="admin_casual_matches_calendar_content_description">Calendário</string>
+    <string name="admin_casual_matches_calendar_button">Calendário de Jogos</string>
+
+    <string name="admin_casual_matches_search_content_description">Pesquisar</string>
+    <string name="admin_casual_matches_search_placeholder">Pesquisar jogos...</string>
+
+    <string name="admin_casual_matches_filter_all">Todos</string>
+    <string name="admin_casual_matches_filter_live">Em direto</string>
+    <string name="admin_casual_matches_filter_open">Abertos</string>
+    <string name="admin_casual_matches_filter_canceled">Cancelados</string>
+
+    <string name="admin_casual_matches_no_found">Nenhum jogo casual encontrado.</string>
+
+    <string name="admin_casual_matches_players_joined">Jogadores Inscritos</string>
+    <string name="admin_casual_matches_watch_live">Ver Direto</string>
+    <string name="admin_casual_matches_view_details">Ver Detalhes</string>
+    <string name="admin_casual_matches_edit">Editar</string>
+
+    <string name="admin_casual_matches_status_live_now">Em Direto</string>
+    <string name="admin_casual_matches_status_open">Aberto</string>
+    <string name="admin_casual_matches_status_closed">Fechado</string>
+    <string name="admin_casual_matches_status_canceled">Cancelado</string>
+
+    <string name="admin_casual_match_details_title">Detalhes do Jogo</string>
+    <string name="admin_casual_match_details_error_loading">Erro ao carregar detalhes do jogo</string>
+    <string name="admin_casual_match_details_cancel_success">Jogo cancelado com sucesso.</string>
+    <string name="admin_casual_match_details_cancel_error">Erro ao cancelar jogo</string>
+
+    <string name="admin_casual_match_details_console">Consola Admin</string>
+    <string name="admin_casual_match_details_schedule">Calendário</string>
+    <string name="admin_casual_match_details_date">Data</string>
+    <string name="admin_casual_match_details_time">Hora</string>
+    <string name="admin_casual_match_details_location">Localização</string>
+    <string name="admin_casual_match_details_status">Estado</string>
+
+    <string name="admin_casual_match_details_host">Organizador</string>
+    <string name="admin_casual_match_details_hosted_matches">Organizou %1$d jogos</string>
+
+    <string name="admin_casual_match_details_joined_players">Jogadores Inscritos</string>
+    <string name="admin_casual_match_details_no_players">Ainda não há jogadores inscritos.</string>
+    <string name="admin_casual_match_details_show_less_players">Mostrar Menos Jogadores</string>
+    <string name="admin_casual_match_details_load_more_players">Carregar Mais Jogadores</string>
+
+    <string name="admin_casual_match_details_admin_actions">Ações Admin</string>
+    <string name="admin_casual_match_details_edit_match">Editar Jogo</string>
+    <string name="admin_casual_match_details_cancel_match">Cancelar Jogo</string>
+    <string name="admin_casual_match_details_match_canceled">Jogo Cancelado</string>
+
+    <string name="admin_casual_match_details_status_open">Aberto</string>
+    <string name="admin_casual_match_details_status_closed">Fechado</string>
+    <string name="admin_casual_match_details_status_canceled">Cancelado</string>
+
+    <string name="admin_edit_casual_match_top_title">Editar Jogo</string>
+    <string name="admin_edit_casual_match_error_loading">Erro ao carregar jogo</string>
+    <string name="admin_edit_casual_match_empty_name_error">Escreve o nome ou descrição do jogo.</string>
+    <string name="admin_edit_casual_match_missing_fields_error">Preenche a data, hora e localização.</string>
+    <string name="admin_edit_casual_match_update_success">Jogo atualizado com sucesso.</string>
+    <string name="admin_edit_casual_match_save_error">Erro ao guardar jogo</string>
+    <string name="admin_edit_casual_match_cancel_success">Jogo cancelado com sucesso.</string>
+    <string name="admin_edit_casual_match_cancel_error">Erro ao cancelar jogo</string>
+
+    <string name="admin_edit_casual_match_console">Consola Admin</string>
+    <string name="admin_edit_casual_match_title">Editar Jogo Casual</string>
+    <string name="admin_edit_casual_match_description">Atualiza o nome, data, hora e localização deste jogo casual.</string>
+    <string name="admin_edit_casual_match_canceled_locked_message">Este jogo está cancelado e já não pode ser editado.</string>
+
+    <string name="admin_edit_casual_match_default_title">Jogo Casual</string>
+    <string name="admin_edit_casual_match_match_information">Informação do Jogo</string>
+    <string name="admin_edit_casual_match_label_name_description">Nome / Descrição</string>
+    <string name="admin_edit_casual_match_placeholder_name">Beach Volley Mix</string>
+    <string name="admin_edit_casual_match_label_date">Data</string>
+    <string name="admin_edit_casual_match_label_time">Hora</string>
+    <string name="admin_edit_casual_match_label_location">Localização</string>
+    <string name="admin_edit_casual_match_placeholder_location">Praia da Apúlia</string>
+
+    <string name="admin_edit_casual_match_admin_actions">Ações Admin</string>
+    <string name="admin_edit_casual_match_saving">A guardar...</string>
+    <string name="admin_edit_casual_match_save_changes">Guardar Alterações</string>
+    <string name="admin_edit_casual_match_discard_changes">Descartar Alterações</string>
+    <string name="admin_edit_casual_match_cancel_match">Cancelar Jogo</string>
+    <string name="admin_edit_casual_match_canceled">Jogo Cancelado</string>
+
+    <string name="admin_edit_casual_match_ok">OK</string>
+    <string name="admin_edit_casual_match_select_time">Selecionar hora</string>
+
+    <string name="admin_edit_casual_match_status_open">Aberto</string>
+    <string name="admin_edit_casual_match_status_closed">Fechado</string>
+    <string name="admin_edit_casual_match_status_canceled">Cancelado</string>
+
+    <string name="admin_live_match_top_title">Jogo em Direto</string>
+    <string name="admin_live_match_error_loading">Erro ao carregar jogo em direto</string>
+    <string name="admin_live_match_select_player_first">Seleciona primeiro um jogador.</string>
+    <string name="admin_live_match_point_added_locally">Ponto adicionado localmente. Confirma as alterações para guardar.</string>
+    <string name="admin_live_match_no_changes_confirm">Não existem alterações para confirmar.</string>
+    <string name="admin_live_match_unknown_error">Erro desconhecido</string>
+    <string name="admin_live_match_error_confirming_changes">Erro ao confirmar alterações</string>
+    <string name="admin_live_match_changes_confirmed">Alterações confirmadas com sucesso.</string>
+    <string name="admin_live_match_no_changes_discard">Não existem alterações para descartar.</string>
+    <string name="admin_live_match_changes_discarded">Alterações descartadas.</string>
+
+    <string name="admin_live_match_admin_view">Vista Admin</string>
+    <string name="admin_live_match_live">Em Direto</string>
+    <string name="admin_live_match_points">Pontos</string>
+    <string name="admin_live_match_no_points">Ainda não existem pontos registados.</string>
+    <string name="admin_live_match_point">Ponto!</string>
+    <string name="admin_live_match_pending">Pendente</string>
+
+    <string name="admin_live_match_register_point">Registar Ponto</string>
+    <string name="admin_live_match_team">Equipa</string>
+    <string name="admin_live_match_player">Jogador</string>
+    <string name="admin_live_match_no_players_team">Não existem jogadores atribuídos a esta equipa.</string>
+    <string name="admin_live_match_adding">A adicionar...</string>
+    <string name="admin_live_match_add_point">Adicionar Ponto</string>
+    <string name="admin_live_match_selected">Selecionado</string>
+
+    <string name="admin_live_match_admin_actions">Ações Admin</string>
+    <string name="admin_live_match_discard_changes">Descartar Alterações</string>
+    <string name="admin_live_match_confirm_changes">Confirmar Alterações</string>
+    <string name="admin_live_match_saving">A guardar...</string>
+
+    <string name="admin_archive_top_title">Arquivo de Torneios</string>
+    <string name="admin_archive_error_loading">Erro ao carregar torneios</string>
+
+    <string name="admin_archive_console">Consola Admin</string>
+    <string name="admin_archive_title">Arquivo Global de Torneios</string>
+    <string name="admin_archive_description">Todos os torneios que já existiram na plataforma.</string>
+
+    <string name="admin_archive_search_placeholder">Pesquisar arquivo...</string>
+    <string name="admin_archive_search_content_description">Pesquisar</string>
+    <string name="admin_archive_no_tournaments_found">Nenhum torneio encontrado.</string>
+
+    <string name="admin_archive_organizer_matches">Organizador: %1$s · %2$d jogos</string>
+    <string name="admin_archive_champion">Campeão</string>
+    <string name="admin_archive_prize">Prémio</string>
+    <string name="admin_archive_season">Época</string>
+
+
 </resources>

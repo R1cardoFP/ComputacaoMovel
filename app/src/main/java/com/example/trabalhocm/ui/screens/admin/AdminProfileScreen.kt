@@ -154,7 +154,7 @@ fun AdminProfileScreen(
                         icon = AppIcons.Profile
                     ) {
                         ProfileInput(
-                            label = "USERNAME",
+                            label = "FULL NAME",
                             value = nome,
                             onValueChange = { nome = it }
                         )
@@ -198,30 +198,30 @@ fun AdminProfileScreen(
                         val idiomaAtual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
                         val isPortugues = idiomaAtual.startsWith("pt", ignoreCase = true)
 
-                        Column(
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             LanguageButton(
-                                text = "English (US)",
-                                selected = !isPortugues,
-                                modifier = Modifier.fillMaxWidth(),
+                                text = "Português",
+                                selected = isPortugues,
+                                modifier = Modifier.weight(1f),
                                 onClick = {
-                                    language = "English (US)"
+                                    language = "Portuguese (PT)"
                                     AppCompatDelegate.setApplicationLocales(
-                                        LocaleListCompat.forLanguageTags("en")
+                                        LocaleListCompat.forLanguageTags("pt-PT")
                                     )
                                 }
                             )
 
                             LanguageButton(
-                                text = "Portuguese (PT)",
-                                selected = isPortugues,
-                                modifier = Modifier.fillMaxWidth(),
+                                text = "English",
+                                selected = !isPortugues,
+                                modifier = Modifier.weight(1f),
                                 onClick = {
-                                    language = "Portuguese (PT)"
+                                    language = "English (US)"
                                     AppCompatDelegate.setApplicationLocales(
-                                        LocaleListCompat.forLanguageTags("pt-PT")
+                                        LocaleListCompat.forLanguageTags("en")
                                     )
                                 }
                             )
@@ -234,7 +234,9 @@ fun AdminProfileScreen(
                         title = "Active Dashboards",
                         icon = AppIcons.Home
                     ) {
-                        DashboardOption()
+                        DashboardOption(
+                            onClick = onDashboardClick
+                        )
                     }
                 }
 
@@ -247,7 +249,7 @@ fun AdminProfileScreen(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
                                 .clickable {
-                                    onChangePasswordClick() // <-- LIGADO À NAVEGAÇÃO
+                                    onChangePasswordClick()
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -458,7 +460,6 @@ private fun AdminProfileTopBar(
             )
         }
 
-        // Sem o trevo - Fica apenas o sino
         Icon(
             imageVector = AppIcons.Notifications,
             contentDescription = "Notificações",
@@ -586,13 +587,9 @@ private fun LanguageButton(
             .clickable { onClick() },
         shape = RoundedCornerShape(3.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = if (selected) Color(0xFF3566C9) else Color(0xFFF4F6FB)
         ),
-        border = if (selected) {
-            BorderStroke(1.dp, Color(0xFF0057FF))
-        } else {
-            null
-        },
+        border = if (selected) null else BorderStroke(1.dp, Color(0xFFD4DCE8)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -600,34 +597,40 @@ private fun LanguageButton(
                 .fillMaxSize()
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = text,
-                color = if (selected) Color(0xFF0057FF) else TextMuted,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
-
             if (selected) {
                 Icon(
                     imageVector = AppIcons.Confirm,
                     contentDescription = null,
-                    tint = Color(0xFF0057FF),
-                    modifier = Modifier.size(16.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
                 )
+                Spacer(modifier = Modifier.size(6.dp))
             }
+
+            Text(
+                text = text,
+                color = if (selected) Color.White else TextMuted,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
 
 @Composable
-private fun DashboardOption() {
+private fun DashboardOption(
+    onClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
             .background(Color(0xFFEAF3FF), RoundedCornerShape(3.dp))
+            .clickable {
+                onClick()
+            }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -663,6 +666,13 @@ private fun DashboardOption() {
                 fontSize = 10.sp
             )
         }
+
+        Icon(
+            imageVector = AppIcons.ChevronRight,
+            contentDescription = "Abrir dashboard",
+            tint = AdminBlue,
+            modifier = Modifier.size(22.dp)
+        )
     }
 }
 

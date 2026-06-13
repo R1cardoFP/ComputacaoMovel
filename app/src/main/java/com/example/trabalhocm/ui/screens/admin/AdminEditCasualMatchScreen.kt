@@ -52,6 +52,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminEditCasualMatch
 import com.example.trabalhocm.data.repository.AdminEditCasualMatchRepository
 import com.example.trabalhocm.ui.theme.AppIcons
@@ -102,6 +104,15 @@ fun AdminEditCasualMatchScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
+    val errorLoadingMatchText = stringResource(R.string.admin_edit_casual_match_error_loading)
+    val emptyNameErrorText = stringResource(R.string.admin_edit_casual_match_empty_name_error)
+    val missingFieldsErrorText = stringResource(R.string.admin_edit_casual_match_missing_fields_error)
+    val updateSuccessText = stringResource(R.string.admin_edit_casual_match_update_success)
+    val saveErrorText = stringResource(R.string.admin_edit_casual_match_save_error)
+    val cancelSuccessText = stringResource(R.string.admin_edit_casual_match_cancel_success)
+    val cancelErrorText = stringResource(R.string.admin_edit_casual_match_cancel_error)
 
     if (showDatePicker) {
         EditDatePickerDialog(
@@ -143,7 +154,7 @@ fun AdminEditCasualMatchScreen(
                 estado = loaded.estado
             }
             .onFailure {
-                errorMessage = "Error loading match: ${it.message}"
+                errorMessage = "$errorLoadingMatchText: ${it.message}"
             }
 
         isLoading = false
@@ -210,6 +221,7 @@ fun AdminEditCasualMatchScreen(
                     isCanceled = isCanceled,
                     isSaving = isSaving,
                     actionMessage = actionMessage,
+                    actionMessageIsError = actionMessageIsError,
                     innerPadding = innerPadding,
                     onTitleChange = { title = it },
                     onDateClick = {
@@ -221,18 +233,21 @@ fun AdminEditCasualMatchScreen(
                     onLocalChange = { local = it },
                     onSaveClick = {
                         if (title.isBlank()) {
-                            actionMessage = "Please write a match name/description."
+                            actionMessage = emptyNameErrorText
+                            actionMessageIsError = true
                             return@AdminEditCasualMatchContent
                         }
 
                         if (date.isBlank() || time.isBlank() || local.isBlank()) {
-                            actionMessage = "Please fill date, time and location."
+                            actionMessage = missingFieldsErrorText
+                            actionMessageIsError = true
                             return@AdminEditCasualMatchContent
                         }
 
                         scope.launch {
                             isSaving = true
                             actionMessage = ""
+                            actionMessageIsError = false
 
                             repository.atualizarPeladinha(
                                 matchId = matchId,
@@ -242,12 +257,14 @@ fun AdminEditCasualMatchScreen(
                                 local = local.trim()
                             )
                                 .onSuccess {
-                                    actionMessage = "Match updated successfully."
+                                    actionMessage = updateSuccessText
+                                    actionMessageIsError = false
                                     refreshKey++
                                     onSaved()
                                 }
                                 .onFailure {
-                                    actionMessage = "Error saving match: ${it.message}"
+                                    actionMessage = "$saveErrorText: ${it.message}"
+                                    actionMessageIsError = true
                                 }
 
                             isSaving = false
@@ -258,15 +275,18 @@ fun AdminEditCasualMatchScreen(
                         scope.launch {
                             isSaving = true
                             actionMessage = ""
+                            actionMessageIsError = false
 
                             repository.cancelarPeladinha(matchId)
                                 .onSuccess {
-                                    actionMessage = "Match canceled successfully."
+                                    actionMessage = cancelSuccessText
+                                    actionMessageIsError = false
                                     refreshKey++
                                     onCanceled()
                                 }
                                 .onFailure {
-                                    actionMessage = "Error canceling match: ${it.message}"
+                                    actionMessage = "$cancelErrorText: ${it.message}"
+                                    actionMessageIsError = true
                                 }
 
                             isSaving = false
@@ -289,6 +309,7 @@ private fun AdminEditCasualMatchContent(
     isCanceled: Boolean,
     isSaving: Boolean,
     actionMessage: String,
+    actionMessageIsError: Boolean,
     innerPadding: PaddingValues,
     onTitleChange: (String) -> Unit,
     onDateClick: () -> Unit,
@@ -312,7 +333,7 @@ private fun AdminEditCasualMatchContent(
     ) {
         item {
             Text(
-                text = "ADMIN CONSOLE",
+                text = stringResource(R.string.admin_edit_casual_match_console).uppercase(),
                 color = BrandGreen,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -322,7 +343,7 @@ private fun AdminEditCasualMatchContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Edit Casual Match",
+                text = stringResource(R.string.admin_edit_casual_match_title),
                 color = BrandBlue,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
@@ -331,7 +352,7 @@ private fun AdminEditCasualMatchContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Update name, date, time and location for this casual match.",
+                text = stringResource(R.string.admin_edit_casual_match_description),
                 color = TextGray,
                 fontSize = 12.sp
             )
@@ -362,7 +383,7 @@ private fun AdminEditCasualMatchContent(
         if (isCanceled) {
             item {
                 Text(
-                    text = "This match is canceled and can no longer be edited.",
+                    text = stringResource(R.string.admin_edit_casual_match_canceled_locked_message),
                     color = ErrorRed,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -374,7 +395,7 @@ private fun AdminEditCasualMatchContent(
             item {
                 Text(
                     text = actionMessage,
-                    color = if (actionMessage.startsWith("Error") || actionMessage.startsWith("Please")) {
+                    color = if (actionMessageIsError) {
                         ErrorRed
                     } else {
                         BrandGreen
@@ -439,7 +460,7 @@ private fun EditMatchSummaryCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = title.ifBlank { "Casual Match" },
+                text = title.ifBlank { stringResource(R.string.admin_edit_casual_match_default_title) },
                 color = BrandWhite,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -473,18 +494,18 @@ private fun EditMatchFormCard(
             verticalArrangement = Arrangement.spacedBy(11.dp)
         ) {
             Text(
-                text = "Match Information",
+                text = stringResource(R.string.admin_edit_casual_match_match_information),
                 color = BrandBlue,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 
             EditInput(
-                label = "NAME / DESCRIPTION",
+                label = stringResource(R.string.admin_edit_casual_match_label_name_description).uppercase(),
                 value = title,
                 enabled = enabled,
                 onValueChange = onTitleChange,
-                placeholder = "Beach Volley Mix"
+                placeholder = stringResource(R.string.admin_edit_casual_match_placeholder_name)
             )
 
             Row(
@@ -492,7 +513,7 @@ private fun EditMatchFormCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 PickerInput(
-                    label = "DATE",
+                    label = stringResource(R.string.admin_edit_casual_match_label_date).uppercase(),
                     value = date,
                     placeholder = "2026-06-14",
                     enabled = enabled,
@@ -502,7 +523,7 @@ private fun EditMatchFormCard(
                 )
 
                 PickerInput(
-                    label = "TIME",
+                    label = stringResource(R.string.admin_edit_casual_match_label_time).uppercase(),
                     value = time.take(5),
                     placeholder = "19:30",
                     enabled = enabled,
@@ -513,11 +534,11 @@ private fun EditMatchFormCard(
             }
 
             EditInput(
-                label = "LOCATION",
+                label = stringResource(R.string.admin_edit_casual_match_label_location).uppercase(),
                 value = local,
                 enabled = enabled,
                 onValueChange = onLocalChange,
-                placeholder = "Praia da Apúlia"
+                placeholder = stringResource(R.string.admin_edit_casual_match_placeholder_location)
             )
         }
     }
@@ -649,7 +670,7 @@ private fun EditMatchActionsCard(
             modifier = Modifier.padding(15.dp)
         ) {
             Text(
-                text = "Admin Actions",
+                text = stringResource(R.string.admin_edit_casual_match_admin_actions),
                 color = BrandGreen,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -673,7 +694,7 @@ private fun EditMatchActionsCard(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = if (isSaving) "SAVING..." else "SAVE CHANGES",
+                    text = if (isSaving) stringResource(R.string.admin_edit_casual_match_saving).uppercase() else stringResource(R.string.admin_edit_casual_match_save_changes).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -698,7 +719,7 @@ private fun EditMatchActionsCard(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = "DISCARD CHANGES",
+                    text = stringResource(R.string.admin_edit_casual_match_discard_changes).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -722,7 +743,7 @@ private fun EditMatchActionsCard(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = if (isCanceled) "MATCH CANCELED" else "CANCEL MATCH",
+                    text = if (isCanceled) stringResource(R.string.admin_edit_casual_match_canceled).uppercase() else stringResource(R.string.admin_edit_casual_match_cancel_match).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -757,7 +778,7 @@ private fun EditDatePickerDialog(
                 }
             ) {
                 Text(
-                    text = "OK",
+                    text = stringResource(R.string.admin_edit_casual_match_ok).uppercase(),
                     color = PrimaryBlue,
                     fontWeight = FontWeight.Bold
                 )
@@ -768,7 +789,7 @@ private fun EditDatePickerDialog(
                 onClick = onDismiss
             ) {
                 Text(
-                    text = "CANCEL",
+                    text = stringResource(R.string.admin_common_cancel).uppercase(),
                     color = TextGray,
                     fontWeight = FontWeight.Bold
                 )
@@ -813,7 +834,7 @@ private fun EditTimePickerDialog(
                 }
             ) {
                 Text(
-                    text = "OK",
+                    text = stringResource(R.string.admin_edit_casual_match_ok).uppercase(),
                     color = PrimaryBlue,
                     fontWeight = FontWeight.Bold
                 )
@@ -824,7 +845,7 @@ private fun EditTimePickerDialog(
                 onClick = onDismiss
             ) {
                 Text(
-                    text = "CANCEL",
+                    text = stringResource(R.string.admin_common_cancel).uppercase(),
                     color = TextGray,
                     fontWeight = FontWeight.Bold
                 )
@@ -832,7 +853,7 @@ private fun EditTimePickerDialog(
         },
         title = {
             Text(
-                text = "Select time",
+                text = stringResource(R.string.admin_edit_casual_match_select_time),
                 color = BrandBlue,
                 fontWeight = FontWeight.Bold
             )
@@ -883,9 +904,9 @@ private fun StatusBadge(status: String) {
     }
 
     val text = when (normalized) {
-        "aberta" -> "OPEN"
-        "fechada" -> "CLOSED"
-        "cancelada" -> "CANCELED"
+        "aberta" -> stringResource(R.string.admin_edit_casual_match_status_open).uppercase()
+        "fechada" -> stringResource(R.string.admin_edit_casual_match_status_closed).uppercase()
+        "cancelada" -> stringResource(R.string.admin_edit_casual_match_status_canceled).uppercase()
         else -> status.uppercase()
     }
 
@@ -929,7 +950,7 @@ private fun AdminEditCasualMatchTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -937,7 +958,7 @@ private fun AdminEditCasualMatchTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Edit Match",
+                text = stringResource(R.string.admin_edit_casual_match_top_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -946,7 +967,7 @@ private fun AdminEditCasualMatchTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notifications",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -975,11 +996,11 @@ private fun AdminEditCasualMatchBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomEditMatchItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomEditMatchItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomEditMatchItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomEditMatchItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomEditMatchItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomEditMatchItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomEditMatchItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomEditMatchItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomEditMatchItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomEditMatchItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

@@ -44,6 +44,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminTeamDetails
 import com.example.trabalhocm.data.model.AdminTeamPlayer
 import com.example.trabalhocm.data.repository.AdminTeamDetailsRepository
@@ -76,6 +78,8 @@ fun AdminTeamDetailsScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
+    val errorLoadingTeamDetailsText = stringResource(R.string.admin_team_details_error_loading)
+
     LaunchedEffect(teamId) {
         isLoading = true
         errorMessage = ""
@@ -85,7 +89,7 @@ fun AdminTeamDetailsScreen(
                 details = it
             }
             .onFailure {
-                errorMessage = "Error loading team details: ${it.message}"
+                errorMessage = "$errorLoadingTeamDetailsText: ${it.message}"
             }
 
         isLoading = false
@@ -187,7 +191,7 @@ private fun TeamDetailsContent(
                     modifier = Modifier
                         .weight(1f)
                         .height(116.dp),
-                    title = "Total Goals",
+                    title = stringResource(R.string.admin_team_details_total_goals),
                     value = details.totalGoals.toString()
                 )
 
@@ -195,9 +199,14 @@ private fun TeamDetailsContent(
                     modifier = Modifier
                         .weight(1f)
                         .height(116.dp),
-                    title = "Matches Played",
+                    title = stringResource(R.string.admin_team_details_matches_played),
                     value = details.matchesPlayed.toString(),
-                    subtitle = "${details.wins}W · ${details.draws}D · ${details.losses}L"
+                    subtitle = stringResource(
+                        R.string.admin_team_details_record_format,
+                        details.wins,
+                        details.draws,
+                        details.losses
+                    )
                 )
             }
         }
@@ -211,7 +220,7 @@ private fun TeamDetailsContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Active Roster",
+                    text = stringResource(R.string.admin_team_details_active_roster),
                     color = BrandBlue,
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Bold
@@ -231,7 +240,7 @@ private fun TeamDetailsContent(
                 ) {
                     Icon(
                         imageVector = AppIcons.Teams,
-                        contentDescription = "Manage team",
+                        contentDescription = stringResource(R.string.admin_team_details_manage_team),
                         tint = BrandWhite,
                         modifier = Modifier.size(15.dp)
                     )
@@ -239,7 +248,7 @@ private fun TeamDetailsContent(
                     Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = "MANAGE TEAM",
+                        text = stringResource(R.string.admin_team_details_manage_team).uppercase(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -285,7 +294,7 @@ private fun TeamHeroCard(details: AdminTeamDetails) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "ADMIN VIEW",
+                text = stringResource(R.string.admin_team_details_admin_view).uppercase(),
                 color = BrandWhite,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold
@@ -367,7 +376,7 @@ private fun WinRateCard(details: AdminTeamDetails) {
         ) {
             Column {
                 Text(
-                    text = "Season Win Rate",
+                    text = stringResource(R.string.admin_team_details_season_win_rate),
                     color = TextGray,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -511,7 +520,7 @@ private fun PlayerRosterCard(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = "View Details",
+                    text = stringResource(R.string.admin_team_details_view_details),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1
@@ -531,7 +540,7 @@ private fun CaptainBadge() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "CAPTAIN",
+            text = stringResource(R.string.admin_team_details_captain).uppercase(),
             color = Color(0xFFE2A600),
             fontSize = 7.sp,
             fontWeight = FontWeight.Bold
@@ -566,7 +575,7 @@ private fun EmptyRosterCard() {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Text(
-            text = "No players found for this team.",
+            text = stringResource(R.string.admin_team_details_no_players),
             color = TextGray,
             fontSize = 13.sp,
             modifier = Modifier.padding(16.dp)
@@ -623,7 +632,7 @@ private fun TeamDetailsTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -631,7 +640,7 @@ private fun TeamDetailsTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Team Details",
+                text = stringResource(R.string.admin_team_details_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -640,7 +649,7 @@ private fun TeamDetailsTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -669,11 +678,11 @@ private fun TeamDetailsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomTeamDetailsItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomTeamDetailsItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomTeamDetailsItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomTeamDetailsItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomTeamDetailsItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomTeamDetailsItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomTeamDetailsItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomTeamDetailsItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomTeamDetailsItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomTeamDetailsItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

@@ -38,11 +38,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminTournament
 import com.example.trabalhocm.data.repository.AdminTournamentRepository
 import com.example.trabalhocm.ui.theme.AppIcons
@@ -75,13 +77,15 @@ fun AdminTournamentArchiveScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
+    val errorLoadingText = stringResource(R.string.admin_archive_error_loading)
+
     LaunchedEffect(Unit) {
         repository.listarTorneiosAdmin()
             .onSuccess {
                 tournaments = it
             }
             .onFailure {
-                errorMessage = "Erro ao carregar torneios: ${it.message}"
+                errorMessage = "$errorLoadingText: ${it.message}"
             }
 
         isLoading = false
@@ -97,7 +101,7 @@ fun AdminTournamentArchiveScreen(
         containerColor = BgLight,
         topBar = {
             AdminArchiveTopBar(
-                title = "Tournaments Archive",
+                title = stringResource(R.string.admin_archive_top_title),
                 onBackClick = onBackClick,
                 onNotificationsClick = onNotificationsClick
             )
@@ -138,7 +142,7 @@ fun AdminTournamentArchiveScreen(
                 item {
                     Column {
                         Text(
-                            text = "ADMIN CONSOLE",
+                            text = stringResource(R.string.admin_archive_console).uppercase(),
                             color = BrandGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -148,7 +152,7 @@ fun AdminTournamentArchiveScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Global Tournament\nArchive",
+                            text = stringResource(R.string.admin_archive_title),
                             color = BrandBlue,
                             fontSize = 28.sp,
                             lineHeight = 30.sp,
@@ -158,7 +162,7 @@ fun AdminTournamentArchiveScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Every tournament that has ever existed on the\nplatform.",
+                            text = stringResource(R.string.admin_archive_description),
                             color = TextGray,
                             fontSize = 13.sp,
                             lineHeight = 18.sp
@@ -195,7 +199,7 @@ fun AdminTournamentArchiveScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = "Nenhum torneio encontrado.",
+                                text = stringResource(R.string.admin_archive_no_tournaments_found),
                                 color = TextGray,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(18.dp)
@@ -237,7 +241,7 @@ private fun AdminArchiveTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -254,7 +258,7 @@ private fun AdminArchiveTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -275,7 +279,7 @@ private fun ArchiveSearchBox(
         onValueChange = onValueChange,
         placeholder = {
             Text(
-                text = "Search archive...",
+                text = stringResource(R.string.admin_archive_search_placeholder),
                 color = TextGray,
                 fontSize = 13.sp
             )
@@ -283,7 +287,7 @@ private fun ArchiveSearchBox(
         leadingIcon = {
             Icon(
                 imageVector = AppIcons.Search,
-                contentDescription = "Pesquisar",
+                contentDescription = stringResource(R.string.admin_archive_search_content_description),
                 tint = TextGray,
                 modifier = Modifier.size(18.dp)
             )
@@ -337,7 +341,7 @@ private fun AdminTournamentCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     SmallBadge(
-                        text = tournament.estado.uppercase(),
+                        text = archiveStatusText(tournament.estado),
                         background = InputBg,
                         textColor = TextGray
                     )
@@ -361,7 +365,11 @@ private fun AdminTournamentCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Organizer: ${tournament.organizerName} · ${tournament.matchesCount} matches",
+                    text = stringResource(
+                        R.string.admin_archive_organizer_matches,
+                        tournament.organizerName,
+                        tournament.matchesCount
+                    ),
                     color = TextGray,
                     fontSize = 11.sp
                 )
@@ -373,22 +381,46 @@ private fun AdminTournamentCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TournamentInfo(
-                        label = "CHAMPION",
+                        label = stringResource(R.string.admin_archive_champion).uppercase(),
                         value = tournament.champion
                     )
 
                     TournamentInfo(
-                        label = "PRIZE",
+                        label = stringResource(R.string.admin_archive_prize).uppercase(),
                         value = tournament.prize
                     )
 
                     TournamentInfo(
-                        label = "SEASON",
+                        label = stringResource(R.string.admin_archive_season).uppercase(),
                         value = tournament.season
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun archiveStatusText(status: String): String {
+    val normalized = status.lowercase()
+
+    return when {
+        normalized.contains("aberto") || normalized.contains("open") ->
+            stringResource(R.string.admin_status_open).uppercase()
+
+        normalized.contains("decorrer") || normalized.contains("live") ->
+            stringResource(R.string.admin_status_live).uppercase()
+
+        normalized.contains("terminado") || normalized.contains("completed") || normalized.contains("archived") ->
+            stringResource(R.string.admin_status_completed).uppercase()
+
+        normalized.contains("cancelado") || normalized.contains("canceled") || normalized.contains("cancelled") ->
+            stringResource(R.string.admin_status_cancelled).uppercase()
+
+        normalized.contains("rascunho") || normalized.contains("draft") ->
+            stringResource(R.string.admin_status_draft).uppercase()
+
+        else -> status.uppercase()
     }
 }
 
@@ -476,11 +508,11 @@ private fun AdminArchiveBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

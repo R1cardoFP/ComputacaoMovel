@@ -38,11 +38,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminNotification
 import com.example.trabalhocm.data.repository.AdminNotificationRepository
 import com.example.trabalhocm.ui.theme.AppIcons
@@ -84,6 +86,11 @@ fun AdminNotificationsScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
+
+    val errorLoadingNotificationsText = stringResource(R.string.admin_notifications_error_loading)
+    val errorUpdatingNotificationText = stringResource(R.string.admin_notifications_error_updating)
+    val actionMissingTargetText = stringResource(R.string.admin_notifications_missing_target)
 
     fun carregarNotificacoes(mostrarLoading: Boolean = true) {
         scope.launch {
@@ -98,7 +105,7 @@ fun AdminNotificationsScreen(
                     notifications = it
                 }
                 .onFailure {
-                    errorMessage = "Erro ao carregar notificações: ${it.message}"
+                    errorMessage = "$errorLoadingNotificationsText: ${it.message}"
                 }
 
             isLoading = false
@@ -122,7 +129,7 @@ fun AdminNotificationsScreen(
         containerColor = BgLight,
         topBar = {
             AdminNotificationsTopBar(
-                title = "Notifications",
+                title = stringResource(R.string.admin_notifications_title),
                 onBackClick = onBackClick
             )
         },
@@ -162,7 +169,7 @@ fun AdminNotificationsScreen(
                 item {
                     Column {
                         Text(
-                            text = "ADMIN CONSOLE",
+                            text = stringResource(R.string.admin_notifications_console).uppercase(),
                             color = BrandGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -172,7 +179,7 @@ fun AdminNotificationsScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Notifications",
+                            text = stringResource(R.string.admin_notifications_title),
                             color = BrandBlue,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
@@ -181,7 +188,7 @@ fun AdminNotificationsScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Platform alerts, moderation queue and system\nevents.",
+                            text = stringResource(R.string.admin_notifications_description),
                             color = TextGray,
                             fontSize = 13.sp,
                             lineHeight = 18.sp
@@ -213,7 +220,7 @@ fun AdminNotificationsScreen(
                     item {
                         Text(
                             text = actionMessage,
-                            color = BrandGreen,
+                            color = if (actionMessageIsError) Color(0xFFDC2626) else BrandGreen,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -229,7 +236,7 @@ fun AdminNotificationsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = "Sem notificações para mostrar.",
+                                text = stringResource(R.string.admin_notifications_empty),
                                 color = TextGray,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(18.dp)
@@ -249,7 +256,7 @@ fun AdminNotificationsScreen(
                                             carregarNotificacoes()
                                         }
                                         .onFailure {
-                                            errorMessage = "Erro ao atualizar notificação: ${it.message}"
+                                            errorMessage = "$errorUpdatingNotificationText: ${it.message}"
                                         }
                                 }
                             }
@@ -258,10 +265,9 @@ fun AdminNotificationsScreen(
                         onViewTournamentDetailsClick = onViewTournamentDetailsClick,
                         onViewTeamDetailsClick = onViewTeamDetailsClick,
                         onUserManagementClick = onUserManagementClick,
-                        onTournamentsClick = onTournamentsClick,
-                        onTeamsClick = onTeamsClick,
                         onActionWithoutTarget = {
-                            actionMessage = "Não foi possível abrir o destino desta notificação."
+                            actionMessage = actionMissingTargetText
+                            actionMessageIsError = true
                         }
                     )
                 }
@@ -290,7 +296,7 @@ private fun AdminNotificationsTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = Color.White,
                 modifier = Modifier.size(22.dp)
             )
@@ -307,7 +313,7 @@ private fun AdminNotificationsTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = Color.White,
             modifier = Modifier.size(22.dp)
         )
@@ -327,21 +333,24 @@ private fun AdminNotificationFilterRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         AdminNotificationFilterChip(
-            text = "ALL",
+            text = stringResource(R.string.admin_notifications_filter_all).uppercase(),
+            value = "ALL",
             selected = selectedFilter == "ALL",
             modifier = Modifier.weight(1f),
             onClick = onFilterClick
         )
 
         AdminNotificationFilterChip(
-            text = "MODERATION",
+            text = stringResource(R.string.admin_notifications_filter_moderation).uppercase(),
+            value = "MODERATION",
             selected = selectedFilter == "MODERATION",
             modifier = Modifier.weight(1f),
             onClick = onFilterClick
         )
 
         AdminNotificationFilterChip(
-            text = "SYSTEM",
+            text = stringResource(R.string.admin_notifications_filter_system).uppercase(),
+            value = "SYSTEM",
             selected = selectedFilter == "SYSTEM",
             modifier = Modifier.weight(1f),
             onClick = onFilterClick
@@ -352,6 +361,7 @@ private fun AdminNotificationFilterRow(
 @Composable
 private fun AdminNotificationFilterChip(
     text: String,
+    value: String,
     selected: Boolean,
     modifier: Modifier = Modifier,
     onClick: (String) -> Unit
@@ -361,7 +371,7 @@ private fun AdminNotificationFilterChip(
             .height(42.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(if (selected) Color(0xFF0057C8) else Color.Transparent)
-            .clickable { onClick(text) },
+            .clickable { onClick(value) },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -383,8 +393,6 @@ private fun AdminNotificationCard(
     onViewTournamentDetailsClick: (String) -> Unit,
     onViewTeamDetailsClick: (String) -> Unit,
     onUserManagementClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onTeamsClick: () -> Unit,
     onActionWithoutTarget: () -> Unit
 ) {
     val visual = notificationVisual(notification)
@@ -479,17 +487,17 @@ private fun AdminNotificationCard(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     val destination = notificationDestination(notification)
+                    val actionEnabled = destination != null
 
                     NotificationActionButton(
-                        text = notification.actionText,
-                        enabled = true,
+                        text = translatedNotificationActionText(notification.actionText),
+                        enabled = actionEnabled,
                         onClick = {
                             onNotificationClick(notification)
 
                             when (destination) {
                                 "USER" -> {
                                     val userId = notification.userId
-
                                     if (userId.isNullOrBlank()) {
                                         onUserManagementClick()
                                     } else {
@@ -499,9 +507,8 @@ private fun AdminNotificationCard(
 
                                 "TOURNAMENT" -> {
                                     val tournamentId = notification.tournamentId
-
                                     if (tournamentId.isNullOrBlank()) {
-                                        onTournamentsClick()
+                                        onActionWithoutTarget()
                                     } else {
                                         onViewTournamentDetailsClick(tournamentId)
                                     }
@@ -509,23 +516,38 @@ private fun AdminNotificationCard(
 
                                 "TEAM" -> {
                                     val teamId = notification.teamId
-
                                     if (teamId.isNullOrBlank()) {
-                                        onTeamsClick()
+                                        onActionWithoutTarget()
                                     } else {
                                         onViewTeamDetailsClick(teamId)
                                     }
                                 }
 
-                                else -> {
-                                    onActionWithoutTarget()
-                                }
+                                else -> onActionWithoutTarget()
                             }
                         }
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun translatedNotificationActionText(text: String): String {
+    val normalized = normalizarTexto(text)
+
+    return when {
+        normalized.contains("user profile") || normalized.contains("perfil utilizador") ->
+            stringResource(R.string.admin_notifications_action_view_user_profile).uppercase()
+
+        normalized.contains("tournament") || normalized.contains("torneio") ->
+            stringResource(R.string.admin_notifications_action_view_tournament_details).uppercase()
+
+        normalized.contains("team") || normalized.contains("equipa") ->
+            stringResource(R.string.admin_notifications_action_view_team_details).uppercase()
+
+        else -> text.uppercase()
     }
 }
 
@@ -569,36 +591,12 @@ private fun notificationDestination(notification: AdminNotification): String? {
     val text = "$action $title $description"
 
     return when {
-        action.contains("view user profile") ||
-                action.contains("perfil utilizador") ||
-                action.contains("perfil do utilizador") ||
-                action.contains("user profile") -> "USER"
-
-        action.contains("view tournament details") ||
-                action.contains("detalhes torneio") ||
-                action.contains("detalhes do torneio") ||
-                action.contains("tournament details") -> "TOURNAMENT"
-
-        action.contains("view team details") ||
-                action.contains("detalhes equipa") ||
-                action.contains("detalhes da equipa") ||
-                action.contains("team details") -> "TEAM"
-
-        text.contains("tournament") || text.contains("torneio") -> "TOURNAMENT"
         text.contains("team") || text.contains("equipa") -> "TEAM"
-
-        text.contains("user") ||
-                text.contains("profile") ||
-                text.contains("utilizador") ||
-                text.contains("organizer") ||
-                text.contains("organizador") ||
-                text.contains("player") ||
-                text.contains("jogador") -> "USER"
-
-        !notification.tournamentId.isNullOrBlank() -> "TOURNAMENT"
+        text.contains("tournament") || text.contains("torneio") -> "TOURNAMENT"
+        text.contains("user") || text.contains("profile") || text.contains("utilizador") || text.contains("organizer") || text.contains("organizador") -> "USER"
         !notification.teamId.isNullOrBlank() -> "TEAM"
+        !notification.tournamentId.isNullOrBlank() -> "TOURNAMENT"
         !notification.userId.isNullOrBlank() -> "USER"
-
         else -> null
     }
 }
@@ -606,7 +604,6 @@ private fun notificationDestination(notification: AdminNotification): String? {
 private fun notificationVisual(notification: AdminNotification): NotificationVisual {
     val title = normalizarTexto(notification.title)
     val description = normalizarTexto(notification.description)
-    val text = "$title $description"
 
     return when {
         notification.type == "SYSTEM" -> NotificationVisual(
@@ -615,25 +612,25 @@ private fun notificationVisual(notification: AdminNotification): NotificationVis
             iconBackground = Color(0xFFEAF3FF)
         )
 
-        text.contains("tournament") || text.contains("torneio") -> NotificationVisual(
+        title.contains("tournament") || description.contains("tournament") || title.contains("torneio") || description.contains("torneio") -> NotificationVisual(
             icon = AppIcons.Tournaments,
             iconColor = Color(0xFFE2A600),
             iconBackground = Color(0xFFFFF7DE)
         )
 
-        text.contains("team") || text.contains("equipa") -> NotificationVisual(
+        title.contains("team") || description.contains("team") || title.contains("equipa") || description.contains("equipa") -> NotificationVisual(
             icon = AppIcons.Teams,
             iconColor = Color(0xFF0057C8),
             iconBackground = Color(0xFFEAF3FF)
         )
 
-        text.contains("suspended") || text.contains("suspenso") || text.contains("suspensa") -> NotificationVisual(
+        title.contains("suspended") || description.contains("suspended") || title.contains("suspenso") || description.contains("suspenso") || title.contains("suspensa") || description.contains("suspensa") -> NotificationVisual(
             icon = AppIcons.Cancel,
             iconColor = Color(0xFFDC2626),
             iconBackground = Color(0xFFFEE2E2)
         )
 
-        text.contains("payment") || text.contains("pagamento") -> NotificationVisual(
+        title.contains("payment") || description.contains("payment") || title.contains("pagamento") || description.contains("pagamento") -> NotificationVisual(
             icon = AppIcons.Payment,
             iconColor = BrandGreen,
             iconBackground = Color(0xFFEAF8F5)
@@ -648,11 +645,9 @@ private fun notificationVisual(notification: AdminNotification): NotificationVis
 }
 
 private fun normalizarTexto(texto: String): String {
-    val semAcentos = Normalizer
-        .normalize(texto, Normalizer.Form.NFD)
+    return Normalizer.normalize(texto, Normalizer.Form.NFD)
         .replace("\\p{Mn}+".toRegex(), "")
-
-    return semAcentos.lowercase(Locale.ROOT)
+        .lowercase(Locale.getDefault())
 }
 
 @Composable
@@ -673,11 +668,11 @@ private fun AdminNotificationsBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AdminNotificationsBottomItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        AdminNotificationsBottomItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        AdminNotificationsBottomItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        AdminNotificationsBottomItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        AdminNotificationsBottomItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        AdminNotificationsBottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        AdminNotificationsBottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        AdminNotificationsBottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        AdminNotificationsBottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        AdminNotificationsBottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 

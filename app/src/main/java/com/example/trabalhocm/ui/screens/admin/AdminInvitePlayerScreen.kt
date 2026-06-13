@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,6 +62,7 @@ import com.example.trabalhocm.ui.theme.ErrorRed
 import com.example.trabalhocm.ui.theme.PrimaryBlue
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
+import com.example.trabalhocm.R
 
 @Composable
 fun AdminInvitePlayerScreen(
@@ -75,6 +78,11 @@ fun AdminInvitePlayerScreen(
 ) {
     val repository = remember { AdminInvitePlayerRepository() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val errorLoadingPlayersText = stringResource(R.string.admin_invite_player_error_loading)
+    val selectPlayerFirstText = stringResource(R.string.admin_invite_player_select_player_first)
+    val errorSendingInviteText = stringResource(R.string.admin_invite_player_error_sending_invite)
 
     var team by remember { mutableStateOf<AdminInvitePlayerTeam?>(null) }
     var availablePlayers by remember { mutableStateOf<List<AdminInvitePlayerUser>>(emptyList()) }
@@ -83,6 +91,7 @@ fun AdminInvitePlayerScreen(
     var searchText by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
     var isSending by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -99,11 +108,14 @@ fun AdminInvitePlayerScreen(
                 invitedPlayers = data.invitedPlayers
 
                 if (message.isBlank()) {
-                    message = "Welcome to ${data.team.nome}. Looking forward to having you on the team."
+                    message = context.getString(
+                        R.string.admin_invite_player_default_message,
+                        data.team.nome
+                    )
                 }
             }
             .onFailure {
-                errorMessage = "Error loading players: ${it.message}"
+                errorMessage = "$errorLoadingPlayersText: ${it.message}"
             }
 
         isLoading = false
@@ -166,6 +178,7 @@ fun AdminInvitePlayerScreen(
                     searchText = searchText,
                     message = message,
                     actionMessage = actionMessage,
+                    actionMessageIsError = actionMessageIsError,
                     isSending = isSending,
                     innerPadding = innerPadding,
                     onSearchChange = { searchText = it },
@@ -175,13 +188,15 @@ fun AdminInvitePlayerScreen(
                         val player = selectedPlayer
 
                         if (player == null) {
-                            actionMessage = "Please select a player first."
+                            actionMessage = selectPlayerFirstText
+                            actionMessageIsError = true
                             return@AdminInvitePlayerContent
                         }
 
                         scope.launch {
                             isSending = true
                             actionMessage = ""
+                            actionMessageIsError = false
 
                             repository.enviarConvite(
                                 teamId = teamId,
@@ -189,12 +204,17 @@ fun AdminInvitePlayerScreen(
                                 mensagem = message
                             )
                                 .onSuccess {
-                                    actionMessage = "Invite sent to ${player.nome}."
+                                    actionMessage = context.getString(
+                                        R.string.admin_invite_player_invite_sent_to,
+                                        player.nome
+                                    )
+                                    actionMessageIsError = false
                                     selectedPlayer = null
                                     refreshKey++
                                 }
                                 .onFailure {
-                                    actionMessage = "Error sending invite: ${it.message}"
+                                    actionMessage = "$errorSendingInviteText: ${it.message}"
+                                    actionMessageIsError = true
                                 }
 
                             isSending = false
@@ -215,6 +235,7 @@ private fun AdminInvitePlayerContent(
     searchText: String,
     message: String,
     actionMessage: String,
+    actionMessageIsError: Boolean,
     isSending: Boolean,
     innerPadding: PaddingValues,
     onSearchChange: (String) -> Unit,
@@ -252,7 +273,7 @@ private fun AdminInvitePlayerContent(
     ) {
         item {
             Text(
-                text = "ADMIN TOOL",
+                text = stringResource(R.string.admin_invite_player_console).uppercase(),
                 color = BrandGreen,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -262,7 +283,7 @@ private fun AdminInvitePlayerContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Invite a Player",
+                text = stringResource(R.string.admin_invite_player_title),
                 color = BrandBlue,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
@@ -271,7 +292,7 @@ private fun AdminInvitePlayerContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Find players and assign them to this team on the platform.",
+                text = stringResource(R.string.admin_invite_player_description),
                 color = TextGray,
                 fontSize = 12.sp
             )
@@ -283,7 +304,7 @@ private fun AdminInvitePlayerContent(
 
         item {
             Text(
-                text = "SEARCH PLAYERS",
+                text = stringResource(R.string.admin_invite_player_search_players).uppercase(),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -303,14 +324,14 @@ private fun AdminInvitePlayerContent(
                 leadingIcon = {
                     Icon(
                         imageVector = AppIcons.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(R.string.admin_invite_player_search_content_description),
                         tint = TextGray,
                         modifier = Modifier.size(18.dp)
                     )
                 },
                 placeholder = {
                     Text(
-                        text = "Search by name or ID...",
+                        text = stringResource(R.string.admin_invite_player_search_placeholder),
                         color = TextGray,
                         fontSize = 12.sp
                     )
@@ -326,7 +347,10 @@ private fun AdminInvitePlayerContent(
 
         item {
             Text(
-                text = "AVAILABLE PLAYERS (${filteredAvailablePlayers.size})",
+                text = stringResource(
+                    R.string.admin_invite_player_available_players_count,
+                    filteredAvailablePlayers.size
+                ).uppercase(),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -337,7 +361,7 @@ private fun AdminInvitePlayerContent(
         if (filteredAvailablePlayers.isEmpty()) {
             item {
                 EmptyPlayersCard(
-                    text = "No available players found."
+                    text = stringResource(R.string.admin_invite_player_no_available_players)
                 )
             }
         } else {
@@ -355,7 +379,10 @@ private fun AdminInvitePlayerContent(
         if (filteredInvitedPlayers.isNotEmpty()) {
             item {
                 Text(
-                    text = "PENDING INVITES (${filteredInvitedPlayers.size})",
+                    text = stringResource(
+                        R.string.admin_invite_player_pending_invites_count,
+                        filteredInvitedPlayers.size
+                    ).uppercase(),
                     color = TextGray,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -370,7 +397,7 @@ private fun AdminInvitePlayerContent(
 
         item {
             Text(
-                text = "INVITATION DETAILS",
+                text = stringResource(R.string.admin_invite_player_invitation_details).uppercase(),
                 color = BrandBlue,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -379,7 +406,7 @@ private fun AdminInvitePlayerContent(
             Spacer(modifier = Modifier.height(3.dp))
 
             Text(
-                text = "Customize the invitation before sending.",
+                text = stringResource(R.string.admin_invite_player_invitation_desc),
                 color = TextGray,
                 fontSize = 12.sp
             )
@@ -387,7 +414,7 @@ private fun AdminInvitePlayerContent(
 
         item {
             Text(
-                text = "PERSONAL MESSAGE (Optional)",
+                text = stringResource(R.string.admin_invite_player_personal_message).uppercase(),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -406,7 +433,7 @@ private fun AdminInvitePlayerContent(
                 maxLines = 4,
                 placeholder = {
                     Text(
-                        text = "Write a message...",
+                        text = stringResource(R.string.admin_invite_player_message_placeholder),
                         color = TextGray,
                         fontSize = 12.sp
                     )
@@ -424,7 +451,7 @@ private fun AdminInvitePlayerContent(
             item {
                 Text(
                     text = actionMessage,
-                    color = if (actionMessage.startsWith("Error") || actionMessage.startsWith("Please")) {
+                    color = if (actionMessageIsError) {
                         ErrorRed
                     } else {
                         BrandGreen
@@ -452,7 +479,7 @@ private fun AdminInvitePlayerContent(
             ) {
                 Icon(
                     imageVector = AppIcons.Confirm,
-                    contentDescription = "Send invite",
+                    contentDescription = stringResource(R.string.admin_invite_player_send_invite_content_description),
                     tint = BrandWhite,
                     modifier = Modifier.size(17.dp)
                 )
@@ -460,7 +487,7 @@ private fun AdminInvitePlayerContent(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = if (isSending) "SENDING..." else "SEND INVITE",
+                    text = if (isSending) stringResource(R.string.admin_invite_player_sending).uppercase() else stringResource(R.string.admin_invite_player_send_invite).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -481,7 +508,7 @@ private fun TargetTeamCard(team: AdminInvitePlayerTeam) {
             modifier = Modifier.padding(14.dp)
         ) {
             Text(
-                text = "TARGET TEAM",
+                text = stringResource(R.string.admin_invite_player_target_team).uppercase(),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -561,7 +588,7 @@ private fun InvitePlayerCard(
         PlayerRow(
             player = player,
             circleColor = if (selected) BrandGreen else PrimaryBlue,
-            trailingText = if (selected) "SELECTED" else null,
+            trailingText = if (selected) stringResource(R.string.admin_invite_player_selected).uppercase() else null,
             trailingColor = BrandGreen
         )
     }
@@ -581,7 +608,7 @@ private fun InvitedPlayerCard(
         PlayerRow(
             player = player,
             circleColor = BrandGreen,
-            trailingText = "INVITED",
+            trailingText = stringResource(R.string.admin_invite_player_invited).uppercase(),
             trailingColor = BrandGreen
         )
     }
@@ -692,7 +719,7 @@ private fun AdminInvitePlayerTopBar(
         ) {
             Icon(
                 imageVector = AppIcons.Back,
-                contentDescription = "Voltar",
+                contentDescription = stringResource(R.string.admin_common_back),
                 tint = BrandWhite,
                 modifier = Modifier.size(22.dp)
             )
@@ -700,7 +727,7 @@ private fun AdminInvitePlayerTopBar(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Manage Team",
+                text = stringResource(R.string.admin_invite_player_manage_team_title),
                 color = BrandWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -709,7 +736,7 @@ private fun AdminInvitePlayerTopBar(
 
         Icon(
             imageVector = AppIcons.Notifications,
-            contentDescription = "Notificações",
+            contentDescription = stringResource(R.string.admin_common_notifications),
             tint = BrandWhite,
             modifier = Modifier
                 .size(23.dp)
@@ -738,11 +765,11 @@ private fun AdminInvitePlayerBottomBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomInvitePlayerItem(AppIcons.Home, "HOME", selected == "home", onHomeClick)
-        BottomInvitePlayerItem(AppIcons.Tournaments, "TOURNAMENTS", selected == "tournaments", onTournamentsClick)
-        BottomInvitePlayerItem(AppIcons.Games, "MATCHES", selected == "matches", onMatchesClick)
-        BottomInvitePlayerItem(AppIcons.Teams, "TEAMS", selected == "teams", onTeamsClick)
-        BottomInvitePlayerItem(AppIcons.Profile, "PROFILE", selected == "profile", onProfileClick)
+        BottomInvitePlayerItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
+        BottomInvitePlayerItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
+        BottomInvitePlayerItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
+        BottomInvitePlayerItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
+        BottomInvitePlayerItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
     }
 }
 
