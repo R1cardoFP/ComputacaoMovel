@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.AuthRepository
-import com.example.trabalhocm.data.repository.Torneio
+import com.example.trabalhocm.data.repository.TorneioRepository
+import com.example.trabalhocm.data.repository.EstatisticaEquipaLiga
+import com.example.trabalhocm.data.repository.Torneio // IMPORTANTE: Agora usa o modelo correto!
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
@@ -60,14 +62,23 @@ fun PlayerTournamentDetailsScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val authRepository = remember { AuthRepository() }
+    val torneioRepository = remember { TorneioRepository() }
+
     var torneioAtual by remember { mutableStateOf<Torneio?>(null) }
+    var classificacao by remember { mutableStateOf<List<EstatisticaEquipaLiga>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Vai à BD buscar os detalhes do torneio pelo ID
     LaunchedEffect(idTorneio) {
         if (idTorneio != 0L) {
             authRepository.obterTorneioDetalhes(idTorneio).onSuccess { torneio ->
                 torneioAtual = torneio
+
+                if (torneio.formato?.lowercase() == "liga") {
+                    torneioRepository.obterClassificacaoTorneio(idTorneio).onSuccess { standings ->
+                        classificacao = standings
+                    }
+                }
+
                 isLoading = false
             }.onFailure {
                 isLoading = false
@@ -90,12 +101,13 @@ fun PlayerTournamentDetailsScreen(
             }
         } else if (torneioAtual != null) {
             val t = torneioAtual!!
-            val estadoAberto = t.estado?.lowercase() == "aberto"
+            val estadoTexto = t.estado?.toString() ?: "LIVE"
+            val estadoAberto = estadoTexto.lowercase() == "aberto"
 
-            val modalidadeNome = when (t.idModalidade) {
-                1 -> "FOOTBALL"
-                2 -> "BASKETBALL"
-                3 -> "VOLLEYBALL"
+            val modalidadeNome = when (t.idModalidade?.toString()) {
+                "1" -> "FOOTBALL"
+                "2" -> "BASKETBALL"
+                "3" -> "VOLLEYBALL"
                 else -> "SPORT"
             }
 
@@ -106,7 +118,7 @@ fun PlayerTournamentDetailsScreen(
             ) {
                 TournamentDetailsHeader(
                     onBackClick = onBackClick,
-                    estado = if (estadoAberto) "OPEN" else (t.estado?.uppercase() ?: "LIVE"),
+                    estado = if (estadoAberto) "OPEN" else estadoTexto.uppercase(),
                     estadoCor = if (estadoAberto) BrandGreen else Color(0xFFE53935),
                     modalidade = modalidadeNome,
                     titulo = t.nome,
@@ -118,30 +130,32 @@ fun PlayerTournamentDetailsScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 22.dp, vertical = 18.dp)
                 ) {
-                    TournamentDetailsAboutCard(descricao = t.descricao ?: "Sem descrição fornecida.")
+                    val desc = t.descricao?.takeIf { it.isNotBlank() } ?: "No description provided."
+                    TournamentDetailsAboutCard(descricao = desc)
 
                     Spacer(modifier = Modifier.height(14.dp))
 
                     TournamentDetailsScheduleCard(
-                        dataInicio = t.dataInicio ?: "TBD",
-                        dataFim = t.dataFim ?: "TBD",
-                        formato = t.formato ?: "TBD"
+                        dataInicio = t.dataInicio?.takeIf { it.isNotBlank() } ?: "TBD",
+                        dataFim = t.dataFim?.takeIf { it.isNotBlank() } ?: "TBD",
+                        formato = t.formato?.takeIf { it.isNotBlank() } ?: "TBD"
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    TournamentDetailsLocationCard(local = t.local ?: "TBD")
+                    TournamentDetailsLocationCard(local = t.local?.takeIf { it.isNotBlank() } ?: "TBD")
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    TournamentDetailsStandingsCard()
-
-                    Spacer(modifier = Modifier.height(22.dp))
+                    if (t.formato?.lowercase() == "liga") {
+                        TournamentDetailsStandingsCard(classificacao = classificacao)
+                        Spacer(modifier = Modifier.height(22.dp))
+                    }
                 }
             }
         } else {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Erro ao carregar detalhes do torneio.", color = Color.Gray)
+                Text("Error loading tournament details.", color = Color.Gray)
             }
         }
 
@@ -348,9 +362,8 @@ fun TournamentDetailsLocationCard(local: String) {
     }
 }
 
-// O quadro de classificação mantive-o estático pois precisaria de uma tabela à parte de equipas
 @Composable
-fun TournamentDetailsStandingsCard() {
+fun TournamentDetailsStandingsCard(classificacao: List<EstatisticaEquipaLiga>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -359,6 +372,7 @@ fun TournamentDetailsStandingsCard() {
         Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)) {
             Text("Standings", color = BrandBlue, fontSize = 17.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(14.dp))
+
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("POS", color = Color(0xFF7D8497), fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(36.dp))
                 Text("TEAM", color = Color(0xFF7D8497), fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -366,21 +380,41 @@ fun TournamentDetailsStandingsCard() {
                 Text("PTS", color = Color(0xFF7D8497), fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(38.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
-            StandingTeamRow("01", "Porto", "12", "31", Color(0xFF0757C8), "porto")
-            StandingTeamRow("02", "Sporting", "12", "29", BrandGreen, "sporting")
+
+            if (classificacao.isEmpty()) {
+                Text(
+                    text = "No teams registered or no data available.",
+                    color = Color(0xFF6D7486),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+            } else {
+                classificacao.forEachIndexed { index, equipa ->
+                    val positionText = (index + 1).toString().padStart(2, '0')
+                    val isFirst = index == 0
+
+                    StandingTeamRow(
+                        position = positionText,
+                        team = equipa.nomeEquipa,
+                        played = equipa.jogosDisputados.toString(),
+                        points = equipa.pontos.toString(),
+                        accent = if (isFirst) BrandGreen else Color(0xFF0757C8)
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun StandingTeamRow(position: String, team: String, played: String, points: String, accent: Color, logoType: String) {
+fun StandingTeamRow(position: String, team: String, played: String, points: String, accent: Color) {
     Row(
         modifier = Modifier.fillMaxWidth().height(38.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(position, color = if (position == "01") BrandGreen else BrandBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(36.dp))
         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            StandingLogo(logoType, accent)
+            StandingLogo(team, accent)
             Spacer(modifier = Modifier.width(8.dp))
             Text(team, color = BrandBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
@@ -390,15 +424,22 @@ fun StandingTeamRow(position: String, team: String, played: String, points: Stri
 }
 
 @Composable
-fun StandingLogo(logoType: String, accent: Color) {
-    if (logoType == "sporting") {
+fun StandingLogo(nomeEquipa: String, accent: Color) {
+    val nomeNormalizado = nomeEquipa.lowercase()
+
+    if (nomeNormalizado.contains("sporting")) {
         Image(painter = painterResource(R.drawable.team_sporting), contentDescription = null, modifier = Modifier.size(24.dp), contentScale = ContentScale.Fit)
     } else {
         Box(
             modifier = Modifier.size(24.dp).clip(CircleShape).background(accent.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
-            Text(if (logoType == "porto") "P" else "B", color = accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = nomeEquipa.take(1).uppercase(),
+                color = accent,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

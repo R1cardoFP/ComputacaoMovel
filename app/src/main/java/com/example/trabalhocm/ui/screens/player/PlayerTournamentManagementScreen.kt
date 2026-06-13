@@ -23,7 +23,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -33,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,12 +43,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.data.remote.SupabaseClient
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.data.repository.Torneio
+import com.example.trabalhocm.data.repository.TorneioRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -70,19 +75,52 @@ fun PlayerTournamentManagementScreen(
 
     // --- ESTADOS PARA A BASE DE DADOS ---
     val authRepository = remember { AuthRepository() }
+    val torneioRepository = remember { TorneioRepository() }
+
     var listaTorneios by remember { mutableStateOf<List<Torneio>>(emptyList()) }
+    var equipasInscritasMap by remember { mutableStateOf<Map<Long, Boolean>>(emptyMap()) }
+    var idMinhaEquipa by remember { mutableStateOf<Long?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
+        // 1. Descobre se o user logado é capitão de alguma equipa
+        val currentUserId = SupabaseClient.client.auth.currentUserOrNull()?.id
+        if (currentUserId != null) {
+            try {
+                val memberRows = SupabaseClient.client.from("membro_equipa").select {
+                    filter { eq("id_utilizador", currentUserId); eq("estado_convite", "aceite") }
+                }.decodeList<MembroEquipaSimplesRegDTO>()
+
+                val userMembership = memberRows.firstOrNull()
+                if (userMembership?.papel?.lowercase() == "capitao") {
+                    idMinhaEquipa = userMembership.idEquipa
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // 2. Carrega todos os torneios
         authRepository.obterTorneios().onSuccess { torneios ->
             listaTorneios = torneios
+
+            // 3. Verifica em quais torneios a equipa já está inscrita
+            if (idMinhaEquipa != null) {
+                val mapInscricoes = mutableMapOf<Long, Boolean>()
+                torneios.forEach { torneio ->
+                    torneioRepository.verificarEquipaInscrita(torneio.id, idMinhaEquipa!!).onSuccess { isRegistered ->
+                        mapInscricoes[torneio.id] = isRegistered
+                    }
+                }
+                equipasInscritasMap = mapInscricoes
+            }
+
             isLoading = false
         }.onFailure {
             isLoading = false
         }
     }
 
-    // Escuta ativamente o gatilho de alteração dos filtros
     val updateTrigger = PlayerTournamentFiltersState.updateTrigger
     val selectedSport = PlayerTournamentFiltersState.selectedSport
     val selectedFormat = PlayerTournamentFiltersState.selectedFormat
@@ -162,7 +200,6 @@ fun PlayerTournamentManagementScreen(
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            // --- LÓGICA DE DESENHO DINÂMICO E FILTRAGEM MULTI-CAMPO ---
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = BrandGreen)
@@ -181,15 +218,26 @@ fun PlayerTournamentManagementScreen(
 
                 if (torneiosFiltrados.isEmpty()) {
                     Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                        Text("Nenhum torneio encontrado.", color = Color.Gray)
+                        Text("No tournaments found.", color = Color.Gray)
                     }
                 } else {
                     torneiosFiltrados.forEach { torneio ->
 
+                        val isAlreadyRegistered = equipasInscritasMap[torneio.id] == true
                         val estadoAberto = torneio.estado?.lowercase() == "aberto"
+
                         val tagEstado = if (estadoAberto) "OPEN" else (torneio.estado?.uppercase() ?: "LIVE")
                         val corEstado = if (estadoAberto) BrandGreen else Color(0xFFE53935)
-                        val btnTexto = if (estadoAberto) "REGISTER NOW" else "CLOSED"
+
+                        // Lógica do Botão Principal:
+                        // Se já está inscrito, mostra "REGISTERED". Se não, depende de estar "aberto"
+                        val btnTexto = when {
+                            isAlreadyRegistered -> "ALREADY REGISTERED"
+                            estadoAberto -> "REGISTER NOW"
+                            else -> "CLOSED"
+                        }
+
+                        val desativarBotao = !estadoAberto || isAlreadyRegistered
 
                         val modalidadeNome = when (torneio.idModalidade) {
                             1 -> "FOOTBALL"
@@ -212,9 +260,11 @@ fun PlayerTournamentManagementScreen(
                             progressColor = BrandGreen,
                             primaryButtonText = btnTexto,
                             secondaryButtonText = "DETAILS",
-                            disabledButton = !estadoAberto,
+                            disabledButton = desativarBotao,
                             onDetailsClick = { onDetailsClick(torneio.id) },
-                            onPrimaryClick = { onRegisterClick(torneio.id) }
+                            onPrimaryClick = {
+                                if (!desativarBotao) onRegisterClick(torneio.id)
+                            }
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -565,7 +615,7 @@ fun PlayerTournamentCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                LinearProgressIndicator(
+                /*LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -573,7 +623,7 @@ fun PlayerTournamentCard(
                         .clip(RoundedCornerShape(10.dp)),
                     color = progressColor,
                     trackColor = Color(0xFFECEEF7)
-                )
+                )*/
 
                 Spacer(modifier = Modifier.height(18.dp))
             }
