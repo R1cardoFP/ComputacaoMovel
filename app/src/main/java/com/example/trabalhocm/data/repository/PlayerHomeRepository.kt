@@ -171,20 +171,26 @@ class PlayerHomeRepository {
         equipasPorId: Map<Long, JsonObject>,
         torneiosPorId: Map<Long, JsonObject>
     ): PlayerHomeLiveMatch? {
+        // Agora procura qualquer variação de "live" ou "em_direto"
         val jogo = jogos.firstOrNull {
-            it.homeStringValue("estado_jogo") == "em_direto"
+            val estado = it.homeStringValue("estado_jogo")?.lowercase()
+            estado == "em_direto" || estado == "live" || estado == "em_decorrer" || estado == "a_decorrer"
         } ?: return null
 
         val idJogo = jogo.homeLongValue("id")
         val equipasDoJogo = jogoEquipasPorJogo[idJogo].orEmpty()
 
+        // Tolerância para "casa" ou "visitado", ou pega na primeira equipa que vir
         val equipaCasaLinha = equipasDoJogo.firstOrNull {
-            it.homeStringValue("papel_equipa") == "casa"
-        }
+            val papel = it.homeStringValue("papel_equipa")?.lowercase()
+            papel == "casa" || papel == "visitado"
+        } ?: equipasDoJogo.getOrNull(0)
 
+        // Tolerância para "fora" ou "visitante", ou pega na segunda equipa
         val equipaForaLinha = equipasDoJogo.firstOrNull {
-            it.homeStringValue("papel_equipa") == "fora"
-        }
+            val papel = it.homeStringValue("papel_equipa")?.lowercase()
+            papel == "fora" || papel == "visitante"
+        } ?: equipasDoJogo.getOrNull(1)
 
         if (equipaCasaLinha == null || equipaForaLinha == null) {
             return null
@@ -194,14 +200,21 @@ class PlayerHomeRepository {
         val equipaFora = equipasPorId[equipaForaLinha.homeLongValue("id_equipa")]
         val torneio = torneiosPorId[jogo.homeLongValue("id_torneio")]
 
+        // Lê os pontos da forma mais abrangente possível
+        val pontosC = equipaCasaLinha.homeIntValue("pontos_marcados").takeIf { it > 0 } ?: equipaCasaLinha.homeIntValue("pontos").takeIf { it > 0 } ?: equipaCasaLinha.homeIntValue("golos")
+        val pontosF = equipaForaLinha.homeIntValue("pontos_marcados").takeIf { it > 0 } ?: equipaForaLinha.homeIntValue("pontos").takeIf { it > 0 } ?: equipaForaLinha.homeIntValue("golos")
+
+        // Lê o minuto real da BD, ou usa 45 como fallback dinâmico
+        val minutoBD = jogo.homeIntValue("minuto_atual").takeIf { it > 0 } ?: jogo.homeIntValue("minuto").takeIf { it > 0 } ?: 45
+
         return PlayerHomeLiveMatch(
             idJogo = idJogo,
             torneioNome = torneio?.homeStringValue("nome") ?: "Live Match",
             equipaCasa = equipaCasa?.homeStringValue("nome") ?: "Equipa Casa",
             equipaFora = equipaFora?.homeStringValue("nome") ?: "Equipa Fora",
-            pontosCasa = equipaCasaLinha.homeIntValue("pontos_marcados"),
-            pontosFora = equipaForaLinha.homeIntValue("pontos_marcados"),
-            minuto = 75,
+            pontosCasa = pontosC,
+            pontosFora = pontosF,
+            minuto = minutoBD,
             local = jogo.homeStringValue("local") ?: "Local por definir"
         )
     }
@@ -251,7 +264,8 @@ class PlayerHomeRepository {
     ): List<PlayerHomeFixture> {
         return jogos
             .filter { jogo ->
-                jogo.homeStringValue("estado_jogo") == "agendado"
+                val estado = jogo.homeStringValue("estado_jogo")?.lowercase()
+                estado == "agendado" || estado == "pendente" || estado == "scheduled"
             }
             .sortedWith(
                 compareBy<JsonObject> {
@@ -266,12 +280,14 @@ class PlayerHomeRepository {
                 val equipasDoJogo = jogoEquipasPorJogo[idJogo].orEmpty()
 
                 val equipaCasaLinha = equipasDoJogo.firstOrNull {
-                    it.homeStringValue("papel_equipa") == "casa"
-                }
+                    val papel = it.homeStringValue("papel_equipa")?.lowercase()
+                    papel == "casa" || papel == "visitado"
+                } ?: equipasDoJogo.getOrNull(0)
 
                 val equipaForaLinha = equipasDoJogo.firstOrNull {
-                    it.homeStringValue("papel_equipa") == "fora"
-                }
+                    val papel = it.homeStringValue("papel_equipa")?.lowercase()
+                    papel == "fora" || papel == "visitante"
+                } ?: equipasDoJogo.getOrNull(1)
 
                 if (equipaCasaLinha == null || equipaForaLinha == null) {
                     return@mapNotNull null

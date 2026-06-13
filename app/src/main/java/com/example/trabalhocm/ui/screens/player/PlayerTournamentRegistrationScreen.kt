@@ -1,6 +1,7 @@
 package com.example.trabalhocm.ui.screens.player
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,10 +43,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.remote.SupabaseClient
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
@@ -84,7 +88,7 @@ fun PlayerTournamentRegistrationScreen(
 
     LaunchedEffect(idTorneio) {
         if (idTorneio == 0L) {
-            errorMessage = "ID do Torneio inválido."
+            errorMessage = "Invalid Tournament ID."
             isLoading = false
             return@LaunchedEffect
         }
@@ -96,30 +100,46 @@ fun PlayerTournamentRegistrationScreen(
             }.decodeSingleOrNull<TorneioRegDTO>()
             torneio = t
 
-            // 2. Contar equipas já inscritas (pendentes ou aceites)
+            // 2. Contar equipas na tabela correta (torneio_equipa)
             val inscritas = SupabaseClient.client.from("torneio_equipa").select {
-                filter { eq("id_torneio", idTorneio) }
+                filter {
+                    eq("id_torneio", idTorneio)
+                    neq("estado", "rejeitada")
+                }
             }.decodeList<TorneioEquipaSimplesDTO>()
             equipasInscritas = inscritas.size
 
-            // 3. Descobrir a equipa do utilizador logado e se é capitão
+            // 3. Descobrir a equipa do utilizador logado PARA ESTA MODALIDADE
             val currentUserId = SupabaseClient.client.auth.currentUserOrNull()?.id
-            if (currentUserId != null) {
+            if (currentUserId != null && t?.idModalidade != null) {
+                // Procura todas as equipas a que o user pertence
                 val memberRows = SupabaseClient.client.from("membro_equipa").select {
                     filter { eq("id_utilizador", currentUserId); eq("estado_convite", "aceite") }
                 }.decodeList<MembroEquipaSimplesRegDTO>()
 
-                val userMembership = memberRows.firstOrNull()
-                if (userMembership != null && userMembership.idEquipa != null) {
-                    souCapitao = userMembership.papel?.lowercase() == "capitao"
+                val idsEquipasUser = memberRows.mapNotNull { it.idEquipa }
 
-                    minhaEquipa = SupabaseClient.client.from("equipa").select {
-                        filter { eq("id", userMembership.idEquipa) }
-                    }.decodeSingleOrNull<EquipaRegDTO>()
+                if (idsEquipasUser.isNotEmpty()) {
+                    // Filtra na BD as equipas que pertencem à mesma modalidade do torneio
+                    val equipasDesporto = SupabaseClient.client.from("equipa").select {
+                        filter {
+                            isIn("id", idsEquipasUser)
+                            eq("id_modalidade", t.idModalidade) // FILTRO MAGICO AQUI!
+                        }
+                    }.decodeList<EquipaRegDTO>()
+
+                    val equipaValida = equipasDesporto.firstOrNull()
+
+                    if (equipaValida != null) {
+                        minhaEquipa = equipaValida
+                        // Verifica se ele é capitão DESTA equipa em específico
+                        val membership = memberRows.find { it.idEquipa == equipaValida.id }
+                        souCapitao = membership?.papel?.lowercase() == "capitao"
+                    }
                 }
             }
         } catch (e: Exception) {
-            errorMessage = e.message ?: "Erro ao carregar dados"
+            errorMessage = e.message ?: "Error loading data"
         }
         isLoading = false
     }
@@ -176,7 +196,7 @@ fun PlayerTournamentRegistrationScreen(
 
                     RegistrationSummaryCard(
                         payment = if (selectedPayment == "MB Way") "MB Way" else "$selectedPayment / Card",
-                        equipaNome = minhaEquipa?.nome ?: "Nenhuma",
+                        equipaNome = minhaEquipa?.nome ?: "None",
                         entryFee = info.custo ?: 0.0
                     )
 
@@ -196,10 +216,12 @@ fun PlayerTournamentRegistrationScreen(
                                             TorneioEquipaInsertDTO(
                                                 idTorneio = info.id,
                                                 idEquipa = minhaEquipa!!.id,
-                                                estado = "pendente"
+                                                estado = "pendente",
+                                                pagamentoEstado = "pendente",
+                                                mensagem = "Pedido de inscrição pendente."
                                             )
                                         )
-                                        onSubmitClick() // Volta para trás / sucesso
+                                        onSubmitClick()
                                     } catch (e: Exception) {
                                         e.printStackTrace()
                                     }
@@ -221,7 +243,12 @@ fun PlayerTournamentRegistrationScreen(
                             CircularProgressIndicator(color = BrandWhite, modifier = Modifier.size(24.dp))
                         } else {
                             Text(
-                                text = if (isCheio) "TOURNAMENT FULL" else if (!souCapitao) "ONLY CAPTAINS CAN REGISTER" else "⊙  SUBMIT REGISTRATION",
+                                text = when {
+                                    isCheio -> "TOURNAMENT FULL"
+                                    minhaEquipa == null -> "NO COMPATIBLE TEAM"
+                                    !souCapitao -> "ONLY CAPTAINS CAN REGISTER"
+                                    else -> "⊙  SUBMIT REGISTRATION"
+                                },
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.5.sp
@@ -267,7 +294,12 @@ fun RegistrationTopBar(onBackClick: () -> Unit) {
         Spacer(modifier = Modifier.width(16.dp))
         Text("Registration", color = BrandWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
         Spacer(modifier = Modifier.weight(1f))
-        Text("♧", color = BrandWhite, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "MatchLeague Logo",
+            modifier = Modifier.size(28.dp),
+            contentScale = ContentScale.Fit
+        )
     }
 }
 
@@ -388,7 +420,7 @@ fun RegistrationTeamSelectionCard(equipa: EquipaRegDTO?, isCapitao: Boolean) {
                 }
             } else {
                 Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(Color(0xFFF0F2FA)).padding(16.dp), contentAlignment = Alignment.Center) {
-                    Text("Não tens nenhuma equipa ativa no momento.", color = BrandBlue, fontWeight = FontWeight.Medium)
+                    Text("You don't have an active team for this sport.", color = BrandBlue, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -402,15 +434,15 @@ fun RegistrationPaymentMethodCard(selectedPayment: String, onPaymentSelected: (S
         colors = CardDefaults.cardColors(containerColor = BrandWhite), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)) {
-            Text("ESCOLHE O METODO", color = Color(0xFF7D8497), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp)
+            Text("CHOOSE PAYMENT METHOD", color = Color(0xFF7D8497), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp)
             Spacer(modifier = Modifier.height(14.dp))
-            PaymentMethodOption("Revolut", "Transferência imediata", BrandBlue, selectedPayment == "Revolut") { onPaymentSelected("Revolut") }
+            PaymentMethodOption("Revolut", "Instant transfer", BrandBlue, selectedPayment == "Revolut") { onPaymentSelected("Revolut") }
             Spacer(modifier = Modifier.height(10.dp))
-            PaymentMethodOption("MB Way", "Confirma pelo telemóvel", BrandGreen, selectedPayment == "MB Way") { onPaymentSelected("MB Way") }
+            PaymentMethodOption("MB Way", "Confirm via phone", BrandGreen, selectedPayment == "MB Way") { onPaymentSelected("MB Way") }
             Spacer(modifier = Modifier.height(10.dp))
-            PaymentMethodOption("Cartao de credito", "Visa, Mastercard", Color(0xFF3B4A66), selectedPayment == "Cartao de credito") { onPaymentSelected("Cartao de credito") }
+            PaymentMethodOption("Credit Card", "Visa, Mastercard", Color(0xFF3B4A66), selectedPayment == "Credit Card") { onPaymentSelected("Credit Card") }
             Spacer(modifier = Modifier.height(10.dp))
-            PaymentMethodOption("Apple Pay", "Pagamento rápido", Color(0xFF101010), selectedPayment == "Apple Pay") { onPaymentSelected("Apple Pay") }
+            PaymentMethodOption("Apple Pay", "Fast payment", Color(0xFF101010), selectedPayment == "Apple Pay") { onPaymentSelected("Apple Pay") }
         }
     }
 }
@@ -505,17 +537,21 @@ data class MembroEquipaSimplesRegDTO(
 data class EquipaRegDTO(
     val id: Long,
     val nome: String,
-    val divisao: String? = null
+    val divisao: String? = null,
+    @SerialName("id_modalidade") val idModalidade: Int? = null // Adicionamos a modalidade para o filtro!
 )
 
 @Serializable
 data class TorneioEquipaSimplesDTO(
-    @SerialName("id_equipa") val idEquipa: Long? = null
+    @SerialName("id_equipa") val idEquipa: Long? = null,
+    val estado: String? = null
 )
 
 @Serializable
 data class TorneioEquipaInsertDTO(
     @SerialName("id_torneio") val idTorneio: Long,
     @SerialName("id_equipa") val idEquipa: Long,
-    val estado: String
+    val estado: String,
+    @SerialName("pagamento_estado") val pagamentoEstado: String,
+    val mensagem: String? = null
 )
