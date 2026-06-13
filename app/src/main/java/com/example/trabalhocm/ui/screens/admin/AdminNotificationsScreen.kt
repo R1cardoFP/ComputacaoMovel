@@ -13,19 +13,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +42,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -47,12 +55,14 @@ import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminNotification
 import com.example.trabalhocm.data.repository.AdminNotificationRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
-import com.example.trabalhocm.ui.theme.BrandBlue
-import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
-import com.example.trabalhocm.ui.theme.LightBlueBadge
+import com.example.trabalhocm.ui.theme.DarkBlue
+import com.example.trabalhocm.ui.theme.InputBg
+import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -65,6 +75,7 @@ private data class NotificationVisual(
     val iconBackground: Color
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminNotificationsScreen(
     onBackClick: () -> Unit = {},
@@ -126,125 +137,131 @@ fun AdminNotificationsScreen(
     }
 
     Scaffold(
-        containerColor = BgLight,
         topBar = {
-            AdminNotificationsTopBar(
-                title = stringResource(R.string.admin_notifications_title),
-                onBackClick = onBackClick
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.admin_notifications_title),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = AppIcons.Back,
+                            contentDescription = stringResource(R.string.admin_common_back),
+                            tint = Color.White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { carregarNotificacoes() }) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = stringResource(R.string.admin_common_notifications),
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
         },
         bottomBar = {
-            AdminNotificationsBottomBar(
-                selected = "profile",
+            MatchLeagueBottomBar(
+                selectedTab = "PROFILE",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
                 onProfileClick = onProfileClick
             )
-        }
-    ) { innerPadding ->
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = BrandGreen)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(
-                    start = 20.dp,
-                    end = 20.dp,
-                    top = 18.dp,
-                    bottom = 28.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                item {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.admin_notifications_console).uppercase(),
-                            color = BrandGreen,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
-                        )
+        },
+        containerColor = BgLight
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 32.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.admin_notifications_console).uppercase(),
+                    color = PrimaryBlue,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
 
-                        Text(
-                            text = stringResource(R.string.admin_notifications_title),
-                            color = BrandBlue,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                Spacer(modifier = Modifier.height(4.dp))
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.admin_notifications_title).uppercase(),
+                    color = DarkBlue,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
 
-                        Text(
-                            text = stringResource(R.string.admin_notifications_description),
-                            color = TextGray,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = stringResource(R.string.admin_notifications_description),
+                    color = TextGray,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                AdminNotificationFilterRow(
+                    selectedFilter = selectedFilter,
+                    onFilterClick = {
+                        selectedFilter = it
                     }
-                }
+                )
 
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            if (errorMessage.isNotBlank()) {
                 item {
-                    AdminNotificationFilterRow(
-                        selectedFilter = selectedFilter,
-                        onFilterClick = {
-                            selectedFilter = it
-                        }
+                    AdminNotificationMessageCard(
+                        text = errorMessage,
+                        isError = true
                     )
                 }
+            }
 
-                if (errorMessage.isNotBlank()) {
-                    item {
-                        Text(
-                            text = errorMessage,
-                            color = Color(0xFFDC2626),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+            if (actionMessage.isNotBlank()) {
+                item {
+                    AdminNotificationMessageCard(
+                        text = actionMessage,
+                        isError = actionMessageIsError
+                    )
+                }
+            }
+
+            if (isLoading) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = PrimaryBlue)
                     }
                 }
-
-                if (actionMessage.isNotBlank()) {
-                    item {
-                        Text(
-                            text = actionMessage,
-                            color = if (actionMessageIsError) Color(0xFFDC2626) else BrandGreen,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+            } else if (visibleNotifications.isEmpty()) {
+                item {
+                    AdminNotificationsEmptyState()
                 }
-
-                if (visibleNotifications.isEmpty()) {
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(9.dp),
-                            colors = CardDefaults.cardColors(containerColor = CardBg),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.admin_notifications_empty),
-                                color = TextGray,
-                                fontSize = 13.sp,
-                                modifier = Modifier.padding(18.dp)
-                            )
-                        }
-                    }
-                }
-
+            } else {
                 items(visibleNotifications.size) { index ->
                     AdminNotificationCard(
                         notification = visibleNotifications[index],
@@ -271,52 +288,35 @@ fun AdminNotificationsScreen(
                         }
                     )
                 }
+
+                item {
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = null,
+                            tint = TextGray.copy(alpha = 0.5f),
+                            modifier = Modifier.size(32.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.msg_end_of_feed),
+                            color = TextGray.copy(alpha = 0.5f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun AdminNotificationsTopBar(
-    title: String,
-    onBackClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandBlue)
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onBackClick() }
-        ) {
-            Icon(
-                imageVector = AppIcons.Back,
-                contentDescription = stringResource(R.string.admin_common_back),
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Icon(
-            imageVector = AppIcons.Notifications,
-            contentDescription = stringResource(R.string.admin_common_notifications),
-            tint = Color.White,
-            modifier = Modifier.size(22.dp)
-        )
     }
 }
 
@@ -328,12 +328,12 @@ private fun AdminNotificationFilterRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF1F5F9), RoundedCornerShape(5.dp))
+            .background(CardBg, RoundedCornerShape(8.dp))
             .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         AdminNotificationFilterChip(
-            text = stringResource(R.string.admin_notifications_filter_all).uppercase(),
+            text = stringResource(R.string.admin_notifications_filter_all),
             value = "ALL",
             selected = selectedFilter == "ALL",
             modifier = Modifier.weight(1f),
@@ -341,7 +341,7 @@ private fun AdminNotificationFilterRow(
         )
 
         AdminNotificationFilterChip(
-            text = stringResource(R.string.admin_notifications_filter_moderation).uppercase(),
+            text = stringResource(R.string.admin_notifications_filter_moderation),
             value = "MODERATION",
             selected = selectedFilter == "MODERATION",
             modifier = Modifier.weight(1f),
@@ -349,7 +349,7 @@ private fun AdminNotificationFilterRow(
         )
 
         AdminNotificationFilterChip(
-            text = stringResource(R.string.admin_notifications_filter_system).uppercase(),
+            text = stringResource(R.string.admin_notifications_filter_system),
             value = "SYSTEM",
             selected = selectedFilter == "SYSTEM",
             modifier = Modifier.weight(1f),
@@ -366,22 +366,83 @@ private fun AdminNotificationFilterChip(
     modifier: Modifier = Modifier,
     onClick: (String) -> Unit
 ) {
-    Box(
-        modifier = modifier
-            .height(42.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(if (selected) Color(0xFF0057C8) else Color.Transparent)
-            .clickable { onClick(value) },
-        contentAlignment = Alignment.Center
+    Surface(
+        color = if (selected) PrimaryBlue else Color.Transparent,
+        shape = RoundedCornerShape(6.dp),
+        modifier = modifier.clickable { onClick(value) }
+    ) {
+        Text(
+            text = text.uppercase(),
+            color = if (selected) Color.White else TextGray,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp)
+        )
+    }
+}
+
+@Composable
+private fun AdminNotificationMessageCard(
+    text: String,
+    isError: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFFFF1F2) else Color(0xFFEAF8F5)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Text(
             text = text,
-            color = if (selected) Color.White else BrandBlue,
-            fontSize = 10.sp,
+            color = if (isError) Color(0xFFDC2626) else TealGreen,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.5.sp,
-            textAlign = TextAlign.Center
+            modifier = Modifier.padding(14.dp)
         )
+    }
+}
+
+@Composable
+private fun AdminNotificationsEmptyState() {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = InputBg,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = AppIcons.Notifications,
+                    contentDescription = null,
+                    tint = TextGray,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = stringResource(R.string.admin_notifications_empty),
+                color = TextGray.copy(alpha = 0.7f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                letterSpacing = 1.sp
+            )
+        }
     }
 }
 
@@ -403,74 +464,80 @@ private fun AdminNotificationCard(
             .clickable {
                 onNotificationClick(notification)
             },
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .drawBehind {
+                    if (notification.unread) {
+                        drawLine(
+                            color = PrimaryBlue,
+                            start = Offset(0f, 0f),
+                            end = Offset(0f, size.height),
+                            strokeWidth = 12f
+                        )
+                    }
+                }
+                .padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(visual.iconBackground),
-                contentAlignment = Alignment.Center
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = visual.iconBackground,
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = visual.icon,
-                    contentDescription = notification.title,
+                    contentDescription = null,
                     tint = visual.iconColor,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.padding(8.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
                 ) {
                     Text(
                         text = notification.title,
-                        color = BrandBlue,
+                        color = DarkBlue,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
                     )
 
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(LightBlueBadge)
-                            .padding(horizontal = 9.dp, vertical = 4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = notification.timeText,
-                            color = TextGray,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                    if (notification.unread) {
-                        Spacer(modifier = Modifier.width(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            color = if (notification.unread) PrimaryBlue.copy(alpha = 0.1f) else Color.Transparent,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = notification.timeText,
+                                color = if (notification.unread) PrimaryBlue else TextGray,
+                                fontSize = if (notification.unread) 8.sp else 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
 
-                        Box(
-                            modifier = Modifier
-                                .size(7.dp)
-                                .clip(RoundedCornerShape(50))
-                                .background(Color(0xFF0057C8))
-                        )
+                        if (notification.unread) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(PrimaryBlue)
+                            )
+                        }
                     }
                 }
 
@@ -479,12 +546,12 @@ private fun AdminNotificationCard(
                 Text(
                     text = notification.description,
                     color = TextGray,
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
                 )
 
                 if (notification.actionText != null) {
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     val destination = notificationDestination(notification)
                     val actionEnabled = destination != null
@@ -557,25 +624,24 @@ private fun NotificationActionButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
-    Box(
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(6.dp),
+        border = BorderStroke(1.dp, if (enabled) InputBg else Color(0xFFE5E7EB)),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = if (enabled) Color.White else Color(0xFFE5E7EB),
+            contentColor = if (enabled) DarkBlue else TextGray,
+            disabledContainerColor = Color(0xFFE5E7EB),
+            disabledContentColor = TextGray
+        ),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
         modifier = Modifier
             .fillMaxWidth()
             .height(36.dp)
-            .clip(RoundedCornerShape(5.dp))
-            .background(if (enabled) Color.White else Color(0xFFE5E7EB))
-            .border(
-                BorderStroke(1.dp, Color(0xFFD8DEE9)),
-                RoundedCornerShape(5.dp)
-            )
-            .clickable(enabled = enabled) {
-                onClick()
-            }
-            .padding(horizontal = 8.dp),
-        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = if (enabled) BrandBlue else TextGray,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -608,20 +674,20 @@ private fun notificationVisual(notification: AdminNotification): NotificationVis
     return when {
         notification.type == "SYSTEM" -> NotificationVisual(
             icon = AppIcons.Sync,
-            iconColor = Color(0xFF64748B),
-            iconBackground = Color(0xFFEAF3FF)
+            iconColor = TextGray,
+            iconBackground = InputBg
         )
 
         title.contains("tournament") || description.contains("tournament") || title.contains("torneio") || description.contains("torneio") -> NotificationVisual(
             icon = AppIcons.Tournaments,
-            iconColor = Color(0xFFE2A600),
-            iconBackground = Color(0xFFFFF7DE)
+            iconColor = PrimaryBlue,
+            iconBackground = PrimaryBlue.copy(alpha = 0.1f)
         )
 
         title.contains("team") || description.contains("team") || title.contains("equipa") || description.contains("equipa") -> NotificationVisual(
             icon = AppIcons.Teams,
-            iconColor = Color(0xFF0057C8),
-            iconBackground = Color(0xFFEAF3FF)
+            iconColor = TealGreen,
+            iconBackground = TealGreen.copy(alpha = 0.1f)
         )
 
         title.contains("suspended") || description.contains("suspended") || title.contains("suspenso") || description.contains("suspenso") || title.contains("suspensa") || description.contains("suspensa") -> NotificationVisual(
@@ -632,14 +698,14 @@ private fun notificationVisual(notification: AdminNotification): NotificationVis
 
         title.contains("payment") || description.contains("payment") || title.contains("pagamento") || description.contains("pagamento") -> NotificationVisual(
             icon = AppIcons.Payment,
-            iconColor = BrandGreen,
-            iconBackground = Color(0xFFEAF8F5)
+            iconColor = TealGreen,
+            iconBackground = TealGreen.copy(alpha = 0.1f)
         )
 
         else -> NotificationVisual(
             icon = AppIcons.Profile,
-            iconColor = BrandGreen,
-            iconBackground = Color(0xFFEAF8F5)
+            iconColor = TealGreen,
+            iconBackground = TealGreen.copy(alpha = 0.1f)
         )
     }
 }
@@ -648,64 +714,6 @@ private fun normalizarTexto(texto: String): String {
     return Normalizer.normalize(texto, Normalizer.Form.NFD)
         .replace("\\p{Mn}+".toRegex(), "")
         .lowercase(Locale.getDefault())
-}
-
-@Composable
-private fun AdminNotificationsBottomBar(
-    selected: String,
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .navigationBarsPadding()
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AdminNotificationsBottomItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
-        AdminNotificationsBottomItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
-        AdminNotificationsBottomItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
-        AdminNotificationsBottomItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
-        AdminNotificationsBottomItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
-    }
-}
-
-@Composable
-private fun AdminNotificationsBottomItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) Color(0xFF0057C8) else Color(0xFF9AA5B5)
-
-    Column(
-        modifier = Modifier.clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = label,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.6.sp
-        )
-    }
 }
 
 @Preview(showBackground = true)

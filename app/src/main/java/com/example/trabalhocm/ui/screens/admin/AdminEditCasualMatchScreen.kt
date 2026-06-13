@@ -12,13 +12,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,11 +30,14 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -45,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -56,14 +61,17 @@ import androidx.compose.ui.res.stringResource
 import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminEditCasualMatch
 import com.example.trabalhocm.data.repository.AdminEditCasualMatchRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
-import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.DarkBlue
 import com.example.trabalhocm.ui.theme.ErrorRed
+import com.example.trabalhocm.ui.theme.InputBg
 import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -169,8 +177,8 @@ fun AdminEditCasualMatchScreen(
             )
         },
         bottomBar = {
-            AdminEditCasualMatchBottomBar(
-                selected = "matches",
+            MatchLeagueBottomBar(
+                selectedTab = "MATCHES",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
@@ -187,7 +195,7 @@ fun AdminEditCasualMatchScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = BrandGreen)
+                    CircularProgressIndicator(color = TealGreen)
                 }
             }
 
@@ -196,15 +204,44 @@ fun AdminEditCasualMatchScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
-                        .padding(20.dp),
+                        .padding(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = errorMessage,
-                        color = ErrorRed,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(containerColor = CardBg),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(22.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(CircleShape)
+                                    .background(ErrorRed.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.Cancel,
+                                    contentDescription = null,
+                                    tint = ErrorRed,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Text(
+                                text = errorMessage,
+                                color = DarkBlue,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
 
@@ -324,18 +361,18 @@ private fun AdminEditCasualMatchContent(
             .fillMaxSize()
             .padding(innerPadding),
         contentPadding = PaddingValues(
-            start = 18.dp,
-            end = 18.dp,
-            top = 16.dp,
-            bottom = 28.dp
+            start = 24.dp,
+            end = 24.dp,
+            top = 20.dp,
+            bottom = 32.dp
         ),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             Text(
                 text = stringResource(R.string.admin_edit_casual_match_console).uppercase(),
-                color = BrandGreen,
-                fontSize = 10.sp,
+                color = TealGreen,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp
             )
@@ -344,8 +381,8 @@ private fun AdminEditCasualMatchContent(
 
             Text(
                 text = stringResource(R.string.admin_edit_casual_match_title),
-                color = BrandBlue,
-                fontSize = 26.sp,
+                color = DarkBlue,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -354,7 +391,7 @@ private fun AdminEditCasualMatchContent(
             Text(
                 text = stringResource(R.string.admin_edit_casual_match_description),
                 color = TextGray,
-                fontSize = 12.sp
+                fontSize = 14.sp
             )
         }
 
@@ -398,7 +435,7 @@ private fun AdminEditCasualMatchContent(
                     color = if (actionMessageIsError) {
                         ErrorRed
                     } else {
-                        BrandGreen
+                        TealGreen
                     },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -426,12 +463,12 @@ private fun EditMatchSummaryCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(15.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -443,14 +480,14 @@ private fun EditMatchSummaryCard(
                 Box(
                     modifier = Modifier
                         .background(
-                            color = Color(0xFFE0E7FF),
+                            color = Color.White.copy(alpha = 0.14f),
                             shape = RoundedCornerShape(20.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = modalidade.uppercase(),
-                        color = PrimaryBlue,
+                        color = Color.White,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -461,8 +498,8 @@ private fun EditMatchSummaryCard(
 
             Text(
                 text = title.ifBlank { stringResource(R.string.admin_edit_casual_match_default_title) },
-                color = BrandWhite,
-                fontSize = 20.sp,
+                color = Color.White,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -485,18 +522,18 @@ private fun EditMatchFormCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(15.dp),
-            verticalArrangement = Arrangement.spacedBy(11.dp)
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Text(
                 text = stringResource(R.string.admin_edit_casual_match_match_information),
-                color = BrandBlue,
-                fontSize = 16.sp,
+                color = DarkBlue,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -570,10 +607,10 @@ private fun PickerInput(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp)
+                .height(56.dp)
                 .background(
-                    color = if (enabled) Color(0xFFF1F5F9) else Color(0xFFE5E7EB),
-                    shape = RoundedCornerShape(8.dp)
+                    color = if (enabled) InputBg else Color(0xFFE5E7EB),
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .clickable(enabled = enabled) {
                     onClick()
@@ -583,7 +620,7 @@ private fun PickerInput(
         ) {
             Text(
                 text = value.ifBlank { placeholder },
-                color = if (value.isBlank()) TextGray else BrandBlue,
+                color = if (value.isBlank()) TextGray else DarkBlue,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
@@ -629,9 +666,9 @@ private fun EditInput(
             enabled = enabled,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp),
+                .height(56.dp),
             singleLine = true,
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(16.dp),
             placeholder = {
                 Text(
                     text = placeholder,
@@ -640,8 +677,8 @@ private fun EditInput(
                 )
             },
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF1F5F9),
-                unfocusedContainerColor = Color(0xFFF1F5F9),
+                focusedContainerColor = InputBg,
+                unfocusedContainerColor = InputBg,
                 disabledContainerColor = Color(0xFFE5E7EB),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -661,17 +698,17 @@ private fun EditMatchActionsCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF8F5)),
-        border = BorderStroke(1.dp, BrandGreen),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        border = BorderStroke(1.dp, TealGreen.copy(alpha = 0.28f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(15.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Text(
                 text = stringResource(R.string.admin_edit_casual_match_admin_actions),
-                color = BrandGreen,
+                color = TealGreen,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -683,8 +720,8 @@ private fun EditMatchActionsCard(
                 enabled = !isCanceled && !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PrimaryBlue,
                     contentColor = BrandWhite,
@@ -707,8 +744,8 @@ private fun EditMatchActionsCard(
                 enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
                 border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BrandWhite,
@@ -732,8 +769,8 @@ private fun EditMatchActionsCard(
                 enabled = !isCanceled && !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isCanceled) TextGray else ErrorRed,
                     contentColor = BrandWhite,
@@ -854,7 +891,7 @@ private fun EditTimePickerDialog(
         title = {
             Text(
                 text = stringResource(R.string.admin_edit_casual_match_select_time),
-                color = BrandBlue,
+                color = DarkBlue,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -897,7 +934,7 @@ private fun StatusBadge(status: String) {
     }
 
     val color = when (normalized) {
-        "aberta" -> BrandGreen
+        "aberta" -> TealGreen
         "fechada" -> Color(0xFFEAB308)
         "cancelada" -> ErrorRed
         else -> TextGray
@@ -928,112 +965,38 @@ private fun StatusBadge(status: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdminEditCasualMatchTopBar(
     onBackClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandBlue)
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        ) {
-            Icon(
-                imageVector = AppIcons.Back,
-                contentDescription = stringResource(R.string.admin_common_back),
-                tint = BrandWhite,
-                modifier = Modifier.size(22.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
+    TopAppBar(
+        title = {
             Text(
                 text = stringResource(R.string.admin_edit_casual_match_top_title),
-                color = BrandWhite,
-                fontSize = 16.sp,
+                color = Color.White,
                 fontWeight = FontWeight.Bold
             )
-        }
-
-        Icon(
-            imageVector = AppIcons.Notifications,
-            contentDescription = stringResource(R.string.admin_common_notifications),
-            tint = BrandWhite,
-            modifier = Modifier
-                .size(23.dp)
-                .clickable {
-                    onNotificationsClick()
-                }
-        )
-    }
-}
-
-@Composable
-private fun AdminEditCasualMatchBottomBar(
-    selected: String,
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandWhite)
-            .navigationBarsPadding()
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BottomEditMatchItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
-        BottomEditMatchItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
-        BottomEditMatchItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
-        BottomEditMatchItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
-        BottomEditMatchItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
-    }
-}
-
-@Composable
-private fun BottomEditMatchItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) PrimaryBlue else TextGray
-
-    Column(
-        modifier = Modifier.clickable {
-            onClick()
         },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = label,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.6.sp
-        )
-    }
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.admin_common_back),
+                    tint = Color.White
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = onNotificationsClick) {
+                Icon(
+                    imageVector = AppIcons.Notifications,
+                    contentDescription = stringResource(R.string.admin_common_notifications),
+                    tint = Color.White
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
+    )
 }

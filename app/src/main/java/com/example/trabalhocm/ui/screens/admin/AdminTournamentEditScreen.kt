@@ -26,11 +26,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,11 +56,17 @@ import androidx.compose.ui.res.stringResource
 import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminTournamentDetails
 import com.example.trabalhocm.data.repository.AdminTournamentRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.DarkBlue
+import com.example.trabalhocm.ui.theme.ErrorRed
+import com.example.trabalhocm.ui.theme.InputBg
+import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
@@ -69,6 +78,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminTournamentEditScreen(
     tournamentId: String,
@@ -140,24 +150,47 @@ fun AdminTournamentEditScreen(
     }
 
     Scaffold(
-        containerColor = BgLight,
         topBar = {
-            AdminEditTopBar(
-                title = stringResource(R.string.admin_tournament_edit_top_title),
-                onBackClick = onBackClick,
-                onNotificationsClick = onNotificationsClick
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = AppIcons.Back,
+                            contentDescription = stringResource(R.string.admin_common_back),
+                            tint = Color.White
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.admin_tournament_edit_top_title),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = stringResource(R.string.admin_common_notifications),
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
         },
         bottomBar = {
-            AdminEditBottomBar(
-                selected = "tournaments",
+            MatchLeagueBottomBar(
+                selectedTab = "TOURNAMENTS",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
                 onProfileClick = onProfileClick
             )
-        }
+        },
+        containerColor = BgLight
     ) { innerPadding ->
         when {
             isLoading -> {
@@ -167,7 +200,7 @@ fun AdminTournamentEditScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = BrandGreen)
+                    CircularProgressIndicator(color = TealGreen)
                 }
             }
 
@@ -181,7 +214,7 @@ fun AdminTournamentEditScreen(
                 ) {
                     Text(
                         text = errorMessage,
-                        color = Color(0xFFDC2626),
+                        color = ErrorRed,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -194,18 +227,18 @@ fun AdminTournamentEditScreen(
                         .fillMaxSize()
                         .padding(innerPadding),
                     contentPadding = PaddingValues(
-                        start = 18.dp,
-                        end = 18.dp,
-                        top = 18.dp,
-                        bottom = 28.dp
+                        start = 24.dp,
+                        end = 24.dp,
+                        top = 20.dp,
+                        bottom = 32.dp
                     ),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
                         Column {
                             Text(
                                 text = stringResource(R.string.admin_tournament_edit_console).uppercase(),
-                                color = BrandGreen,
+                                color = TealGreen,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 2.sp
@@ -215,7 +248,7 @@ fun AdminTournamentEditScreen(
 
                             Text(
                                 text = stringResource(R.string.admin_tournament_edit_title),
-                                color = BrandBlue,
+                                color = DarkBlue,
                                 fontSize = 25.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -272,7 +305,7 @@ fun AdminTournamentEditScreen(
                                 if (!modalidadeEditavel) {
                                     Text(
                                         text = stringResource(R.string.admin_tournament_edit_locked).uppercase(),
-                                        color = Color(0xFFDC2626),
+                                        color = ErrorRed,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold,
                                         letterSpacing = 0.8.sp
@@ -453,15 +486,9 @@ fun AdminTournamentEditScreen(
 
                     if (actionMessage.isNotBlank()) {
                         item {
-                            Text(
-                                text = actionMessage,
-                                color = if (actionMessageIsError) {
-                                    Color(0xFFDC2626)
-                                } else {
-                                    BrandGreen
-                                },
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
+                            EditMessageCard(
+                                message = actionMessage,
+                                isError = actionMessageIsError
                             )
                         }
                     }
@@ -534,12 +561,12 @@ private fun EditHeroCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkBlue),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -552,7 +579,7 @@ private fun EditHeroCard(
 
                 EditHeroBadge(
                     text = translatedEditStatus(estado),
-                    background = BrandGreen,
+                    background = TealGreen,
                     textColor = Color.White
                 )
             }
@@ -656,16 +683,16 @@ private fun EditSectionCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Text(
                 text = title,
-                color = BrandBlue,
+                color = DarkBlue,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -712,18 +739,18 @@ private fun EditInput(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height),
-            shape = RoundedCornerShape(6.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF1F5F9),
-                unfocusedContainerColor = Color(0xFFF1F5F9),
-                disabledContainerColor = Color(0xFFF1F5F9),
+                focusedContainerColor = InputBg,
+                unfocusedContainerColor = InputBg,
+                disabledContainerColor = InputBg,
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
                 disabledBorderColor = Color.Transparent,
-                focusedTextColor = BrandBlue,
-                unfocusedTextColor = BrandBlue,
+                focusedTextColor = DarkBlue,
+                unfocusedTextColor = DarkBlue,
                 disabledTextColor = TextGray,
-                cursorColor = BrandGreen
+                cursorColor = TealGreen
             )
         )
     }
@@ -737,20 +764,20 @@ private fun EditChip(
     onClick: () -> Unit
 ) {
     val backgroundColor = when {
-        selected -> Color(0xFF0057C8)
-        enabled -> Color(0xFFE8EEF9)
+        selected -> PrimaryBlue
+        enabled -> InputBg
         else -> Color(0xFFE5E7EB)
     }
 
     val textColor = when {
         selected -> Color.White
-        enabled -> Color(0xFF0057C8)
+        enabled -> PrimaryBlue
         else -> Color(0xFF9AA5B5)
     }
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(50.dp))
             .background(backgroundColor)
             .clickable(enabled = enabled) {
                 onClick()
@@ -779,9 +806,9 @@ private fun EditAdminActionsCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -802,9 +829,9 @@ private fun EditAdminActionsCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0057C8),
+                    containerColor = PrimaryBlue,
                     contentColor = Color.White
                 )
             ) {
@@ -823,11 +850,11 @@ private fun EditAdminActionsCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
-                border = BorderStroke(1.dp, Color(0xFFDC2626)),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, ErrorRed),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White,
-                    contentColor = Color(0xFFDC2626)
+                    contentColor = ErrorRed
                 )
             ) {
                 Text(
@@ -951,7 +978,53 @@ private fun EditBottomItem(
     }
 }
 
+@Composable
+private fun EditMessageCard(
+    message: String,
+    isError: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFFFF1F2) else Color(0xFFEFFCF6)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isError) ErrorRed.copy(alpha = 0.12f) else TealGreen.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isError) "!" else "✓",
+                    color = if (isError) ErrorRed else TealGreen,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Text(
+                text = message,
+                color = if (isError) ErrorRed else DarkBlue,
+                fontSize = 12.sp,
+                lineHeight = 17.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminTournamentEditScreenPreview() {
     AdminTournamentEditScreen(
@@ -986,8 +1059,8 @@ private fun DateInput(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(Color(0xFFF1F5F9))
+                .clip(RoundedCornerShape(16.dp))
+                .background(InputBg)
                 .clickable {
                     showPicker = true
                 }
@@ -996,7 +1069,7 @@ private fun DateInput(
         ) {
             Text(
                 text = value.ifBlank { stringResource(R.string.admin_tournament_edit_select_date) },
-                color = BrandBlue,
+                color = DarkBlue,
                 fontSize = 13.sp
             )
         }

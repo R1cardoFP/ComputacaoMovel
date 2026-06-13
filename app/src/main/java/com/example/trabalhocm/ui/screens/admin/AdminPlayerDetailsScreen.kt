@@ -2,7 +2,6 @@ package com.example.trabalhocm.ui.screens.admin
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,10 +11,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -25,9 +22,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,28 +42,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminPlayerDetails
 import com.example.trabalhocm.data.repository.AdminPlayerDetailsRepository
+import com.example.trabalhocm.data.repository.AuthRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
-import com.example.trabalhocm.ui.theme.BrandBlue
-import com.example.trabalhocm.ui.theme.BrandGreen
-import com.example.trabalhocm.ui.theme.BrandWhite
 import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.DarkBlue
 import com.example.trabalhocm.ui.theme.ErrorRed
-import com.example.trabalhocm.ui.theme.LightBlueBadge
+import com.example.trabalhocm.ui.theme.InputBg
 import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
-import com.example.trabalhocm.data.repository.AuthRepository
-import androidx.compose.ui.res.stringResource
-import com.example.trabalhocm.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminPlayerDetailsScreen(
     playerId: String,
@@ -109,23 +113,47 @@ fun AdminPlayerDetailsScreen(
     }
 
     Scaffold(
-        containerColor = BgLight,
         topBar = {
-            AdminPlayerDetailsTopBar(
-                onBackClick = onBackClick,
-                onNotificationsClick = onNotificationsClick
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.admin_player_details_top_title),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = AppIcons.Back,
+                            contentDescription = stringResource(R.string.admin_common_back),
+                            tint = Color.White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = stringResource(R.string.admin_common_notifications),
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
         },
         bottomBar = {
-            AdminPlayerDetailsBottomBar(
-                selected = "teams",
+            MatchLeagueBottomBar(
+                selectedTab = "TEAMS",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
                 onProfileClick = onProfileClick
             )
-        }
+        },
+        containerColor = BgLight
     ) { innerPadding ->
         when {
             isLoading -> {
@@ -135,25 +163,15 @@ fun AdminPlayerDetailsScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = BrandGreen)
+                    CircularProgressIndicator(color = TealGreen)
                 }
             }
 
             errorMessage.isNotBlank() -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(20.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = errorMessage,
-                        color = ErrorRed,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                AdminPlayerDetailsErrorState(
+                    innerPadding = innerPadding,
+                    message = errorMessage
+                )
             }
 
             player != null -> {
@@ -224,15 +242,15 @@ private fun AdminPlayerDetailsContent(
             .fillMaxSize()
             .padding(innerPadding),
         contentPadding = PaddingValues(
-            start = 18.dp,
-            end = 18.dp,
-            top = 18.dp,
+            start = 24.dp,
+            end = 24.dp,
+            top = 20.dp,
             bottom = 28.dp
         ),
-        verticalArrangement = Arrangement.spacedBy(13.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            PlayerProfileHeader(player = player)
+            PlayerProfileHeroCard(player = player)
         }
 
         item {
@@ -240,29 +258,14 @@ private fun AdminPlayerDetailsContent(
         }
 
         item {
-            Text(
-                text = stringResource(R.string.admin_player_details_season_stats),
-                color = BrandBlue,
-                fontSize = 21.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        item {
-            PlayerStatCard(
-                modifier = Modifier.fillMaxWidth(),
-                title = stringResource(R.string.admin_player_details_points).uppercase(),
-                value = player.points.toString()
-            )
+            PlayerSeasonStatsCard(player = player)
         }
 
         if (actionMessage.isNotBlank()) {
             item {
-                Text(
-                    text = actionMessage,
-                    color = if (actionMessageIsError) ErrorRed else BrandGreen,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                AdminPlayerDetailsMessageCard(
+                    message = actionMessage,
+                    isError = actionMessageIsError
                 )
             }
         }
@@ -278,103 +281,123 @@ private fun AdminPlayerDetailsContent(
 }
 
 @Composable
-private fun PlayerProfileHeader(player: AdminPlayerDetails) {
+private fun PlayerProfileHeroCard(player: AdminPlayerDetails) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(22.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                StatusBadge(
+                    text = if (player.suspended) {
+                        stringResource(R.string.admin_player_details_suspended).uppercase()
+                    } else {
+                        stringResource(R.string.admin_player_details_active).uppercase()
+                    },
+                    background = if (player.suspended) Color(0xFFFEF3C7) else Color(0xFFEAF8F5),
+                    textColor = if (player.suspended) Color(0xFFB45309) else TealGreen
+                )
+            }
+
             Box(
                 modifier = Modifier
-                    .size(76.dp)
+                    .size(92.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE95A5A)),
+                    .background(PrimaryBlue),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = player.initials,
-                    color = BrandWhite,
-                    fontSize = 22.sp,
+                    color = Color.White,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
                 text = player.nome,
-                color = BrandBlue,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                SmallPlayerBadge(
+                StatusBadge(
                     text = player.position.uppercase(),
-                    background = LightBlueBadge,
-                    textColor = PrimaryBlue
+                    background = Color.White.copy(alpha = 0.14f),
+                    textColor = Color.White
                 )
 
-                SmallPlayerBadge(
+                StatusBadge(
                     text = player.equipa.uppercase(),
-                    background = Color(0xFFE5E7EB),
-                    textColor = TextGray
+                    background = Color.White.copy(alpha = 0.14f),
+                    textColor = Color.White
                 )
             }
 
             if (player.equipas.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(R.string.admin_player_details_current_teams).uppercase(),
-                        color = TextGray,
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.8.sp
-                    )
+                Text(
+                    text = stringResource(R.string.admin_player_details_current_teams).uppercase(),
+                    color = Color.White.copy(alpha = 0.65f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.8.sp
+                )
 
-                    Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                    Text(
-                        text = player.equipas.joinToString(" · "),
-                        color = BrandBlue,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = player.equipas.joinToString(" · "),
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                PlayerMainInfo(
-                    label = stringResource(R.string.admin_player_details_age).uppercase(),
+                PlayerHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.admin_player_details_age),
                     value = player.age
                 )
 
-                PlayerMainInfo(
-                    label = stringResource(R.string.admin_player_details_height).uppercase(),
+                PlayerHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.admin_player_details_height),
                     value = player.height
                 )
 
-                PlayerMainInfo(
-                    label = stringResource(R.string.admin_player_details_number).uppercase(),
+                PlayerHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.admin_player_details_number),
                     value = player.number
                 )
             }
@@ -383,52 +406,40 @@ private fun PlayerProfileHeader(player: AdminPlayerDetails) {
 }
 
 @Composable
-private fun PlayerMainInfo(
+private fun PlayerHeroMetric(
+    modifier: Modifier,
     label: String,
     value: String
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(18.dp),
+        color = Color.White.copy(alpha = 0.12f)
     ) {
-        Text(
-            text = label,
-            color = TextGray,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.8.sp
-        )
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = label.uppercase(),
+                color = Color.White.copy(alpha = 0.68f),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.7.sp,
+                maxLines = 1
+            )
 
-        Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = value,
-            color = BrandBlue,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-private fun SmallPlayerBadge(
-    text: String,
-    background: Color,
-    textColor: Color
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(background)
-            .padding(horizontal = 9.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.4.sp
-        )
+            Text(
+                text = value,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
@@ -436,56 +447,42 @@ private fun SmallPlayerBadge(
 private fun AccountInformationCard(player: AdminPlayerDetails) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box {
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(166.dp)
-                    .background(
-                        if (player.suspended) Color(0xFFEAB308) else BrandGreen
-                    )
-                    .align(Alignment.CenterStart)
-            )
-
-            Column(
-                modifier = Modifier.padding(16.dp)
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.admin_player_details_account_information),
-                        color = BrandBlue,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                Text(
+                    text = stringResource(R.string.admin_player_details_account_information),
+                    color = DarkBlue,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
-                    SmallPlayerBadge(
-                        text = if (player.suspended) stringResource(R.string.admin_player_details_suspended).uppercase() else stringResource(R.string.admin_player_details_active).uppercase(),
-                        background = if (player.suspended) Color(0xFFFEF3C7) else Color(0xFFEAF8F5),
-                        textColor = if (player.suspended) Color(0xFFEAB308) else BrandGreen
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                AccountInfoRow(stringResource(R.string.admin_player_details_email), player.email)
-                AccountInfoRow(stringResource(R.string.admin_player_details_user_id), "#${player.id.take(8).uppercase()}")
-                AccountInfoRow(stringResource(R.string.admin_player_details_member_since), player.memberSince)
-                AccountInfoRow(stringResource(R.string.admin_player_details_last_active), player.lastActive)
-                AccountInfoRow(
-                    label = stringResource(R.string.admin_player_details_account_status),
-                    value = if (player.suspended) stringResource(R.string.admin_player_details_suspended).uppercase() else player.accountStatus.uppercase(),
-                    valueBadge = true,
-                    badgePositive = !player.suspended
+                StatusBadge(
+                    text = if (player.suspended) {
+                        stringResource(R.string.admin_player_details_suspended).uppercase()
+                    } else {
+                        player.accountStatus.uppercase()
+                    },
+                    background = if (player.suspended) Color(0xFFFEF3C7) else Color(0xFFEAF8F5),
+                    textColor = if (player.suspended) Color(0xFFB45309) else TealGreen
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AccountInfoRow(stringResource(R.string.admin_player_details_email), player.email)
+            AccountInfoRow(stringResource(R.string.admin_player_details_user_id), "#${player.id.take(8).uppercase()}")
+            AccountInfoRow(stringResource(R.string.admin_player_details_member_since), player.memberSince)
+            AccountInfoRow(stringResource(R.string.admin_player_details_last_active), player.lastActive)
         }
     }
 }
@@ -493,72 +490,102 @@ private fun AccountInformationCard(player: AdminPlayerDetails) {
 @Composable
 private fun AccountInfoRow(
     label: String,
-    value: String,
-    valueBadge: Boolean = false,
-    badgePositive: Boolean = true
+    value: String
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            color = TextGray,
-            fontSize = 12.sp
-        )
-
-        if (valueBadge) {
-            SmallPlayerBadge(
-                text = value,
-                background = if (badgePositive) Color(0xFFEAF8F5) else Color(0xFFFEF3C7),
-                textColor = if (badgePositive) BrandGreen else Color(0xFFEAB308)
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                color = TextGray,
+                fontSize = 13.sp,
+                modifier = Modifier.weight(0.42f)
             )
-        } else {
+
             Text(
                 text = value,
-                color = BrandBlue,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
+                color = DarkBlue,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(0.58f)
             )
         }
+
+        HorizontalDivider(color = InputBg)
     }
 }
 
 @Composable
-private fun PlayerStatCard(
-    modifier: Modifier,
-    title: String,
-    value: String
-) {
+private fun PlayerSeasonStatsCard(player: AdminPlayerDetails) {
     Card(
-        modifier = modifier.height(94.dp),
-        shape = RoundedCornerShape(9.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(15.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.padding(18.dp)
         ) {
             Text(
-                text = title,
-                color = TextGray,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.8.sp
-            )
-
-            Text(
-                text = value,
-                color = PrimaryBlue,
-                fontSize = 30.sp,
+                text = stringResource(R.string.admin_player_details_season_stats),
+                color = DarkBlue,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                color = InputBg
+            ) {
+                Row(
+                    modifier = Modifier.padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.admin_player_details_points).uppercase(),
+                            color = TextGray,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.8.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Total acumulado na época",
+                            color = TextGray,
+                            fontSize = 12.sp
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(58.dp)
+                            .clip(CircleShape)
+                            .background(PrimaryBlue),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = player.points.toString(),
+                            color = Color.White,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -569,40 +596,60 @@ private fun AdminActionsCard(
     onResetPasswordClick: (String) -> Unit,
     onSuspendUserClick: (String) -> Unit
 ) {
-    val suspendColor = if (player.suspended) BrandGreen else Color(0xFFEAB308)
-    val suspendText = if (player.suspended) stringResource(R.string.admin_player_details_reactivate_account).uppercase() else stringResource(R.string.admin_player_details_suspend_account).uppercase()
+    val suspendColor = if (player.suspended) TealGreen else Color(0xFFB45309)
+    val suspendText = if (player.suspended) {
+        stringResource(R.string.admin_player_details_reactivate_account).uppercase()
+    } else {
+        stringResource(R.string.admin_player_details_suspend_account).uppercase()
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF8F5)),
-        border = BorderStroke(1.dp, BrandGreen),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, TealGreen.copy(alpha = 0.35f))
     ) {
         Column(
-            modifier = Modifier.padding(15.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = AppIcons.Security,
-                    contentDescription = stringResource(R.string.admin_player_details_admin_actions),
-                    tint = BrandGreen,
-                    modifier = Modifier.size(20.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Security,
+                        contentDescription = stringResource(R.string.admin_player_details_admin_actions),
+                        tint = TealGreen,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-                Text(
-                    text = stringResource(R.string.admin_player_details_admin_actions),
-                    color = BrandGreen,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Column {
+                    Text(
+                        text = stringResource(R.string.admin_player_details_admin_actions),
+                        color = DarkBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "Gestão de segurança da conta",
+                        color = TextGray,
+                        fontSize = 12.sp
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(13.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
@@ -610,11 +657,11 @@ private fun AdminActionsCard(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandWhite,
-                    contentColor = BrandBlue
+                    containerColor = Color.White,
+                    contentColor = DarkBlue
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
@@ -625,7 +672,7 @@ private fun AdminActionsCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(9.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Button(
                 onClick = {
@@ -633,11 +680,11 @@ private fun AdminActionsCard(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
                 border = BorderStroke(1.dp, suspendColor),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandWhite,
+                    containerColor = Color.White,
                     contentColor = suspendColor
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
@@ -653,111 +700,88 @@ private fun AdminActionsCard(
 }
 
 @Composable
-private fun AdminPlayerDetailsTopBar(
-    onBackClick: () -> Unit,
-    onNotificationsClick: () -> Unit
+private fun AdminPlayerDetailsMessageCard(
+    message: String,
+    isError: Boolean
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandBlue)
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFFFEBEE) else Color(0xFFEAF8F5)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        ) {
-            Icon(
-                imageVector = AppIcons.Back,
-                contentDescription = stringResource(R.string.admin_common_back),
-                tint = BrandWhite,
-                modifier = Modifier.size(22.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = stringResource(R.string.admin_player_details_top_title),
-                color = BrandWhite,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Icon(
-            imageVector = AppIcons.Notifications,
-            contentDescription = stringResource(R.string.admin_common_notifications),
-            tint = BrandWhite,
-            modifier = Modifier
-                .size(23.dp)
-                .clickable {
-                    onNotificationsClick()
-                }
-        )
-    }
-}
-
-@Composable
-private fun AdminPlayerDetailsBottomBar(
-    selected: String,
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandWhite)
-            .navigationBarsPadding()
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BottomPlayerDetailsItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
-        BottomPlayerDetailsItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
-        BottomPlayerDetailsItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
-        BottomPlayerDetailsItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
-        BottomPlayerDetailsItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
-    }
-}
-
-@Composable
-private fun BottomPlayerDetailsItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) PrimaryBlue else TextGray
-
-    Column(
-        modifier = Modifier.clickable {
-            onClick()
-        },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
         Text(
-            text = label,
-            color = color,
-            fontSize = 8.sp,
+            text = message,
+            color = if (isError) ErrorRed else TealGreen,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.6.sp
+            modifier = Modifier.padding(14.dp)
+        )
+    }
+}
+
+@Composable
+private fun AdminPlayerDetailsErrorState(
+    innerPadding: PaddingValues,
+    message: String
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Erro ao carregar jogador",
+                    color = ErrorRed,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = message,
+                    color = ErrorRed,
+                    fontSize = 13.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusBadge(
+    text: String,
+    background: Color,
+    textColor: Color
+) {
+    Surface(
+        shape = RoundedCornerShape(50.dp),
+        color = background
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

@@ -12,15 +12,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,12 +29,19 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,27 +53,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.AdminTeam
 import com.example.trabalhocm.data.repository.AdminTeamRepository
+import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.AppIcons
 import com.example.trabalhocm.ui.theme.BgLight
 import com.example.trabalhocm.ui.theme.BrandBlue
-import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.CardBg
+import com.example.trabalhocm.ui.theme.DarkBlue
 import com.example.trabalhocm.ui.theme.ErrorRed
+import com.example.trabalhocm.ui.theme.InputBg
 import com.example.trabalhocm.ui.theme.LightBlueBadge
 import com.example.trabalhocm.ui.theme.PrimaryBlue
+import com.example.trabalhocm.ui.theme.TealGreen
 import com.example.trabalhocm.ui.theme.TextGray
 import kotlinx.coroutines.launch
-import androidx.compose.ui.res.stringResource
-import com.example.trabalhocm.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminTeamsScreen(
     onBackClick: () -> Unit = {},
@@ -88,13 +99,12 @@ fun AdminTeamsScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
     var actionMessage by remember { mutableStateOf("") }
+    var actionMessageIsError by remember { mutableStateOf(false) }
     var teamToDelete by remember { mutableStateOf<AdminTeam?>(null) }
 
     val errorLoadingTeamsText = stringResource(R.string.admin_teams_error_loading)
     val teamDeletedSuccessText = stringResource(R.string.admin_teams_delete_success)
     val deleteTeamErrorText = stringResource(R.string.admin_teams_delete_error)
-
-    var actionMessageIsError by remember { mutableStateOf(false) }
 
     fun carregarEquipas() {
         scope.launch {
@@ -149,7 +159,7 @@ fun AdminTeamsScreen(
             title = {
                 Text(
                     text = stringResource(R.string.admin_teams_delete_title),
-                    color = BrandBlue,
+                    color = DarkBlue,
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -197,7 +207,7 @@ fun AdminTeamsScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.admin_common_cancel),
-                        color = BrandBlue
+                        color = PrimaryBlue
                     )
                 }
             }
@@ -205,223 +215,252 @@ fun AdminTeamsScreen(
     }
 
     Scaffold(
-        containerColor = BgLight,
         topBar = {
-            AdminTeamsTopBar(
-                title = stringResource(R.string.admin_teams_title),
-                onBackClick = onBackClick,
-                onNotificationsClick = onNotificationsClick
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.admin_teams_title),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = AppIcons.Notifications,
+                            contentDescription = stringResource(R.string.admin_common_notifications),
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
             )
         },
         bottomBar = {
-            AdminTeamsBottomBar(
-                selected = "teams",
+            MatchLeagueBottomBar(
+                selectedTab = "TEAMS",
                 onHomeClick = onHomeClick,
                 onTournamentsClick = onTournamentsClick,
                 onMatchesClick = onMatchesClick,
                 onTeamsClick = onTeamsClick,
                 onProfileClick = onProfileClick
             )
-        }
+        },
+        containerColor = BgLight
     ) { innerPadding ->
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = BrandGreen)
+        AdminTeamsContent(
+            teams = filteredTeams,
+            totalTeams = teams.size,
+            selectedFilter = selectedFilter,
+            searchText = searchText,
+            isLoading = isLoading,
+            errorMessage = errorMessage,
+            actionMessage = actionMessage,
+            actionMessageIsError = actionMessageIsError,
+            innerPadding = innerPadding,
+            onSearchChange = { searchText = it },
+            onFilterChange = { selectedFilter = it },
+            onViewDetailsClick = onViewDetailsClick,
+            onManageTeamClick = onManageTeamClick,
+            onDeleteTeamClick = { team -> teamToDelete = team }
+        )
+    }
+}
+
+@Composable
+private fun AdminTeamsContent(
+    teams: List<AdminTeam>,
+    totalTeams: Int,
+    selectedFilter: String,
+    searchText: String,
+    isLoading: Boolean,
+    errorMessage: String,
+    actionMessage: String,
+    actionMessageIsError: Boolean,
+    innerPadding: PaddingValues,
+    onSearchChange: (String) -> Unit,
+    onFilterChange: (String) -> Unit,
+    onViewDetailsClick: (String) -> Unit,
+    onManageTeamClick: (String) -> Unit,
+    onDeleteTeamClick: (AdminTeam) -> Unit
+) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = TealGreen)
+        }
+        return
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding),
+        contentPadding = PaddingValues(
+            start = 24.dp,
+            end = 24.dp,
+            top = 24.dp,
+            bottom = 28.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            AdminTeamsHeader(totalTeams = totalTeams)
+        }
+
+        item {
+            AdminTeamsSearchBox(
+                value = searchText,
+                onValueChange = onSearchChange
+            )
+        }
+
+        item {
+            AdminTeamsFilters(
+                selectedFilter = selectedFilter,
+                onFilterChange = onFilterChange
+            )
+        }
+
+        if (errorMessage.isNotBlank()) {
+            item {
+                AdminTeamsMessage(
+                    message = errorMessage,
+                    isError = true
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(
-                    start = 20.dp,
-                    end = 20.dp,
-                    top = 18.dp,
-                    bottom = 28.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                item {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.admin_teams_console).uppercase(),
-                            color = BrandGreen,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
-                        )
+        }
 
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = stringResource(R.string.admin_teams_all_title),
-                            color = BrandBlue,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = stringResource(R.string.admin_teams_description),
-                            color = TextGray,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-
-                item {
-                    AdminTeamsSearchBox(
-                        value = searchText,
-                        onValueChange = {
-                            searchText = it
-                        }
-                    )
-                }
-
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            AdminTeamFilterChip(
-                                text = stringResource(R.string.admin_teams_filter_all),
-                                selected = selectedFilter == "All Teams"
-                            ) {
-                                selectedFilter = "All Teams"
-                            }
-
-                            AdminTeamFilterChip(
-                                text = stringResource(R.string.admin_teams_filter_football),
-                                selected = selectedFilter == "Futebol"
-                            ) {
-                                selectedFilter = "Futebol"
-                            }
-
-                            AdminTeamFilterChip(
-                                text = stringResource(R.string.admin_teams_filter_basketball),
-                                selected = selectedFilter == "Basquetebol"
-                            ) {
-                                selectedFilter = "Basquetebol"
-                            }
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            AdminTeamFilterChip(
-                                text = stringResource(R.string.admin_teams_filter_volleyball),
-                                selected = selectedFilter == "Voleibol"
-                            ) {
-                                selectedFilter = "Voleibol"
-                            }
-                        }
-                    }
-                }
-
-                if (errorMessage.isNotBlank()) {
-                    item {
-                        Text(
-                            text = errorMessage,
-                            color = ErrorRed,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                if (actionMessage.isNotBlank()) {
-                    item {
-                        Text(
-                            text = actionMessage,
-                            color = if (actionMessageIsError) {
-                                ErrorRed
-                            } else {
-                                BrandGreen
-                            },
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                if (filteredTeams.isEmpty()) {
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = CardBg),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.admin_teams_no_found),
-                                color = TextGray,
-                                fontSize = 13.sp,
-                                modifier = Modifier.padding(18.dp)
-                            )
-                        }
-                    }
-                }
-
-                items(filteredTeams.size) { index ->
-                    AdminTeamCard(
-                        team = filteredTeams[index],
-                        index = index,
-                        onViewDetailsClick = {
-                            onViewDetailsClick(filteredTeams[index].id)
-                        },
-                        onManageTeamClick = {
-                            onManageTeamClick(filteredTeams[index].id)
-                        },
-                        onDeleteTeamClick = {
-                            teamToDelete = filteredTeams[index]
-                        }
-                    )
-                }
+        if (actionMessage.isNotBlank()) {
+            item {
+                AdminTeamsMessage(
+                    message = actionMessage,
+                    isError = actionMessageIsError
+                )
             }
+        }
+
+        if (teams.isEmpty()) {
+            item {
+                AdminTeamsEmptyCard()
+            }
+        }
+
+        items(teams.size) { index ->
+            val team = teams[index]
+
+            AdminTeamCard(
+                team = team,
+                index = index,
+                onViewDetailsClick = {
+                    onViewDetailsClick(team.id)
+                },
+                onManageTeamClick = {
+                    onManageTeamClick(team.id)
+                },
+                onDeleteTeamClick = {
+                    onDeleteTeamClick(team)
+                }
+            )
         }
     }
 }
 
 @Composable
-private fun AdminTeamsTopBar(
-    title: String,
-    onBackClick: () -> Unit,
-    onNotificationsClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandBlue)
-            .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+private fun AdminTeamsHeader(totalTeams: Int) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = title,
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Column {
+            Text(
+                text = stringResource(R.string.admin_teams_console).uppercase(),
+                color = PrimaryBlue,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
 
-        Icon(
-            imageVector = AppIcons.Notifications,
-            contentDescription = stringResource(R.string.admin_common_notifications),
-            tint = Color.White,
-            modifier = Modifier
-                .size(23.dp)
-                .clickable {
-                    onNotificationsClick()
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = stringResource(R.string.admin_teams_all_title),
+                color = DarkBlue,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(R.string.admin_teams_description),
+                color = TextGray,
+                fontSize = 14.sp,
+                lineHeight = 20.sp
+            )
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = DarkBlue),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = stringResource(R.string.admin_nav_teams).uppercase(),
+                        color = TealGreen,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = totalTeams.toString(),
+                        color = Color.White,
+                        fontSize = 34.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+
+                    Text(
+                        text = stringResource(R.string.admin_teams_all_title),
+                        color = Color.White.copy(alpha = 0.78f),
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
-        )
+
+                Box(
+                    modifier = Modifier
+                        .size(58.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color.White.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Teams,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -430,66 +469,207 @@ private fun AdminTeamsSearchBox(
     value: String,
     onValueChange: (String) -> Unit
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = {
-            Text(
-                text = stringResource(R.string.admin_teams_search_placeholder),
-                color = TextGray,
-                fontSize = 13.sp
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = AppIcons.Search,
-                contentDescription = stringResource(R.string.admin_teams_search_content_description),
-                tint = TextGray,
-                modifier = Modifier.size(18.dp)
-            )
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text
-        ),
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp),
-        shape = RoundedCornerShape(8.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            focusedTextColor = BrandBlue,
-            unfocusedTextColor = BrandBlue,
-            cursorColor = BrandGreen
+    Column {
+        Text(
+            text = stringResource(R.string.admin_teams_search_content_description).uppercase(),
+            color = TextGray,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
         )
-    )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.admin_teams_search_placeholder),
+                    color = TextGray,
+                    fontSize = 13.sp
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = AppIcons.Search,
+                    contentDescription = null,
+                    tint = TextGray,
+                    modifier = Modifier.size(19.dp)
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text
+            ),
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp)),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = InputBg,
+                unfocusedContainerColor = InputBg,
+                disabledContainerColor = InputBg,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedTextColor = DarkBlue,
+                unfocusedTextColor = DarkBlue,
+                cursorColor = TealGreen
+            )
+        )
+    }
+}
+
+@Composable
+private fun AdminTeamsFilters(
+    selectedFilter: String,
+    onFilterChange: (String) -> Unit
+) {
+    Column {
+        Text(
+            text = stringResource(R.string.admin_teams_filter_all).uppercase(),
+            color = TextGray,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AdminTeamFilterChip(
+                text = stringResource(R.string.admin_teams_filter_all),
+                selected = selectedFilter == "All Teams",
+                modifier = Modifier.weight(1f)
+            ) {
+                onFilterChange("All Teams")
+            }
+
+            AdminTeamFilterChip(
+                text = stringResource(R.string.admin_teams_filter_football),
+                selected = selectedFilter == "Futebol",
+                modifier = Modifier.weight(1f)
+            ) {
+                onFilterChange("Futebol")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AdminTeamFilterChip(
+                text = stringResource(R.string.admin_teams_filter_basketball),
+                selected = selectedFilter == "Basquetebol",
+                modifier = Modifier.weight(1f)
+            ) {
+                onFilterChange("Basquetebol")
+            }
+
+            AdminTeamFilterChip(
+                text = stringResource(R.string.admin_teams_filter_volleyball),
+                selected = selectedFilter == "Voleibol",
+                modifier = Modifier.weight(1f)
+            ) {
+                onFilterChange("Voleibol")
+            }
+        }
+    }
 }
 
 @Composable
 private fun AdminTeamFilterChip(
     text: String,
     selected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(if (selected) PrimaryBlue else Color(0xFFE8EEF9))
+    Surface(
+        modifier = modifier
+            .height(42.dp)
+            .clip(RoundedCornerShape(12.dp))
             .clickable {
                 onClick()
-            }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+            },
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) PrimaryBlue else Color.White,
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (selected) PrimaryBlue else Color(0xFFE2E8F0)
+        )
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                color = if (selected) Color.White else PrimaryBlue,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdminTeamsMessage(
+    message: String,
+    isError: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) ErrorRed.copy(alpha = 0.08f) else TealGreen.copy(alpha = 0.10f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Text(
-            text = text,
-            color = if (selected) Color.White else PrimaryBlue,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            text = message,
+            color = if (isError) ErrorRed else TealGreen,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(14.dp)
         )
+    }
+}
+
+@Composable
+private fun AdminTeamsEmptyCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = AppIcons.Teams,
+                contentDescription = null,
+                tint = TextGray,
+                modifier = Modifier.size(34.dp)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = stringResource(R.string.admin_teams_no_found),
+                color = TextGray,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -505,12 +685,12 @@ private fun AdminTeamCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -528,33 +708,47 @@ private fun AdminTeamCard(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text(
                             text = team.nome,
-                            color = BrandBlue,
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            color = DarkBlue,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                        SmallTeamBadge(
-                            text = "${team.modalidade.uppercase()} · ${team.playersCount} ${stringResource(R.string.admin_teams_players).uppercase()}"
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SmallTeamBadge(text = team.modalidade.uppercase())
+
+                            if (team.divisao.isNotBlank()) {
+                                SmallTeamBadge(text = team.divisao.uppercase())
+                            }
+                        }
                     }
                 }
 
                 Box {
-                    Icon(
-                        imageVector = AppIcons.MoreVert,
-                        contentDescription = stringResource(R.string.admin_teams_options_content_description),
-                        tint = BrandBlue,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clickable {
-                                menuExpanded = true
-                            }
-                    )
+                    IconButton(
+                        onClick = {
+                            menuExpanded = true
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = AppIcons.MoreVert,
+                            contentDescription = stringResource(R.string.admin_teams_options_content_description),
+                            tint = TextGray,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
 
                     DropdownMenu(
                         expanded = menuExpanded,
@@ -591,20 +785,33 @@ private fun AdminTeamCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            HorizontalDivider(color = Color(0xFFE2E8F0))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                TeamStat(
+                    label = stringResource(R.string.admin_teams_players).uppercase(),
+                    value = team.playersCount.toString(),
+                    color = PrimaryBlue,
+                    modifier = Modifier.weight(1f)
+                )
+
                 TeamStat(
                     label = stringResource(R.string.admin_teams_wins).uppercase(),
                     value = team.wins.toString(),
-                    color = PrimaryBlue
+                    color = TealGreen,
+                    modifier = Modifier.weight(1f)
                 )
 
                 TeamStat(
                     label = stringResource(R.string.admin_teams_losses).uppercase(),
                     value = team.losses.toString(),
-                    color = BrandBlue
+                    color = ErrorRed,
+                    modifier = Modifier.weight(1f)
                 )
 
                 TeamStat(
@@ -613,34 +820,36 @@ private fun AdminTeamCard(
                     color = if (team.streak.startsWith("L", ignoreCase = true)) {
                         ErrorRed
                     } else {
-                        BrandGreen
-                    }
+                        TealGreen
+                    },
+                    modifier = Modifier.weight(1f)
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Button(
+                OutlinedButton(
                     onClick = onViewDetailsClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(38.dp),
-                    shape = RoundedCornerShape(4.dp),
+                        .height(44.dp),
+                    shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, PrimaryBlue),
-                    colors = ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.White,
                         contentColor = PrimaryBlue
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                    )
                 ) {
                     Text(
                         text = stringResource(R.string.admin_teams_view_details).uppercase(),
                         fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -648,10 +857,10 @@ private fun AdminTeamCard(
                     onClick = onManageTeamClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(38.dp),
-                    shape = RoundedCornerShape(4.dp),
+                        .height(44.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGreen,
+                        containerColor = TealGreen,
                         contentColor = Color.White
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
@@ -659,7 +868,9 @@ private fun AdminTeamCard(
                     Text(
                         text = stringResource(R.string.admin_teams_manage_team).uppercase(),
                         fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -673,16 +884,16 @@ private fun TeamAvatar(
     index: Int
 ) {
     val color = when (index % 5) {
-        0 -> Color(0xFFEAB308)
+        0 -> TealGreen
         1 -> PrimaryBlue
-        2 -> TextGray
-        3 -> BrandGreen
+        2 -> Color(0xFFEAB308)
+        3 -> DarkBlue
         else -> Color(0xFF7C3AED)
     }
 
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(54.dp)
             .clip(CircleShape)
             .background(color),
         contentAlignment = Alignment.Center
@@ -690,8 +901,8 @@ private fun TeamAvatar(
         Text(
             text = initials(name),
             color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 15.sp,
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }
@@ -716,7 +927,7 @@ private fun SmallTeamBadge(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .background(LightBlueBadge)
-            .padding(horizontal = 9.dp, vertical = 4.dp),
+            .padding(horizontal = 10.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -724,7 +935,9 @@ private fun SmallTeamBadge(
             color = PrimaryBlue,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.3.sp
+            letterSpacing = 0.3.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -733,86 +946,32 @@ private fun SmallTeamBadge(
 private fun TeamStat(
     label: String,
     value: String,
-    color: Color
+    color: Color,
+    modifier: Modifier = Modifier
 ) {
     Column(
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = label,
             color = TextGray,
-            fontSize = 9.sp,
+            fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.7.sp
+            letterSpacing = 0.6.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = value,
             color = color,
             fontSize = 19.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-private fun AdminTeamsBottomBar(
-    selected: String,
-    onHomeClick: () -> Unit,
-    onTournamentsClick: () -> Unit,
-    onMatchesClick: () -> Unit,
-    onTeamsClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .navigationBarsPadding()
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BottomTeamItem(AppIcons.Home, stringResource(R.string.admin_nav_home).uppercase(), selected == "home", onHomeClick)
-        BottomTeamItem(AppIcons.Tournaments, stringResource(R.string.admin_nav_tournaments).uppercase(), selected == "tournaments", onTournamentsClick)
-        BottomTeamItem(AppIcons.Games, stringResource(R.string.admin_nav_matches).uppercase(), selected == "matches", onMatchesClick)
-        BottomTeamItem(AppIcons.Teams, stringResource(R.string.admin_nav_teams).uppercase(), selected == "teams", onTeamsClick)
-        BottomTeamItem(AppIcons.Profile, stringResource(R.string.admin_nav_profile).uppercase(), selected == "profile", onProfileClick)
-    }
-}
-
-@Composable
-private fun BottomTeamItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (selected) PrimaryBlue else TextGray
-
-    Column(
-        modifier = Modifier.clickable {
-            onClick()
-        },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = label,
-            color = color,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.6.sp
+            fontWeight = FontWeight.ExtraBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
