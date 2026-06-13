@@ -46,7 +46,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.example.trabalhocm.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -124,7 +126,7 @@ fun PlayerBecomeOrganizerScreen(
                 .padding(horizontal = 22.dp, vertical = 18.dp)
         ) {
             Text(
-                text = "ROLE UPGRADE",
+                text = stringResource(R.string.player_org_tag),
                 color = Color(0xFF0757C8),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
@@ -134,7 +136,7 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Request Organizer\nAccess",
+                text = stringResource(R.string.player_org_title),
                 color = BrandBlue,
                 fontSize = 28.sp,
                 lineHeight = 31.sp,
@@ -144,7 +146,7 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Submit your application to host and manage\ntournaments on the platform.",
+                text = stringResource(R.string.player_org_subtitle),
                 color = Color(0xFF6D7486),
                 fontSize = 15.sp,
                 lineHeight = 21.sp,
@@ -166,7 +168,7 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            OrganizerSectionTitle("PRIMARY SPORT TO ORGANIZE")
+            OrganizerSectionTitle(stringResource(R.string.player_org_sport_label))
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -177,7 +179,7 @@ fun PlayerBecomeOrganizerScreen(
                 OrganizerSportCard(
                     modifier = Modifier.weight(1f),
                     icon = "⚽",
-                    title = "Football",
+                    title = stringResource(R.string.player_sport_football),
                     selected = sport == "Football",
                     onClick = { sport = "Football" }
                 )
@@ -185,7 +187,7 @@ fun PlayerBecomeOrganizerScreen(
                 OrganizerSportCard(
                     modifier = Modifier.weight(1f),
                     icon = "🏐",
-                    title = "Volleyball",
+                    title = stringResource(R.string.player_sport_volleyball),
                     selected = sport == "Volleyball",
                     onClick = { sport = "Volleyball" }
                 )
@@ -193,7 +195,7 @@ fun PlayerBecomeOrganizerScreen(
                 OrganizerSportCard(
                     modifier = Modifier.weight(1f),
                     icon = "🏀",
-                    title = "Basketball",
+                    title = stringResource(R.string.player_sport_basketball),
                     selected = sport == "Basketball",
                     onClick = { sport = "Basketball" }
                 )
@@ -201,13 +203,13 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            OrganizerSectionTitle("EXPERIENCE LEVEL")
+            OrganizerSectionTitle(stringResource(R.string.player_org_exp_label))
 
             Spacer(modifier = Modifier.height(10.dp))
 
             OrganizerExperienceOption(
-                title = "Intermediate",
-                subtitle = "I have organized small tournaments or local events before.",
+                title = stringResource(R.string.player_org_exp_intermediate_title),
+                subtitle = stringResource(R.string.player_org_exp_intermediate_sub),
                 selected = experience == "Intermediate",
                 onClick = { experience = "Intermediate" }
             )
@@ -215,8 +217,8 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             OrganizerExperienceOption(
-                title = "Beginner",
-                subtitle = "First time organizing a competition on a platform.",
+                title = stringResource(R.string.player_org_exp_beginner_title),
+                subtitle = stringResource(R.string.player_org_exp_beginner_sub),
                 selected = experience == "Beginner",
                 onClick = { experience = "Beginner" }
             )
@@ -224,15 +226,15 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             OrganizerExperienceOption(
-                title = "Experienced",
-                subtitle = "I run regular leagues or large-scale tournaments.",
+                title = stringResource(R.string.player_org_exp_experienced_title),
+                subtitle = stringResource(R.string.player_org_exp_experienced_sub),
                 selected = experience == "Experienced",
                 onClick = { experience = "Experienced" }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            OrganizerSectionTitle("ESTIMATED TOURNAMENTS PER YEAR")
+            OrganizerSectionTitle(stringResource(R.string.player_org_freq_label))
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -248,7 +250,7 @@ fun PlayerBecomeOrganizerScreen(
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Select options",
+                            contentDescription = stringResource(R.string.player_org_select_freq),
                             modifier = Modifier.clickable { isDropdownExpanded = true }
                         )
                     },
@@ -284,7 +286,7 @@ fun PlayerBecomeOrganizerScreen(
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            OrganizerSectionTitle("WHY DO YOU WANT TO BE AN ORGANIZER?")
+            OrganizerSectionTitle(stringResource(R.string.player_org_motivation_label))
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -297,7 +299,7 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "${motivation.length} / 500 characters",
+                text = stringResource(R.string.player_org_char_count, motivation.length),
                 color = Color(0xFF7D8497),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
@@ -309,12 +311,12 @@ fun PlayerBecomeOrganizerScreen(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OrganizerSectionTitle("REFERENCE")
+                OrganizerSectionTitle(stringResource(R.string.player_org_reference_label))
 
                 Spacer(modifier = Modifier.width(4.dp))
 
                 Text(
-                    text = "(Optional)",
+                    text = stringResource(R.string.player_common_optional),
                     color = Color(0xFF7D8497),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
@@ -371,7 +373,7 @@ fun PlayerBecomeOrganizerScreen(
                 )
             ) {
                 Text(
-                    text = if (isSubmitting) "SUBMITTING..." else "✈  SUBMIT REQUEST",
+                    text = if (isSubmitting) stringResource(R.string.player_org_submitting) else stringResource(R.string.player_org_submit),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.4.sp
@@ -392,7 +394,7 @@ fun PlayerBecomeOrganizerScreen(
                 )
             ) {
                 Text(
-                    text = "CANCEL",
+                    text = stringResource(R.string.player_common_cancel),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
@@ -402,7 +404,7 @@ fun PlayerBecomeOrganizerScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "🔒 Your request will be reviewed by an administrator. You'll\nbe notified within 48 hours.",
+                text = stringResource(R.string.player_org_disclaimer),
                 color = Color(0xFF7D8497),
                 fontSize = 11.sp,
                 lineHeight = 16.sp,
@@ -449,7 +451,7 @@ fun BecomeOrganizerTopBar(
         Spacer(modifier = Modifier.width(16.dp))
 
         Text(
-            text = "Become Organizer",
+            text = stringResource(R.string.player_org_topbar),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -487,7 +489,7 @@ fun OrganizerInfoBanner() {
         Spacer(modifier = Modifier.width(10.dp))
 
         Text(
-            text = "As an organizer you can create\ntournaments, casual matches,\ninvite teams, and manage registrations. An\nadmin will review your request.",
+            text = stringResource(R.string.player_org_banner),
             color = BrandGreen,
             fontSize = 13.sp,
             lineHeight = 17.sp,
@@ -525,7 +527,7 @@ fun OrganizerUserInfoCard(
                 Spacer(modifier = Modifier.width(10.dp))
 
                 Text(
-                    text = "Your Information",
+                    text = stringResource(R.string.player_org_your_info),
                     color = BrandBlue,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold
@@ -540,7 +542,7 @@ fun OrganizerUserInfoCard(
                 if (photoUri != null) {
                     AsyncImage(
                         model = photoUri,
-                        contentDescription = "User Photo",
+                        contentDescription = stringResource(R.string.player_common_photo),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(52.dp)
@@ -572,7 +574,7 @@ fun OrganizerUserInfoCard(
                     )
 
                     Text(
-                        text = "$email · Member since\n$memberSince",
+                        text = stringResource(R.string.player_org_member_since, email, memberSince),
                         color = Color(0xFF7D8497),
                         fontSize = 11.sp,
                         lineHeight = 15.sp,
@@ -588,7 +590,7 @@ fun OrganizerUserInfoCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "PLAYER",
+                        text = stringResource(R.string.player_org_player_badge),
                         color = Color(0xFF0757C8),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
@@ -794,7 +796,7 @@ fun OrganizerTermsBox(
         Spacer(modifier = Modifier.width(12.dp))
 
         Text(
-            text = "I understand that as an organizer I must follow the\nplatform's community guidelines and that\nviolations may result in account suspension.",
+            text = stringResource(R.string.player_org_terms),
             color = Color(0xFF6D7486),
             fontSize = 12.sp,
             lineHeight = 17.sp,

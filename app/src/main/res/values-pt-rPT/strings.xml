@@ -1448,4 +1448,64 @@
     <string name="player_notif_err_decline_invite">Erro ao recusar convite.</string>
     <string name="player_notif_err_load_invites">Erro ao carregar convites.</string>
 
+    <!-- Player: Become Organizer -->
+    <string name="player_org_topbar">Tornar-se Organizador</string>
+    <string name="player_org_tag">MUDANÇA DE PAPEL</string>
+    <string name="player_org_title">Pedir Acesso de\nOrganizador</string>
+    <string name="player_org_subtitle">Submete a tua candidatura para criar e gerir\ntorneios na plataforma.</string>
+    <string name="player_org_banner">Como organizador podes criar\ntorneios, jogos casuais,\nconvidar equipas e gerir inscrições. Um\nadmin vai rever o teu pedido.</string>
+    <string name="player_org_your_info">A Tua Informação</string>
+    <string name="player_org_member_since">%1$s · Membro desde\n%2$s</string>
+    <string name="player_org_player_badge">JOGADOR</string>
+    <string name="player_org_sport_label">MODALIDADE PRINCIPAL A ORGANIZAR</string>
+    <string name="player_org_exp_label">NÍVEL DE EXPERIÊNCIA</string>
+    <string name="player_org_exp_intermediate_title">Intermédio</string>
+    <string name="player_org_exp_intermediate_sub">Já organizei pequenos torneios ou eventos locais.</string>
+    <string name="player_org_exp_beginner_title">Iniciante</string>
+    <string name="player_org_exp_beginner_sub">Primeira vez a organizar uma competição numa plataforma.</string>
+    <string name="player_org_exp_experienced_title">Experiente</string>
+    <string name="player_org_exp_experienced_sub">Faço ligas regulares ou torneios de grande escala.</string>
+    <string name="player_org_freq_label">TORNEIOS ESTIMADOS POR ANO</string>
+    <string name="player_org_select_freq">Selecionar opções</string>
+    <string name="player_org_motivation_label">PORQUE QUERES SER ORGANIZADOR?</string>
+    <string name="player_org_char_count">%1$d / 500 caracteres</string>
+    <string name="player_org_reference_label">REFERÊNCIA</string>
+    <string name="player_org_submitting">A SUBMETER…</string>
+    <string name="player_org_submit">✈  SUBMETER PEDIDO</string>
+    <string name="player_org_disclaimer">🔒 O teu pedido vai ser revisto por um administrador.\nSerás notificado dentro de 48 horas.</string>
+    <string name="player_org_terms">Compreendo que, como organizador, devo seguir as\nregras da comunidade da plataforma e que\nviolações podem resultar na suspensão da conta.</string>
+
+    <!-- Player: Home -->
+    <string name="player_home_title">Início</string>
+    <string name="player_home_quick_actions">AÇÕES RÁPIDAS</string>
+    <string name="player_home_qa_tournaments">TORNEIOS</string>
+    <string name="player_home_qa_casual">JOGOS CASUAIS</string>
+    <string name="player_home_qa_live">JOGOS AO VIVO</string>
+    <string name="player_home_qa_teams">EQUIPAS</string>
+    <string name="player_home_active_tournaments">TORNEIOS ATIVOS</string>
+    <string name="player_home_no_active_tournaments">Ainda não existem torneios ativos.</string>
+    <string name="player_home_upcoming">PRÓXIMOS JOGOS</string>
+    <string name="player_home_no_fixtures">Ainda não existem jogos agendados.</string>
+    <string name="player_home_perf">DESEMPENHO</string>
+    <string name="player_home_tab_all">TODOS</string>
+    <string name="player_home_tab_football">FUTEBOL</string>
+    <string name="player_home_tab_basket">BASQUET</string>
+    <string name="player_home_tab_volley">VÓLEI</string>
+    <string name="player_home_top_scorers">MELHORES MARCADORES GLOBAIS</string>
+    <string name="player_home_no_live">SEM JOGO AO VIVO</string>
+    <string name="player_home_no_live_sub">Não há jogos ao vivo disponíveis neste momento.</string>
+    <string name="player_home_live_now">AO\nVIVO</string>
+    <string name="player_home_live_gw">%1$s • GW\n26</string>
+    <string name="player_home_watch_stream">VER TRANSMISSÃO</string>
+    <string name="player_home_progress">PROGRESSO</string>
+    <string name="player_home_potw">JOGADOR DA SEMANA</string>
+    <string name="player_home_no_stats">Ainda não existem estatísticas suficientes.</string>
+    <string name="player_home_potw_player">%1$s • JOGADOR</string>
+    <string name="player_home_stat_wins">VITÓRIAS</string>
+    <string name="player_home_stat_rating">AVALIAÇÃO</string>
+    <string name="player_home_label_goals">GOLOS</string>
+    <string name="player_home_label_points">PONTOS</string>
+    <string name="player_home_label_spikes">REMATES</string>
+    <string name="player_home_global_rank">O TEU RANK GLOBAL</string>
+    <string name="player_common_vs">VS</string>
 </resources>

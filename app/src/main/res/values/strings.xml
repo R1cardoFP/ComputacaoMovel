@@ -1443,4 +1443,64 @@
     <string name="player_notif_err_decline_invite">Error declining invitation.</string>
     <string name="player_notif_err_load_invites">Error loading invitations.</string>
 
+    <!-- Player: Become Organizer -->
+    <string name="player_org_topbar">Become Organizer</string>
+    <string name="player_org_tag">ROLE UPGRADE</string>
+    <string name="player_org_title">Request Organizer\nAccess</string>
+    <string name="player_org_subtitle">Submit your application to host and manage\ntournaments on the platform.</string>
+    <string name="player_org_banner">As an organizer you can create\ntournaments, casual matches,\ninvite teams, and manage registrations. An\nadmin will review your request.</string>
+    <string name="player_org_your_info">Your Information</string>
+    <string name="player_org_member_since">%1$s · Member since\n%2$s</string>
+    <string name="player_org_player_badge">PLAYER</string>
+    <string name="player_org_sport_label">PRIMARY SPORT TO ORGANIZE</string>
+    <string name="player_org_exp_label">EXPERIENCE LEVEL</string>
+    <string name="player_org_exp_intermediate_title">Intermediate</string>
+    <string name="player_org_exp_intermediate_sub">I have organized small tournaments or local events before.</string>
+    <string name="player_org_exp_beginner_title">Beginner</string>
+    <string name="player_org_exp_beginner_sub">First time organizing a competition on a platform.</string>
+    <string name="player_org_exp_experienced_title">Experienced</string>
+    <string name="player_org_exp_experienced_sub">I run regular leagues or large-scale tournaments.</string>
+    <string name="player_org_freq_label">ESTIMATED TOURNAMENTS PER YEAR</string>
+    <string name="player_org_select_freq">Select options</string>
+    <string name="player_org_motivation_label">WHY DO YOU WANT TO BE AN ORGANIZER?</string>
+    <string name="player_org_char_count">%1$d / 500 characters</string>
+    <string name="player_org_reference_label">REFERENCE</string>
+    <string name="player_org_submitting">SUBMITTING…</string>
+    <string name="player_org_submit">✈  SUBMIT REQUEST</string>
+    <string name="player_org_disclaimer">🔒 Your request will be reviewed by an administrator. You\'ll\nbe notified within 48 hours.</string>
+    <string name="player_org_terms">I understand that as an organizer I must follow the\nplatform\'s community guidelines and that\nviolations may result in account suspension.</string>
+
+    <!-- Player: Home -->
+    <string name="player_home_title">Home</string>
+    <string name="player_home_quick_actions">QUICK ACTIONS</string>
+    <string name="player_home_qa_tournaments">TOURNAMENTS</string>
+    <string name="player_home_qa_casual">CASUAL MATCHES</string>
+    <string name="player_home_qa_live">LIVE MATCHES</string>
+    <string name="player_home_qa_teams">TEAMS</string>
+    <string name="player_home_active_tournaments">ACTIVE TOURNAMENTS</string>
+    <string name="player_home_no_active_tournaments">There are no active tournaments yet.</string>
+    <string name="player_home_upcoming">UPCOMING FIXTURES</string>
+    <string name="player_home_no_fixtures">There are no scheduled matches yet.</string>
+    <string name="player_home_perf">PERFORMANCE INSIGHTS</string>
+    <string name="player_home_tab_all">ALL</string>
+    <string name="player_home_tab_football">FOOTBALL</string>
+    <string name="player_home_tab_basket">BASKET</string>
+    <string name="player_home_tab_volley">VOLLEY</string>
+    <string name="player_home_top_scorers">GLOBAL TOP SCORERS</string>
+    <string name="player_home_no_live">NO LIVE MATCH</string>
+    <string name="player_home_no_live_sub">There are no live matches available right now.</string>
+    <string name="player_home_live_now">LIVE\nNOW</string>
+    <string name="player_home_live_gw">%1$s • GW\n26</string>
+    <string name="player_home_watch_stream">WATCH STREAM</string>
+    <string name="player_home_progress">PROGRESS</string>
+    <string name="player_home_potw">PLAYER OF THE WEEK</string>
+    <string name="player_home_no_stats">There aren\'t enough statistics yet.</string>
+    <string name="player_home_potw_player">%1$s • PLAYER</string>
+    <string name="player_home_stat_wins">WINS</string>
+    <string name="player_home_stat_rating">RATING</string>
+    <string name="player_home_label_goals">GOALS</string>
+    <string name="player_home_label_points">POINTS</string>
+    <string name="player_home_label_spikes">SPIKES</string>
+    <string name="player_home_global_rank">YOUR GLOBAL RANK</string>
+    <string name="player_common_vs">VS</string>
 </resources>
