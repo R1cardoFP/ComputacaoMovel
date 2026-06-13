@@ -37,10 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.data.repository.ConviteEquipaInfo
 import com.example.trabalhocm.data.repository.EquipaRepository
@@ -71,6 +74,7 @@ fun PlayerNotificationsScreen(
     val authRepository = remember { AuthRepository() }
     val equipaRepository = remember { EquipaRepository() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var notificacoes by remember { mutableStateOf<List<Notificacao>>(emptyList()) }
     var convitesEquipa by remember { mutableStateOf<List<ConviteEquipaInfo>>(emptyList()) }

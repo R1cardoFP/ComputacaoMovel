@@ -33,10 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.trabalhocm.R
 
 private val BrandBlue = Color(0xFF0B1F3A)
 private val BrandGreen = Color(0xFF008D7D)
@@ -48,7 +50,7 @@ private val InputBg = Color(0xFFF1F2FB)
 
 @Composable
 fun PlayerStatsScreen(
-    playerName: String = "A carregar...",
+    playerName: String = stringResource(R.string.player_common_loading),
     playerUsername: String = "",
     playerPhotoUri: Uri? = null,
     footballGoals: Int = 0,
@@ -84,7 +86,7 @@ fun PlayerStatsScreen(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Profile",
+                text = stringResource(R.string.player_common_profile),
                 color = BrandWhite,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -93,7 +95,7 @@ fun PlayerStatsScreen(
             // --- MUDANÇA DE EMOJI PARA O ICONE OFICIAL ---
             Icon(
                 imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notificações",
+                contentDescription = stringResource(R.string.player_common_notifications),
                 tint = BrandWhite,
                 modifier = Modifier.clickable { onNotificationsClick() }
             )
@@ -115,13 +117,13 @@ fun PlayerStatsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             SportStatCard(
-                sportName = "Football",
+                sportName = stringResource(R.string.player_sport_football),
                 sportIcon = "⚽",
                 roleTag = "",
-                stat1Label = "GOALS",
+                stat1Label = stringResource(R.string.player_common_goals),
                 stat1Value = footballGoals.toString(),
                 stat1Color = Color(0xFF3566C9),
-                stat2Label = "WINS",
+                stat2Label = stringResource(R.string.player_common_wins),
                 stat2Value = footballAssists.toString(),
                 stat2Color = TextDark
             )
@@ -129,13 +131,13 @@ fun PlayerStatsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             SportStatCard(
-                sportName = "Basketball",
+                sportName = stringResource(R.string.player_sport_basketball),
                 sportIcon = "🏀",
                 roleTag = "",
-                stat1Label = "POINTS",
+                stat1Label = stringResource(R.string.player_common_points),
                 stat1Value = basketballPoints.toString(),
                 stat1Color = Color(0xFFC95E35),
-                stat2Label = "WIN %",
+                stat2Label = stringResource(R.string.player_common_winrate),
                 stat2Value = "$basketballWinRate%",
                 stat2Color = BrandGreen
             )
@@ -143,13 +145,13 @@ fun PlayerStatsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             SportStatCard(
-                sportName = "Volleyball",
+                sportName = stringResource(R.string.player_sport_volleyball),
                 sportIcon = "🏐",
                 roleTag = "",
-                stat1Label = "POINTS",
+                stat1Label = stringResource(R.string.player_common_points),
                 stat1Value = volleyballSpikes.toString(),
                 stat1Color = TextDark,
-                stat2Label = "WIN %",
+                stat2Label = stringResource(R.string.player_common_winrate),
                 stat2Value = "$volleyballWinRate%",
                 stat2Color = BrandGreen
             )
@@ -162,13 +164,13 @@ fun PlayerStatsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "MATCH HISTORY",
+                    text = stringResource(R.string.player_stats_match_history),
                     color = TextDark,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "VIEW ALL",
+                    text = stringResource(R.string.player_common_view_all),
                     color = Color(0xFF3566C9),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -176,7 +178,7 @@ fun PlayerStatsScreen(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "LAST 5 MATCHES",
+                text = stringResource(R.string.player_stats_last5),
                 color = TextGray,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -187,7 +189,7 @@ fun PlayerStatsScreen(
 
             // LISTA DE JOGOS LIMPA. FUTURAMENTE PODES INJETAR OS JOGOS REAIS AQUI
             Text(
-                text = "Ainda não há jogos registados.",
+                text = stringResource(R.string.player_stats_no_matches),
                 color = TextGray,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(vertical = 12.dp)
@@ -226,7 +228,7 @@ fun StatsHeaderCard(
                 if (photoUri != null) {
                     AsyncImage(
                         model = photoUri,
-                        contentDescription = "User Photo",
+                        contentDescription = stringResource(R.string.player_common_photo),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )

@@ -50,6 +50,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -58,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.remote.SupabaseClient
 import com.example.trabalhocm.data.repository.EquipaGestaoInfo
 import com.example.trabalhocm.data.repository.EquipaRepository
@@ -84,6 +87,7 @@ fun PlayerManageTeamScreen(
 ) {
     val repository = remember { EquipaRepository() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var gestaoEquipa by remember { mutableStateOf<EquipaGestaoInfo?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -101,6 +105,7 @@ fun PlayerManageTeamScreen(
     var inviteResults by remember { mutableStateOf<List<UtilizadorConviteInfo>>(emptyList()) }
     var inviteLoading by remember { mutableStateOf(false) }
     var inviteMessage by remember { mutableStateOf("") }
+    var inviteMessageIsError by remember { mutableStateOf(false) }
 
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
@@ -126,7 +131,8 @@ fun PlayerManageTeamScreen(
                     inviteResults = it
                 }
                 .onFailure {
-                    inviteMessage = it.message ?: "Error searching players."
+                    inviteMessage = it.message ?: context.getString(R.string.player_manageteam_err_search)
+                    inviteMessageIsError = true
                 }
 
             inviteLoading = false
@@ -159,10 +165,10 @@ fun PlayerManageTeamScreen(
                     gestaoEquipa = it
                 }
                 .onFailure {
-                    errorMessage = it.message ?: "Error loading roster."
+                    errorMessage = it.message ?: context.getString(R.string.player_manageteam_err_load)
                 }
         } else {
-            errorMessage = "You are not associated with any team."
+            errorMessage = context.getString(R.string.player_manageteam_no_team)
         }
 
         isLoading = false
@@ -238,7 +244,7 @@ fun PlayerManageTeamScreen(
                         .padding(horizontal = 22.dp, vertical = 18.dp)
                 ) {
                     Text(
-                        text = "TEAM MANAGEMENT",
+                        text = stringResource(R.string.player_manageteam_eyebrow),
                         color = Color(0xFF0757C8),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -248,7 +254,7 @@ fun PlayerManageTeamScreen(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = "Manage your roster, invite new players and oversee\nteam composition.",
+                        text = stringResource(R.string.player_manageteam_subtitle),
                         color = Color(0xFF6D7486),
                         fontSize = 12.sp,
                         lineHeight = 18.sp,
@@ -277,12 +283,16 @@ fun PlayerManageTeamScreen(
                                         successMessage = ""
                                         repository.atualizarPrivacidadeEquipa(resolvedTeamId, newPrivacy)
                                             .onSuccess {
-                                                successMessage = "Team privacy updated to ${newPrivacy.uppercase()}"
+                                                val privacyLabel = if (newPrivacy == "publica")
+                                                    context.getString(R.string.player_common_public)
+                                                else
+                                                    context.getString(R.string.player_common_private)
+                                                successMessage = context.getString(R.string.player_manageteam_privacy_updated, privacyLabel)
                                                 repository.obterGestaoEquipa(resolvedTeamId)
                                                     .onSuccess { gestaoEquipa = it }
                                             }
                                             .onFailure {
-                                                errorMessage = "Error updating privacy."
+                                                errorMessage = context.getString(R.string.player_manageteam_err_privacy)
                                             }
                                         isActionLoading = false
                                     }
@@ -310,7 +320,7 @@ fun PlayerManageTeamScreen(
                                 )
                             ) {
                                 Text(
-                                    text = "♙+  INVITE PLAYER",
+                                    text = "♙+  ${stringResource(R.string.player_manageteam_invite_player)}",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.sp
@@ -330,7 +340,7 @@ fun PlayerManageTeamScreen(
                         singleLine = true,
                         placeholder = {
                             Text(
-                                text = "Search roster...",
+                                text = stringResource(R.string.player_manageteam_search_placeholder),
                                 color = Color(0xFF9EA4B3),
                                 fontSize = 12.sp
                             )
@@ -378,7 +388,7 @@ fun PlayerManageTeamScreen(
                     Spacer(modifier = Modifier.height(18.dp))
 
                     Text(
-                        text = "ROSTER (${filteredPlayers.size})",
+                        text = stringResource(R.string.player_manageteam_roster_count, filteredPlayers.size),
                         color = Color(0xFF7D8497),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -389,7 +399,7 @@ fun PlayerManageTeamScreen(
 
                     if (filteredPlayers.isEmpty()) {
                         ManageTeamEmptyCard(
-                            text = "No players found."
+                            text = stringResource(R.string.player_common_no_players_found)
                         )
                     } else {
                         filteredPlayers.forEach { membro ->
@@ -418,7 +428,7 @@ fun PlayerManageTeamScreen(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC62828))
                         ) {
                             Text(
-                                text = "DELETE TEAM",
+                                text = stringResource(R.string.player_manageteam_delete_team),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
@@ -483,7 +493,7 @@ fun PlayerManageTeamScreen(
                             onTeamsClick()
                         }
                         .onFailure {
-                            errorMessage = it.message ?: "Error updating team."
+                            errorMessage = it.message ?: context.getString(R.string.player_manageteam_err_update)
                             isActionLoading = false
                         }
                 }
@@ -500,12 +510,12 @@ fun PlayerManageTeamScreen(
                         idUtilizador = member.utilizador.id
                     )
                         .onSuccess {
-                            successMessage = "${member.utilizador.nome} was removed from the team."
+                            successMessage = context.getString(R.string.player_manageteam_player_removed, member.utilizador.nome)
                             repository.obterGestaoEquipa(resolvedTeamId)
                                 .onSuccess { gestaoEquipa = it }
                         }
                         .onFailure {
-                            errorMessage = it.message ?: "Error updating team."
+                            errorMessage = it.message ?: context.getString(R.string.player_manageteam_err_update)
                         }
 
                     isActionLoading = false
@@ -523,6 +533,7 @@ fun PlayerManageTeamScreen(
             results = inviteResults,
             isLoading = inviteLoading,
             message = inviteMessage,
+            messageIsError = inviteMessageIsError,
             onDismiss = {
                 showInviteDialog = false
             },
@@ -538,7 +549,8 @@ fun PlayerManageTeamScreen(
                         posicao = "Player"
                     )
                         .onSuccess {
-                            inviteMessage = "Invitation sent to ${jogador.utilizador.nome}."
+                            inviteMessage = context.getString(R.string.player_manageteam_invitation_sent, jogador.utilizador.nome)
+                            inviteMessageIsError = false
                             repository.obterGestaoEquipa(resolvedTeamId)
                                 .onSuccess { gestaoEquipa = it }
                             repository.pesquisarJogadoresParaConvite(
@@ -548,7 +560,8 @@ fun PlayerManageTeamScreen(
                                 .onSuccess { inviteResults = it }
                         }
                         .onFailure {
-                            inviteMessage = it.message ?: "Error inviting player."
+                            inviteMessage = it.message ?: context.getString(R.string.player_manageteam_err_invite)
+                            inviteMessageIsError = true
                         }
 
                     inviteLoading = false
@@ -569,14 +582,14 @@ fun PlayerManageTeamScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Delete Team",
+                        text = stringResource(R.string.player_manageteam_delete_title),
                         color = Color(0xFFD01818),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Are you sure you want to delete this team? All players will be removed and this action cannot be undone.",
+                        text = stringResource(R.string.player_manageteam_delete_message),
                         color = Color(0xFF6D7486),
                         fontSize = 14.sp,
                         lineHeight = 20.sp
@@ -587,7 +600,7 @@ fun PlayerManageTeamScreen(
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                            Text("CANCEL", color = BrandBlue, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.player_common_cancel), color = BrandBlue, fontWeight = FontWeight.Bold)
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
@@ -600,14 +613,14 @@ fun PlayerManageTeamScreen(
                                             onTeamsClick()
                                         }
                                         .onFailure {
-                                            errorMessage = it.message ?: "Error deleting team."
+                                            errorMessage = it.message ?: context.getString(R.string.player_manageteam_err_delete)
                                             isActionLoading = false
                                         }
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD01818))
                         ) {
-                            Text("YES, DELETE", color = BrandWhite, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.player_manageteam_delete_confirm), color = BrandWhite, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -642,7 +655,7 @@ fun ManageTeamTopBar(
         Spacer(modifier = Modifier.width(14.dp))
 
         Text(
-            text = "Teams",
+            text = stringResource(R.string.player_teams_topbar_title),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -654,7 +667,7 @@ fun ManageTeamTopBar(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notifications",
+                contentDescription = stringResource(R.string.player_common_notifications),
                 tint = BrandWhite,
                 modifier = Modifier
                     .size(26.dp)
@@ -710,7 +723,7 @@ fun ManageTeamHeaderCard(
                 )
 
                 Text(
-                    text = "$numeroJogadores players · $divisao",
+                    text = stringResource(R.string.player_manageteam_players_division, numeroJogadores, divisao),
                     color = Color(0xFFB8C2D3),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
@@ -735,7 +748,7 @@ fun ManageTeamPrivacyCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "TEAM PRIVACY",
+                text = stringResource(R.string.player_createteam_privacy_label),
                 color = Color(0xFF7D8497),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
@@ -759,7 +772,7 @@ fun ManageTeamPrivacyCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "PRIVATE 🔒",
+                        text = "${stringResource(R.string.player_common_private)} 🔒",
                         color = if (!isPublic) BrandGreen else Color(0xFF7D8497),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -777,7 +790,7 @@ fun ManageTeamPrivacyCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "PUBLIC 🔓",
+                        text = "${stringResource(R.string.player_common_public)} 🔓",
                         color = if (isPublic) BrandGreen else Color(0xFF7D8497),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -788,7 +801,7 @@ fun ManageTeamPrivacyCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = if (isPublic) "Anyone can instantly join your team." else "Players must request to join, and you can accept them in Notifications.",
+                text = if (isPublic) stringResource(R.string.player_manageteam_privacy_public_desc) else stringResource(R.string.player_manageteam_privacy_private_desc),
                 color = Color(0xFF6D7486),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium
@@ -844,7 +857,7 @@ fun ManageTeamPlayerRow(
                     if (!membro.utilizador.fotoUrl.isNullOrEmpty()) {
                         AsyncImage(
                             model = membro.utilizador.fotoUrl,
-                            contentDescription = "Photo",
+                            contentDescription = stringResource(R.string.player_common_photo),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
@@ -882,7 +895,7 @@ fun ManageTeamPlayerRow(
                                     .padding(horizontal = 6.dp, vertical = 3.dp)
                             ) {
                                 Text(
-                                    text = "CAPTAIN",
+                                    text = stringResource(R.string.player_common_captain),
                                     color = Color(0xFFB72D2D),
                                     fontSize = 7.sp,
                                     fontWeight = FontWeight.Bold
@@ -894,7 +907,7 @@ fun ManageTeamPlayerRow(
                     Spacer(modifier = Modifier.height(3.dp))
 
                     Text(
-                        text = "${membro.posicao} · ${if (estado == "pendente") "PENDING" else "ACTIVE"}",
+                        text = "${membro.posicao} · ${if (estado == "pendente") stringResource(R.string.player_common_pending) else stringResource(R.string.player_common_active)}",
                         color = if (estado == "pendente") Color(0xFFD19A00) else Color(0xFF7D8497),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -941,7 +954,7 @@ fun ManagePlayerOptionsDialog(
             ) {
                 ManagePlayerOptionRow(
                     icon = "♙",
-                    text = "View Profile",
+                    text = stringResource(R.string.player_manageteam_opt_view_profile),
                     textColor = BrandBlue,
                     onClick = onViewProfileClick
                 )
@@ -950,7 +963,7 @@ fun ManagePlayerOptionsDialog(
                     if (!isSelectedPlayerAlreadyCaptain) {
                         ManagePlayerOptionRow(
                             icon = "☆",
-                            text = "Make Captain",
+                            text = stringResource(R.string.player_manageteam_opt_make_captain),
                             textColor = BrandBlue,
                             onClick = onMakeCaptainClick
                         )
@@ -958,7 +971,7 @@ fun ManagePlayerOptionsDialog(
 
                     ManagePlayerOptionRow(
                         icon = "♜",
-                        text = "Remove from Team",
+                        text = stringResource(R.string.player_manageteam_opt_remove),
                         textColor = Color(0xFFD01818),
                         onClick = onRemoveFromTeamClick
                     )
@@ -1010,6 +1023,7 @@ fun InvitePlayerDialog(
     results: List<UtilizadorConviteInfo>,
     isLoading: Boolean,
     message: String,
+    messageIsError: Boolean,
     onDismiss: () -> Unit,
     onInviteClick: (UtilizadorConviteInfo) -> Unit
 ) {
@@ -1029,7 +1043,7 @@ fun InvitePlayerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Invite Player",
+                        text = stringResource(R.string.player_manageteam_invite_title),
                         color = BrandBlue,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
@@ -1059,7 +1073,7 @@ fun InvitePlayerDialog(
                     singleLine = true,
                     placeholder = {
                         Text(
-                            text = "Search player...",
+                            text = stringResource(R.string.player_manageteam_invite_search_placeholder),
                             color = Color(0xFF9EA4B3),
                             fontSize = 12.sp
                         )
@@ -1091,7 +1105,7 @@ fun InvitePlayerDialog(
 
                     ManageTeamMessageCard(
                         text = message,
-                        isError = message.startsWith("Error", ignoreCase = true)
+                        isError = messageIsError
                     )
                 }
 
@@ -1199,7 +1213,7 @@ fun InvitePlayerRow(
 
             if (jogador.jaPertenceEquipa) {
                 Text(
-                    text = if (jogador.estadoConvite?.lowercase() == "pendente") "INVITED" else "IN TEAM",
+                    text = if (jogador.estadoConvite?.lowercase() == "pendente") stringResource(R.string.player_manageteam_invited) else stringResource(R.string.player_manageteam_in_team),
                     color = Color(0xFF7D8497),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -1215,7 +1229,7 @@ fun InvitePlayerRow(
                     )
                 ) {
                     Text(
-                        text = "INVITE",
+                        text = stringResource(R.string.player_manageteam_invite_btn),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )

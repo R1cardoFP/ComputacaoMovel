@@ -38,11 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trabalhocm.R
 import com.example.trabalhocm.data.repository.EquipaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
@@ -90,7 +92,7 @@ fun PlayerCreateTeamScreen(
                 .padding(horizontal = 22.dp, vertical = 18.dp)
         ) {
             Text(
-                text = "NEW TEAM",
+                text = stringResource(R.string.player_createteam_eyebrow),
                 color = Color(0xFF0757C8),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -100,7 +102,7 @@ fun PlayerCreateTeamScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Team Identity",
+                text = stringResource(R.string.player_createteam_title),
                 color = BrandBlue,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
@@ -109,7 +111,7 @@ fun PlayerCreateTeamScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Define your team's name, sport and visual identity.",
+                text = stringResource(R.string.player_createteam_subtitle),
                 color = Color(0xFF6D7486),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
@@ -165,7 +167,7 @@ fun PlayerCreateTeamScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "Erro: $errorMessage",
+                        text = "${stringResource(R.string.player_common_error)}: $errorMessage",
                         color = Color(0xFFD01818),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
@@ -219,7 +221,7 @@ fun PlayerCreateTeamScreen(
                     )
                 } else {
                     Text(
-                        text = "CREATE TEAM  →",
+                        text = "${stringResource(R.string.player_teams_create_team)}  →",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
@@ -266,7 +268,7 @@ fun CreateTeamTopBar(
         Spacer(modifier = Modifier.width(14.dp))
 
         Text(
-            text = "Teams",
+            text = stringResource(R.string.player_teams_topbar_title),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -299,7 +301,7 @@ fun TeamPrivacyCard(
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)
         ) {
             Text(
-                text = "TEAM PRIVACY",
+                text = stringResource(R.string.player_createteam_privacy_label),
                 color = Color(0xFF7D8497),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -314,16 +316,16 @@ fun TeamPrivacyCard(
             ) {
                 PrivacySelectionBox(
                     modifier = Modifier.weight(1f),
-                    title = "Private",
-                    description = "Join by request",
+                    title = stringResource(R.string.player_createteam_private_title),
+                    description = stringResource(R.string.player_createteam_private_desc),
                     selected = selectedPrivacy == "privada",
                     onClick = { onPrivacySelected("privada") }
                 )
 
                 PrivacySelectionBox(
                     modifier = Modifier.weight(1f),
-                    title = "Public",
-                    description = "Anyone can join",
+                    title = stringResource(R.string.player_createteam_public_title),
+                    description = stringResource(R.string.player_createteam_public_desc),
                     selected = selectedPrivacy == "publica",
                     onClick = { onPrivacySelected("publica") }
                 )
@@ -391,7 +393,7 @@ fun TeamIdentityFieldsCard(
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)
         ) {
             TeamTextInput(
-                label = "TEAM NAME",
+                label = stringResource(R.string.player_createteam_field_name),
                 value = teamName,
                 onValueChange = onTeamNameChange,
                 focused = true
@@ -400,7 +402,7 @@ fun TeamIdentityFieldsCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             TeamTextInput(
-                label = "INITIALS",
+                label = stringResource(R.string.player_createteam_field_initials),
                 value = initials,
                 onValueChange = onInitialsChange,
                 modifier = Modifier.width(150.dp)
@@ -409,7 +411,7 @@ fun TeamIdentityFieldsCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             TeamTextInput(
-                label = "HOME CITY",
+                label = stringResource(R.string.player_createteam_field_city),
                 value = homeCity,
                 onValueChange = onHomeCityChange
             )
@@ -470,7 +472,7 @@ fun SportCategoryCard(
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)
         ) {
             Text(
-                text = "SPORT CATEGORY",
+                text = stringResource(R.string.player_createteam_sport_label),
                 color = Color(0xFF7D8497),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -486,7 +488,7 @@ fun SportCategoryCard(
                 SportSelectionBox(
                     modifier = Modifier.weight(1f),
                     icon = "⚽",
-                    title = "Football",
+                    title = stringResource(R.string.player_sport_football),
                     selected = selectedSport == "Football",
                     onClick = { onSportSelected("Football") }
                 )
@@ -494,7 +496,7 @@ fun SportCategoryCard(
                 SportSelectionBox(
                     modifier = Modifier.weight(1f),
                     icon = "🏐",
-                    title = "Volleyball",
+                    title = stringResource(R.string.player_sport_volleyball),
                     selected = selectedSport == "Volleyball",
                     onClick = { onSportSelected("Volleyball") }
                 )
@@ -502,7 +504,7 @@ fun SportCategoryCard(
                 SportSelectionBox(
                     modifier = Modifier.weight(1f),
                     icon = "🏀",
-                    title = "Basketball",
+                    title = stringResource(R.string.player_sport_basketball),
                     selected = selectedSport == "Basketball",
                     onClick = { onSportSelected("Basketball") }
                 )
