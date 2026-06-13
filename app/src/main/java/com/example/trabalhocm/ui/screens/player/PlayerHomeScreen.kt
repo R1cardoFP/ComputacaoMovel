@@ -107,7 +107,7 @@ fun PlayerHomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(Color(0xFFF6F8FC))
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -119,7 +119,7 @@ fun PlayerHomeScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 22.dp, vertical = 20.dp)
+                .padding(horizontal = 20.dp, vertical = 18.dp)
         ) {
             when {
                 isLoading -> {
@@ -153,7 +153,7 @@ fun PlayerHomeScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
@@ -174,7 +174,7 @@ fun PlayerHomeScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
@@ -308,8 +308,8 @@ fun PerformanceSportTabs(selectedSport: String, onSportSelected: (String) -> Uni
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(38.dp)
-            .clip(RoundedCornerShape(6.dp))
+            .height(44.dp)
+            .clip(RoundedCornerShape(16.dp))
             .background(BrandWhite)
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -326,7 +326,7 @@ fun PerformanceTabButton(text: String, selected: Boolean, onClick: () -> Unit, m
     Box(
         modifier = modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(if (selected) BrandBlue else Color.Transparent)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -347,9 +347,9 @@ fun Top3LeaderboardCard(top3: List<PlayerHomePlayerStats>, pontuacaoLabel: Strin
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
@@ -439,7 +439,7 @@ fun Top3LeaderboardCard(top3: List<PlayerHomePlayerStats>, pontuacaoLabel: Strin
 
                 if (index < top3.lastIndex) {
                     Spacer(modifier = Modifier.height(6.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFF0F2FA)))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFF1F4FA)))
                     Spacer(modifier = Modifier.height(6.dp))
                 }
             }
@@ -454,27 +454,50 @@ fun PlayerHomeTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(78.dp)
-            .background(BrandBlue)
-            .padding(horizontal = 28.dp),
+            .height(74.dp)
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        BrandBlue,
+                        Color(0xFF102845)
+                    )
+                )
+            )
+            .padding(horizontal = 22.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = stringResource(R.string.player_home_title),
-            color = BrandWhite,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Column {
+            Text(
+                text = stringResource(R.string.player_home_title),
+                color = BrandWhite,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-       Icon(
-            imageVector = Icons.Outlined.Notifications,
-            contentDescription = stringResource(R.string.player_common_notifications),
-            tint = BrandWhite,
+            Text(
+                text = stringResource(R.string.player_home_quick_actions),
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Box(
             modifier = Modifier
-                .size(26.dp)
-                .clickable { onNotificationsClick() }
-        )
+                .size(44.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(BrandWhite.copy(alpha = 0.13f))
+                .clickable { onNotificationsClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = stringResource(R.string.player_common_notifications),
+                tint = BrandWhite,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
 
@@ -486,10 +509,10 @@ fun PlayerLiveCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(345.dp),
-        shape = RoundedCornerShape(8.dp),
+            .height(326.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BrandBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(
             modifier = Modifier
@@ -538,7 +561,7 @@ fun PlayerLiveCard(
                     ) {
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
+                                .clip(RoundedCornerShape(18.dp))
                                 .background(BrandGreen.copy(alpha = 0.95f))
                                 .padding(horizontal = 18.dp, vertical = 12.dp),
                             contentAlignment = Alignment.Center
@@ -625,9 +648,9 @@ fun PlayerLiveCard(
                     Button(
                         onClick = { onWatchStreamClick(liveMatch.idJogo) },
                         modifier = Modifier
-                            .width(172.dp)
+                            .width(188.dp)
                             .height(54.dp),
-                        shape = RoundedCornerShape(5.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = BrandGreen,
                             contentColor = BrandWhite
@@ -690,11 +713,11 @@ fun QuickActionCard(
 ) {
     Card(
         modifier = modifier
-            .height(120.dp)
+            .height(118.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -705,7 +728,7 @@ fun QuickActionCard(
                 modifier = Modifier
                     .size(54.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFEAF4F2)),
+                    .background(BrandGreen.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -738,10 +761,10 @@ fun ActiveTournamentCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(116.dp),
-        shape = RoundedCornerShape(7.dp),
+            .height(126.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxSize()
@@ -818,7 +841,7 @@ fun ActiveTournamentCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(5.dp)
-                        .clip(RoundedCornerShape(10.dp)),
+                        .clip(RoundedCornerShape(18.dp)),
                     color = accentColor,
                     trackColor = Color(0xFFECEEF7)
                 )
@@ -834,9 +857,9 @@ fun UpcomingFixturesCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         if (fixtures.isEmpty()) {
             Text(
@@ -934,8 +957,8 @@ fun FixtureRow(
         Box(
             modifier = Modifier
                 .size(34.dp)
-                .clip(RoundedCornerShape(5.dp))
-                .background(Color(0xFFF0F2FA))
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color(0xFFF1F4FA))
                 .clickable { onDetailsClick() },
             contentAlignment = Alignment.Center
         ) {
@@ -956,10 +979,10 @@ fun PlayerOfWeekCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(310.dp),
-        shape = RoundedCornerShape(7.dp),
+            .height(300.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
@@ -1001,14 +1024,14 @@ fun PlayerOfWeekCard(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(86.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(20.dp))
                     )
                 } else {
                     Box(
                         modifier = Modifier
                             .size(86.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFF0F2FA)),
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFFF1F4FA)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -1099,10 +1122,10 @@ fun GlobalRankCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(88.dp),
-        shape = RoundedCornerShape(7.dp),
+            .height(92.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -1113,8 +1136,8 @@ fun GlobalRankCard(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xFFF0F2FA)),
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF1F4FA)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -1162,9 +1185,9 @@ fun PlayerHomeEmptyCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Text(
             text = text,
@@ -1182,9 +1205,9 @@ fun PlayerHomeErrorCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1F1)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Text(
             text = text,
@@ -1220,7 +1243,7 @@ fun PlayerHomeTeamLogo(
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .size(size)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(20.dp))
         )
     } else {
         Box(

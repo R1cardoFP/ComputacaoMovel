@@ -53,6 +53,12 @@ import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 
+private val PlayerLiveBg = Color(0xFFF4F6FA)
+private val PlayerLiveCard = Color.White
+private val PlayerLiveTextGray = Color(0xFF596579)
+private val PlayerLiveInputBg = Color(0xFFF1F4F8)
+private val PlayerLiveDanger = Color(0xFFE53935)
+
 @Composable
 fun PlayerLiveMatchesScreen(
     onBackClick: () -> Unit = {},
@@ -88,7 +94,7 @@ fun PlayerLiveMatchesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(PlayerLiveBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -102,62 +108,43 @@ fun PlayerLiveMatchesScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
-            Text(
-                text = "LIVE CENTER",
-                color = Color(0xFF0757C8),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.4.sp
+            PlayerLiveMatchesHeroCard(
+                totalLiveMatches = liveMatches.size
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "Live Matches",
-                color = BrandBlue,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "Watch all matches currently live on the platform.",
-                color = Color(0xFF51607A),
-                fontSize = 13.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             when {
                 isLoading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(260.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = BrandGreen)
-                    }
+                    PlayerLiveMatchesLoadingCard()
                 }
 
                 errorMessage.isNotBlank() -> {
                     PlayerLiveMatchesMessageCard(
+                        title = "Erro ao carregar",
                         text = errorMessage,
-                        color = Color(0xFFD01818)
+                        color = PlayerLiveDanger
                     )
                 }
 
                 liveMatches.isEmpty() -> {
                     PlayerLiveMatchesMessageCard(
+                        title = "Sem jogos em direto",
                         text = "Não existem jogos em direto neste momento.",
-                        color = Color(0xFF51607A)
+                        color = PlayerLiveTextGray
                     )
                 }
 
                 else -> {
+                    Text(
+                        text = "Jogos disponíveis",
+                        color = BrandBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     liveMatches.forEach { jogo ->
                         PlayerLiveMatchCard(
                             jogo = jogo,
@@ -196,31 +183,122 @@ fun PlayerLiveMatchesTopBar(
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "‹",
-            color = BrandWhite,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.clickable { onBackClick() }
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                color = BrandWhite,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 3.dp)
+            )
+        }
 
-        Text(
-            text = "Live Matches",
-            color = BrandWhite,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
-            fontStyle = FontStyle.Italic,
-            modifier = Modifier.padding(start = 6.dp)
-        )
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column {
+            Text(
+                text = "Live Matches",
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic
+            )
+
+            Text(
+                text = "Acompanha os jogos em direto",
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "●",
+                color = BrandGreen,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerLiveMatchesHeroCard(
+    totalLiveMatches: Int
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(22.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PlayerLiveMatchesBadge(
+                    text = "LIVE CENTER",
+                    backgroundColor = BrandWhite.copy(alpha = 0.14f),
+                    textColor = BrandWhite
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(BrandGreen)
+                        .padding(horizontal = 12.dp, vertical = 7.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "$totalLiveMatches LIVE",
+                        color = BrandWhite,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Text(
+                text = "Jogos em direto",
+                color = BrandWhite,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Vê todos os jogos que estão a decorrer na plataforma e acompanha o marcador em tempo real.",
+                color = BrandWhite.copy(alpha = 0.82f),
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -232,14 +310,16 @@ fun PlayerLiveMatchCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerLiveCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 PlayerLiveMatchesBadge(
@@ -251,21 +331,21 @@ fun PlayerLiveMatchCard(
                 PlayerLiveMatchesBadge(
                     text = "LIVE STREAM",
                     backgroundColor = Color(0xFFEAF0FB),
-                    textColor = Color(0xFF0757C8)
+                    textColor = BrandBlue
                 )
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = jogo.torneioNome,
-                color = Color(0xFF6D7486),
-                fontSize = 11.sp,
+                text = jogo.torneioNome.uppercase(),
+                color = PlayerLiveTextGray,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -276,23 +356,11 @@ fun PlayerLiveMatchCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "${jogo.pontosCasa} - ${jogo.pontosFora}",
-                        color = BrandBlue,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = "${jogo.minuto}'",
-                        color = Color(0xFFE53935),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                PlayerLiveMatchesScoreBlock(
+                    homeScore = jogo.pontosCasa,
+                    awayScore = jogo.pontosFora,
+                    minute = jogo.minuto
+                )
 
                 PlayerLiveMatchesTeamBlock(
                     teamName = jogo.equipaFora,
@@ -300,16 +368,24 @@ fun PlayerLiveMatchCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "⌖ ${jogo.local}",
-                color = Color(0xFF51607A),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-
             Spacer(modifier = Modifier.height(18.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(PlayerLiveInputBg)
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = "⌖ ${jogo.local}",
+                    color = PlayerLiveTextGray,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -319,17 +395,18 @@ fun PlayerLiveMatchCard(
                     onClick = onDetailsClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(46.dp),
-                    shape = RoundedCornerShape(5.dp),
+                        .height(48.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFF7F8FC),
+                        containerColor = PlayerLiveInputBg,
                         contentColor = BrandBlue
                     )
                 ) {
                     Text(
-                        text = "VIEW DETAILS",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "VER DETALHES",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
                     )
                 }
 
@@ -337,21 +414,57 @@ fun PlayerLiveMatchCard(
                     onClick = onWatchLiveClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(46.dp),
-                    shape = RoundedCornerShape(5.dp),
+                        .height(48.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BrandGreen,
                         contentColor = BrandWhite
                     )
                 ) {
                     Text(
-                        text = "WATCH LIVE",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "VER LIVE",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun PlayerLiveMatchesScoreBlock(
+    homeScore: Int,
+    awayScore: Int,
+    minute: Int
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(18.dp))
+                .background(BrandBlue)
+                .padding(horizontal = 18.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "$homeScore - $awayScore",
+                color = BrandWhite,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        PlayerLiveMatchesBadge(
+            text = "$minute'",
+            backgroundColor = PlayerLiveDanger.copy(alpha = 0.12f),
+            textColor = PlayerLiveDanger
+        )
     }
 }
 
@@ -366,17 +479,18 @@ fun PlayerLiveMatchesTeamBlock(
     ) {
         PlayerLiveMatchesTeamLogo(
             nome = teamName,
-            size = 48.dp
+            size = 54.dp
         )
 
-        Spacer(modifier = Modifier.height(7.dp))
+        Spacer(modifier = Modifier.height(9.dp))
 
         Text(
             text = teamName,
             color = BrandBlue,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            lineHeight = 14.sp
         )
     }
 }
@@ -391,7 +505,7 @@ fun PlayerLiveMatchesBadge(
         modifier = Modifier
             .clip(RoundedCornerShape(18.dp))
             .background(backgroundColor)
-            .padding(horizontal = 9.dp, vertical = 5.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -405,23 +519,73 @@ fun PlayerLiveMatchesBadge(
 }
 
 @Composable
+fun PlayerLiveMatchesLoadingCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(230.dp),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerLiveCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = BrandGreen)
+        }
+    }
+}
+
+@Composable
 fun PlayerLiveMatchesMessageCard(
+    title: String,
     text: String,
     color: Color
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerLiveCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = text,
-            color = color,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(18.dp),
-            fontWeight = FontWeight.Medium
-        )
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "!",
+                    color = color,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = title,
+                color = BrandBlue,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = text,
+                color = PlayerLiveTextGray,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -449,7 +613,7 @@ fun PlayerLiveMatchesTeamLogo(
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .size(size)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(14.dp))
         )
     } else {
         Box(
