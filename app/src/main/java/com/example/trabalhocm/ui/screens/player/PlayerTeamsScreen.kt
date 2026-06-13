@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +58,14 @@ import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
+
+private val BgLight = Color(0xFFF4F7FB)
+private val CardBg = Color.White
+private val InputBg = Color(0xFFF1F4F8)
+private val TextGray = Color(0xFF6D7486)
+private val TextMuted = Color(0xFF9EA4B3)
+private val PrimaryBlue = Color(0xFF0757C8)
+private val DangerRed = Color(0xFFE53935)
 
 @Composable
 fun PlayerTeamsScreen(
@@ -107,7 +116,7 @@ fun PlayerTeamsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(BgLight)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -119,72 +128,20 @@ fun PlayerTeamsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 22.dp, vertical = 18.dp)
         ) {
-            Text(
-                text = stringResource(R.string.player_teams_league_label),
-                color = Color(0xFF0757C8),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.8.sp
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = stringResource(R.string.player_teams_title),
-                color = BrandBlue,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = stringResource(R.string.player_teams_subtitle),
-                color = Color(0xFF6D7486),
-                fontSize = 12.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Medium
+            PlayerTeamsHeaderCard(
+                totalTeams = teams.size,
+                filteredTeams = filteredTeams.size,
+                onCreateTeamClick = onCreateTeamClick
             )
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            OutlinedTextField(
-                value = search,
-                onValueChange = { search = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp),
-                singleLine = true,
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.player_teams_search_placeholder),
-                        color = Color(0xFF9EA4B3),
-                        fontSize = 13.sp
-                    )
-                },
-                leadingIcon = {
-                    Text(
-                        text = "⌕",
-                        color = Color(0xFF8D94A3),
-                        fontSize = 17.sp
-                    )
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text
-                ),
-                shape = RoundedCornerShape(7.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = BrandWhite,
-                    unfocusedContainerColor = BrandWhite,
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = BrandGreen,
-                    focusedTextColor = BrandBlue,
-                    unfocusedTextColor = BrandBlue
-                )
+            PlayerTeamsSearchCard(
+                search = search,
+                onSearchChange = { search = it }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             when {
                 isLoading -> {
@@ -194,44 +151,26 @@ fun PlayerTeamsScreen(
                             .height(220.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(
-                            color = BrandGreen
-                        )
+                        CircularProgressIndicator(color = BrandGreen)
                     }
                 }
 
                 errorMessage.isNotBlank() -> {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Text(
-                            text = "${stringResource(R.string.player_common_error)}: $errorMessage",
-                            color = Color(0xFFD01818),
-                            fontSize = 13.sp,
-                            modifier = Modifier.padding(18.dp)
-                        )
-                    }
+                    PlayerTeamsMessageCard(
+                        title = stringResource(R.string.player_common_error),
+                        message = errorMessage,
+                        accentColor = DangerRed
+                    )
 
                     Spacer(modifier = Modifier.height(14.dp))
                 }
 
                 filteredTeams.isEmpty() -> {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.player_teams_empty),
-                            color = BrandBlue,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(18.dp)
-                        )
-                    }
+                    PlayerTeamsMessageCard(
+                        title = stringResource(R.string.player_teams_empty),
+                        message = stringResource(R.string.player_teams_search_placeholder),
+                        accentColor = PrimaryBlue
+                    )
 
                     Spacer(modifier = Modifier.height(14.dp))
                 }
@@ -262,26 +201,7 @@ fun PlayerTeamsScreen(
                 }
             }
 
-            Button(
-                onClick = onCreateTeamClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(5.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0757C8),
-                    contentColor = BrandWhite
-                )
-            ) {
-                Text(
-                    text = "⊙  ${stringResource(R.string.player_teams_create_team)}",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         MatchLeagueBottomBar(
@@ -300,27 +220,269 @@ fun PlayerTeamsTopBar(onNotificationsClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(78.dp)
+            .height(72.dp)
             .background(BrandBlue)
-            .padding(horizontal = 28.dp),
+            .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = stringResource(R.string.player_teams_topbar_title),
-            color = BrandWhite,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Column {
+            Text(
+                text = stringResource(R.string.player_teams_topbar_title),
+                color = BrandWhite,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-        Icon(
-            imageVector = Icons.Outlined.Notifications,
-            contentDescription = stringResource(R.string.player_common_notifications),
-            tint = BrandWhite,
+            Text(
+                text = stringResource(R.string.player_teams_league_label),
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.4.sp
+            )
+        }
+
+        Box(
             modifier = Modifier
-                .size(26.dp)
-                .clickable { onNotificationsClick() }
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(BrandWhite.copy(alpha = 0.12f))
+                .clickable { onNotificationsClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = stringResource(R.string.player_common_notifications),
+                tint = BrandWhite,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerTeamsHeaderCard(
+    totalTeams: Int,
+    filteredTeams: Int,
+    onCreateTeamClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.player_teams_league_label),
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.8.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(R.string.player_teams_title),
+                color = BrandWhite,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 32.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(R.string.player_teams_subtitle),
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                PlayerTeamsMetric(
+                    label = stringResource(R.string.player_teams_title),
+                    value = totalTeams.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                PlayerTeamsMetric(
+                    label = stringResource(R.string.player_teams_search_placeholder),
+                    value = filteredTeams.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onCreateTeamClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BrandGreen,
+                    contentColor = BrandWhite
+                )
+            ) {
+                Text(
+                    text = "⊙  ${stringResource(R.string.player_teams_create_team)}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PlayerTeamsMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite.copy(alpha = 0.12f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = label.uppercase(),
+                color = BrandWhite.copy(alpha = 0.65f),
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp,
+                maxLines = 1
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = value,
+                color = BrandWhite,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerTeamsSearchCard(
+    search: String,
+    onSearchChange: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        OutlinedTextField(
+            value = search,
+            onValueChange = onSearchChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+                .height(54.dp),
+            singleLine = true,
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.player_teams_search_placeholder),
+                    color = TextMuted,
+                    fontSize = 13.sp
+                )
+            },
+            leadingIcon = {
+                Text(
+                    text = "⌕",
+                    color = TextGray,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            shape = RoundedCornerShape(14.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = InputBg,
+                unfocusedContainerColor = InputBg,
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                cursorColor = BrandGreen,
+                focusedTextColor = BrandBlue,
+                unfocusedTextColor = BrandBlue
+            )
         )
+    }
+}
+
+@Composable
+fun PlayerTeamsMessageCard(
+    title: String,
+    message: String,
+    accentColor: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(accentColor.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "!",
+                    color = accentColor,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    color = BrandBlue,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(3.dp))
+
+                Text(
+                    text = message,
+                    color = TextGray,
+                    fontSize = 12.sp,
+                    lineHeight = 17.sp
+                )
+            }
+        }
     }
 }
 
@@ -340,16 +502,16 @@ fun PlayerTeamCard(
         modifier = Modifier
             .fillMaxWidth()
             .border(
-                width = if (team.utilizadorPertence) 1.dp else 0.dp,
+                width = if (team.utilizadorPertence) 1.5.dp else 0.dp,
                 color = if (team.utilizadorPertence) BrandGreen else Color.Transparent,
-                shape = RoundedCornerShape(7.dp)
+                shape = RoundedCornerShape(20.dp)
             ),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -360,7 +522,7 @@ fun PlayerTeamCard(
                     color = logoColor
                 )
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
                 Column(
                     modifier = Modifier.weight(1f)
@@ -368,9 +530,12 @@ fun PlayerTeamCard(
                     Text(
                         text = team.equipa.nome,
                         color = BrandBlue,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 21.sp
                     )
+
+                    Spacer(modifier = Modifier.height(5.dp))
 
                     Text(
                         text = when {
@@ -386,68 +551,73 @@ fun PlayerTeamCard(
                                 team.divisao.uppercase()
                             }
                         },
-                        color = if (team.utilizadorPertence) BrandGreen else Color(0xFF0757C8),
-                        fontSize = 8.sp,
+                        color = if (team.utilizadorPertence) BrandGreen else PrimaryBlue,
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    Text(
+                        text = "${team.modalidadeNome} • ${team.cidade}",
+                        color = TextGray,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
 
-                // Public / Private Badge
-                Box(
+                PlayerTeamsPrivacyBadge(isPublic = isPublic)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = InputBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(if (isPublic) BrandGreen.copy(alpha = 0.1f) else Color(0xFFE53935).copy(alpha = 0.1f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 13.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = if (isPublic) "${stringResource(R.string.player_common_public)} 🔓" else "${stringResource(R.string.player_common_private)} 🔒",
-                        color = if (isPublic) BrandGreen else Color(0xFFFF8A80),
-                        fontSize = 7.sp,
-                        fontWeight = FontWeight.Bold
+                    TeamStat(
+                        label = stringResource(R.string.player_common_wins),
+                        value = team.vitorias.toString(),
+                        valueColor = PrimaryBlue
+                    )
+
+                    TeamStat(
+                        label = stringResource(R.string.player_common_losses),
+                        value = team.derrotas.toString(),
+                        valueColor = BrandBlue
+                    )
+
+                    TeamStat(
+                        label = stringResource(R.string.player_common_streak),
+                        value = team.streak,
+                        valueColor = if (team.streakGood) BrandGreen else DangerRed
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TeamStat(
-                    label = stringResource(R.string.player_common_wins),
-                    value = team.vitorias.toString(),
-                    valueColor = Color(0xFF0757C8)
-                )
-
-                TeamStat(
-                    label = stringResource(R.string.player_common_losses),
-                    value = team.derrotas.toString(),
-                    valueColor = BrandBlue
-                )
-
-                TeamStat(
-                    label = stringResource(R.string.player_common_streak),
-                    value = team.streak,
-                    valueColor = if (team.streakGood) BrandGreen else Color(0xFFE53935)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 OutlinedButton(
                     onClick = onDetailsClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(42.dp),
-                    shape = RoundedCornerShape(2.dp),
+                        .height(46.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF0757C8)
+                        containerColor = BrandWhite,
+                        contentColor = PrimaryBlue
                     )
                 ) {
                     Text(
@@ -462,8 +632,8 @@ fun PlayerTeamCard(
                         onClick = onManageTeamClick,
                         modifier = Modifier
                             .weight(1f)
-                            .height(42.dp),
-                        shape = RoundedCornerShape(2.dp),
+                            .height(46.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = BrandGreen,
                             contentColor = BrandWhite
@@ -482,8 +652,8 @@ fun PlayerTeamCard(
                             enabled = false,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(42.dp),
-                            shape = RoundedCornerShape(2.dp),
+                                .height(46.dp),
+                            shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.buttonColors(
                                 disabledContainerColor = Color(0xFFDDE1EA),
                                 disabledContentColor = Color(0xFF7D8497)
@@ -501,8 +671,8 @@ fun PlayerTeamCard(
                             enabled = !isSubmitting,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(42.dp),
-                            shape = RoundedCornerShape(2.dp),
+                                .height(46.dp),
+                            shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = BrandGreen,
                                 contentColor = BrandWhite
@@ -530,14 +700,32 @@ fun PlayerTeamCard(
 }
 
 @Composable
+fun PlayerTeamsPrivacyBadge(isPublic: Boolean) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (isPublic) BrandGreen.copy(alpha = 0.12f) else DangerRed.copy(alpha = 0.10f))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = if (isPublic) "${stringResource(R.string.player_common_public)} 🔓" else "${stringResource(R.string.player_common_private)} 🔒",
+            color = if (isPublic) BrandGreen else DangerRed,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 fun TeamLogoBox(
     text: String,
     color: Color
 ) {
     Box(
         modifier = Modifier
-            .size(42.dp)
-            .clip(RoundedCornerShape(5.dp))
+            .size(50.dp)
+            .clip(CircleShape)
             .background(color.copy(alpha = 0.15f)),
         contentAlignment = Alignment.Center
     ) {
@@ -556,21 +744,23 @@ fun TeamStat(
     value: String,
     valueColor: Color
 ) {
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
-            text = label,
-            color = Color(0xFF7D8497),
+            text = label.uppercase(),
+            color = TextGray,
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp
         )
 
-        Spacer(modifier = Modifier.height(3.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = value,
             color = valueColor,
-            fontSize = 17.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -581,7 +771,7 @@ fun teamColorFromName(nome: String): Color {
 
     return when {
         nomeNormalizado.contains("benfica") -> Color(0xFFE53935)
-        nomeNormalizado.contains("porto") -> Color(0xFF0757C8)
+        nomeNormalizado.contains("porto") -> PrimaryBlue
         nomeNormalizado.contains("sporting") -> BrandGreen
         nomeNormalizado.contains("vianense") -> Color(0xFFD19A00)
         nomeNormalizado.contains("mancos") -> Color(0xFF4A555C)

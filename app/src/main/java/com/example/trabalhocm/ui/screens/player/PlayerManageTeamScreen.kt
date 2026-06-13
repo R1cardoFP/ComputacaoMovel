@@ -73,6 +73,14 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.launch
 
+private val ManageScreenBg = Color(0xFFF4F6FB)
+private val ManageInputBg = Color(0xFFEFF3F8)
+private val ManageTextMuted = Color(0xFF6D7486)
+private val ManageCardBorder = Color(0xFFE7EAF2)
+private val ManageSoftGreen = Color(0xFFEAF8F5)
+private val ManageSoftBlue = Color(0xFFEAF1FF)
+private val ManageSoftRed = Color(0xFFFFF0F0)
+
 @Composable
 fun PlayerManageTeamScreen(
     idEquipa: Long = 0L,
@@ -198,7 +206,7 @@ fun PlayerManageTeamScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(ManageScreenBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -241,7 +249,7 @@ fun PlayerManageTeamScreen(
                     modifier = Modifier
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 22.dp, vertical = 18.dp)
+                        .padding(horizontal = 24.dp, vertical = 20.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.player_manageteam_eyebrow),
@@ -310,18 +318,18 @@ fun PlayerManageTeamScreen(
                                 enabled = !isActionLoading,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(5.dp),
+                                    .height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF0757C8),
+                                    containerColor = BrandGreen,
                                     contentColor = BrandWhite,
                                     disabledContainerColor = Color(0xFFD4D9E3),
                                     disabledContentColor = Color(0xFF7D8497)
                                 )
                             ) {
                                 Text(
-                                    text = "♙+  ${stringResource(R.string.player_manageteam_invite_player)}",
-                                    fontSize = 12.sp,
+                                    text = "＋  ${stringResource(R.string.player_manageteam_invite_player)}",
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.sp
                                 )
@@ -336,7 +344,7 @@ fun PlayerManageTeamScreen(
                         onValueChange = { search = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
+                            .height(56.dp),
                         singleLine = true,
                         placeholder = {
                             Text(
@@ -355,10 +363,10 @@ fun PlayerManageTeamScreen(
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text
                         ),
-                        shape = RoundedCornerShape(7.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = BrandWhite,
-                            unfocusedContainerColor = BrandWhite,
+                            focusedContainerColor = ManageInputBg,
+                            unfocusedContainerColor = ManageInputBg,
                             focusedBorderColor = Color.Transparent,
                             unfocusedBorderColor = Color.Transparent,
                             cursorColor = BrandGreen,
@@ -422,8 +430,8 @@ fun PlayerManageTeamScreen(
                             onClick = { showDeleteConfirmDialog = true },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(54.dp),
-                            shape = RoundedCornerShape(6.dp),
+                                .height(58.dp),
+                            shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(1.dp, Color(0xFFC62828)),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC62828))
                         ) {
@@ -637,41 +645,59 @@ fun ManageTeamTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
+            .height(76.dp)
             .background(BrandBlue)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 22.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "←",
-            color = BrandWhite,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        )
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                color = BrandWhite,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-        Text(
-            text = stringResource(R.string.player_teams_topbar_title),
-            color = BrandWhite,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            fontStyle = FontStyle.Italic
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.player_teams_topbar_title),
+                color = BrandWhite,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-        Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(R.string.player_manageteam_eyebrow).uppercase(),
+                color = BrandGreen,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.4.sp
+            )
+        }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onNotificationsClick() },
+            contentAlignment = Alignment.Center
+        ) {
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = stringResource(R.string.player_common_notifications),
                 tint = BrandWhite,
-                modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onNotificationsClick() }
+                modifier = Modifier.size(22.dp)
             )
         }
     }
@@ -686,50 +712,117 @@ fun ManageTeamHeaderCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(5.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = BrandBlue),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(74.dp)
-                .padding(horizontal = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(22.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color(0xFF4A555C).copy(alpha = 0.25f)),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = iniciais.take(3).uppercase(),
-                    color = BrandWhite,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .size(68.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.14f))
+                        .border(1.dp, Color.White.copy(alpha = 0.16f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = iniciais.take(3).uppercase(),
+                        color = BrandWhite,
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.player_manageteam_eyebrow).uppercase(),
+                        color = BrandGreen,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.8.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = nomeEquipa,
+                        color = BrandWhite,
+                        fontSize = 24.sp,
+                        lineHeight = 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    Text(
+                        text = stringResource(R.string.player_manageteam_players_division, numeroJogadores, divisao),
+                        color = Color.White.copy(alpha = 0.72f),
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            Column {
-                Text(
-                    text = nomeEquipa,
-                    color = BrandWhite,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ManageTeamHeroChip(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.player_manageteam_roster_count, numeroJogadores),
+                    value = numeroJogadores.toString()
                 )
 
-                Text(
-                    text = stringResource(R.string.player_manageteam_players_division, numeroJogadores, divisao),
-                    color = Color(0xFFB8C2D3),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium
+                ManageTeamHeroChip(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.player_manageteam_subtitle),
+                    value = divisao
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ManageTeamHeroChip(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.11f))
+            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    ) {
+        Text(
+            text = label.uppercase(),
+            color = Color.White.copy(alpha = 0.62f),
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = value,
+            color = BrandWhite,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1
+        )
     }
 }
 
@@ -740,73 +833,78 @@ fun ManageTeamPrivacyCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(5.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        border = BorderStroke(1.dp, ManageCardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Text(
-                text = stringResource(R.string.player_createteam_privacy_label),
-                color = Color(0xFF7D8497),
-                fontSize = 9.sp,
+                text = stringResource(R.string.player_createteam_privacy_label).uppercase(),
+                color = ManageTextMuted,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.4.sp
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(if (!isPublic) BrandGreen.copy(alpha = 0.1f) else Color(0xFFF0F2FA))
-                        .border(1.dp, if (!isPublic) BrandGreen else Color.Transparent, RoundedCornerShape(5.dp))
-                        .clickable { if (isPublic) onPrivacyChange("privada") },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${stringResource(R.string.player_common_private)} 🔒",
-                        color = if (!isPublic) BrandGreen else Color(0xFF7D8497),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                ManagePrivacyOption(
+                    modifier = Modifier.weight(1f),
+                    selected = !isPublic,
+                    title = "${stringResource(R.string.player_common_private)} 🔒",
+                    onClick = { if (isPublic) onPrivacyChange("privada") }
+                )
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(if (isPublic) BrandGreen.copy(alpha = 0.1f) else Color(0xFFF0F2FA))
-                        .border(1.dp, if (isPublic) BrandGreen else Color.Transparent, RoundedCornerShape(5.dp))
-                        .clickable { if (!isPublic) onPrivacyChange("publica") },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${stringResource(R.string.player_common_public)} 🔓",
-                        color = if (isPublic) BrandGreen else Color(0xFF7D8497),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                ManagePrivacyOption(
+                    modifier = Modifier.weight(1f),
+                    selected = isPublic,
+                    title = "${stringResource(R.string.player_common_public)} 🔓",
+                    onClick = { if (!isPublic) onPrivacyChange("publica") }
+                )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = if (isPublic) stringResource(R.string.player_manageteam_privacy_public_desc) else stringResource(R.string.player_manageteam_privacy_private_desc),
-                color = Color(0xFF6D7486),
-                fontSize = 11.sp,
+                color = ManageTextMuted,
+                fontSize = 12.sp,
+                lineHeight = 18.sp,
                 fontWeight = FontWeight.Medium
             )
         }
+    }
+}
+
+@Composable
+private fun ManagePrivacyOption(
+    modifier: Modifier = Modifier,
+    selected: Boolean,
+    title: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .height(48.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) ManageSoftGreen else ManageInputBg)
+            .border(1.dp, if (selected) BrandGreen else Color.Transparent, RoundedCornerShape(16.dp))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = title,
+            color = if (selected) BrandGreen else ManageTextMuted,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -819,111 +917,128 @@ fun ManageTeamPlayerRow(
     val estado = membro.estadoConvite.lowercase()
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(76.dp),
-        shape = RoundedCornerShape(5.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        border = BorderStroke(1.dp, ManageCardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .drawBehind {
                     if (membro.isCaptain) {
                         drawLine(
-                            color = Color(0xFFB72D2D),
-                            start = Offset(0f, 0f),
-                            end = Offset(0f, size.height),
+                            color = BrandGreen,
+                            start = Offset(0f, 18f),
+                            end = Offset(0f, size.height - 18f),
                             strokeWidth = 8f
                         )
                     }
-                },
+                }
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(ManageSoftBlue),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFF0F2FA)),
-                    contentAlignment = Alignment.Center
+                if (!membro.utilizador.fotoUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = membro.utilizador.fotoUrl,
+                        contentDescription = stringResource(R.string.player_common_photo),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        text = memberInitials(nome),
+                        color = BrandBlue,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (!membro.utilizador.fotoUrl.isNullOrEmpty()) {
-                        AsyncImage(
-                            model = membro.utilizador.fotoUrl,
-                            contentDescription = stringResource(R.string.player_common_photo),
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Text(
-                            text = memberInitials(nome),
-                            color = BrandBlue,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Text(
+                        text = nome,
+                        color = BrandBlue,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    if (membro.isCaptain) {
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(Color(0xFFFFE9E9))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.player_common_captain).uppercase(),
+                                color = Color(0xFFB72D2D),
+                                fontSize = 7.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.6.sp
+                            )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.height(5.dp))
 
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(if (estado == "pendente") Color(0xFFFFF4D8) else ManageSoftGreen)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = nome,
-                            color = BrandBlue,
-                            fontSize = 14.sp,
+                            text = if (estado == "pendente") stringResource(R.string.player_common_pending) else stringResource(R.string.player_common_active),
+                            color = if (estado == "pendente") Color(0xFFD19A00) else BrandGreen,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.Bold
                         )
-
-                        if (membro.isCaptain) {
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(Color(0xFFFFE4E4))
-                                    .padding(horizontal = 6.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.player_common_captain),
-                                    color = Color(0xFFB72D2D),
-                                    fontSize = 7.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
                     }
 
-                    Spacer(modifier = Modifier.height(3.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "${membro.posicao} · ${if (estado == "pendente") stringResource(R.string.player_common_pending) else stringResource(R.string.player_common_active)}",
-                        color = if (estado == "pendente") Color(0xFFD19A00) else Color(0xFF7D8497),
-                        fontSize = 11.sp,
+                        text = membro.posicao,
+                        color = ManageTextMuted,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
+            }
 
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(ManageInputBg)
+                    .clickable { onOptionsClick() },
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     text = "⋮",
-                    color = Color(0xFF7D8497),
+                    color = ManageTextMuted,
                     fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .clickable {
-                            onOptionsClick()
-                        }
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -944,13 +1059,13 @@ fun ManagePlayerOptionsDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 34.dp),
-            shape = RoundedCornerShape(8.dp),
+                .padding(horizontal = 24.dp),
+            shape = RoundedCornerShape(22.dp),
             colors = CardDefaults.cardColors(containerColor = BrandWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
-                modifier = Modifier.padding(vertical = 12.dp)
+                modifier = Modifier.padding(vertical = 14.dp)
             ) {
                 ManagePlayerOptionRow(
                     icon = "♙",
@@ -991,27 +1106,33 @@ fun ManagePlayerOptionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .clickable {
-                onClick()
-            }
-            .padding(horizontal = 26.dp),
+            .height(58.dp)
+            .clickable { onClick() }
+            .padding(horizontal = 22.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = icon,
-            color = textColor,
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(if (textColor == BrandBlue) ManageSoftBlue else ManageSoftRed),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = icon,
+                color = textColor,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        Spacer(modifier = Modifier.width(18.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
         Text(
             text = text,
             color = textColor,
-            fontSize = 19.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -1031,45 +1152,60 @@ fun InvitePlayerDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp),
-            shape = RoundedCornerShape(10.dp),
+                .padding(horizontal = 8.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = BrandWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
-                modifier = Modifier.padding(18.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(R.string.player_manageteam_invite_title),
-                        color = BrandBlue,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.player_manageteam_invite_title),
+                            color = BrandBlue,
+                            fontSize = 21.sp,
+                            fontWeight = FontWeight.Bold
+                        )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.height(3.dp))
 
-                    Text(
-                        text = "×",
-                        color = BrandBlue,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable {
-                            onDismiss()
-                        }
-                    )
+                        Text(
+                            text = stringResource(R.string.player_manageteam_invite_search_placeholder),
+                            color = ManageTextMuted,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(ManageInputBg)
+                            .clickable { onDismiss() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "×",
+                            color = BrandBlue,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = search,
                     onValueChange = onSearchChange,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .height(56.dp),
                     singleLine = true,
                     placeholder = {
                         Text(
@@ -1088,10 +1224,10 @@ fun InvitePlayerDialog(
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text
                     ),
-                    shape = RoundedCornerShape(7.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF4F5FA),
-                        unfocusedContainerColor = Color(0xFFF4F5FA),
+                        focusedContainerColor = ManageInputBg,
+                        unfocusedContainerColor = ManageInputBg,
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent,
                         cursorColor = BrandGreen,
@@ -1122,13 +1258,13 @@ fun InvitePlayerDialog(
                     }
                 } else if (results.isEmpty()) {
                     ManageTeamEmptyCard(
-                        text = "No players found."
+                        text = stringResource(R.string.player_common_no_players_found)
                     )
                 } else {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(260.dp)
+                            .height(270.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
                         results.forEach { jogador ->
@@ -1139,7 +1275,7 @@ fun InvitePlayerDialog(
                                 }
                             )
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
                     }
                 }
@@ -1157,27 +1293,28 @@ fun InvitePlayerRow(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F8FC)),
+        border = BorderStroke(1.dp, ManageCardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFEAF0FF)),
+                    .background(ManageSoftBlue),
                 contentAlignment = Alignment.Center
             ) {
                 if (!utilizador.fotoUrl.isNullOrEmpty()) {
                     AsyncImage(
                         model = utilizador.fotoUrl,
-                        contentDescription = "Photo",
+                        contentDescription = stringResource(R.string.player_common_photo),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -1185,13 +1322,13 @@ fun InvitePlayerRow(
                     Text(
                         text = memberInitials(utilizador.nome),
                         color = BrandBlue,
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Column(
                 modifier = Modifier.weight(1f)
@@ -1199,30 +1336,39 @@ fun InvitePlayerRow(
                 Text(
                     text = utilizador.nome,
                     color = BrandBlue,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
 
+                Spacer(modifier = Modifier.height(3.dp))
+
                 Text(
                     text = utilizador.email,
-                    color = Color(0xFF7D8497),
+                    color = ManageTextMuted,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
 
             if (jogador.jaPertenceEquipa) {
-                Text(
-                    text = if (jogador.estadoConvite?.lowercase() == "pendente") stringResource(R.string.player_manageteam_invited) else stringResource(R.string.player_manageteam_in_team),
-                    color = Color(0xFF7D8497),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(ManageInputBg)
+                        .padding(horizontal = 10.dp, vertical = 7.dp)
+                ) {
+                    Text(
+                        text = if (jogador.estadoConvite?.lowercase() == "pendente") stringResource(R.string.player_manageteam_invited) else stringResource(R.string.player_manageteam_in_team),
+                        color = ManageTextMuted,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             } else {
                 Button(
                     onClick = onInviteClick,
-                    modifier = Modifier.height(34.dp),
-                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.height(38.dp),
+                    shape = RoundedCornerShape(13.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BrandGreen,
                         contentColor = BrandWhite
@@ -1246,18 +1392,20 @@ fun ManageTeamMessageCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isError) Color(0xFFFFF0F0) else Color(0xFFEAF7F5)
+            containerColor = if (isError) ManageSoftRed else ManageSoftGreen
         ),
+        border = BorderStroke(1.dp, if (isError) Color(0xFFFFD6D6) else Color(0xFFD4F1EA)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Text(
             text = text,
             color = if (isError) Color(0xFFD01818) else BrandGreen,
             fontSize = 12.sp,
+            lineHeight = 17.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(14.dp)
         )
     }
 }
@@ -1268,17 +1416,40 @@ fun ManageTeamEmptyCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        border = BorderStroke(1.dp, ManageCardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = text,
-            color = Color(0xFF7D8497),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(14.dp)
-        )
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(ManageInputBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "⌕",
+                    color = ManageTextMuted,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = text,
+                color = ManageTextMuted,
+                fontSize = 12.sp,
+                lineHeight = 17.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 

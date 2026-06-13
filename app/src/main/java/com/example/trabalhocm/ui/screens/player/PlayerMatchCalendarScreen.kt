@@ -36,8 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.data.repository.PlayerCalendarMatchInfo
@@ -50,6 +50,15 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+
+private val CalendarBg = Color(0xFFF4F7FB)
+private val CalendarCardBg = Color.White
+private val CalendarDarkBlue = Color(0xFF0B1F4D)
+private val CalendarPrimaryBlue = Color(0xFF0757C8)
+private val CalendarInputBg = Color(0xFFF0F3FA)
+private val CalendarTextGray = Color(0xFF6D7486)
+private val CalendarSoftGreen = Color(0xFFEAF8F0)
+private val CalendarSoftBlue = Color(0xFFEAF0FB)
 
 @Composable
 fun PlayerMatchCalendarScreen(
@@ -107,7 +116,7 @@ fun PlayerMatchCalendarScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(CalendarBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -119,46 +128,19 @@ fun PlayerMatchCalendarScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 18.dp)
+                .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
-            Text(
-                text = "PREMIER LEAGUE",
-                color = Color(0xFF0757C8),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.3.sp
+            CalendarHeaderCard(
+                selectedDate = selectedDate,
+                matchesToday = jogosDoDia.size,
+                matchesMonth = jogosDoMes.size
             )
 
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Text(
-                text = "Matches Calendar",
-                color = BrandBlue,
-                fontSize = 27.sp,
-                fontWeight = FontWeight.Bold
-            )
+            SectionLabel(text = "CALENDAR")
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "Browse matches scheduled for today and set\nreminders.",
-                color = Color(0xFF51607A),
-                fontSize = 12.sp,
-                lineHeight = 17.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            Text(
-                text = "CALENDAR",
-                color = Color(0xFF6D7486),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             CalendarMonthCard(
                 selectedMonth = selectedMonth,
@@ -177,22 +159,15 @@ fun PlayerMatchCalendarScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            val horaPrimeiroJogo = jogosDoDia.firstOrNull()?.hora?.take(5)
-
-            Text(
-                text = if (horaPrimeiroJogo != null) {
-                    "$horaPrimeiroJogo · GMT+1"
-                } else {
-                    selectedDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH))
-                },
-                color = Color(0xFF6D7486),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold
+            SelectedDayCard(
+                selectedDate = selectedDate,
+                matchesCount = jogosDoDia.size,
+                firstMatchTime = jogosDoDia.firstOrNull()?.hora?.take(5)
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             when {
                 isLoading -> {
@@ -207,19 +182,10 @@ fun PlayerMatchCalendarScreen(
                 }
 
                 mensagemErro.isNotBlank() -> {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Text(
-                            text = "Erro: $mensagemErro",
-                            color = Color(0xFFD01818),
-                            fontSize = 13.sp,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+                    MessageCard(
+                        message = "Erro: $mensagemErro",
+                        isError = true
+                    )
                 }
 
                 jogosDoDia.isEmpty() -> {
@@ -272,36 +238,246 @@ fun CalendarTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
-            .background(BrandBlue)
+            .height(68.dp)
+            .background(CalendarDarkBlue)
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "‹",
-            color = BrandWhite,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.clickable { onBackClick() }
-        )
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .height(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                color = BrandWhite,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
 
-        Text(
-            text = "Calendar",
-            color = BrandWhite,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
-            fontStyle = FontStyle.Italic,
-            modifier = Modifier.padding(start = 6.dp)
-        )
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column {
+            Text(
+                text = "Match Calendar",
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Fixtures and reminders",
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .height(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "●",
+                color = BrandGreen,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun CalendarHeaderCard(
+    selectedDate: LocalDate,
+    matchesToday: Int,
+    matchesMonth: Int
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = CalendarDarkBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = "PREMIER LEAGUE",
+                color = BrandGreen,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.4.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Matches Calendar",
+                color = BrandWhite,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = "Browse scheduled matches, open details and set reminders.",
+                color = BrandWhite.copy(alpha = 0.76f),
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                HeaderMetric(
+                    label = "Selected day",
+                    value = selectedDate.format(DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH)),
+                    modifier = Modifier.weight(1f)
+                )
+
+                HeaderMetric(
+                    label = "Today matches",
+                    value = matchesToday.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                HeaderMetric(
+                    label = "This month",
+                    value = matchesMonth.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HeaderMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.10f))
+            .padding(horizontal = 10.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
-            text = "♧",
+            text = value,
             color = BrandWhite,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1
         )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = label.uppercase(),
+            color = BrandWhite.copy(alpha = 0.68f),
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.6.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 10.sp
+        )
+    }
+}
+
+@Composable
+fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        color = CalendarTextGray,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.2.sp
+    )
+}
+
+@Composable
+fun SelectedDayCard(
+    selectedDate: LocalDate,
+    matchesCount: Int,
+    firstMatchTime: String?
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = CalendarCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(CalendarSoftBlue),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = selectedDate.dayOfMonth.toString(),
+                    color = CalendarPrimaryBlue,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = selectedDate.format(DateTimeFormatter.ofPattern("EEEE, dd MMM yyyy", Locale.ENGLISH)),
+                    color = CalendarDarkBlue,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = if (firstMatchTime != null) {
+                        "$firstMatchTime · GMT+1"
+                    } else {
+                        "No match time available"
+                    },
+                    color = CalendarTextGray,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            CalendarBadge(
+                text = "$matchesCount MATCHES",
+                backgroundColor = if (matchesCount > 0) CalendarSoftGreen else CalendarInputBg,
+                textColor = if (matchesCount > 0) BrandGreen else CalendarTextGray
+            )
+        }
     }
 }
 
@@ -314,28 +490,37 @@ fun CalendarMonthCard(
     onNextMonth: () -> Unit,
     onDayClick: (LocalDate) -> Unit
 ) {
-    val formatter = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH)
-
+    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
     val diasComJogos = jogosDoMes.mapNotNull { it.dataLocal }.toSet()
+    val today = LocalDate.now()
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CalendarCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = selectedMonth.atDay(1).format(formatter),
-                    color = BrandBlue,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Column {
+                    Text(
+                        text = selectedMonth.atDay(1).format(formatter),
+                        color = CalendarDarkBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "${jogosDoMes.size} matches this month",
+                        color = CalendarTextGray,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -344,7 +529,7 @@ fun CalendarMonthCard(
                     onClick = onPreviousMonth
                 )
 
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
                 CalendarSmallButton(
                     text = "›",
@@ -352,7 +537,7 @@ fun CalendarMonthCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -361,15 +546,16 @@ fun CalendarMonthCard(
                 listOf("DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB").forEach {
                     Text(
                         text = it,
-                        color = Color(0xFF6D7486),
+                        color = CalendarTextGray,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.width(34.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             val dias = gerarDiasCalendario(selectedMonth)
 
@@ -380,11 +566,16 @@ fun CalendarMonthCard(
                 ) {
                     semana.forEach { data ->
                         if (data == null) {
-                            Spacer(modifier = Modifier.width(34.dp).height(34.dp))
+                            Spacer(
+                                modifier = Modifier
+                                    .width(34.dp)
+                                    .height(38.dp)
+                            )
                         } else {
                             CalendarDayCell(
                                 date = data,
                                 selected = data == selectedDate,
+                                isToday = data == today,
                                 hasMatch = diasComJogos.contains(data),
                                 onClick = {
                                     onDayClick(data)
@@ -394,7 +585,7 @@ fun CalendarMonthCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(7.dp))
             }
         }
     }
@@ -407,17 +598,17 @@ fun CalendarSmallButton(
 ) {
     Box(
         modifier = Modifier
-            .width(28.dp)
-            .height(28.dp)
-            .clip(RoundedCornerShape(7.dp))
-            .background(Color(0xFFF0F3FA))
+            .width(34.dp)
+            .height(34.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(CalendarInputBg)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = BrandBlue,
-            fontSize = 16.sp,
+            color = CalendarDarkBlue,
+            fontSize = 19.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -427,17 +618,27 @@ fun CalendarSmallButton(
 fun CalendarDayCell(
     date: LocalDate,
     selected: Boolean,
+    isToday: Boolean,
     hasMatch: Boolean,
     onClick: () -> Unit
 ) {
-    val background = if (selected) Color(0xFF0757C8) else Color(0xFFF0F3FA)
-    val textColor = if (selected) BrandWhite else BrandBlue
+    val background = when {
+        selected -> CalendarDarkBlue
+        isToday -> CalendarSoftGreen
+        else -> CalendarInputBg
+    }
+
+    val textColor = when {
+        selected -> BrandWhite
+        isToday -> BrandGreen
+        else -> CalendarDarkBlue
+    }
 
     Box(
         modifier = Modifier
             .width(34.dp)
-            .height(34.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .height(38.dp)
+            .clip(RoundedCornerShape(12.dp))
             .background(background)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -452,15 +653,21 @@ fun CalendarDayCell(
                 fontWeight = FontWeight.Bold
             )
 
-            if (hasMatch) {
-                Box(
-                    modifier = Modifier
-                        .width(4.dp)
-                        .height(4.dp)
-                        .clip(CircleShape)
-                        .background(if (selected) BrandWhite else BrandGreen)
-                )
-            }
+            Spacer(modifier = Modifier.height(3.dp))
+
+            Box(
+                modifier = Modifier
+                    .width(if (hasMatch) 5.dp else 3.dp)
+                    .height(if (hasMatch) 5.dp else 3.dp)
+                    .clip(CircleShape)
+                    .background(
+                        when {
+                            hasMatch && selected -> BrandWhite
+                            hasMatch -> BrandGreen
+                            else -> Color.Transparent
+                        }
+                    )
+            )
         }
     }
 }
@@ -475,38 +682,38 @@ fun CalendarMatchCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CalendarCardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(7.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CalendarBadge(
                     text = if (jogo.isLive) "● LIVE NOW" else if (jogo.isFinished) "● COMPLETED" else "● UPCOMING",
-                    backgroundColor = if (jogo.isLive) BrandGreen.copy(alpha = 0.12f) else Color(0xFFEAF0FB),
-                    textColor = if (jogo.isLive) BrandGreen else Color(0xFF0757C8)
+                    backgroundColor = if (jogo.isLive) CalendarSoftGreen else CalendarSoftBlue,
+                    textColor = if (jogo.isLive) BrandGreen else CalendarPrimaryBlue
                 )
 
                 CalendarBadge(
                     text = jogo.modalidadeNome.uppercase(),
-                    backgroundColor = Color(0xFFEFF1F6),
-                    textColor = Color(0xFF6D7486)
+                    backgroundColor = CalendarInputBg,
+                    textColor = CalendarTextGray
                 )
 
                 if (reminderSet) {
                     CalendarBadge(
                         text = "REMINDER SET",
-                        backgroundColor = BrandGreen.copy(alpha = 0.12f),
+                        backgroundColor = CalendarSoftGreen,
                         textColor = BrandGreen
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -517,41 +724,7 @@ fun CalendarMatchCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (jogo.isLive || jogo.isFinished) {
-                        Text(
-                            text = "${jogo.pontosCasa} - ${jogo.pontosFora}",
-                            color = BrandBlue,
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        if (jogo.isLive) {
-                            Text(
-                                text = "75'",
-                                color = Color(0xFFE53935),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    } else {
-                        Text(
-                            text = "VS",
-                            color = BrandBlue,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = "in ${jogo.hora.take(5)}",
-                            color = Color(0xFF6D7486),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                MatchScoreBlock(jogo = jogo)
 
                 CalendarTeamBlock(
                     teamName = jogo.equipaFora,
@@ -559,24 +732,32 @@ fun CalendarMatchCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            Text(
-                text = "⌖ ${jogo.local}",
-                color = Color(0xFF6D7486),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(CalendarInputBg)
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = "⌖ ${jogo.local}",
+                    color = CalendarTextGray,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             if (jogo.isLive) {
                 Button(
                     onClick = onWatchLiveClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(42.dp),
-                    shape = RoundedCornerShape(5.dp),
+                        .height(48.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BrandGreen,
                         contentColor = BrandWhite
@@ -584,7 +765,7 @@ fun CalendarMatchCard(
                 ) {
                     Text(
                         text = "WATCH LIVE",
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -596,14 +777,17 @@ fun CalendarMatchCard(
                         onClick = onReminderClick,
                         modifier = Modifier
                             .weight(1f)
-                            .height(42.dp),
-                        shape = RoundedCornerShape(5.dp)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = CalendarPrimaryBlue
+                        )
                     ) {
                         Text(
                             text = if (reminderSet) "REMINDER SET" else "SET REMINDER",
-                            color = Color(0xFF0757C8),
                             fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         )
                     }
 
@@ -611,20 +795,68 @@ fun CalendarMatchCard(
                         onClick = onDetailsClick,
                         modifier = Modifier
                             .weight(1f)
-                            .height(42.dp),
-                        shape = RoundedCornerShape(5.dp),
+                            .height(48.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF0757C8),
+                            containerColor = CalendarDarkBlue,
                             contentColor = BrandWhite
                         )
                     ) {
                         Text(
                             text = "DETAILS",
-                            fontSize = 10.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun MatchScoreBlock(jogo: PlayerCalendarMatchInfo) {
+    Box(
+        modifier = Modifier
+            .width(82.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(CalendarSoftBlue)
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (jogo.isLive || jogo.isFinished) {
+                Text(
+                    text = "${jogo.pontosCasa} - ${jogo.pontosFora}",
+                    color = CalendarDarkBlue,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                if (jogo.isLive) {
+                    Text(
+                        text = "75'",
+                        color = Color(0xFFE53935),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                Text(
+                    text = "VS",
+                    color = CalendarDarkBlue,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = jogo.hora.take(5),
+                    color = CalendarTextGray,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -641,27 +873,29 @@ fun CalendarTeamBlock(
     ) {
         Box(
             modifier = Modifier
-                .width(42.dp)
-                .height(42.dp)
+                .width(48.dp)
+                .height(48.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFEAF0FB)),
+                .background(CalendarSoftBlue),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = calendarTeamInitials(teamName),
-                color = BrandBlue,
-                fontSize = 12.sp,
+                color = CalendarDarkBlue,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = teamName,
-            color = BrandBlue,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            color = CalendarDarkBlue,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 13.sp
         )
     }
 }
@@ -676,7 +910,7 @@ fun CalendarBadge(
         modifier = Modifier
             .clip(RoundedCornerShape(18.dp))
             .background(backgroundColor)
-            .padding(horizontal = 9.dp, vertical = 5.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -690,33 +924,75 @@ fun CalendarBadge(
 }
 
 @Composable
+fun MessageCard(
+    message: String,
+    isError: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFFFF1F1) else CalendarSoftGreen
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = message,
+            color = if (isError) Color(0xFFD01818) else BrandGreen,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Composable
 fun CalendarEmptyCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CalendarCardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 28.dp),
+                .padding(vertical = 34.dp, horizontal = 18.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Box(
+                modifier = Modifier
+                    .width(58.dp)
+                    .height(58.dp)
+                    .clip(CircleShape)
+                    .background(CalendarInputBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "–",
+                    color = CalendarTextGray,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             Text(
-                text = "No tournaments",
-                color = BrandBlue,
-                fontSize = 16.sp,
+                text = "No matches scheduled",
+                color = CalendarDarkBlue,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "There are no tournaments on this day.",
-                color = Color(0xFF6D7486),
+                text = "There are no matches on this selected day.",
+                color = CalendarTextGray,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
             )
         }
     }

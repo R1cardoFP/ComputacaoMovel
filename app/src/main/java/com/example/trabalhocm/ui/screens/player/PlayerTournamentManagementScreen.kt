@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.player
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,17 +13,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -32,14 +38,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,13 +61,17 @@ import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.Icon
+
+private val TournamentManagementBg = Color(0xFFF4F6FA)
+private val TournamentManagementCard = Color.White
+private val TournamentManagementInputBg = Color(0xFFF1F4F8)
+private val TournamentManagementTextGray = Color(0xFF596579)
+private val TournamentManagementTextLight = Color(0xFF8A94A6)
+private val TournamentManagementAccentBlue = Color(0xFF0757C8)
+private val TournamentManagementDanger = Color(0xFFE53935)
+private val TournamentManagementDisabled = Color(0xFFDDE1EA)
 
 @Composable
 fun PlayerTournamentManagementScreen(
@@ -134,10 +146,21 @@ fun PlayerTournamentManagementScreen(
     val fromDate = PlayerTournamentFiltersState.fromDate
     val toDate = PlayerTournamentFiltersState.toDate
 
+    val torneiosFiltrados = listaTorneios.filter { torneio ->
+        val nomeOk = torneio.nome.contains(search, ignoreCase = true)
+        val modalidadeOk = torneioCorrespondeModalidade(selectedSport, torneio.idModalidade)
+        val formatoOk = torneioCorrespondeFormato(selectedFormat, torneio.formato)
+        val estadoOk = torneioCorrespondeEstado(selectedStatus, torneio.estado)
+        val regiaoOk = torneioCorrespondeRegiao(selectedRegion, cityOrRegion, torneio.local)
+        val dataOk = torneioCorrespondeData(torneio.dataInicio, fromDate, toDate)
+
+        nomeOk && modalidadeOk && formatoOk && estadoOk && regiaoOk && dataOk
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(TournamentManagementBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -149,91 +172,102 @@ fun PlayerTournamentManagementScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 22.dp, vertical = 20.dp)
+                .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
-            Text(
-                text = "Tournament\nManagement",
-                color = BrandBlue,
-                fontSize = 30.sp,
-                lineHeight = 33.sp,
-                fontWeight = FontWeight.Bold
+            PlayerTournamentManagementHeroCard(
+                totalTournaments = listaTorneios.size,
+                visibleTournaments = torneiosFiltrados.size,
+                registeredCount = equipasInscritasMap.count { it.value },
+                isCaptain = idMinhaEquipa != null
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = "Visualize and manage all your active and upcoming\nleagues.",
-                color = Color(0xFF6D7486),
-                fontSize = 15.sp,
-                lineHeight = 22.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TournamentMainActionButton(
                     modifier = Modifier.weight(1f),
                     text = "HISTORY",
                     icon = "◷",
-                    backgroundColor = Color(0xFFF0F2FA),
+                    backgroundColor = TournamentManagementCard,
                     textColor = BrandBlue,
+                    subText = "Past tournaments",
                     onClick = onHistoryClick
                 )
 
                 TournamentMainActionButton(
                     modifier = Modifier.weight(1f),
-                    text = "ASK TO BE\nORGANIZER",
-                    icon = "⊕",
-                    backgroundColor = Color(0xFF0757C8),
+                    text = "ASK TO BE ORGANIZER",
+                    icon = "+",
+                    backgroundColor = BrandBlue,
                     textColor = BrandWhite,
+                    subText = "Create your events",
                     onClick = onAskOrganizerClick
                 )
             }
 
-            Spacer(modifier = Modifier.height(22.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             TournamentSearchAndFilters(
                 search = search,
                 selectedSport = selectedSport,
                 selectedStatus = selectedStatus,
+                selectedFormat = selectedFormat,
+                selectedRegion = selectedRegion,
                 onSearchChange = { search = it },
                 onFiltersClick = onFiltersClick
             )
 
-            Spacer(modifier = Modifier.height(22.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = BrandGreen)
-                }
-            } else {
-                val torneiosFiltrados = listaTorneios.filter { torneio ->
-                    val nomeOk = torneio.nome.contains(search, ignoreCase = true)
-                    val modalidadeOk = torneioCorrespondeModalidade(selectedSport, torneio.idModalidade)
-                    val formatoOk = torneioCorrespondeFormato(selectedFormat, torneio.formato)
-                    val estadoOk = torneioCorrespondeEstado(selectedStatus, torneio.estado)
-                    val regiaoOk = torneioCorrespondeRegiao(selectedRegion, cityOrRegion, torneio.local)
-                    val dataOk = torneioCorrespondeData(torneio.dataInicio, fromDate, toDate)
-
-                    nomeOk && modalidadeOk && formatoOk && estadoOk && regiaoOk && dataOk
+            when {
+                isLoading -> {
+                    TournamentManagementLoadingCard()
                 }
 
-                if (torneiosFiltrados.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                        Text("No tournaments found.", color = Color.Gray)
+                torneiosFiltrados.isEmpty() -> {
+                    TournamentManagementMessageCard(
+                        title = "No tournaments found",
+                        text = "Try changing the search or opening the filters to broaden the results.",
+                        color = TournamentManagementTextGray
+                    )
+                }
+
+                else -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Available tournaments",
+                                color = BrandBlue,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = "${torneiosFiltrados.size} result${if (torneiosFiltrados.size == 1) "" else "s"} found",
+                                color = TournamentManagementTextLight,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(1.dp))
                     }
-                } else {
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     torneiosFiltrados.forEach { torneio ->
 
                         val isAlreadyRegistered = equipasInscritasMap[torneio.id] == true
                         val estadoAberto = torneio.estado?.lowercase() == "aberto"
 
                         val tagEstado = if (estadoAberto) "OPEN" else (torneio.estado?.uppercase() ?: "LIVE")
-                        val corEstado = if (estadoAberto) BrandGreen else Color(0xFFE53935)
+                        val corEstado = if (estadoAberto) BrandGreen else TournamentManagementDanger
 
                         // Lógica do Botão Principal:
                         // Se já está inscrito, mostra "REGISTERED". Se não, depende de estar "aberto"
@@ -256,14 +290,11 @@ fun PlayerTournamentManagementScreen(
                             status = tagEstado,
                             statusColor = corEstado,
                             tags = listOf(torneio.formato?.uppercase() ?: "LEAGUE", modalidadeNome),
-                            infoText = null,
+                            infoText = if (isAlreadyRegistered) "YOUR TEAM IS REGISTERED" else null,
                             title = torneio.nome,
                             date = "Start: ${torneio.dataInicio ?: "TBD"}",
-                            teamsText = null,
-                            gamesText = null,
-                            registeredText = null,
-                            progress = null,
-                            progressColor = BrandGreen,
+                            location = torneio.local,
+                            prize = torneio.premio,
                             primaryButtonText = btnTexto,
                             secondaryButtonText = "DETAILS",
                             disabledButton = desativarBotao,
@@ -273,11 +304,12 @@ fun PlayerTournamentManagementScreen(
                             }
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(22.dp))
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
 
         MatchLeagueBottomBar(
@@ -298,26 +330,170 @@ fun PlayerTournamentTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(78.dp)
+            .height(72.dp)
             .background(BrandBlue)
-            .padding(horizontal = 28.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = "Tournaments",
+                color = BrandWhite,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic
+            )
+
+            Text(
+                text = "Discover and manage competitions",
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onNotificationsClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Notifications",
+                tint = BrandWhite,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlayerTournamentManagementHeroCard(
+    totalTournaments: Int,
+    visibleTournaments: Int,
+    registeredCount: Int,
+    isCaptain: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "TOURNAMENT HUB",
+                        color = BrandGreen,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "Tournament\nManagement",
+                        color = BrandWhite,
+                        fontSize = 28.sp,
+                        lineHeight = 31.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(58.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🏆",
+                        fontSize = 25.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = if (isCaptain) {
+                    "Browse tournaments, check your registrations and register your team in open competitions."
+                } else {
+                    "Browse tournaments and ask to become an organizer or captain to unlock registrations."
+                },
+                color = BrandWhite.copy(alpha = 0.82f),
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                TournamentHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    label = "TOTAL",
+                    value = totalTournaments.toString()
+                )
+
+                TournamentHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    label = "VISIBLE",
+                    value = visibleTournaments.toString()
+                )
+
+                TournamentHeroMetric(
+                    modifier = Modifier.weight(1f),
+                    label = "REGISTERED",
+                    value = registeredCount.toString()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TournamentHeroMetric(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.11f))
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "List",
+            text = value,
             color = BrandWhite,
-            fontSize = 22.sp,
+            fontSize = 19.sp,
             fontWeight = FontWeight.Bold
         )
 
-        Icon(
-            imageVector = Icons.Outlined.Notifications,
-            contentDescription = "Notifications",
-            tint = BrandWhite,
-            modifier = Modifier
-                .size(26.dp)
-                .clickable { onNotificationsClick() }
+        Text(
+            text = label,
+            color = BrandWhite.copy(alpha = 0.70f),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp,
+            maxLines = 1
         )
     }
 }
@@ -329,40 +505,67 @@ fun TournamentMainActionButton(
     icon: String,
     backgroundColor: Color,
     textColor: Color,
+    subText: String,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
-            .height(58.dp)
+            .height(86.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+                .padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = icon,
-                color = textColor,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (backgroundColor == BrandBlue) Color.White.copy(alpha = 0.14f)
+                        else TournamentManagementInputBg
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = icon,
+                    color = textColor,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            Text(
-                text = text,
-                color = textColor,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = text,
+                    color = textColor,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.8.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(3.dp))
+
+                Text(
+                    text = subText,
+                    color = textColor.copy(alpha = 0.72f),
+                    fontSize = 10.sp,
+                    lineHeight = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
@@ -372,47 +575,86 @@ fun TournamentSearchAndFilters(
     search: String,
     selectedSport: String?,
     selectedStatus: String?,
+    selectedFormat: String?,
+    selectedRegion: String?,
     onSearchChange: (String) -> Unit,
     onFiltersClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = TournamentManagementCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Search and filters",
+                        color = BrandBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "Find competitions that match your team",
+                        color = TournamentManagementTextLight,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(TournamentManagementInputBg),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "⌕",
+                        color = TournamentManagementAccentBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             OutlinedTextField(
                 value = search,
                 onValueChange = onSearchChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp),
+                    .height(56.dp),
                 singleLine = true,
                 placeholder = {
                     Text(
                         text = "Search tournaments...",
-                        color = Color(0xFF9EA4B3),
+                        color = TournamentManagementTextLight,
                         fontSize = 14.sp
                     )
                 },
                 leadingIcon = {
                     Text(
                         text = "⌕",
-                        color = Color(0xFF8D94A3),
+                        color = TournamentManagementTextLight,
                         fontSize = 18.sp
                     )
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text
                 ),
-                shape = RoundedCornerShape(5.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = BrandWhite,
-                    unfocusedContainerColor = BrandWhite,
-                    focusedBorderColor = Color.Transparent,
+                    focusedContainerColor = TournamentManagementInputBg,
+                    unfocusedContainerColor = TournamentManagementInputBg,
+                    focusedBorderColor = BrandGreen,
                     unfocusedBorderColor = Color.Transparent,
                     cursorColor = BrandGreen,
                     focusedTextColor = BrandBlue,
@@ -420,7 +662,7 @@ fun TournamentSearchAndFilters(
                 )
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -428,29 +670,55 @@ fun TournamentSearchAndFilters(
             ) {
                 FilterBox(
                     modifier = Modifier.weight(1f),
-                    text = "Sport: ${selectedSport ?: "All"}"
+                    label = "Sport",
+                    text = selectedSport ?: "All"
                 )
 
                 FilterBox(
                     modifier = Modifier.weight(1f),
-                    text = "Status: ${selectedStatus ?: "All"}"
+                    label = "Status",
+                    text = selectedStatus ?: "All"
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterBox(
+                    modifier = Modifier.weight(1f),
+                    label = "Format",
+                    text = selectedFormat ?: "All"
+                )
+
+                FilterBox(
+                    modifier = Modifier.weight(1f),
+                    label = "Region",
+                    text = selectedRegion ?: "All"
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
                 onClick = onFiltersClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp),
-                shape = RoundedCornerShape(5.dp)
+                    .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, TournamentManagementInputBg),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = TournamentManagementCard
+                )
             ) {
                 Text(
                     text = "≡  FILTERS",
                     color = BrandBlue,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.7.sp
                 )
             }
         }
@@ -460,21 +728,33 @@ fun TournamentSearchAndFilters(
 @Composable
 fun FilterBox(
     modifier: Modifier = Modifier,
+    label: String,
     text: String
 ) {
-    Box(
+    Column(
         modifier = modifier
-            .height(42.dp)
-            .clip(RoundedCornerShape(5.dp))
-            .background(Color(0xFFF0F2FA))
-            .padding(horizontal = 14.dp),
-        contentAlignment = Alignment.CenterStart
+            .height(56.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(TournamentManagementInputBg)
+            .padding(horizontal = 14.dp, vertical = 9.dp),
+        verticalArrangement = Arrangement.Center
     ) {
+        Text(
+            text = label.uppercase(),
+            color = TournamentManagementTextLight,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp,
+            maxLines = 1
+        )
+
         Text(
             text = text,
             color = BrandBlue,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -487,11 +767,8 @@ fun PlayerTournamentCard(
     infoText: String?,
     title: String,
     date: String,
-    teamsText: String?,
-    gamesText: String?,
-    registeredText: String? = null,
-    progress: Float?,
-    progressColor: Color,
+    location: String?,
+    prize: Double?,
     primaryButtonText: String?,
     secondaryButtonText: String,
     disabledButton: Boolean,
@@ -500,8 +777,8 @@ fun PlayerTournamentCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = TournamentManagementCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -510,133 +787,129 @@ fun PlayerTournamentCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TournamentBadge(
-                    text = status,
-                    color = statusColor,
-                    strong = true
-                )
-
-                Spacer(modifier = Modifier.width(6.dp))
-
-                tags.forEach { tag ->
-                    TournamentBadge(
-                        text = tag,
-                        color = Color(0xFF7D8497),
-                        strong = false
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(statusColor.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = title.take(1).uppercase(),
+                        color = statusColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
                     )
+                }
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TournamentBadge(
+                            text = status,
+                            color = statusColor,
+                            strong = true
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        tags.take(1).forEach { tag ->
+                            TournamentBadge(
+                                text = tag,
+                                color = TournamentManagementTextGray,
+                                strong = false
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = title,
+                        color = BrandBlue,
+                        fontSize = 18.sp,
+                        lineHeight = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
             if (!infoText.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = infoText,
-                    color = BrandGreen,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = title,
-                color = BrandBlue,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(7.dp))
-
-            Text(
-                text = "▣  $date",
-                color = Color(0xFF7D8497),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(13.dp))
-
-            if (teamsText != null && gamesText != null) {
-                Row {
-                    Column {
-                        Text(
-                            text = "TEAMS",
-                            color = Color(0xFF7D8497),
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = teamsText,
-                            color = BrandBlue,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(24.dp))
-
-                    Column {
-                        Text(
-                            text = "GAMES TODAY",
-                            color = Color(0xFF7D8497),
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = gamesText,
-                            color = Color(0xFF0757C8),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            if (progress != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "REGISTERED",
-                        color = Color(0xFF7D8497),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    if (!registeredText.isNullOrBlank()) {
-                        Text(
-                            text = registeredText,
-                            color = BrandBlue,
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                /*LinearProgressIndicator(
-                    progress = { progress },
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(5.dp)
-                        .clip(RoundedCornerShape(10.dp)),
-                    color = progressColor,
-                    trackColor = Color(0xFFECEEF7)
-                )*/
-
-                Spacer(modifier = Modifier.height(18.dp))
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(BrandGreen.copy(alpha = 0.11f))
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = infoText,
+                        color = BrandGreen,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.7.sp
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(TournamentManagementInputBg)
+                    .padding(14.dp)
+            ) {
+                TournamentInfoRow(
+                    label = "DATE",
+                    value = date,
+                    icon = "▣"
+                )
+
+                if (!location.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TournamentInfoRow(
+                        label = "LOCATION",
+                        value = location,
+                        icon = "⌖"
+                    )
+                }
+
+                if (prize != null && prize > 0.0) {
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TournamentInfoRow(
+                        label = "PRIZE",
+                        value = "€$prize",
+                        icon = "★"
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    tags.drop(1).forEach { tag ->
+                        TournamentSmallBadge(
+                            text = tag,
+                            color = Color.White,
+                            textColor = TournamentManagementTextGray
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -646,12 +919,16 @@ fun PlayerTournamentCard(
                     onClick = onDetailsClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(42.dp),
-                    shape = RoundedCornerShape(3.dp)
+                        .height(48.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, TournamentManagementInputBg),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = TournamentManagementCard
+                    )
                 ) {
                     Text(
                         text = "⊙  $secondaryButtonText",
-                        color = Color(0xFF0757C8),
+                        color = TournamentManagementAccentBlue,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -661,29 +938,74 @@ fun PlayerTournamentCard(
                     Button(
                         onClick = onPrimaryClick,
                         modifier = Modifier
-                            .weight(1.2f)
-                            .height(42.dp),
+                            .weight(1.25f)
+                            .height(48.dp),
                         enabled = !disabledButton,
-                        shape = RoundedCornerShape(3.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (disabledButton) {
-                                Color(0xFFDDE1EA)
-                            } else {
-                                BrandGreen
-                            },
-                            disabledContainerColor = Color(0xFFDDE1EA),
+                            containerColor = BrandGreen,
+                            disabledContainerColor = TournamentManagementDisabled,
                             contentColor = BrandWhite,
-                            disabledContentColor = Color(0xFF7D8497)
+                            disabledContentColor = TournamentManagementTextGray
                         )
                     ) {
                         Text(
                             text = if (disabledButton) primaryButtonText else "✓  $primaryButtonText",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 13.sp
                         )
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TournamentInfoRow(
+    label: String,
+    value: String,
+    icon: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(30.dp)
+                .clip(CircleShape)
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = icon,
+                color = TournamentManagementAccentBlue,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Column {
+            Text(
+                text = label,
+                color = TournamentManagementTextLight,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp
+            )
+
+            Text(
+                text = value,
+                color = BrandBlue,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -699,9 +1021,9 @@ fun TournamentBadge(
             .clip(RoundedCornerShape(20.dp))
             .background(
                 if (strong) color.copy(alpha = 0.12f)
-                else Color(0xFFF0F2FA)
+                else TournamentManagementInputBg
             )
-            .padding(horizontal = 9.dp, vertical = 4.dp),
+            .padding(horizontal = 9.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -710,6 +1032,102 @@ fun TournamentBadge(
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+@Composable
+private fun TournamentSmallBadge(
+    text: String,
+    color: Color,
+    textColor: Color
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(color)
+            .padding(horizontal = 9.dp, vertical = 5.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun TournamentManagementLoadingCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = TournamentManagementCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 42.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = BrandGreen)
+        }
+    }
+}
+
+@Composable
+private fun TournamentManagementMessageCard(
+    title: String,
+    text: String,
+    color: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = TournamentManagementCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .background(TournamentManagementInputBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "⌕",
+                    color = TournamentManagementTextLight,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = title,
+                color = BrandBlue,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = text,
+                color = color,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 

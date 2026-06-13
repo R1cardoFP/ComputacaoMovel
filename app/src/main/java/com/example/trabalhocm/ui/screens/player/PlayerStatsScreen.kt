@@ -47,6 +47,8 @@ private val BgGray = Color(0xFFF4F5FA)
 private val TextGray = Color(0xFF7D8497)
 private val TextDark = Color(0xFF303646)
 private val InputBg = Color(0xFFF1F2FB)
+private val SoftGreen = Color(0xFFE7F7F4)
+private val SoftBlue = Color(0xFFEAF0FF)
 
 @Composable
 fun PlayerStatsScreen(
@@ -60,7 +62,7 @@ fun PlayerStatsScreen(
     volleyballSpikes: Int = 0,
     volleyballWinRate: Int = 0,
     onBackClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {} // <-- NOVO PARAMETRO AQUI
+    onNotificationsClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -69,37 +71,10 @@ fun PlayerStatsScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .background(BrandBlue)
-                .padding(horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "←",
-                color = BrandWhite,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onBackClick() }
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = stringResource(R.string.player_common_profile),
-                color = BrandWhite,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            // --- MUDANÇA DE EMOJI PARA O ICONE OFICIAL ---
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = stringResource(R.string.player_common_notifications),
-                tint = BrandWhite,
-                modifier = Modifier.clickable { onNotificationsClick() }
-            )
-        }
+        PlayerStatsTopBar(
+            onBackClick = onBackClick,
+            onNotificationsClick = onNotificationsClick
+        )
 
         Column(
             modifier = Modifier
@@ -107,14 +82,16 @@ fun PlayerStatsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
-            // CABEÇALHO LIMPO DE DADOS FALSOS
             StatsHeaderCard(
                 name = playerName,
                 username = playerUsername,
-                photoUri = playerPhotoUri
+                photoUri = playerPhotoUri,
+                footballGoals = footballGoals,
+                basketballPoints = basketballPoints,
+                volleyballPoints = volleyballSpikes
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             SportStatCard(
                 sportName = stringResource(R.string.player_sport_football),
@@ -156,46 +133,74 @@ fun PlayerStatsScreen(
                 stat2Color = BrandGreen
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.player_stats_match_history),
-                    color = TextDark,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = stringResource(R.string.player_common_view_all),
-                    color = Color(0xFF3566C9),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.player_stats_last5),
-                color = TextGray,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // LISTA DE JOGOS LIMPA. FUTURAMENTE PODES INJETAR OS JOGOS REAIS AQUI
-            Text(
-                text = stringResource(R.string.player_stats_no_matches),
-                color = TextGray,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(vertical = 12.dp)
-            )
+            MatchHistorySection()
 
             Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@Composable
+private fun PlayerStatsTopBar(
+    onBackClick: () -> Unit,
+    onNotificationsClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(BrandBlue)
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                color = BrandWhite,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.player_common_profile),
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = stringResource(R.string.player_stats_match_history),
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onNotificationsClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = stringResource(R.string.player_common_notifications),
+                tint = BrandWhite
+            )
         }
     }
 }
@@ -204,25 +209,29 @@ fun PlayerStatsScreen(
 fun StatsHeaderCard(
     name: String,
     username: String,
-    photoUri: Uri?
+    photoUri: Uri?,
+    footballGoals: Int = 0,
+    basketballPoints: Int = 0,
+    volleyballPoints: Int = 0
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp),
+                .padding(22.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(88.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(2.dp, BrandGreen, RoundedCornerShape(12.dp))
-                    .background(Color.LightGray),
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .border(3.dp, BrandGreen, CircleShape)
+                    .background(Color.White.copy(alpha = 0.14f)),
                 contentAlignment = Alignment.Center
             ) {
                 if (photoUri != null) {
@@ -243,7 +252,7 @@ fun StatsHeaderCard(
                 text = name,
                 color = BrandWhite,
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Bold
             )
 
             if (username.isNotEmpty()) {
@@ -255,7 +264,59 @@ fun StatsHeaderCard(
                     fontWeight = FontWeight.Bold
                 )
             }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                HeaderMiniStat(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.player_sport_football),
+                    value = footballGoals.toString()
+                )
+                HeaderMiniStat(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.player_sport_basketball),
+                    value = basketballPoints.toString()
+                )
+                HeaderMiniStat(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.player_sport_volleyball),
+                    value = volleyballPoints.toString()
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun HeaderMiniStat(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.10f))
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            color = BrandWhite,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = label,
+            color = BrandWhite.copy(alpha = 0.70f),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -273,11 +334,12 @@ fun SportStatCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -287,66 +349,158 @@ fun SportStatCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(InputBg),
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(SoftBlue),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(sportIcon, fontSize = 16.sp)
+                        Text(sportIcon, fontSize = 22.sp)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = sportName,
-                        color = TextDark,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column {
+                        Text(
+                            text = sportName,
+                            color = TextDark,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.player_stats_last5),
+                            color = TextGray,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
                 }
 
                 if (roleTag.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFE2E6F2))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(InputBg)
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
-                        Text(roleTag, color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = roleTag,
+                            color = TextGray,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(BrandWhite)
-                        .border(1.dp, InputBg, RoundedCornerShape(8.dp))
-                        .padding(16.dp)
-                ) {
-                    Column {
-                        Text(stat1Label, color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(stat1Value, color = stat1Color, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    }
+                StatValueBox(
+                    modifier = Modifier.weight(1f),
+                    label = stat1Label,
+                    value = stat1Value,
+                    valueColor = stat1Color,
+                    background = SoftBlue
+                )
+                StatValueBox(
+                    modifier = Modifier.weight(1f),
+                    label = stat2Label,
+                    value = stat2Value,
+                    valueColor = stat2Color,
+                    background = SoftGreen
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatValueBox(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    valueColor: Color,
+    background: Color
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(background)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = label,
+            color = TextGray,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = value,
+            color = valueColor,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun MatchHistorySection() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.player_stats_match_history),
+                        color = TextDark,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.player_stats_last5),
+                        color = TextGray,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
                 }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(BrandWhite)
-                        .border(1.dp, InputBg, RoundedCornerShape(8.dp))
-                        .padding(16.dp)
-                ) {
-                    Column {
-                        Text(stat2Label, color = TextGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(stat2Value, color = stat2Color, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
+                Text(
+                    text = stringResource(R.string.player_common_view_all),
+                    color = BrandGreen,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(InputBg)
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.player_stats_no_matches),
+                    color = TextGray,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
@@ -360,51 +514,63 @@ fun MatchHistoryRow(
     subtitle: String,
     resultIcon: String
 ) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .border(1.dp, Color.LightGray, CircleShape),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("⚽", fontSize = 20.sp)
-        }
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(InputBg)
+                    .border(1.dp, Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("⚽", fontSize = 20.sp)
+            }
 
-        Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "$team1 vs $team2",
-                color = TextDark,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = subtitle,
-                color = TextGray,
-                fontSize = 11.sp
-            )
-        }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "$team1 vs $team2",
+                    color = TextDark,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    color = TextGray,
+                    fontSize = 11.sp
+                )
+            }
 
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = score,
-                color = TextDark,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = resultIcon,
-                color = BrandGreen,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = score,
+                    color = TextDark,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = resultIcon,
+                    color = BrandGreen,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
