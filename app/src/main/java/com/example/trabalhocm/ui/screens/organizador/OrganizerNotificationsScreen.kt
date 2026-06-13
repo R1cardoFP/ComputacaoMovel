@@ -66,9 +66,10 @@ fun OrganizerNotificationsScreen(
 ) {
     val tabAll = stringResource(R.string.tab_all)
     val tabMatches = stringResource(R.string.tab_matches)
+    val tabTeams = "Teams"
     val tabSystem = stringResource(R.string.tab_system)
 
-    val tabs = listOf(tabAll, tabMatches, tabSystem)
+    val tabs = listOf(tabAll, tabMatches, tabTeams, tabSystem)
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
     val notifications = viewModel.notificacoes.map { n ->
@@ -86,6 +87,7 @@ fun OrganizerNotificationsScreen(
     val filteredNotifications = notifications.filter { notif ->
         when (selectedTab) {
             tabMatches -> notif.type == NotificationType.MATCH
+            tabTeams -> notif.type == NotificationType.TEAM
             tabSystem -> notif.type == NotificationType.SYSTEM
             else -> true
         }

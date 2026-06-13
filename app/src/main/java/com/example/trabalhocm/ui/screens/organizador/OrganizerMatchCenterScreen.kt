@@ -49,6 +49,7 @@ fun OrganizerMatchCenterScreen(
     onHistoryClick: () -> Unit = {},
     onCreateCasualMatchClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -107,8 +108,12 @@ fun OrganizerMatchCenterScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_matches), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { carregarPeladinhas() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_refresh), tint = Color.White)
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            Icons.Outlined.Notifications,
+                            contentDescription = stringResource(R.string.desc_notifications),
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)

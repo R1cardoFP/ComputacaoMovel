@@ -41,6 +41,7 @@ fun OrganizerTournamentsScreen(
     onInviteTeamsClick: (Long) -> Unit = { _ -> },
     onManageRegistrationClick: (Long) -> Unit = { _ -> },
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -69,8 +70,12 @@ fun OrganizerTournamentsScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_list), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { viewModel.carregarTorneios() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_refresh), tint = Color.White)
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            Icons.Outlined.Notifications,
+                            contentDescription = stringResource(R.string.desc_notifications),
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)

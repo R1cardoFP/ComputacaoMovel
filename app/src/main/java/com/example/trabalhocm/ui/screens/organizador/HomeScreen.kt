@@ -77,6 +77,7 @@ fun HomeScreen(
     onLiveMatchesClick: () -> Unit = {},
     onCreateTeamClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -94,13 +95,11 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = {
-                            viewModel.carregarDashboard()
-                        }
+                        onClick = onNotificationsClick
                     ) {
                         Icon(
                             Icons.Outlined.Notifications,
-                            contentDescription = stringResource(R.string.desc_refresh_dashboard),
+                            contentDescription = stringResource(R.string.desc_notifications),
                             tint = Color.White
                         )
                     }
