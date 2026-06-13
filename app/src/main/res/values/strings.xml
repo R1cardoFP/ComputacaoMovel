@@ -1503,4 +1503,6 @@
     <string name="player_home_label_spikes">SPIKES</string>
     <string name="player_home_global_rank">YOUR GLOBAL RANK</string>
     <string name="player_common_vs">VS</string>
+
+    <string name="admin_tournaments_capacity">Capacity</string>
 </resources>

@@ -793,7 +793,7 @@
     <string name="admin_tournament_details_manage_registration">Gerir Inscrições</string>
     <string name="admin_tournament_details_edit_tournament">Editar Torneio</string>
 
-    <string name="admin_tournament_details_status_in_progress">Em Decorrer</string>
+    <string name="admin_tournament_details_status_in_progress">A Decorrer</string>
 
     <string name="admin_tournament_edit_top_title">Detalhes do Torneio</string>
     <string name="admin_tournament_edit_error_loading">Erro ao carregar torneio</string>
@@ -1507,5 +1507,7 @@
     <string name="player_home_label_points">PONTOS</string>
     <string name="player_home_label_spikes">REMATES</string>
     <string name="player_home_global_rank">O TEU RANK GLOBAL</string>
+
+    <string name="admin_tournaments_capacity">Capacidade</string>
     <string name="player_common_vs">VS</string>
 </resources>
