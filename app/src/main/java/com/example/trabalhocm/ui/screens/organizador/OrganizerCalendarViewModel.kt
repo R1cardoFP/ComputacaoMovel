@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 data class CalendarGame(
+    val ano: Int,
+    val mes: Int,
     val dia: Int,
     val hora: String,
     val idModalidade: Long,
@@ -41,7 +43,6 @@ class OrganizerCalendarViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             val userId = SupabaseClient.client.auth.currentUserOrNull()?.id
-            val hoje = LocalDate.now()
 
             val torneios = torneioRepository.listarTorneios().getOrNull().orEmpty()
             val meusTorneios = torneios.filter { it.idOrganizador == userId }
@@ -61,11 +62,6 @@ class OrganizerCalendarViewModel : ViewModel() {
                     val data = runCatching { LocalDate.parse(jogo.data.take(10)) }.getOrNull()
                         ?: return@mapNotNull null
 
-                    // Apenas jogos do mês atual (evita colisões de dia entre meses)
-                    if (data.month != hoje.month || data.year != hoje.year) {
-                        return@mapNotNull null
-                    }
-
                     val equipasDoJogo = jePorJogo[jogo.id].orEmpty()
                     val casa = equipasDoJogo.firstOrNull { it.papelEquipa == "casa" } ?: return@mapNotNull null
                     val fora = equipasDoJogo.firstOrNull { it.papelEquipa == "fora" } ?: return@mapNotNull null
@@ -75,6 +71,8 @@ class OrganizerCalendarViewModel : ViewModel() {
                     else "${casa.pontosMarcados} - ${fora.pontosMarcados}"
 
                     CalendarGame(
+                        ano = data.year,
+                        mes = data.monthValue,
                         dia = data.dayOfMonth,
                         hora = jogo.hora.take(5),
                         idModalidade = modalidadePorTorneio[jogo.idTorneio] ?: 0L,

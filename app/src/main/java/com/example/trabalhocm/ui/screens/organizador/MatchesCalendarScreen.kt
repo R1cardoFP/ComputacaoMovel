@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trabalhocm.R
 import com.example.trabalhocm.ui.screens.organizador.OrganizerCalendarViewModel
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -60,8 +61,9 @@ fun MatchesCalendarScreen(
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {}
 ) {
-    val today = remember { LocalDate.now().dayOfMonth }
-    var selectedDay by remember { mutableStateOf(today) }
+    val hoje = remember { LocalDate.now() }
+    var displayedMonth by remember { mutableStateOf(YearMonth.now()) }
+    var selectedDay by remember { mutableStateOf(hoje.dayOfMonth) }
 
     val sportFootball = stringResource(R.string.sport_football)
     val sportBasketball = stringResource(R.string.sport_basketball)
@@ -69,28 +71,31 @@ fun MatchesCalendarScreen(
     val sportDefault = stringResource(R.string.sport_default)
     val liveLabel = stringResource(R.string.badge_live_now)
 
-    val allMatches = viewModel.jogos.map { g ->
-        MatchEvent(
-            day = g.dia,
-            time = g.hora,
-            sport = when (g.idModalidade) {
-                1L -> sportFootball
-                2L -> sportBasketball
-                3L -> sportVolleyball
-                else -> sportDefault
-            },
-            team1 = g.team1,
-            team2 = g.team2,
-            statusText = g.score,
-            subStatus = if (g.isLive) liveLabel else g.hora,
-            location = g.local,
-            isLive = g.isLive
-        )
-    }
+    val allMatches = viewModel.jogos
+        .filter { it.ano == displayedMonth.year && it.mes == displayedMonth.monthValue }
+        .map { g ->
+            MatchEvent(
+                day = g.dia,
+                time = g.hora,
+                sport = when (g.idModalidade) {
+                    1L -> sportFootball
+                    2L -> sportBasketball
+                    3L -> sportVolleyball
+                    else -> sportDefault
+                },
+                team1 = g.team1,
+                team2 = g.team2,
+                statusText = g.score,
+                subStatus = if (g.isLive) liveLabel else g.hora,
+                location = g.local,
+                isLive = g.isLive
+            )
+        }
 
     val daysWithEvents = allMatches.map { it.day }.distinct()
 
     val filteredMatches = allMatches.filter { it.day == selectedDay }
+    val isCurrentMonth = displayedMonth == YearMonth.from(hoje)
 
     Scaffold(
         topBar = {
@@ -134,10 +139,19 @@ fun MatchesCalendarScreen(
                 Text(stringResource(R.string.label_calendar), color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 CalendarWidget(
+                    displayedMonth = displayedMonth,
                     selectedDay = selectedDay,
-                    today = today,
+                    todayDay = if (isCurrentMonth) hoje.dayOfMonth else -1,
                     daysWithEvents = daysWithEvents,
-                    onDaySelected = { selectedDay = it }
+                    onDaySelected = { selectedDay = it },
+                    onPrevMonth = {
+                        displayedMonth = displayedMonth.minusMonths(1)
+                        selectedDay = 1
+                    },
+                    onNextMonth = {
+                        displayedMonth = displayedMonth.plusMonths(1)
+                        selectedDay = 1
+                    }
                 )
             }
 
@@ -166,10 +180,13 @@ fun MatchesCalendarScreen(
 
 @Composable
 fun CalendarWidget(
+    displayedMonth: java.time.YearMonth,
     selectedDay: Int,
-    today: Int,
+    todayDay: Int,
     daysWithEvents: List<Int>,
-    onDaySelected: (Int) -> Unit
+    onDaySelected: (Int) -> Unit,
+    onPrevMonth: () -> Unit,
+    onNextMonth: () -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
@@ -178,21 +195,18 @@ fun CalendarWidget(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            val hoje = remember { LocalDate.now() }
-            val nomeMes = remember {
-                hoje.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
-                    .replaceFirstChar { it.uppercase() }
-            }
+            val nomeMes = displayedMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
+                .replaceFirstChar { it.uppercase() }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("$nomeMes ${hoje.year}", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("$nomeMes ${displayedMonth.year}", color = DarkBlue, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SmallIconButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft)
-                    SmallIconButton(Icons.AutoMirrored.Filled.KeyboardArrowRight)
+                    SmallIconButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, onClick = onPrevMonth)
+                    SmallIconButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, onClick = onNextMonth)
                 }
             }
 
@@ -215,10 +229,10 @@ fun CalendarWidget(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Grelha real do mês atual: dias nulos = células vazias de alinhamento
-            val calendarGrid = remember {
-                val primeiroDia = hoje.withDayOfMonth(1)
-                val diasNoMes = hoje.lengthOfMonth()
+            // Grelha real do mês mostrado: dias nulos = células vazias de alinhamento
+            val calendarGrid = remember(displayedMonth) {
+                val primeiroDia = displayedMonth.atDay(1)
+                val diasNoMes = displayedMonth.lengthOfMonth()
                 val offsetInicial = primeiroDia.dayOfWeek.value % 7 // Domingo = 0
 
                 val celulas = buildList<Int?> {
@@ -242,7 +256,7 @@ fun CalendarWidget(
                                 day = day,
                                 isCurrentMonth = true,
                                 isSelected = (day == selectedDay),
-                                isToday = (day == today),
+                                isToday = (day == todayDay),
                                 hasEvent = daysWithEvents.contains(day),
                                 onClick = { onDaySelected(day) }
                             )
@@ -429,12 +443,15 @@ fun StatusBadge(text: String, color: Color) {
 }
 
 @Composable
-fun SmallIconButton(icon: androidx.compose.ui.graphics.vector.ImageVector) {
+fun SmallIconButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit = {}
+) {
     Surface(
         shape = RoundedCornerShape(8.dp),
         color = CardBg,
         border = BorderStroke(1.dp, InputBg),
-        modifier = Modifier.size(32.dp).clickable { }
+        modifier = Modifier.size(32.dp).clickable { onClick() }
     ) {
         Icon(icon, contentDescription = null, tint = DarkBlue, modifier = Modifier.padding(6.dp))
     }
