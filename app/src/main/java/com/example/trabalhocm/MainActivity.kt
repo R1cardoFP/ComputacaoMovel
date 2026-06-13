@@ -118,6 +118,7 @@ import com.example.trabalhocm.ui.screens.player.PlayerTournamentRegistrationScre
 import com.example.trabalhocm.ui.theme.TrabalhoCMTheme
 import kotlinx.coroutines.launch
 import com.example.trabalhocm.ui.screens.auth.SuspendedAccountScreen
+import com.example.trabalhocm.ui.screens.offline.OfflineResultsScreen
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -157,6 +158,14 @@ fun MatchLeagueApp() {
                     }
                 }
             })
+        }
+
+        composable("offline_results") {
+            OfflineResultsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable("onboarding") {
@@ -1471,6 +1480,9 @@ fun MatchLeagueApp() {
                 onManageTeamsClick = { navController.navigate("admin_teams") },
                 onManageTournamentsClick = { navController.navigate("admin_tournaments") },
                 onReviewRequestsClick = { navController.navigate("admin_organizer_requests") },
+                onOfflineResultsClick = {
+                    navController.navigate("offline_results")
+                },
                 onHomeClick = {},
                 onNotificationsClick = {
                     navController.navigate("admin_notifications")
