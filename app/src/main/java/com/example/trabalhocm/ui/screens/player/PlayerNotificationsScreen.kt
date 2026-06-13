@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.player
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,11 +20,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,9 +61,15 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.OffsetDateTime
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.Icon
+
+private val PlayerBgLight = Color(0xFFF6F8FB)
+private val PlayerCardBg = Color.White
+private val PlayerInputBg = Color(0xFFF0F3F8)
+private val PlayerTextGray = Color(0xFF697386)
+private val PlayerMutedGray = Color(0xFF98A1B2)
+private val PlayerPrimaryBlue = Color(0xFF2949FF)
+private val PlayerErrorBg = Color(0xFFFFF0F0)
+private val PlayerSuccessBg = Color(0xFFEAF7F5)
 
 @Composable
 fun PlayerNotificationsScreen(
@@ -137,7 +148,7 @@ fun PlayerNotificationsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(PlayerBgLight)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -149,32 +160,19 @@ fun PlayerNotificationsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 22.dp, vertical = 20.dp)
         ) {
-            Text(
-                text = stringResource(R.string.player_notif_eyebrow),
-                color = Color(0xFF4167C8),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
+            NotificationsHeaderCard(
+                totalNotifications = notificacoes.size,
+                teamItems = convitesEquipa.size + pedidosParaCapitao.size
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = stringResource(R.string.player_notif_title),
-                color = BrandBlue,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 1.sp
-            )
-
-            Spacer(modifier = Modifier.height(26.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             NotificationsTabs(
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it }
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (errorMessage.isNotBlank()) {
                 NotificationsMessageCard(text = errorMessage, isError = true)
@@ -186,25 +184,13 @@ fun PlayerNotificationsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
-
             when {
                 isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(40.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = BrandGreen)
-                    }
+                    LoadingNotificationsCard()
                 }
 
                 !existemItens -> {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(40.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = stringResource(R.string.player_notif_empty), color = Color.Gray)
-                    }
+                    EmptyNotificationsCard()
                 }
 
                 else -> {
@@ -302,7 +288,6 @@ fun PlayerNotificationsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
             EndOfFeed()
         }
 
@@ -334,7 +319,7 @@ fun DesenharNotificacao(notificacao: Notificacao) {
         "MATCH" -> {
             NotificationCard(
                 icon = "⏱",
-                iconColor = Color(0xFF2949FF),
+                iconColor = PlayerPrimaryBlue,
                 title = notificacao.titulo,
                 time = tempoCalculado,
                 description = notificacao.mensagem,
@@ -346,7 +331,7 @@ fun DesenharNotificacao(notificacao: Notificacao) {
         "SYSTEM" -> {
             NotificationCard(
                 icon = "☁",
-                iconColor = Color(0xFF7D8497),
+                iconColor = PlayerMutedGray,
                 title = notificacao.titulo,
                 time = tempoCalculado,
                 description = notificacao.mensagem,
@@ -358,7 +343,7 @@ fun DesenharNotificacao(notificacao: Notificacao) {
         "RESULT" -> {
             NotificationCard(
                 icon = "◎",
-                iconColor = Color(0xFF7D8497),
+                iconColor = PlayerMutedGray,
                 title = notificacao.titulo,
                 time = tempoCalculado,
                 description = notificacao.mensagem,
@@ -407,86 +392,271 @@ fun NotificationsTopBar(onBackClick: () -> Unit) {
             .fillMaxWidth()
             .height(72.dp)
             .background(BrandBlue)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 22.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "←",
-            color = BrandWhite,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { onBackClick() }
-        )
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(BrandWhite.copy(alpha = 0.12f))
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                color = BrandWhite,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Spacer(modifier = Modifier.width(14.dp))
 
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.player_common_notifications),
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = stringResource(R.string.player_notif_eyebrow),
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.4.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(BrandWhite.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = stringResource(R.string.player_common_notifications),
+                tint = BrandWhite,
+                modifier = Modifier.size(23.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun NotificationsHeaderCard(totalNotifications: Int, teamItems: Int) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(22.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(BrandWhite.copy(alpha = 0.13f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = null,
+                        tint = BrandWhite,
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.player_notif_title),
+                        color = BrandWhite,
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 29.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.player_notif_eyebrow),
+                        color = BrandWhite.copy(alpha = 0.74f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.6.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                HeaderStatPill(
+                    label = stringResource(R.string.player_notif_tab_all),
+                    value = totalNotifications.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+                HeaderStatPill(
+                    label = stringResource(R.string.player_notif_tab_teams),
+                    value = teamItems.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HeaderStatPill(label: String, value: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(BrandWhite.copy(alpha = 0.10f))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
-            text = stringResource(R.string.player_common_notifications),
+            text = value,
             color = BrandWhite,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.3.sp
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Icon(
-            imageVector = Icons.Outlined.Notifications,
-            contentDescription = stringResource(R.string.player_common_notifications),
-            tint = BrandWhite,
-            modifier = Modifier.size(26.dp)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = label.uppercase(),
+            color = BrandWhite.copy(alpha = 0.78f),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
 
 @Composable
 fun NotificationsTabs(selectedTab: String, onTabSelected: (String) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().height(46.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFFF0F2FA)).padding(3.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        NotificationTabButton(stringResource(R.string.player_notif_tab_all), selectedTab == "ALL", { onTabSelected("ALL") }, Modifier.weight(1f))
-        NotificationTabButton(stringResource(R.string.player_notif_tab_matches), selectedTab == "MATCHES", { onTabSelected("MATCHES") }, Modifier.weight(1f))
-        NotificationTabButton(stringResource(R.string.player_notif_tab_teams), selectedTab == "TEAMS", { onTabSelected("TEAMS") }, Modifier.weight(1f))
-        NotificationTabButton(stringResource(R.string.player_notif_tab_system), selectedTab == "SYSTEM", { onTabSelected("SYSTEM") }, Modifier.weight(1f))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            NotificationTabButton(stringResource(R.string.player_notif_tab_all), selectedTab == "ALL", { onTabSelected("ALL") }, Modifier.weight(1f))
+            NotificationTabButton(stringResource(R.string.player_notif_tab_matches), selectedTab == "MATCHES", { onTabSelected("MATCHES") }, Modifier.weight(1f))
+            NotificationTabButton(stringResource(R.string.player_notif_tab_teams), selectedTab == "TEAMS", { onTabSelected("TEAMS") }, Modifier.weight(1f))
+            NotificationTabButton(stringResource(R.string.player_notif_tab_system), selectedTab == "SYSTEM", { onTabSelected("SYSTEM") }, Modifier.weight(1f))
+        }
     }
 }
 
 @Composable
 fun NotificationTabButton(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.fillMaxSize().clip(RoundedCornerShape(3.dp)).background(if (selected) Color(0xFF2949FF) else Color.Transparent).clickable { onClick() },
+        modifier = modifier
+            .height(42.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .background(if (selected) BrandBlue else PlayerInputBg)
+            .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(text, color = if (selected) BrandWhite else Color(0xFF7D8497), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.6.sp)
+        Text(
+            text = text,
+            color = if (selected) BrandWhite else PlayerTextGray,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
 @Composable
 fun NotificationCard(icon: String, iconColor: Color, title: String, time: String, description: String, highlighted: Boolean, unread: Boolean) {
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(5.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, if (highlighted) PlayerPrimaryBlue.copy(alpha = 0.20f) else Color.Transparent)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            if (highlighted) Box(modifier = Modifier.width(4.dp).height(104.dp).background(Color(0xFF2949FF)))
+            if (highlighted) {
+                Box(
+                    modifier = Modifier
+                        .width(5.dp)
+                        .height(118.dp)
+                        .background(PlayerPrimaryBlue)
+                )
+            }
 
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp), verticalAlignment = Alignment.Top) {
-                Box(modifier = Modifier.size(42.dp).clip(RoundedCornerShape(3.dp)).background(Color(0xFFF0F2FA)), contentAlignment = Alignment.Center) {
-                    Text(icon, color = iconColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 18.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(iconColor.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(icon, color = iconColor, fontSize = 19.sp, fontWeight = FontWeight.Bold)
                 }
+
                 Spacer(modifier = Modifier.width(14.dp))
+
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(title, color = BrandBlue, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-                        Text(time, color = Color(0xFF8D94A3), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = title,
+                            color = BrandBlue,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        TimeBadge(time = time)
+
                         if (unread) {
                             Spacer(modifier = Modifier.width(8.dp))
-                            Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(Color(0xFF2949FF)))
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(PlayerPrimaryBlue)
+                            )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(description, color = Color(0xFF6D7486), fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium)
+
+                    Spacer(modifier = Modifier.height(9.dp))
+
+                    Text(
+                        text = description,
+                        color = PlayerTextGray,
+                        fontSize = 13.sp,
+                        lineHeight = 19.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
         }
@@ -500,45 +670,116 @@ fun TeamInvitationNotificationCard(
     onAcceptClick: (() -> Unit)? = null, onDeclineClick: (() -> Unit)? = null
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(5.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, BrandGreen.copy(alpha = 0.18f))
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp), verticalAlignment = Alignment.Top) {
-            Box(modifier = Modifier.size(42.dp).clip(RoundedCornerShape(3.dp)).background(BrandGreen.copy(alpha = 0.10f)), contentAlignment = Alignment.Center) {
-                Text("♙+", color = BrandGreen, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 18.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(BrandGreen.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("♙+", color = BrandGreen, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
+
             Spacer(modifier = Modifier.width(14.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(title, color = BrandBlue, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-                    Text(time, color = Color(0xFF8D94A3), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = title,
+                        color = BrandBlue,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    TimeBadge(time = time)
                 }
+
                 if (!equipaNome.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(equipaNome, color = BrandBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
-                if (!equipaInfo.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(3.dp))
-                    Text(equipaInfo, color = BrandGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(description, color = Color(0xFF6D7486), fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium)
-                if (!message.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(message, color = Color(0xFF7D8497), fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium)
+                    Text(equipaNome, color = BrandBlue, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                }
+
+                if (!equipaInfo.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(equipaInfo, color = BrandGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = description,
+                    color = PlayerTextGray,
+                    fontSize = 13.sp,
+                    lineHeight = 19.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                if (!message.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(PlayerInputBg)
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = message,
+                            color = PlayerTextGray,
+                            fontSize = 12.sp,
+                            lineHeight = 17.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
 
                 if (onAcceptClick != null && onDeclineClick != null) {
                     Spacer(modifier = Modifier.height(14.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         Button(
-                            onClick = onAcceptClick, enabled = !isActionLoading, modifier = Modifier.width(82.dp).height(34.dp),
-                            shape = RoundedCornerShape(2.dp), colors = ButtonDefaults.buttonColors(containerColor = BrandGreen, contentColor = BrandWhite)
-                        ) { Text(stringResource(R.string.player_common_accept), fontSize = 9.sp, fontWeight = FontWeight.Bold) }
+                            onClick = onAcceptClick,
+                            enabled = !isActionLoading,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(42.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = BrandGreen, contentColor = BrandWhite)
+                        ) {
+                            Text(stringResource(R.string.player_common_accept), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+
                         OutlinedButton(
-                            onClick = onDeclineClick, enabled = !isActionLoading, modifier = Modifier.width(92.dp).height(34.dp),
-                            shape = RoundedCornerShape(2.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF7D8497))
-                        ) { Text(stringResource(R.string.player_common_decline), fontSize = 8.sp, fontWeight = FontWeight.Bold) }
+                            onClick = onDeclineClick,
+                            enabled = !isActionLoading,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(42.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            border = BorderStroke(1.dp, PlayerInputBg),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = PlayerInputBg,
+                                contentColor = PlayerTextGray
+                            )
+                        ) {
+                            Text(stringResource(R.string.player_common_decline), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -547,27 +788,147 @@ fun TeamInvitationNotificationCard(
 }
 
 @Composable
+fun TimeBadge(time: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(PlayerInputBg)
+            .padding(horizontal = 8.dp, vertical = 5.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = time,
+            color = PlayerMutedGray,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
 fun NotificationsMessageCard(text: String, isError: Boolean) {
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(5.dp),
-        colors = CardDefaults.cardColors(containerColor = if (isError) Color(0xFFFFF0F0) else Color(0xFFEAF7F5)),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = if (isError) PlayerErrorBg else PlayerSuccessBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(text, color = if (isError) Color(0xFFD01818) else BrandGreen, fontSize = 12.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(12.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(if (isError) Color(0xFFD01818) else BrandGreen)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = text,
+                color = if (isError) Color(0xFFD01818) else BrandGreen,
+                fontSize = 12.sp,
+                lineHeight = 17.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun LoadingNotificationsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 44.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = BrandGreen)
+        }
+    }
+}
+
+@Composable
+fun EmptyNotificationsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 36.dp, horizontal = 22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(PlayerInputBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = null,
+                    tint = PlayerMutedGray,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = stringResource(R.string.player_notif_empty),
+                color = PlayerTextGray,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 19.sp
+            )
+        }
     }
 }
 
 @Composable
 fun EndOfFeed() {
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 28.dp, bottom = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = Icons.Outlined.Notifications,
-            contentDescription = stringResource(R.string.player_notif_end_of_feed),
-            tint = Color(0xFF9EA4B3),
-            modifier = Modifier.size(28.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 28.dp, bottom = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(PlayerInputBg),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = stringResource(R.string.player_notif_end_of_feed),
+                tint = PlayerMutedGray,
+                modifier = Modifier.size(23.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(9.dp))
+        Text(
+            stringResource(R.string.player_notif_end_of_feed),
+            color = PlayerMutedGray,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(stringResource(R.string.player_notif_end_of_feed), color = Color(0xFF9EA4B3), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
     }
 }
 

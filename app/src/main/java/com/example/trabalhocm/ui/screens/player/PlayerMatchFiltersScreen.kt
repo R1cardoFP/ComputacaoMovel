@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -15,14 +16,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RangeSlider
@@ -89,7 +94,7 @@ fun PlayerMatchFiltersScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(Color(0xFFF4F7FB))
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -118,261 +123,285 @@ fun PlayerMatchFiltersScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 22.dp)
         ) {
-            PlayerMatchFilterSectionTitle("Sport Category")
+            PlayerMatchFiltersHeroCard(
+                selectedSport = selectedSport,
+                selectedStatus = selectedStatus,
+                selectedRegion = selectedRegion,
+                priceStart = priceStart,
+                priceEnd = priceEnd
+            )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            PlayerMatchFilterCard(
+                title = "Sport Category",
+                subtitle = "Choose the sport you want to play."
             ) {
-                PlayerMatchFilterButton(
-                    text = "⚽ Football",
-                    selected = selectedSport == "Football",
-                    onClick = { selectedSport = "Football" }
-                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    PlayerMatchFilterButton(
+                        text = "⚽ Football",
+                        selected = selectedSport == "Football",
+                        onClick = { selectedSport = "Football" }
+                    )
 
-                PlayerMatchFilterButton(
-                    text = "🏐 Volleyball",
-                    selected = selectedSport == "Volleyball",
-                    onClick = { selectedSport = "Volleyball" }
-                )
+                    PlayerMatchFilterButton(
+                        text = "🏐 Volleyball",
+                        selected = selectedSport == "Volleyball",
+                        onClick = { selectedSport = "Volleyball" }
+                    )
 
-                PlayerMatchFilterButton(
-                    text = "🏀 Basketball",
-                    selected = selectedSport == "Basketball",
-                    onClick = { selectedSport = "Basketball" }
-                )
+                    PlayerMatchFilterButton(
+                        text = "🏀 Basketball",
+                        selected = selectedSport == "Basketball",
+                        onClick = { selectedSport = "Basketball" }
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            PlayerMatchFilterSectionTitle("Competition Format")
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            PlayerMatchFilterCard(
+                title = "Competition Format",
+                subtitle = "Select the type of competition."
             ) {
-                PlayerMatchFilterButton(
-                    text = "League",
-                    selected = selectedFormat == "League",
-                    onClick = { selectedFormat = "League" }
-                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    PlayerMatchFilterButton(
+                        text = "League",
+                        selected = selectedFormat == "League",
+                        onClick = { selectedFormat = "League" }
+                    )
 
-                PlayerMatchFilterButton(
-                    text = "Knockout",
-                    selected = selectedFormat == "Knockout",
-                    onClick = { selectedFormat = "Knockout" }
-                )
+                    PlayerMatchFilterButton(
+                        text = "Knockout",
+                        selected = selectedFormat == "Knockout",
+                        onClick = { selectedFormat = "Knockout" }
+                    )
 
-                PlayerMatchFilterButton(
-                    text = "Group Stage",
-                    selected = selectedFormat == "Group Stage",
-                    onClick = { selectedFormat = "Group Stage" }
-                )
+                    PlayerMatchFilterButton(
+                        text = "Group Stage",
+                        selected = selectedFormat == "Group Stage",
+                        onClick = { selectedFormat = "Group Stage" }
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            PlayerMatchFilterSectionTitle("Status")
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            PlayerMatchFilterCard(
+                title = "Status",
+                subtitle = "Filter matches by their current state."
             ) {
-                PlayerMatchFilterButton(
-                    text = "Upcoming",
-                    selected = selectedStatus == "Upcoming",
-                    onClick = { selectedStatus = "Upcoming" }
-                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    PlayerMatchFilterButton(
+                        text = "Upcoming",
+                        selected = selectedStatus == "Upcoming",
+                        onClick = { selectedStatus = "Upcoming" }
+                    )
 
-                PlayerMatchFilterButton(
-                    text = "Live",
-                    selected = selectedStatus == "Live",
-                    onClick = { selectedStatus = "Live" },
-                    selectedBackground = BrandGreen.copy(alpha = 0.12f),
-                    selectedTextColor = BrandGreen,
-                    selectedBorderColor = BrandGreen
-                )
+                    PlayerMatchFilterButton(
+                        text = "Live",
+                        selected = selectedStatus == "Live",
+                        onClick = { selectedStatus = "Live" },
+                        selectedBackground = BrandGreen.copy(alpha = 0.14f),
+                        selectedTextColor = BrandGreen,
+                        selectedBorderColor = BrandGreen
+                    )
 
-                PlayerMatchFilterButton(
-                    text = "Registration Open",
-                    selected = selectedStatus == "Registration Open",
-                    onClick = { selectedStatus = "Registration Open" }
-                )
+                    PlayerMatchFilterButton(
+                        text = "Registration Open",
+                        selected = selectedStatus == "Registration Open",
+                        onClick = { selectedStatus = "Registration Open" }
+                    )
 
-                PlayerMatchFilterButton(
-                    text = "Completed",
-                    selected = selectedStatus == "Completed",
-                    onClick = { selectedStatus = "Completed" }
-                )
+                    PlayerMatchFilterButton(
+                        text = "Completed",
+                        selected = selectedStatus == "Completed",
+                        onClick = { selectedStatus = "Completed" }
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            PlayerMatchFilterSectionTitle("Region")
+            PlayerMatchFilterCard(
+                title = "Region",
+                subtitle = "Search by city or choose a popular region."
+            ) {
+                OutlinedTextField(
+                    value = cityOrRegion,
+                    onValueChange = { cityOrRegion = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(58.dp),
+                    singleLine = true,
+                    placeholder = {
+                        Text(
+                            text = "City or region...",
+                            color = Color(0xFF8D94A3),
+                            fontSize = 15.sp
+                        )
+                    },
+                    leadingIcon = {
+                        Text(
+                            text = "⌖",
+                            color = Color(0xFF9EA4B3),
+                            fontSize = 18.sp
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFF4F7FB),
+                        unfocusedContainerColor = Color(0xFFF4F7FB),
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        cursorColor = BrandGreen,
+                        focusedTextColor = BrandBlue,
+                        unfocusedTextColor = BrandBlue
+                    )
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-            OutlinedTextField(
-                value = cityOrRegion,
-                onValueChange = { cityOrRegion = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(58.dp),
-                singleLine = true,
-                placeholder = {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    PlayerMatchFilterButton(
+                        text = "📍 Lisbon",
+                        selected = selectedRegion == "Lisbon",
+                        onClick = { selectedRegion = "Lisbon" }
+                    )
+
+                    PlayerMatchFilterButton(
+                        text = "Porto",
+                        selected = selectedRegion == "Porto",
+                        onClick = { selectedRegion = "Porto" }
+                    )
+
+                    PlayerMatchFilterButton(
+                        text = "Coimbra",
+                        selected = selectedRegion == "Coimbra",
+                        onClick = { selectedRegion = "Coimbra" }
+                    )
+
+                    PlayerMatchFilterButton(
+                        text = "Braga",
+                        selected = selectedRegion == "Braga",
+                        onClick = { selectedRegion = "Braga" }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PlayerMatchFilterCard(
+                title = "Date Range",
+                subtitle = "Define the date interval for the matches."
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        PlayerMatchFilterSmallLabel("FROM")
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        PlayerMatchDateField(
+                            value = fromDate,
+                            onValueChange = { fromDate = it }
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        PlayerMatchFilterSmallLabel("TO")
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        PlayerMatchDateField(
+                            value = toDate,
+                            onValueChange = { toDate = it }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PlayerMatchFilterCard(
+                title = "Entry Fee Range",
+                subtitle = "Choose the price range that fits you."
+            ) {
+                RangeSlider(
+                    value = priceStart..priceEnd,
+                    onValueChange = { range ->
+                        priceStart = range.start
+                        priceEnd = range.endInclusive
+                    },
+                    valueRange = 0f..100f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = BrandGreen,
+                        activeTrackColor = BrandGreen,
+                        inactiveTrackColor = Color(0xFFDDE1EB)
+                    )
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "City or region...",
+                        text = "€0",
                         color = Color(0xFF8D94A3),
-                        fontSize = 15.sp
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
-                },
-                leadingIcon = {
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(BrandGreen.copy(alpha = 0.12f))
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "€${priceStart.toInt()} — €${priceEnd.toInt()}",
+                            color = BrandGreen,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
                     Text(
-                        text = "⊙",
-                        color = Color(0xFF9EA4B3),
-                        fontSize = 18.sp
-                    )
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text
-                ),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = BrandWhite,
-                    unfocusedContainerColor = BrandWhite,
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = BrandGreen,
-                    focusedTextColor = BrandBlue,
-                    unfocusedTextColor = BrandBlue
-                )
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                PlayerMatchFilterButton(
-                    text = "📍 Lisbon",
-                    selected = selectedRegion == "Lisbon",
-                    onClick = { selectedRegion = "Lisbon" }
-                )
-
-                PlayerMatchFilterButton(
-                    text = "Porto",
-                    selected = selectedRegion == "Porto",
-                    onClick = { selectedRegion = "Porto" }
-                )
-
-                PlayerMatchFilterButton(
-                    text = "Coimbra",
-                    selected = selectedRegion == "Coimbra",
-                    onClick = { selectedRegion = "Coimbra" }
-                )
-
-                PlayerMatchFilterButton(
-                    text = "Braga",
-                    selected = selectedRegion == "Braga",
-                    onClick = { selectedRegion = "Braga" }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            PlayerMatchFilterSectionTitle("Date Range")
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    PlayerMatchFilterSmallLabel("FROM")
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    PlayerMatchDateField(
-                        value = fromDate,
-                        onValueChange = { fromDate = it }
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    PlayerMatchFilterSmallLabel("TO")
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    PlayerMatchDateField(
-                        value = toDate,
-                        onValueChange = { toDate = it }
+                        text = "€100+",
+                        color = Color(0xFF8D94A3),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            PlayerMatchFilterSectionTitle("Entry Fee Range")
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            RangeSlider(
-                value = priceStart..priceEnd,
-                onValueChange = { range ->
-                    priceStart = range.start
-                    priceEnd = range.endInclusive
-                },
-                valueRange = 0f..100f,
-                colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF244BFF),
-                    activeTrackColor = Color(0xFF244BFF),
-                    inactiveTrackColor = Color(0xFFDDE1EB)
-                )
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "€0",
-                    color = Color(0xFF8D94A3),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Text(
-                    text = "€${priceStart.toInt()} — €${priceEnd.toInt()}",
-                    color = BrandBlue,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Text(
-                    text = "€100+",
-                    color = Color(0xFF8D94A3),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
             Button(
                 onClick = {
@@ -390,7 +419,7 @@ fun PlayerMatchFiltersScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(58.dp),
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BrandGreen,
                     contentColor = BrandWhite
@@ -416,41 +445,202 @@ fun PlayerMatchFiltersTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
+            .height(76.dp)
             .background(BrandBlue)
             .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "×",
-            color = BrandWhite,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.clickable {
-                onCloseClick()
-            }
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(BrandWhite.copy(alpha = 0.12f))
+                .clickable { onCloseClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "×",
+                color = BrandWhite,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
-        Text(
-            text = "Filters",
-            color = BrandWhite,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Column {
+            Text(
+                text = "Filters",
+                color = BrandWhite,
+                fontSize = 23.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Refine your matches",
+                color = BrandWhite.copy(alpha = 0.76f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .background(BrandGreen.copy(alpha = 0.16f))
+                .clickable { onResetClick() }
+                .padding(horizontal = 14.dp, vertical = 9.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "RESET",
+                color = BrandGreen,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerMatchFiltersHeroCard(
+    selectedSport: String?,
+    selectedStatus: String?,
+    selectedRegion: String?,
+    priceStart: Float,
+    priceEnd: Float
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = "Match Filters",
+                color = BrandWhite,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = "Adjust the options below to find the best games for you.",
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 18.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                PlayerMatchHeroStat(
+                    modifier = Modifier.weight(1f),
+                    label = "SPORT",
+                    value = selectedSport ?: "Any"
+                )
+
+                PlayerMatchHeroStat(
+                    modifier = Modifier.weight(1f),
+                    label = "STATUS",
+                    value = selectedStatus ?: "Any"
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                PlayerMatchHeroStat(
+                    modifier = Modifier.weight(1f),
+                    label = "REGION",
+                    value = selectedRegion ?: "Any"
+                )
+
+                PlayerMatchHeroStat(
+                    modifier = Modifier.weight(1f),
+                    label = "FEE",
+                    value = "€${priceStart.toInt()}-€${priceEnd.toInt()}"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PlayerMatchHeroStat(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(BrandWhite.copy(alpha = 0.10f))
+            .padding(horizontal = 12.dp, vertical = 11.dp)
+    ) {
         Text(
-            text = "RESET",
+            text = label,
             color = BrandGreen,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = value,
+            color = BrandWhite,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
-                onResetClick()
-            }
+            maxLines = 1
         )
+    }
+}
+
+@Composable
+fun PlayerMatchFilterCard(
+    title: String,
+    subtitle: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            PlayerMatchFilterSectionTitle(title)
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = subtitle,
+                color = Color(0xFF8D94A3),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            content()
+        }
     }
 }
 
@@ -484,23 +674,21 @@ fun PlayerMatchFilterButton(
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
-    selectedBackground: Color = Color(0xFF244BFF),
+    selectedBackground: Color = BrandBlue,
     selectedTextColor: Color = BrandWhite,
-    selectedBorderColor: Color = Color(0xFF244BFF)
+    selectedBorderColor: Color = BrandBlue
 ) {
     Box(
         modifier = Modifier
-            .height(42.dp)
-            .clip(RoundedCornerShape(5.dp))
-            .background(if (selected) selectedBackground else BrandWhite)
+            .height(44.dp)
+            .clip(RoundedCornerShape(50))
+            .background(if (selected) selectedBackground else Color(0xFFF4F7FB))
             .border(
                 width = 1.dp,
-                color = if (selected) selectedBorderColor else Color(0xFFD8DCE6),
-                shape = RoundedCornerShape(5.dp)
+                color = if (selected) selectedBorderColor else Color(0xFFE0E4EE),
+                shape = RoundedCornerShape(50)
             )
-            .clickable {
-                onClick()
-            }
+            .clickable { onClick() }
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -528,10 +716,10 @@ fun PlayerMatchDateField(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text
         ),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = BrandWhite,
-            unfocusedContainerColor = BrandWhite,
+            focusedContainerColor = Color(0xFFF4F7FB),
+            unfocusedContainerColor = Color(0xFFF4F7FB),
             focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent,
             cursorColor = BrandGreen,

@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,8 +25,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
@@ -35,13 +36,16 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,10 +74,15 @@ import com.example.trabalhocm.ui.theme.BrandWhite
 import kotlinx.coroutines.launch
 
 private val BgGray = Color(0xFFF4F5FA)
+private val CardBg = Color.White
 private val InputBg = Color(0xFFF1F2FB)
 private val TextGray = Color(0xFF7D8497)
 private val TextDark = Color(0xFF303646)
+private val SoftBlue = Color(0xFFE7ECFF)
+private val PrimaryBlue = Color(0xFF3566C9)
+private val DangerRed = Color(0xFFC62828)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerProfileScreen(
     initialUsername: String = stringResource(R.string.player_common_loading),
@@ -93,7 +102,7 @@ fun PlayerProfileScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
-    onChangePasswordClick: () -> Unit = {} // <-- NOVO PARAMETRO AQUI
+    onChangePasswordClick: () -> Unit = {}
 ) {
     val authRepository = remember { AuthRepository() }
     val scope = rememberCoroutineScope()
@@ -120,31 +129,26 @@ fun PlayerProfileScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(78.dp)
-                .background(BrandBlue)
-                .padding(horizontal = 28.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = stringResource(R.string.player_common_profile),
-                color = BrandWhite,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = stringResource(R.string.player_common_notifications),
-                tint = BrandWhite,
-                modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onNotificationsClick() }
-            )
-        }
+        TopAppBar(
+            title = {
+                Text(
+                    text = stringResource(R.string.player_common_profile),
+                    color = BrandWhite,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+            },
+            actions = {
+                IconButton(onClick = onNotificationsClick) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = stringResource(R.string.player_common_notifications),
+                        tint = BrandWhite
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBlue)
+        )
 
         Column(
             modifier = Modifier
@@ -152,8 +156,14 @@ fun PlayerProfileScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
+            val usernameToShow = if (username.isBlank()) {
+                stringResource(R.string.player_profile_no_username)
+            } else {
+                username
+            }
+
             ProfileHeaderCard(
-                username = username.ifBlank { stringResource(R.string.player_profile_no_username) },
+                username = usernameToShow,
                 memberSince = memberSinceYear,
                 roles = roles,
                 tier = tier,
@@ -161,80 +171,107 @@ fun PlayerProfileScreen(
                 onChangePhotoClick = { photoPickerLauncher.launch("image/*") }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            SectionHeader(icon = Icons.Outlined.Person, title = stringResource(R.string.player_profile_section_account))
-            Spacer(modifier = Modifier.height(16.dp))
+            ProfileSectionCard {
+                SectionHeader(
+                    icon = Icons.Outlined.Person,
+                    title = stringResource(R.string.player_profile_section_account)
+                )
 
-            CustomTextField(label = stringResource(R.string.player_profile_label_username), value = username, onValueChange = { username = it }, readOnly = false)
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-            CustomTextField(label = stringResource(R.string.player_profile_label_fullname), value = initialName, onValueChange = {}, readOnly = true)
-            Spacer(modifier = Modifier.height(12.dp))
-            CustomTextField(label = stringResource(R.string.player_profile_label_email), value = initialEmail, onValueChange = {}, readOnly = true)
-            Spacer(modifier = Modifier.height(12.dp))
+                CustomTextField(
+                    label = stringResource(R.string.player_profile_label_username),
+                    value = username,
+                    onValueChange = { username = it },
+                    readOnly = false
+                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            CustomTextField(
-                label = stringResource(R.string.player_profile_label_bio),
-                value = bio,
-                onValueChange = { bio = it },
-                singleLine = false,
-                placeholder = stringResource(R.string.player_profile_bio_placeholder),
-                modifier = Modifier.height(100.dp)
-            )
+                CustomTextField(
+                    label = stringResource(R.string.player_profile_label_fullname),
+                    value = initialName,
+                    onValueChange = {},
+                    readOnly = true
+                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
+                CustomTextField(
+                    label = stringResource(R.string.player_profile_label_email),
+                    value = initialEmail,
+                    onValueChange = {},
+                    readOnly = true
+                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            SectionHeader(icon = Icons.Outlined.Settings, title = stringResource(R.string.player_profile_section_preferences))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(stringResource(R.string.player_profile_label_language), color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            LanguageOption(text = stringResource(R.string.player_profile_lang_en), isSelected = true)
-            LanguageOption(text = stringResource(R.string.player_profile_lang_pt), isSelected = false)
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            SectionHeader(icon = Icons.AutoMirrored.Outlined.List, title = stringResource(R.string.player_profile_section_dashboards))
-            Spacer(modifier = Modifier.height(16.dp))
-            DashboardOption(onClick = onDashboardClick)
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            SectionHeader(icon = Icons.Outlined.Lock, title = stringResource(R.string.player_profile_section_security))
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                colors = CardDefaults.cardColors(containerColor = InputBg),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onChangePasswordClick() },
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Lock,
-                            contentDescription = null,
-                            tint = Color(0xFF3566C9),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.player_profile_change_password),
-                            color = Color(0xFF3566C9),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            letterSpacing = 1.sp
-                        )
-                    }
-                }
+                CustomTextField(
+                    label = stringResource(R.string.player_profile_label_bio),
+                    value = bio,
+                    onValueChange = { bio = it },
+                    singleLine = false,
+                    placeholder = stringResource(R.string.player_profile_bio_placeholder),
+                    modifier = Modifier.height(110.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(18.dp))
+
+            ProfileSectionCard {
+                SectionHeader(
+                    icon = Icons.Outlined.Settings,
+                    title = stringResource(R.string.player_profile_section_preferences)
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = stringResource(R.string.player_profile_label_language),
+                    color = TextGray,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LanguageOption(
+                    text = stringResource(R.string.player_profile_lang_en),
+                    isSelected = true
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LanguageOption(
+                    text = stringResource(R.string.player_profile_lang_pt),
+                    isSelected = false
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            ProfileSectionCard {
+                SectionHeader(
+                    icon = Icons.AutoMirrored.Outlined.List,
+                    title = stringResource(R.string.player_profile_section_dashboards)
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                DashboardOption(onClick = onDashboardClick)
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            ProfileSectionCard {
+                SectionHeader(
+                    icon = Icons.Outlined.Lock,
+                    title = stringResource(R.string.player_profile_section_security)
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                SecurityOption(onClick = onChangePasswordClick)
+            }
+
+            Spacer(modifier = Modifier.height(22.dp))
 
             Button(
                 onClick = {
@@ -271,25 +308,35 @@ fun PlayerProfileScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp),
+                    .height(56.dp),
                 enabled = !isLoading,
-                shape = RoundedCornerShape(6.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = BrandGreen)
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BrandGreen,
+                    contentColor = BrandWhite
+                )
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = BrandWhite, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = BrandWhite,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(24.dp)
+                    )
                 } else {
-                    Text(stringResource(R.string.player_profile_save), fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(
+                        text = stringResource(R.string.player_profile_save),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
                 }
             }
 
             if (mensagem.isNotBlank()) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = mensagem,
-                    color = if (isError) MaterialTheme.colorScheme.error else BrandGreen,
-                    fontSize = 13.sp,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ProfileMessageCard(
+                    message = mensagem,
+                    isError = isError
                 )
             }
 
@@ -299,12 +346,17 @@ fun PlayerProfileScreen(
                 onClick = onLogoutClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp),
-                shape = RoundedCornerShape(6.dp),
-                border = BorderStroke(1.dp, Color(0xFFC62828)),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC62828))
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, DangerRed),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed)
             ) {
-                Text(stringResource(R.string.player_profile_logout), fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(
+                    text = stringResource(R.string.player_profile_logout),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -332,51 +384,69 @@ fun ProfileHeaderCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue)
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp),
+                .padding(horizontal = 22.dp, vertical = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(2.dp, BrandWhite, RoundedCornerShape(12.dp))
-                    .background(Color.LightGray)
-                    .clickable { onChangePhotoClick() }
+                contentAlignment = Alignment.BottomEnd,
+                modifier = Modifier.size(96.dp)
             ) {
-                if (selectedImageUri != null) {
-                    AsyncImage(
-                        model = selectedImageUri,
-                        contentDescription = stringResource(R.string.player_common_photo),
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color(0xFFE2E6F2)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("👤", fontSize = 40.sp)
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(28.dp))
+                        .border(2.dp, BrandWhite, RoundedCornerShape(28.dp))
+                        .background(SoftBlue)
+                        .clickable { onChangePhotoClick() }
+                ) {
+                    if (selectedImageUri != null) {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = stringResource(R.string.player_common_photo),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Text(
+                            text = "👤",
+                            fontSize = 42.sp
+                        )
                     }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(BrandGreen)
+                        .border(2.dp, BrandBlue, RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = stringResource(R.string.player_common_selected),
+                        tint = BrandWhite,
+                        modifier = Modifier.size(17.dp)
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             Text(
                 text = stringResource(R.string.player_profile_member_since, memberSince),
                 color = BrandGreen,
-                fontSize = 9.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                letterSpacing = 1.2.sp
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -384,32 +454,29 @@ fun ProfileHeaderCard(
             Text(
                 text = username,
                 color = BrandWhite,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Medium
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 roles.forEach { role ->
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(BrandGreen)
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
-                    ) {
-                        Text(role, color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    }
+                    ProfileBadge(
+                        text = role,
+                        backgroundColor = BrandGreen,
+                        textColor = BrandWhite
+                    )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF3566C9))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Text(tier, color = BrandWhite, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                }
+                ProfileBadge(
+                    text = tier,
+                    backgroundColor = PrimaryBlue,
+                    textColor = BrandWhite
+                )
             }
         }
     }
@@ -418,9 +485,27 @@ fun ProfileHeaderCard(
 @Composable
 fun SectionHeader(icon: ImageVector, title: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = icon, contentDescription = null, tint = TextDark, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = title, color = TextDark, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(SoftBlue),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = PrimaryBlue,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = title,
+            color = TextDark,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -435,8 +520,14 @@ fun CustomTextField(
     placeholder: String = ""
 ) {
     Column {
-        Text(text = label, color = TextGray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = label,
+            color = TextGray,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+        Spacer(modifier = Modifier.height(7.dp))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -448,15 +539,18 @@ fun CustomTextField(
                 }
             },
             modifier = modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(6.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = InputBg,
                 unfocusedContainerColor = InputBg,
+                disabledContainerColor = InputBg,
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
+                disabledBorderColor = Color.Transparent,
                 cursorColor = BrandGreen,
                 focusedTextColor = if (readOnly) TextGray else TextDark,
-                unfocusedTextColor = if (readOnly) TextGray else TextDark
+                unfocusedTextColor = if (readOnly) TextGray else TextDark,
+                disabledTextColor = TextGray
             )
         )
     }
@@ -467,19 +561,30 @@ fun LanguageOption(text: String, isSelected: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(if (isSelected) BrandWhite else InputBg, RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (isSelected) SoftBlue else InputBg)
             .border(
                 width = if (isSelected) 1.dp else 0.dp,
-                color = if (isSelected) Color(0xFF3566C9) else Color.Transparent,
-                shape = RoundedCornerShape(6.dp)
+                color = if (isSelected) PrimaryBlue else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
             )
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = text, color = TextDark, fontSize = 14.sp)
+        Text(
+            text = text,
+            color = TextDark,
+            fontSize = 14.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+        )
         if (isSelected) {
-            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = stringResource(R.string.player_common_selected), tint = Color(0xFF3566C9))
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = stringResource(R.string.player_common_selected),
+                tint = PrimaryBlue,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
@@ -489,25 +594,151 @@ fun DashboardOption(onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(InputBg, RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(18.dp))
+            .background(InputBg)
             .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .background(Color(0xFFE2E6F2), RoundedCornerShape(8.dp)),
+                .size(44.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(SoftBlue),
             contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = Icons.Outlined.Person, contentDescription = null, tint = Color(0xFF3566C9))
+            Icon(
+                imageVector = Icons.Outlined.Person,
+                contentDescription = null,
+                tint = PrimaryBlue,
+                modifier = Modifier.size(22.dp)
+            )
         }
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.player_profile_dashboard_player), color = TextDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(stringResource(R.string.player_profile_dashboard_subtitle), color = TextGray, fontSize = 12.sp)
+            Text(
+                text = stringResource(R.string.player_profile_dashboard_player),
+                color = TextDark,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = stringResource(R.string.player_profile_dashboard_subtitle),
+                color = TextGray,
+                fontSize = 12.sp
+            )
         }
-        Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = BrandGreen)
+        Icon(
+            imageVector = Icons.Default.CheckCircle,
+            contentDescription = null,
+            tint = BrandGreen,
+            modifier = Modifier.size(21.dp)
+        )
+    }
+}
+
+@Composable
+private fun ProfileSectionCard(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            content = content
+        )
+    }
+}
+
+@Composable
+private fun SecurityOption(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(InputBg)
+            .clickable { onClick() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(SoftBlue),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Lock,
+                contentDescription = null,
+                tint = PrimaryBlue,
+                modifier = Modifier.size(21.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Text(
+            text = stringResource(R.string.player_profile_change_password),
+            color = PrimaryBlue,
+            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp,
+            letterSpacing = 0.7.sp,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.Default.CheckCircle,
+            contentDescription = null,
+            tint = BrandGreen,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+@Composable
+private fun ProfileBadge(
+    text: String,
+    backgroundColor: Color,
+    textColor: Color
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        )
+    }
+}
+
+@Composable
+private fun ProfileMessageCard(
+    message: String,
+    isError: Boolean
+) {
+    val color = if (isError) MaterialTheme.colorScheme.error else BrandGreen
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFFFEBEE) else Color(0xFFEAF7F0)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = message,
+            color = color,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp)
+        )
     }
 }
 

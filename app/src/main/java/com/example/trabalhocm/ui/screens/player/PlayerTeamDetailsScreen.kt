@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.player
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,11 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +39,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,6 +54,16 @@ import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import java.util.Locale
+
+private val TeamDetailsBg = Color(0xFFF6F7FB)
+private val TeamDetailsCardBg = Color.White
+private val TeamDetailsInputBg = Color(0xFFF0F3F8)
+private val TeamDetailsTextGray = Color(0xFF657089)
+private val TeamDetailsMuted = Color(0xFF8A92A6)
+private val TeamDetailsDarkCard = Color(0xFF111827)
+private val TeamDetailsBlue = Color(0xFF0757C8)
+private val TeamDetailsRed = Color(0xFFE53935)
+private val TeamDetailsBorder = Color(0xFFE7EAF2)
 
 @Composable
 fun PlayerTeamDetailsScreen(
@@ -89,7 +101,7 @@ fun PlayerTeamDetailsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(TeamDetailsBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -105,9 +117,7 @@ fun PlayerTeamDetailsScreen(
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
-                        color = BrandGreen
-                    )
+                    CircularProgressIndicator(color = BrandGreen)
                 }
             }
 
@@ -115,11 +125,10 @@ fun PlayerTeamDetailsScreen(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(22.dp)
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    TeamDetailsErrorCard(
-                        text = errorMessage
-                    )
+                    TeamDetailsErrorCard(text = errorMessage)
                 }
             }
 
@@ -131,74 +140,53 @@ fun PlayerTeamDetailsScreen(
                     modifier = Modifier
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp, vertical = 20.dp)
                 ) {
                     TeamDetailsHeroCard(
                         info = info,
                         isPublic = isPublic
                     )
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 22.dp, vertical = 18.dp)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TeamWinRateCard(winRate = info.winRate)
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        TeamWinRateCard(
-                            winRate = info.winRate
+                        TeamSmallMetricCard(
+                            modifier = Modifier.weight(1f),
+                            icon = "◎",
+                            title = stringResource(R.string.player_teamdetails_total_goals),
+                            value = info.totalGolos.toString(),
+                            subtitle = stringResource(R.string.player_teamdetails_team_total)
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            TeamSmallMetricCard(
-                                modifier = Modifier.weight(1f),
-                                icon = "◎",
-                                title = stringResource(R.string.player_teamdetails_total_goals),
-                                value = info.totalGolos.toString(),
-                                subtitle = stringResource(R.string.player_teamdetails_team_total)
+                        TeamSmallMetricCard(
+                            modifier = Modifier.weight(1f),
+                            icon = "▦",
+                            title = stringResource(R.string.player_teamdetails_matches_played),
+                            value = info.jogosDisputados.toString(),
+                            subtitle = stringResource(
+                                R.string.player_teamdetails_wdl_format,
+                                info.equipaInfo.vitorias,
+                                info.empates,
+                                info.equipaInfo.derrotas
                             )
-
-                            TeamSmallMetricCard(
-                                modifier = Modifier.weight(1f),
-                                icon = "▦",
-                                title = stringResource(R.string.player_teamdetails_matches_played),
-                                value = info.jogosDisputados.toString(),
-                                subtitle = stringResource(R.string.player_teamdetails_wdl_format, info.equipaInfo.vitorias, info.empates, info.equipaInfo.derrotas)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Text(
-                            text = stringResource(R.string.player_teamdetails_active_roster),
-                            color = Color(0xFF20242D),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Medium
                         )
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        if (info.membros.isEmpty()) {
-                            TeamDetailsEmptyCard(
-                                text = stringResource(R.string.player_teamdetails_no_players)
-                            )
-                        } else {
-                            info.membros.forEach { membro ->
-                                TeamPlayerRosterCard(
-                                    membro = membro,
-                                    onViewProfileClick = {
-                                        onViewPlayerProfileClick(membro.utilizador.id)
-                                    }
-                                )
-
-                                Spacer(modifier = Modifier.height(10.dp))
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    TeamRosterSectionCard(
+                        membros = info.membros,
+                        onViewPlayerProfileClick = onViewPlayerProfileClick
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
@@ -221,29 +209,26 @@ fun TeamDetailsTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
-            .background(BrandBlue)
-            .padding(horizontal = 24.dp),
+            .height(66.dp)
+            .background(TeamDetailsDarkCard)
+            .padding(horizontal = 22.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "←",
+            text = "‹",
             color = BrandWhite,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
+            fontSize = 34.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.clickable { onBackClick() }
         )
-
-        Spacer(modifier = Modifier.width(14.dp))
 
         Text(
             text = stringResource(R.string.player_teamdetails_title),
             color = BrandWhite,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 1.4.sp
+            fontStyle = FontStyle.Italic,
+            modifier = Modifier.padding(start = 8.dp)
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -251,7 +236,7 @@ fun TeamDetailsTopBar(
         Text(
             text = "♧",
             color = BrandWhite,
-            fontSize = 27.sp,
+            fontSize = 25.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -264,81 +249,99 @@ fun TeamDetailsHeroCard(
 ) {
     val equipa = info.equipaInfo
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(170.dp)
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF073061),
-                        BrandBlue
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = TeamDetailsDarkCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF172033),
+                            BrandBlue
+                        )
                     )
                 )
-            )
-            .padding(horizontal = 22.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp)
         ) {
-            TeamDetailsLogoBox(
-                initials = equipa.iniciais,
-                color = teamDetailsColorFromName(equipa.equipa.nome)
-            )
-
-            Spacer(modifier = Modifier.width(18.dp))
-
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFFEAF0FB))
-                            .padding(horizontal = 9.dp, vertical = 4.dp)
-                    ) {
+                    TeamDetailsLogoBox(
+                        initials = equipa.iniciais,
+                        color = teamDetailsColorFromName(equipa.equipa.nome)
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TeamDetailsBadge(
+                                text = equipa.divisao.uppercase(),
+                                backgroundColor = Color.White.copy(alpha = 0.14f),
+                                contentColor = Color.White
+                            )
+
+                            TeamDetailsBadge(
+                                text = if (isPublic) {
+                                    "${stringResource(R.string.player_common_public).uppercase()} 🔓"
+                                } else {
+                                    "${stringResource(R.string.player_common_private).uppercase()} 🔒"
+                                },
+                                backgroundColor = if (isPublic) {
+                                    BrandGreen.copy(alpha = 0.18f)
+                                } else {
+                                    TeamDetailsRed.copy(alpha = 0.18f)
+                                },
+                                contentColor = if (isPublic) BrandGreen else Color(0xFFFFB4B4)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         Text(
-                            text = equipa.divisao,
-                            color = Color(0xFF0757C8),
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold
+                            text = equipa.equipa.nome,
+                            color = BrandWhite,
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 30.sp
                         )
-                    }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(if(isPublic) BrandGreen.copy(alpha = 0.2f) else Color(0xFFE53935).copy(alpha = 0.2f))
-                            .padding(horizontal = 9.dp, vertical = 4.dp)
-                    ) {
                         Text(
-                            text = if(isPublic) "${stringResource(R.string.player_common_public)} 🔓" else "${stringResource(R.string.player_common_private)} 🔒",
-                            color = if(isPublic) BrandGreen else Color(0xFFFF8A80),
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "${equipa.modalidadeNome} • ${equipa.cidade}",
+                            color = Color.White.copy(alpha = 0.72f),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                Text(
-                    text = equipa.equipa.nome,
-                    color = BrandWhite,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    TeamHeroMiniStat(
+                        modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.player_teamdetails_win_rate),
+                        value = "${String.format(Locale.US, "%.1f", info.winRate)} %"
+                    )
 
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Text(
-                    text = "${equipa.modalidadeNome} • ${equipa.cidade}",
-                    color = Color(0xFFB8C2D3),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                    TeamHeroMiniStat(
+                        modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.player_teamdetails_matches_played),
+                        value = info.jogosDisputados.toString()
+                    )
+                }
             }
         }
     }
@@ -351,15 +354,68 @@ fun TeamDetailsLogoBox(
 ) {
     Box(
         modifier = Modifier
-            .size(90.dp)
-            .clip(RoundedCornerShape(7.dp))
+            .size(82.dp)
+            .clip(RoundedCornerShape(22.dp))
             .background(BrandWhite),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = initials.take(3).uppercase(),
             color = color,
-            fontSize = 24.sp,
+            fontSize = 23.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun TeamDetailsBadge(
+    text: String,
+    backgroundColor: Color,
+    contentColor: Color
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    ) {
+        Text(
+            text = text,
+            color = contentColor,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.4.sp
+        )
+    }
+}
+
+@Composable
+fun TeamHeroMiniStat(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.12f))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = label.uppercase(),
+            color = Color.White.copy(alpha = 0.68f),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.7.sp
+        )
+
+        Spacer(modifier = Modifier.height(5.dp))
+
+        Text(
+            text = value,
+            color = BrandWhite,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -369,51 +425,64 @@ fun TeamDetailsLogoBox(
 fun TeamWinRateCard(
     winRate: Double
 ) {
+    val progress = (winRate / 100.0).toFloat().coerceIn(0f, 1f)
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(92.dp),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = TeamDetailsCardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 18.dp),
+                .fillMaxWidth()
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.player_teamdetails_win_rate),
-                    color = Color(0xFF7D8497),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    text = stringResource(R.string.player_teamdetails_win_rate).uppercase(),
+                    color = TeamDetailsMuted,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.8.sp
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = "${String.format(Locale.US, "%.1f", winRate)} %",
-                    color = Color(0xFF0757C8),
-                    fontSize = 24.sp,
+                    color = TeamDetailsBlue,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(7.dp)
+                        .clip(RoundedCornerShape(50.dp)),
+                    color = if (winRate >= 50.0) BrandGreen else TeamDetailsRed,
+                    trackColor = TeamDetailsInputBg
                 )
             }
 
+            Spacer(modifier = Modifier.width(18.dp))
+
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(62.dp)
                     .clip(CircleShape)
-                    .border(3.dp, Color(0xFFE0E3EA), CircleShape),
+                    .background(if (winRate >= 50.0) Color(0xFFEAF8F5) else Color(0xFFFFECEC)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = if (winRate >= 50.0) "↗" else "↘",
-                    color = if (winRate >= 50.0) BrandGreen else Color(0xFFE53935),
-                    fontSize = 22.sp,
+                    color = if (winRate >= 50.0) BrandGreen else TeamDetailsRed,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -430,38 +499,112 @@ fun TeamSmallMetricCard(
     subtitle: String
 ) {
     Card(
-        modifier = modifier.height(96.dp),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        modifier = modifier.height(116.dp),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = TeamDetailsCardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "$icon $title",
-                color = Color(0xFF6D7486),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
+                text = "$icon ${title.uppercase()}",
+                color = TeamDetailsMuted,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.6.sp
             )
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = value,
                 color = BrandBlue,
-                fontSize = 22.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = subtitle,
                 color = BrandGreen,
-                fontSize = 10.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )
+        }
+    }
+}
+
+@Composable
+fun TeamRosterSectionCard(
+    membros: List<MembroEquipaDetalhesInfo>,
+    onViewPlayerProfileClick: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = TeamDetailsCardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.player_teamdetails_active_roster),
+                        color = TeamDetailsDarkCard,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = membros.size.toString(),
+                        color = TeamDetailsTextGray,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFEAF1FF)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = membros.size.toString(),
+                        color = TeamDetailsBlue,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (membros.isEmpty()) {
+                TeamDetailsEmptyCard(
+                    text = stringResource(R.string.player_teamdetails_no_players)
+                )
+            } else {
+                membros.forEachIndexed { index, membro ->
+                    TeamPlayerRosterCard(
+                        membro = membro,
+                        onViewProfileClick = {
+                            onViewPlayerProfileClick(membro.utilizador.id)
+                        }
+                    )
+
+                    if (index != membros.lastIndex) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+            }
         }
     }
 }
@@ -480,114 +623,118 @@ fun TeamPlayerRosterCard(
     val posicao = formatarPosicaoMembroEquipa(membro.posicao)
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(74.dp),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = TeamDetailsInputBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (membro.isCaptain) {
-                Box(
-                    modifier = Modifier
-                        .width(4.dp)
-                        .height(74.dp)
-                        .background(Color(0xFFB72D2D))
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Box {
                 if (!membro.utilizador.fotoUrl.isNullOrEmpty()) {
                     coil.compose.AsyncImage(
                         model = membro.utilizador.fotoUrl,
                         contentDescription = stringResource(R.string.player_common_photo),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier
-                            .size(46.dp)
+                            .size(50.dp)
                             .clip(CircleShape)
                     )
                 } else {
                     Box(
                         modifier = Modifier
-                            .size(46.dp)
+                            .size(50.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF0F2FA)),
+                            .background(BrandWhite),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = teamDetailsInitials(nome),
                             color = BrandBlue,
-                            fontSize = 13.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.width(14.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                if (membro.isCaptain) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(17.dp)
+                            .clip(CircleShape)
+                            .background(TeamDetailsRed),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = nome,
-                            color = BrandBlue,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium
+                            text = "★",
+                            color = BrandWhite,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
                         )
+                    }
+                }
+            }
 
-                        if (membro.isCaptain) {
-                            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(13.dp))
 
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(Color(0xFFFFE4E4))
-                                    .padding(horizontal = 6.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.player_common_captain),
-                                    color = Color(0xFFB72D2D),
-                                    fontSize = 7.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = nome,
+                        color = TeamDetailsDarkCard,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    if (membro.isCaptain) {
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50.dp))
+                                .background(Color(0xFFFFE4E4))
+                                .padding(horizontal = 7.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.player_common_captain).uppercase(),
+                                color = TeamDetailsRed,
+                                fontSize = 7.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.4.sp
+                            )
                         }
                     }
-
-                    Text(
-                        text = "$role · $posicao",
-                        color = Color(0xFF7D8497),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
 
-                OutlinedButton(
-                    onClick = onViewProfileClick,
-                    modifier = Modifier
-                        .width(82.dp)
-                        .height(36.dp),
-                    shape = RoundedCornerShape(5.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.player_common_view),
-                        color = Color(0xFF062B67),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "$role · $posicao",
+                    color = TeamDetailsTextGray,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            OutlinedButton(
+                onClick = onViewProfileClick,
+                modifier = Modifier
+                    .width(82.dp)
+                    .height(38.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, TeamDetailsBorder)
+            ) {
+                Text(
+                    text = stringResource(R.string.player_common_view),
+                    color = TeamDetailsDarkCard,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -599,17 +746,48 @@ fun TeamDetailsErrorCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = TeamDetailsCardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = "${stringResource(R.string.player_common_error)}: $text",
-            color = Color(0xFFD01818),
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(18.dp)
-        )
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFFFECEC)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "!",
+                    color = TeamDetailsRed,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = stringResource(R.string.player_common_error),
+                color = TeamDetailsDarkCard,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = text,
+                color = TeamDetailsTextGray,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -617,18 +795,21 @@ fun TeamDetailsErrorCard(
 fun TeamDetailsEmptyCard(
     text: String
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(7.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(TeamDetailsInputBg)
+            .border(1.dp, TeamDetailsBorder, RoundedCornerShape(18.dp))
+            .padding(18.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = Color(0xFF6D7486),
+            color = TeamDetailsTextGray,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(18.dp)
+            textAlign = TextAlign.Center
         )
     }
 }

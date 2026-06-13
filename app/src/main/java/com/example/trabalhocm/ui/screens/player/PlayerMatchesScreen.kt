@@ -220,43 +220,47 @@ fun PlayerMatchesScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 22.dp, vertical = 18.dp)
         ) {
-            Text(
-                text = "Match Center",
-                color = BrandBlue,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
+            MatchCenterHeroCard(
+                liveCount = liveMatchesFiltrados.size,
+                casualCount = peladinhasFiltradas.size,
+                activeFiltersCount = listOfNotNull(
+                    selectedSport,
+                    selectedStatus,
+                    selectedRegion
+                ).count { it.isNotBlank() } +
+                        listOf(cityOrRegion, fromDate, toDate).count { it.isNotBlank() } +
+                        if (search.isNotBlank()) 1 else 0
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Track live games, follow your team and join casual\npickup matches.",
-                color = Color(0xFF6D7486),
-                fontSize = 13.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            Row(
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = BrandWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                MatchesActionButton(
-                    text = "▣  CALENDAR",
-                    onClick = onCalendarClick,
-                    modifier = Modifier.weight(1f)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    MatchesActionButton(
+                        text = "▣  CALENDAR",
+                        onClick = onCalendarClick,
+                        modifier = Modifier.weight(1f)
+                    )
 
-                MatchesActionButton(
-                    text = "◷  HISTORY",
-                    onClick = onHistoryClick,
-                    modifier = Modifier.weight(1f)
-                )
+                    MatchesActionButton(
+                        text = "◷  HISTORY",
+                        onClick = onHistoryClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             MatchesSearchAndFiltersCard(
                 search = search,
@@ -282,7 +286,7 @@ fun PlayerMatchesScreen(
             } else if (mensagemErro.isNotBlank()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = BrandWhite),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -313,7 +317,7 @@ fun PlayerMatchesScreen(
                 if (peladinhasFiltradas.isEmpty() && liveMatchesFiltrados.isEmpty()) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(18.dp),
                         colors = CardDefaults.cardColors(containerColor = BrandWhite),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
@@ -400,27 +404,147 @@ fun MatchesTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(78.dp)
+            .height(72.dp)
             .background(BrandBlue)
-            .padding(horizontal = 28.dp),
+            .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = "Matches",
-            color = BrandWhite,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Column {
+            Text(
+                text = "Matches",
+                color = BrandWhite,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-        Icon(
-            imageVector = Icons.Outlined.Notifications,
-            contentDescription = "Notifications",
-            tint = BrandWhite,
+            Text(
+                text = "Jogos, calendário e partidas casuais",
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Box(
             modifier = Modifier
-                .size(26.dp)
-                .clickable { onNotificationsClick() }
-        )
+                .size(42.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(BrandWhite.copy(alpha = 0.12f))
+                .clickable { onNotificationsClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Notifications",
+                tint = BrandWhite,
+                modifier = Modifier.size(23.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun MatchCenterHeroCard(
+    liveCount: Int,
+    casualCount: Int,
+    activeFiltersCount: Int
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(22.dp)
+        ) {
+            MatchSmallBadge(
+                text = "MATCH CENTER",
+                backgroundColor = BrandWhite.copy(alpha = 0.14f),
+                textColor = BrandWhite
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "Encontra jogos e acompanha partidas em direto",
+                color = BrandWhite,
+                fontSize = 24.sp,
+                lineHeight = 29.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Consulta o calendário, vê o histórico e entra em partidas casuais disponíveis.",
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                MatchHeroStat(
+                    label = "Live",
+                    value = liveCount.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                MatchHeroStat(
+                    label = "Casuais",
+                    value = casualCount.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                MatchHeroStat(
+                    label = "Filtros",
+                    value = activeFiltersCount.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MatchHeroStat(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(BrandWhite.copy(alpha = 0.12f))
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = value,
+                color = BrandWhite,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = label,
+                color = BrandWhite.copy(alpha = 0.75f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -432,10 +556,10 @@ fun MatchesActionButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(44.dp),
-        shape = RoundedCornerShape(6.dp),
+        modifier = modifier.height(48.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFEFF1F6),
+            containerColor = Color(0xFFF2F5FB),
             contentColor = BrandBlue
         )
     ) {
@@ -457,19 +581,19 @@ fun MatchesSearchAndFiltersCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             OutlinedTextField(
                 value = search,
                 onValueChange = onSearchChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
+                    .height(54.dp),
                 singleLine = true,
                 placeholder = {
                     Text(
@@ -488,10 +612,10 @@ fun MatchesSearchAndFiltersCard(
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text
                 ),
-                shape = RoundedCornerShape(7.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = BrandWhite,
-                    unfocusedContainerColor = BrandWhite,
+                    focusedContainerColor = Color(0xFFF4F6FB),
+                    unfocusedContainerColor = Color(0xFFF4F6FB),
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
                     cursorColor = BrandGreen,
@@ -523,8 +647,8 @@ fun MatchesSearchAndFiltersCard(
                 onClick = onFiltersClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(36.dp),
-                shape = RoundedCornerShape(5.dp)
+                    .height(44.dp),
+                shape = RoundedCornerShape(14.dp)
             ) {
                 Text(
                     text = "≡  FILTERS",
@@ -545,7 +669,7 @@ fun MatchesFilterChip(
     Box(
         modifier = modifier
             .height(40.dp)
-            .clip(RoundedCornerShape(5.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(Color(0xFFEFF1F6)),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -567,7 +691,7 @@ fun LiveMatchCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -650,7 +774,7 @@ fun LiveMatchCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
-                    shape = RoundedCornerShape(3.dp)
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "VIEW DETAILS",
@@ -665,7 +789,7 @@ fun LiveMatchCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
-                    shape = RoundedCornerShape(3.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BrandGreen,
                         contentColor = BrandWhite
@@ -775,7 +899,7 @@ fun CasualMatchCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = BrandWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -862,7 +986,7 @@ fun CasualMatchCard(
                         progress = { progresso.coerceIn(0f, 1f) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(4.dp)
+                            .height(6.dp)
                             .clip(RoundedCornerShape(10.dp)),
                         color = statusColor,
                         trackColor = Color(0xFFE8EAF2)
@@ -880,7 +1004,7 @@ fun CasualMatchCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
-                    shape = RoundedCornerShape(3.dp)
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "VIEW DETAILS",
@@ -902,7 +1026,7 @@ fun CasualMatchCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
-                    shape = RoundedCornerShape(3.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = buttonContainerColor,
                         contentColor = BrandWhite,
@@ -954,8 +1078,8 @@ fun HostMatchCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -964,47 +1088,55 @@ fun HostMatchCard(
                 .padding(horizontal = 22.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(BrandWhite.copy(alpha = 0.14f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "⊕",
+                    color = BrandWhite,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Text(
-                text = "⊕",
-                color = Color(0xFF49617F),
-                fontSize = 30.sp,
+                text = "Queres criar uma partida?",
+                color = BrandWhite,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Host a Match?",
-                color = BrandBlue,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "Can't find what you're looking for? Create your\nown casual match.",
-                color = Color(0xFF6D7486),
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
+                text = "Pede acesso de organizador para conseguires criar e gerir jogos casuais.",
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
                 fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             Button(
                 onClick = onAskOrganizerClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(5.dp),
+                    .height(50.dp),
+                shape = RoundedCornerShape(15.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandBlue,
+                    containerColor = BrandGreen,
                     contentColor = BrandWhite
                 )
             ) {
                 Text(
-                    text = "ASK TO BE ORGANIZER",
+                    text = "PEDIR PARA SER ORGANIZADOR",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )

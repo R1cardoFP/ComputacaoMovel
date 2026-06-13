@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -32,7 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +46,14 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+
+private val PlayerHistoryBg = Color(0xFFF4F6FA)
+private val PlayerHistoryCard = Color.White
+private val PlayerHistoryInputBg = Color(0xFFF1F4F8)
+private val PlayerHistoryTextGray = Color(0xFF596579)
+private val PlayerHistoryTextLight = Color(0xFF8A94A6)
+private val PlayerHistoryDanger = Color(0xFFE53935)
+private val PlayerHistoryDraw = Color(0xFF6D7486)
 
 @Composable
 fun PlayerMatchHistoryScreen(
@@ -86,7 +98,7 @@ fun PlayerMatchHistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F5FA))
+            .background(PlayerHistoryBg)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
@@ -98,70 +110,50 @@ fun PlayerMatchHistoryScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 18.dp)
+                .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
-            Text(
-                text = "PERSONAL ARCHIVE",
-                color = Color(0xFF0757C8),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp
-            )
+            PlayerMatchHistoryHeroCard(matches = matches)
 
-            Spacer(modifier = Modifier.height(5.dp))
-
-            Text(
-                text = "My Matches",
-                color = BrandBlue,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "All matches you have personally participated in.",
-                color = Color(0xFF6D7486),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             PlayerMatchHistoryFilterTabs(
                 selectedFilter = selectedFilter,
                 onFilterSelected = { selectedFilter = it }
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             when {
                 isLoading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = BrandGreen)
-                    }
+                    PlayerMatchHistoryLoadingCard()
                 }
 
                 errorMessage.isNotBlank() -> {
                     PlayerMatchHistoryMessageCard(
-                        text = "Erro: $errorMessage",
-                        color = Color(0xFFD01818)
+                        title = "Erro ao carregar",
+                        text = errorMessage,
+                        color = PlayerHistoryDanger
                     )
                 }
 
                 filteredMatches.isEmpty() -> {
                     PlayerMatchHistoryMessageCard(
+                        title = "Sem partidas",
                         text = "Não existem partidas para este filtro.",
-                        color = BrandBlue
+                        color = PlayerHistoryTextGray
                     )
                 }
 
                 else -> {
+                    Text(
+                        text = "Histórico de partidas",
+                        color = BrandBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     filteredMatches.forEach { match ->
                         PlayerMatchHistoryCard(match = match)
 
@@ -193,36 +185,185 @@ private fun PlayerMatchHistoryTopBar(
             .fillMaxWidth()
             .height(72.dp)
             .background(BrandBlue)
-            .padding(horizontal = 18.dp),
+            .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "‹",
-            color = BrandWhite,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                color = BrandWhite,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 3.dp)
+            )
+        }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-        Text(
-            text = "My Matches",
-            color = BrandWhite,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Column {
+            Text(
+                text = "Match History",
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic
+            )
+
+            Text(
+                text = "Consulta o teu arquivo pessoal",
+                color = BrandWhite.copy(alpha = 0.78f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-            text = "♧",
-            color = BrandWhite,
-            fontSize = 25.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "▣",
+                color = BrandWhite,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlayerMatchHistoryHeroCard(
+    matches: List<PlayerMatchHistoryItem>
+) {
+    val wins = matches.count { it.resultado == "WIN" }
+    val losses = matches.count { it.resultado == "LOSS" }
+    val draws = matches.count { it.resultado == "DRAW" }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "PERSONAL ARCHIVE",
+                        color = BrandGreen,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "My Matches",
+                        color = BrandWhite,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontStyle = FontStyle.Italic
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "All matches you have personally participated in.",
+                        color = BrandWhite.copy(alpha = 0.78f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(58.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = matches.size.toString(),
+                        color = BrandWhite,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                PlayerMatchHistoryHeroStat(
+                    label = "Wins",
+                    value = wins.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                PlayerMatchHistoryHeroStat(
+                    label = "Draws",
+                    value = draws.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                PlayerMatchHistoryHeroStat(
+                    label = "Losses",
+                    value = losses.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlayerMatchHistoryHeroStat(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.White.copy(alpha = 0.10f))
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = value,
+                color = BrandWhite,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = label,
+                color = BrandWhite.copy(alpha = 0.72f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -231,32 +372,57 @@ private fun PlayerMatchHistoryFilterTabs(
     selectedFilter: String,
     onFilterSelected: (String) -> Unit
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerHistoryCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        PlayerMatchHistoryFilterChip(
-            text = "All",
-            selected = selectedFilter == "All",
-            onClick = { onFilterSelected("All") }
-        )
+        Column(
+            modifier = Modifier.padding(14.dp)
+        ) {
+            Text(
+                text = "Filtrar resultados",
+                color = BrandBlue,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-        PlayerMatchHistoryFilterChip(
-            text = "Wins",
-            selected = selectedFilter == "Wins",
-            onClick = { onFilterSelected("Wins") }
-        )
+            Spacer(modifier = Modifier.height(12.dp))
 
-        PlayerMatchHistoryFilterChip(
-            text = "Losses",
-            selected = selectedFilter == "Losses",
-            onClick = { onFilterSelected("Losses") }
-        )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PlayerMatchHistoryFilterChip(
+                    text = "All",
+                    selected = selectedFilter == "All",
+                    onClick = { onFilterSelected("All") },
+                    modifier = Modifier.weight(1f)
+                )
 
-        PlayerMatchHistoryFilterChip(
-            text = "Draws",
-            selected = selectedFilter == "Draws",
-            onClick = { onFilterSelected("Draws") }
-        )
+                PlayerMatchHistoryFilterChip(
+                    text = "Wins",
+                    selected = selectedFilter == "Wins",
+                    onClick = { onFilterSelected("Wins") },
+                    modifier = Modifier.weight(1f)
+                )
+
+                PlayerMatchHistoryFilterChip(
+                    text = "Losses",
+                    selected = selectedFilter == "Losses",
+                    onClick = { onFilterSelected("Losses") },
+                    modifier = Modifier.weight(1f)
+                )
+
+                PlayerMatchHistoryFilterChip(
+                    text = "Draws",
+                    selected = selectedFilter == "Draws",
+                    onClick = { onFilterSelected("Draws") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
     }
 }
 
@@ -264,22 +430,25 @@ private fun PlayerMatchHistoryFilterTabs(
 private fun PlayerMatchHistoryFilterChip(
     text: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
-            .height(30.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(if (selected) Color(0xFF0757C8) else Color(0xFFEAF0FB))
+        modifier = modifier
+            .height(38.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (selected) BrandBlue else PlayerHistoryInputBg)
             .clickable { onClick() }
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = if (selected) BrandWhite else Color(0xFF0757C8),
+            color = if (selected) BrandWhite else BrandBlue,
             fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -290,96 +459,117 @@ private fun PlayerMatchHistoryCard(
 ) {
     val resultColor = when (match.resultado) {
         "WIN" -> BrandGreen
-        "LOSS" -> Color(0xFFE53935)
-        "DRAW" -> Color(0xFF6D7486)
-        else -> Color(0xFF6D7486)
+        "LOSS" -> PlayerHistoryDanger
+        "DRAW" -> PlayerHistoryDraw
+        else -> PlayerHistoryDraw
     }
 
-    val resultBackground = resultColor.copy(alpha = 0.12f)
+    val resultText = when (match.resultado) {
+        "WIN" -> "WIN"
+        "LOSS" -> "LOSS"
+        "DRAW" -> "DRAW"
+        else -> match.resultado
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerHistoryCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 PlayerMatchHistoryResultBadge(
-                    text = match.resultado,
-                    backgroundColor = resultBackground,
+                    text = resultText,
+                    backgroundColor = resultColor.copy(alpha = 0.12f),
                     textColor = resultColor
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
                     text = match.torneioNome,
                     color = BrandBlue,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 PlayerMatchHistoryTeamBlock(
-                    teamName = match.minhaEquipaNome
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Text(
-                    text = "${match.meusPontos} - ${match.adversarioPontos}",
-                    color = BrandBlue,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                PlayerMatchHistoryTeamBlock(
-                    teamName = match.adversarioNome
-                )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "📅 ${playerMatchHistoryFormatDate(match.data)}",
-                    color = Color(0xFF6D7486),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    text = "📍 ${match.local}",
-                    color = Color(0xFF6D7486),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
+                    teamName = match.minhaEquipaNome,
                     modifier = Modifier.weight(1f)
                 )
 
-                Text(
-                    text = playerMatchHistoryShortResult(match),
-                    color = BrandGreen,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 10.dp)
+                ) {
+                    Text(
+                        text = "${match.meusPontos} - ${match.adversarioPontos}",
+                        color = BrandBlue,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(PlayerHistoryInputBg)
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = playerMatchHistoryShortResult(match),
+                            color = resultColor,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                PlayerMatchHistoryTeamBlock(
+                    teamName = match.adversarioNome,
+                    modifier = Modifier.weight(1f)
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(PlayerHistoryInputBg)
+                    .padding(12.dp)
+            ) {
+                Column {
+                    PlayerMatchHistoryInfoRow(
+                        label = "Data",
+                        value = playerMatchHistoryFormatDate(match.data)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    PlayerMatchHistoryInfoRow(
+                        label = "Local",
+                        value = match.local
+                    )
+                }
             }
         }
     }
@@ -395,72 +585,156 @@ private fun PlayerMatchHistoryResultBadge(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
-            .padding(horizontal = 10.dp, vertical = 5.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             color = textColor,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.6.sp
         )
     }
 }
 
 @Composable
 private fun PlayerMatchHistoryTeamBlock(
-    teamName: String
+    teamName: String,
+    modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(78.dp)
+        modifier = modifier
     ) {
         Box(
             modifier = Modifier
-                .height(44.dp)
-                .width(44.dp)
+                .size(48.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFEAF0FB)),
+                .background(PlayerHistoryInputBg),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = playerMatchHistoryInitials(teamName),
                 color = BrandBlue,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = teamName,
             color = BrandBlue,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            maxLines = 2
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
     }
 }
 
 @Composable
+private fun PlayerMatchHistoryInfoRow(
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = PlayerHistoryTextLight,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.width(52.dp)
+        )
+
+        Text(
+            text = value,
+            color = PlayerHistoryTextGray,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun PlayerMatchHistoryLoadingCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerHistoryCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = BrandGreen)
+        }
+    }
+}
+
+@Composable
 private fun PlayerMatchHistoryMessageCard(
+    title: String,
     text: String,
     color: Color
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandWhite),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PlayerHistoryCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = text,
-            color = color,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(18.dp)
-        )
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "!",
+                    color = color,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = title,
+                color = BrandBlue,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = text,
+                color = PlayerHistoryTextGray,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
