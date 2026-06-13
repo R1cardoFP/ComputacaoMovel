@@ -1017,6 +1017,9 @@ fun MatchLeagueApp() {
                 onLiveMatchesClick = { navController.navigate("organizador_live_match") },
                 onCreateTeamClick = { navController.navigate("create_team") },
                 onHomeClick = { },
+                onNotificationsClick = {
+                    navController.navigate("organizador_notifications")
+                },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("teams") },
@@ -1034,6 +1037,9 @@ fun MatchLeagueApp() {
                 onManageRegistrationClick = { idTorneio -> navController.navigate("manage_registration/$idTorneio") },
                 onEditClick = { idTorneio -> navController.navigate("edit_tournament/$idTorneio") },
                 onHomeClick = { navController.navigate("home") },
+                onNotificationsClick = {
+                    navController.navigate("organizador_notifications")
+                },
                 onTournamentsClick = { },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = { navController.navigate("teams") },
@@ -1255,6 +1261,9 @@ fun MatchLeagueApp() {
                 onHistoryClick = { navController.navigate("organizador_matches") },
                 onCalendarClick = { navController.navigate("organizador_matches_calendar") },
                 onHomeClick = { navController.navigate("home") },
+                onNotificationsClick = {
+                    navController.navigate("organizador_notifications")
+                },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { },
                 onTeamsClick = { navController.navigate("teams") },
@@ -1365,6 +1374,9 @@ fun MatchLeagueApp() {
                 onManageTeamClick = { idEquipa -> navController.navigate("manage_team/$idEquipa") },
                 onViewDetailsClick = { idEquipa -> navController.navigate("organizador_team_details/$idEquipa") },
                 onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                onNotificationsClick = {
+                    navController.navigate("organizador_notifications")
+                },
                 onTournamentsClick = { navController.navigate("torneios") },
                 onMatchesClick = { navController.navigate("organizador_match_center") },
                 onTeamsClick = {  },

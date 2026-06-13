@@ -35,6 +35,7 @@ fun BrowseTeamsScreen(
     onManageTeamClick: (Long) -> Unit = {},
     onViewDetailsClick: (Long) -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     onTournamentsClick: () -> Unit = {},
     onMatchesClick: () -> Unit = {},
     onTeamsClick: () -> Unit = {},
@@ -69,8 +70,12 @@ fun BrowseTeamsScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_teams), color = Color.White, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { viewModel.carregarEquipas() }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.desc_refresh), tint = Color.White)
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            Icons.Outlined.Notifications,
+                            contentDescription = stringResource(R.string.desc_notifications),
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBlue)
