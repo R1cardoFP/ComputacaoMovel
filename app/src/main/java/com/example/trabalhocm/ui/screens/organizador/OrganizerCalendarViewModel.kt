@@ -66,8 +66,20 @@ class OrganizerCalendarViewModel : ViewModel() {
                     val casa = equipasDoJogo.firstOrNull { it.papelEquipa == "casa" } ?: return@mapNotNull null
                     val fora = equipasDoJogo.firstOrNull { it.papelEquipa == "fora" } ?: return@mapNotNull null
 
-                    val isLive = jogo.estadoJogo == "em_direto"
-                    val score = if (jogo.estadoJogo == "agendado") "VS"
+                    val inicio = java.time.LocalDateTime.of(
+                        data,
+                        runCatching { java.time.LocalTime.parse(jogo.hora.take(5)) }.getOrNull()
+                            ?: java.time.LocalTime.MIDNIGHT
+                    )
+                    val agora = java.time.LocalDateTime.now()
+                    val estadoLower = jogo.estadoJogo.lowercase()
+                    val isLive = when {
+                        estadoLower == "em_direto" || estadoLower == "live" ||
+                            estadoLower == "em_decorrer" || estadoLower == "a_decorrer" -> true
+                        estadoLower in setOf("terminado", "cancelado", "concluido", "finalizado", "adiado") -> false
+                        else -> !agora.isBefore(inicio) && agora.isBefore(inicio.plusMinutes(90L))
+                    }
+                    val score = if (!isLive && jogo.estadoJogo == "agendado") "VS"
                     else "${casa.pontosMarcados} - ${fora.pontosMarcados}"
 
                     CalendarGame(
