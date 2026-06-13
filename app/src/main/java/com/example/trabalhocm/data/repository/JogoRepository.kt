@@ -10,9 +10,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.put
+import java.time.OffsetDateTime
 
 data class EquipaSimples(
     val id: Long,
@@ -158,13 +162,19 @@ class JogoRepository {
     }
 
     suspend fun atualizarPontos(idJogo: Long, idEquipa: Long, novosPontos: Int): Result<Unit> = runCatching {
-        client.from("jogo_equipa")
+        val linhas = client.from("jogo_equipa")
             .update(JsonObject(mapOf("pontos_marcados" to JsonPrimitive(novosPontos)))) {
+                select()
                 filter {
                     eq("id_jogo", idJogo)
                     eq("id_equipa", idEquipa)
                 }
             }
+            .decodeList<JogoEquipa>()
+
+        if (linhas.isEmpty()) {
+            throw Exception("Não tens permissão para editar este jogo (só o organizador do torneio pode).")
+        }
     }
 
     suspend fun atualizarEstadoJogo(
@@ -179,11 +189,224 @@ class JogoRepository {
             }
         }
 
-        client.from("jogo")
+        val linhas = client.from("jogo")
             .update(JsonObject(campos)) {
+                select()
                 filter { eq("id", idJogo) }
             }
+            .decodeList<Jogo>()
+
+        if (linhas.isEmpty()) {
+            throw Exception("Não tens permissão para alterar este jogo (só o organizador do torneio pode).")
+        }
     }
+
+    /**
+     * Termina um jogo: regista o resultado e recalcula a classificação do torneio,
+     * as estatísticas de equipa e as estatísticas dos jogadores de ambas as equipas.
+     * Idempotente: se o jogo já estiver terminado, não faz nada (evita duplo cálculo).
+     */
+    suspend fun finalizarJogo(idJogo: Long): Result<Unit> = runCatching {
+        val jogo = client.from("jogo")
+            .select { filter { eq("id", idJogo) } }
+            .decodeSingle<Jogo>()
+
+        if (jogo.estadoJogo == "terminado") return@runCatching
+
+        val jogoEquipas = client.from("jogo_equipa")
+            .select { filter { eq("id_jogo", idJogo) } }
+            .decodeList<JogoEquipa>()
+
+        val casa = jogoEquipas.firstOrNull { it.papelEquipa == "casa" }
+            ?: throw Exception("Jogo sem equipa da casa.")
+        val fora = jogoEquipas.firstOrNull { it.papelEquipa == "fora" }
+            ?: throw Exception("Jogo sem equipa visitante.")
+
+        val pc = casa.pontosMarcados
+        val pf = fora.pontosMarcados
+        val resCasa = if (pc > pf) Resultado.VITORIA else if (pc < pf) Resultado.DERROTA else Resultado.EMPATE
+        val resFora = if (pf > pc) Resultado.VITORIA else if (pf < pc) Resultado.DERROTA else Resultado.EMPATE
+
+        // 1. Marcar terminado PRIMEIRO. Se isto falhar (ex.: não és o organizador deste
+        //    torneio), aborta já — não conta estatísticas nenhumas, evitando duplo registo.
+        atualizarEstadoJogo(idJogo, "terminado", "$pc-$pf").getOrThrow()
+
+        val idModalidade = client.from("torneio")
+            .select { filter { eq("id", jogo.idTorneio) } }
+            .decodeList<JsonObject>()
+            .firstOrNull()
+            ?.get("id_modalidade")?.jsonPrimitive?.longOrNull
+            ?: 0L
+
+        // 2. Classificação do torneio
+        atualizarClassificacao(jogo.idTorneio, casa.idEquipa, resCasa)
+        atualizarClassificacao(jogo.idTorneio, fora.idEquipa, resFora)
+
+        // 3. Estatísticas de equipa
+        atualizarEstatisticaEquipa(casa.idEquipa, resCasa)
+        atualizarEstatisticaEquipa(fora.idEquipa, resFora)
+
+        // 4. Estatísticas dos jogadores (membros aceites)
+        atualizarEstatisticaJogadores(casa.idEquipa, idModalidade, resCasa)
+        atualizarEstatisticaJogadores(fora.idEquipa, idModalidade, resFora)
+    }
+
+    private suspend fun atualizarClassificacao(idTorneio: Long, idEquipa: Long, r: Resultado) {
+        val agora = OffsetDateTime.now().toString()
+        val existente = client.from("classificacao")
+            .select {
+                filter {
+                    eq("id_torneio", idTorneio)
+                    eq("id_equipa", idEquipa)
+                }
+            }
+            .decodeList<JsonObject>()
+            .firstOrNull()
+
+        val vitorias = existente.intOf("vitorias") + if (r == Resultado.VITORIA) 1 else 0
+        val empates = existente.intOf("empates") + if (r == Resultado.EMPATE) 1 else 0
+        val derrotas = existente.intOf("derrotas") + if (r == Resultado.DERROTA) 1 else 0
+        val pontos = existente.intOf("pontos") + r.pontos
+
+        if (existente != null) {
+            client.from("classificacao")
+                .update(buildJsonObject {
+                    put("pontos", pontos)
+                    put("vitorias", vitorias)
+                    put("empates", empates)
+                    put("derrotas", derrotas)
+                    put("updated_at", agora)
+                }) {
+                    filter { eq("id", existente.longOf("id")) }
+                }
+        } else {
+            client.from("classificacao")
+                .insert(buildJsonObject {
+                    put("id_torneio", idTorneio)
+                    put("id_equipa", idEquipa)
+                    put("pontos", pontos)
+                    put("vitorias", vitorias)
+                    put("empates", empates)
+                    put("derrotas", derrotas)
+                    put("created_at", agora)
+                    put("updated_at", agora)
+                })
+        }
+    }
+
+    private suspend fun atualizarEstatisticaEquipa(idEquipa: Long, r: Resultado) {
+        val agora = OffsetDateTime.now().toString()
+        val existente = client.from("estatistica_equipa")
+            .select { filter { eq("id_equipa", idEquipa) } }
+            .decodeList<JsonObject>()
+            .firstOrNull()
+
+        val vitorias = existente.intOf("vitorias") + if (r == Resultado.VITORIA) 1 else 0
+        val empates = existente.intOf("empates") + if (r == Resultado.EMPATE) 1 else 0
+        val derrotas = existente.intOf("derrotas") + if (r == Resultado.DERROTA) 1 else 0
+        val pontos = existente.intOf("pontos") + r.pontos
+        val numJogos = existente.intOf("num_jogos") + 1
+
+        if (existente != null) {
+            client.from("estatistica_equipa")
+                .update(buildJsonObject {
+                    put("vitorias", vitorias)
+                    put("empates", empates)
+                    put("derrotas", derrotas)
+                    put("pontos", pontos)
+                    put("num_jogos", numJogos)
+                    put("updated_at", agora)
+                }) {
+                    filter { eq("id_equipa", idEquipa) }
+                }
+        } else {
+            client.from("estatistica_equipa")
+                .insert(buildJsonObject {
+                    put("id_equipa", idEquipa)
+                    put("vitorias", vitorias)
+                    put("empates", empates)
+                    put("derrotas", derrotas)
+                    put("pontos", pontos)
+                    put("num_jogos", numJogos)
+                    put("created_at", agora)
+                    put("updated_at", agora)
+                })
+        }
+    }
+
+    private suspend fun atualizarEstatisticaJogadores(idEquipa: Long, idModalidade: Long, r: Resultado) {
+        val agora = OffsetDateTime.now().toString()
+        val membros = client.from("membro_equipa")
+            .select {
+                filter {
+                    eq("id_equipa", idEquipa)
+                    eq("estado_convite", "aceite")
+                }
+            }
+            .decodeList<JsonObject>()
+
+        for (membro in membros) {
+            val idUtilizador = membro["id_utilizador"]?.jsonPrimitive?.contentOrNull ?: continue
+
+            val existente = client.from("estatistica_jogador")
+                .select {
+                    filter {
+                        eq("id_utilizador", idUtilizador)
+                        eq("id_modalidade", idModalidade)
+                    }
+                }
+                .decodeList<JsonObject>()
+                .firstOrNull()
+
+            val vitorias = existente.intOf("vitorias") + if (r == Resultado.VITORIA) 1 else 0
+            val empates = existente.intOf("empates") + if (r == Resultado.EMPATE) 1 else 0
+            val derrotas = existente.intOf("derrotas") + if (r == Resultado.DERROTA) 1 else 0
+            val numJogos = existente.intOf("num_jogos") + 1
+            val pontuacao = existente.intOf("pontuacao") + r.pontos
+
+            if (existente != null) {
+                client.from("estatistica_jogador")
+                    .update(buildJsonObject {
+                        put("vitorias", vitorias)
+                        put("empates", empates)
+                        put("derrotas", derrotas)
+                        put("num_jogos", numJogos)
+                        put("pontuacao", pontuacao)
+                        put("updated_at", agora)
+                    }) {
+                        filter {
+                            eq("id_utilizador", idUtilizador)
+                            eq("id_modalidade", idModalidade)
+                        }
+                    }
+            } else {
+                client.from("estatistica_jogador")
+                    .insert(buildJsonObject {
+                        put("id_utilizador", idUtilizador)
+                        put("id_modalidade", idModalidade)
+                        put("vitorias", vitorias)
+                        put("empates", empates)
+                        put("derrotas", derrotas)
+                        put("num_jogos", numJogos)
+                        put("pontuacao", pontuacao)
+                        put("created_at", agora)
+                        put("updated_at", agora)
+                    })
+            }
+        }
+    }
+}
+
+private enum class Resultado(val pontos: Int) {
+    VITORIA(3), EMPATE(1), DERROTA(0)
+}
+
+private fun JsonObject?.intOf(key: String): Int {
+    return this?.get(key)?.jsonPrimitive?.intOrNull ?: 0
+}
+
+private fun JsonObject.longOf(key: String): Long {
+    return this[key]?.jsonPrimitive?.longOrNull ?: 0L
 }
 
 @Serializable

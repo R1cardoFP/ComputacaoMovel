@@ -30,6 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
+import com.example.trabalhocm.data.repository.JogoRepository
+import com.example.trabalhocm.data.repository.MatchControlInfo
 import com.example.trabalhocm.data.repository.PeladinhaComInfo
 import com.example.trabalhocm.data.repository.PeladinhaRepository
 import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
@@ -56,11 +58,13 @@ fun OrganizerMatchCenterScreen(
     var showFiltersSheet by remember { mutableStateOf(false) }
 
     val repository = remember { PeladinhaRepository() }
+    val jogoRepository = remember { JogoRepository() }
     val scope = rememberCoroutineScope()
 
     var peladinhas by remember { mutableStateOf<List<PeladinhaComInfo>>(emptyList()) }
     var isLoadingPeladinhas by remember { mutableStateOf(true) }
     var errorPeladinhas by remember { mutableStateOf("") }
+    var liveMatch by remember { mutableStateOf<MatchControlInfo?>(null) }
 
     val errorLoadCasualMatches = stringResource(R.string.error_load_casual_matches)
 
@@ -76,6 +80,10 @@ fun OrganizerMatchCenterScreen(
                 .onFailure { erro ->
                     errorPeladinhas = erro.message ?: errorLoadCasualMatches
                 }
+
+            // Jogo de torneio realmente em direto (para o cartão "ao vivo")
+            val idJogoLive = jogoRepository.obterPrimeiroJogoEmDireto().getOrNull()
+            liveMatch = idJogoLive?.let { jogoRepository.obterControloJogo(it).getOrNull() }
 
             isLoadingPeladinhas = false
         }
@@ -239,8 +247,6 @@ fun OrganizerMatchCenterScreen(
                     }
                 }
             }
-
-            LiveMatchCenterCard(onViewDetailsClick = onLiveMatchClick)
 
             PickupMatchesFromDatabaseSection(
                 peladinhas = peladinhasFiltradas,
@@ -541,7 +547,7 @@ fun FilterSectionLabel(text: String) {
 }
 
 @Composable
-fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
+fun LiveMatchCenterCard(match: MatchControlInfo, onViewDetailsClick: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBg),
         shape = RoundedCornerShape(12.dp),
@@ -564,8 +570,7 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TagBadge(stringResource(R.string.badge_live_now_bullet), TealGreen, TealGreen.copy(alpha = 0.1f))
-                TagBadge(stringResource(R.string.badge_casual), TextGray, InputBg)
-                TagBadge(stringResource(R.string.badge_football), TextGray, InputBg)
+                TagBadge(match.torneioNome, TextGray, InputBg)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -583,17 +588,17 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                             .background(Color.White),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(stringResource(R.string.team_slb), color = ErrorRed, fontWeight = FontWeight.Bold)
+                        Text(match.equipaCasa.take(3).uppercase(), color = ErrorRed, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    Text(stringResource(R.string.team_benfica), color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(match.equipaCasa, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("2 - 1", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
-                    Text("75'", color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("${match.pontosCasa} - ${match.pontosFora}", color = DarkBlue, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(stringResource(R.string.badge_live_caps), color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
@@ -604,12 +609,12 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
                             .background(Color.White),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(stringResource(R.string.team_fcp), color = PrimaryBlue, fontWeight = FontWeight.Bold)
+                        Text(match.equipaFora.take(3).uppercase(), color = PrimaryBlue, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    Text(stringResource(R.string.team_porto), color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(match.equipaFora, color = DarkBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -625,7 +630,7 @@ fun LiveMatchCenterCard(onViewDetailsClick: () -> Unit) {
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                Text(stringResource(R.string.mock_stadium_atlantic_cup), color = TextGray, fontSize = 12.sp)
+                Text(match.local.ifBlank { match.torneioNome }, color = TextGray, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -848,50 +853,15 @@ fun PickupMatchCard(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(
-                    onClick = onViewDetailsClick,
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, PrimaryBlue),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                ) {
-                    Text(stringResource(R.string.btn_view_details), color = PrimaryBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
-
-                Button(
-                    onClick = onActionClick,
-                    enabled = actionEnabled,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = TealGreen,
-                        disabledContainerColor = Color(0xFFCBD5E1)
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                ) {
-                    if (isInviteOnly) {
-                        Icon(
-                            Icons.Outlined.Lock,
-                            contentDescription = null,
-                            tint = TextGray,
-                            modifier = Modifier.size(14.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(4.dp))
-
-                        Text(actionText, color = TextGray, fontWeight = FontWeight.Bold, fontSize = 10.sp)
-                    } else {
-                        Text(
-                            actionText,
-                            color = if (actionEnabled) Color.White else TextGray,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp
-                        )
-                    }
-                }
+            Button(
+                onClick = onViewDetailsClick,
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+            ) {
+                Text(stringResource(R.string.btn_view_details), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
     }

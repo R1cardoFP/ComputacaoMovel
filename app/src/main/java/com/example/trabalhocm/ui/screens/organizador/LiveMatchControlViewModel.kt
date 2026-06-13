@@ -16,6 +16,7 @@ class LiveMatchControlViewModel : ViewModel() {
     var isLoading by mutableStateOf(true)
     var isProcessing by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
+    var terminado by mutableStateOf(false)
 
     /** idJogo > 0 carrega esse jogo; idJogo == 0 procura o primeiro em direto. */
     fun carregar(idJogo: Long) {
@@ -68,8 +69,21 @@ class LiveMatchControlViewModel : ViewModel() {
 
     fun terminarJogo() {
         val atual = jogo ?: return
-        val resultado = "${atual.pontosCasa}-${atual.pontosFora}"
-        mudarEstado("terminado", resultado)
+        viewModelScope.launch {
+            isProcessing = true
+            errorMessage = ""
+
+            repository.finalizarJogo(atual.idJogo)
+                .onSuccess {
+                    isProcessing = false
+                    jogo = atual.copy(estado = "terminado")
+                    terminado = true
+                }
+                .onFailure { erro ->
+                    isProcessing = false
+                    errorMessage = erro.message ?: "Erro ao terminar o jogo."
+                }
+        }
     }
 
     private fun mudarEstado(novoEstado: String, resultadoFinal: String? = null) {

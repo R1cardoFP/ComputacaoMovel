@@ -15,6 +15,7 @@ data class UiTeam(
     val id: Long,
     val name: String,
     val divisionRes: Int?,
+    val modalidadeNome: String,
     val wins: Int,
     val losses: Int,
     val streak: String,
@@ -34,37 +35,30 @@ class BrowseTeamsViewModel : ViewModel() {
     fun carregarEquipas() {
         viewModelScope.launch {
             isLoading = true
-            val currentUserId = SupabaseClient.client.auth.currentUserOrNull()?.id
 
-            val equipasResult = repository.listarTodasEquipas()
-            val membrosResult = currentUserId?.let { repository.obterMinhasEquipas(it) }
+            repository.listarEquipasComInfo()
+                .onSuccess { lista ->
+                    teams = lista.map { info ->
+                        val modalidadeRes = when (info.equipa.idModalidade) {
+                            1L -> R.string.sport_football
+                            2L -> R.string.sport_basketball
+                            3L -> R.string.sport_volleyball
+                            else -> R.string.sport_default
+                        }
 
-            if (equipasResult.isSuccess) {
-                val equipasDB = equipasResult.getOrNull() ?: emptyList()
-
-                val minhasEquipasIds = membrosResult?.getOrNull()
-                    ?.filter { it.estadoConvite == "aceite" }
-                    ?.map { it.idEquipa } ?: emptyList()
-
-                teams = equipasDB.map { eq ->
-                    val modalidadeRes = when(eq.idModalidade) {
-                        1L -> R.string.sport_football
-                        2L -> R.string.sport_basketball
-                        3L -> R.string.sport_volleyball
-                        else -> R.string.sport_default
+                        UiTeam(
+                            id = info.equipa.id,
+                            name = info.equipa.nome,
+                            divisionRes = modalidadeRes,
+                            modalidadeNome = info.modalidadeNome,
+                            wins = info.vitorias,
+                            losses = info.derrotas,
+                            streak = info.streak,
+                            isMyTeam = info.utilizadorPertence
+                        )
                     }
-
-                    UiTeam(
-                        id = eq.id,
-                        name = eq.nome,
-                        divisionRes = modalidadeRes,
-                        wins = 0,
-                        losses = 0,
-                        streak = "-",
-                        isMyTeam = minhasEquipasIds.contains(eq.id)
-                    )
                 }
-            }
+
             isLoading = false
         }
     }

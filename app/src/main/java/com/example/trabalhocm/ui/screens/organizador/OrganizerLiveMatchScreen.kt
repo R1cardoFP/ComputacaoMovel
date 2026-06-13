@@ -43,6 +43,13 @@ fun OrganizerLiveMatchScreen(
         viewModel.carregar(idJogo)
     }
 
+    // Ao terminar o jogo, volta atrás (o Match Center recarrega e o jogo sai dos "ao vivo")
+    LaunchedEffect(viewModel.terminado) {
+        if (viewModel.terminado) {
+            onBackClick()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

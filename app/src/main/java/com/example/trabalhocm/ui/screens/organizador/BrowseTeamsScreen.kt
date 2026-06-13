@@ -42,11 +42,11 @@ fun BrowseTeamsScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val tabAll = stringResource(id = R.string.tab_all_teams)
-    val tabMine = stringResource(id = R.string.tab_my_teams)
-    val tabOthers = stringResource(id = R.string.tab_others)
+    val tabFutebol = stringResource(id = R.string.sport_football)
+    val tabBasquetebol = stringResource(id = R.string.sport_basketball)
+    val tabVoleibol = stringResource(id = R.string.sport_volleyball)
 
-    val tabs = listOf(tabAll, tabMine, tabOthers)
+    val tabs = listOf(tabFutebol, tabBasquetebol, tabVoleibol)
     var selectedTab by remember { mutableStateOf(tabs[0]) }
 
     val allTeams = viewModel.teams
@@ -54,9 +54,11 @@ fun BrowseTeamsScreen(
 
     val filteredTeams = allTeams.filter { team ->
         val matchesSearch = team.name.contains(searchQuery, ignoreCase = true)
+        val nome = team.modalidadeNome.lowercase()
         val matchesTab = when (selectedTab) {
-            tabMine -> team.isMyTeam
-            tabOthers -> !team.isMyTeam
+            tabFutebol -> nome.contains("fut") || nome.contains("foot") || nome.contains("soccer")
+            tabBasquetebol -> nome.contains("basq") || nome.contains("basket")
+            tabVoleibol -> nome.contains("vol")
             else -> true
         }
         matchesSearch && matchesTab
@@ -305,7 +307,7 @@ fun RegularTeamCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     Surface(color = PrimaryBlue.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
                         Text(
-                            text = team.divisionRes?.let { stringResource(it) } ?: stringResource(R.string.badge_unknown),
+                            text = team.modalidadeNome.ifBlank { stringResource(R.string.badge_unknown) }.uppercase(),
                             color = PrimaryBlue,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
