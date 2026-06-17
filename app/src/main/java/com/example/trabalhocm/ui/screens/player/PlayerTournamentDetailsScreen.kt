@@ -1,5 +1,6 @@
 package com.example.trabalhocm.ui.screens.player
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,15 +23,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
 import com.example.trabalhocm.data.model.Jogo
+import com.example.trabalhocm.data.remote.SupabaseClient
 import com.example.trabalhocm.data.repository.AuthRepository
 import com.example.trabalhocm.data.repository.EstatisticaEquipaLiga
 import com.example.trabalhocm.data.repository.Torneio
@@ -55,6 +64,11 @@ import com.example.trabalhocm.ui.screens.MatchLeagueBottomBar
 import com.example.trabalhocm.ui.theme.BrandBlue
 import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 private val ScreenBg = Color(0xFFF4F6FB)
 private val CardBg = Color.White
@@ -64,6 +78,18 @@ private val BorderLine = Color(0xFFE6EAF2)
 private val SoftGreen = Color(0xFFEAF8F5)
 private val SoftBlue = Color(0xFFEAF1FF)
 private val SoftRed = Color(0xFFFFECEC)
+
+@Serializable
+private data class MembroEquipaLocalDTO(
+    @SerialName("id_equipa") val idEquipa: Long? = null,
+    val papel: String? = null
+)
+
+@Serializable
+private data class EquipaLocalDTO(
+    val id: Long,
+    @SerialName("id_modalidade") val idModalidade: Int? = null
+)
 
 @Composable
 fun PlayerTournamentDetailsScreen(
@@ -75,6 +101,7 @@ fun PlayerTournamentDetailsScreen(
     onTeamsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val scope = rememberCoroutineScope()
     val authRepository = remember { AuthRepository() }
     val torneioRepository = remember { TorneioRepository() }
 
@@ -83,28 +110,105 @@ fun PlayerTournamentDetailsScreen(
     var jogosEliminatorias by remember { mutableStateOf<List<Jogo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(idTorneio) {
-        if (idTorneio != 0L) {
-            authRepository.obterTorneioDetalhes(idTorneio).onSuccess { torneio ->
-                torneioAtual = torneio
+    // Estados para o cancelamento de inscrição
+    var souCapitao by remember { mutableStateOf(false) }
+    var isInscrito by remember { mutableStateOf(false) }
+    var minhaEquipaId by remember { mutableStateOf<Long?>(null) }
+    var showCancelDialog by remember { mutableStateOf(false) }
+    var isCancelling by remember { mutableStateOf(false) }
 
-                if (torneio.formato?.lowercase() == "liga") {
-                    torneioRepository.obterClassificacaoTorneio(idTorneio).onSuccess { standings ->
-                        classificacao = standings
+    fun carregarTudo() {
+        scope.launch {
+            isLoading = true
+            if (idTorneio != 0L) {
+                authRepository.obterTorneioDetalhes(idTorneio).onSuccess { torneio ->
+                    torneioAtual = torneio
+
+                    if (torneio.formato?.lowercase() == "liga") {
+                        torneioRepository.obterClassificacaoTorneio(idTorneio).onSuccess { standings ->
+                            classificacao = standings
+                        }
+                    } else if (torneio.formato?.lowercase() == "eliminatorias" || torneio.formato?.lowercase() == "knockout") {
+                        torneioRepository.obterJogosEliminatorias(idTorneio).onSuccess { jogos ->
+                            jogosEliminatorias = jogos
+                        }
                     }
-                } else if (torneio.formato?.lowercase() == "eliminatorias" || torneio.formato?.lowercase() == "knockout") {
-                    torneioRepository.obterJogosEliminatorias(idTorneio).onSuccess { jogos ->
-                        jogosEliminatorias = jogos
+
+                    // Verificar se o user é capitão de uma equipa compatível e se está inscrito
+                    val currentUserId = SupabaseClient.client.auth.currentUserOrNull()?.id
+                    if (currentUserId != null) {
+                        try {
+                            val membros = SupabaseClient.client.from("membro_equipa").select {
+                                filter { eq("id_utilizador", currentUserId); eq("estado_convite", "aceite") }
+                            }.decodeList<MembroEquipaLocalDTO>()
+
+                            val equipasCapitao = membros.filter { it.papel?.lowercase() == "capitao" }.mapNotNull { it.idEquipa }
+
+                            if (equipasCapitao.isNotEmpty()) {
+                                val equipas = SupabaseClient.client.from("equipa").select {
+                                    filter { isIn("id", equipasCapitao); eq("id_modalidade", torneio.idModalidade ?: 1) }
+                                }.decodeList<EquipaLocalDTO>()
+
+                                if (equipas.isNotEmpty()) {
+                                    souCapitao = true
+                                    minhaEquipaId = equipas.first().id
+                                    torneioRepository.verificarEquipaInscrita(idTorneio, minhaEquipaId!!).onSuccess { inscrito ->
+                                        isInscrito = inscrito
+                                    }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
+
+                    isLoading = false
+                }.onFailure {
+                    isLoading = false
                 }
-
-                isLoading = false
-            }.onFailure {
+            } else {
                 isLoading = false
             }
-        } else {
-            isLoading = false
         }
+    }
+
+    LaunchedEffect(idTorneio) {
+        carregarTudo()
+    }
+
+    if (showCancelDialog) {
+        AlertDialog(
+            containerColor = CardBg,
+            onDismissRequest = { showCancelDialog = false },
+            title = { Text("Cancel Registration", color = BrandBlue, fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to withdraw your team from this tournament? Please note that the entry fee will not be refunded.", color = TextMuted) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            isCancelling = true
+                            minhaEquipaId?.let { equipaId ->
+                                torneioRepository.cancelarInscricaoEquipa(idTorneio, equipaId).onSuccess {
+                                    isInscrito = false
+                                    showCancelDialog = false
+                                    carregarTudo() // recarrega a classificação para tirar a equipa
+                                }
+                            }
+                            isCancelling = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
+                ) {
+                    if (isCancelling) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    else Text("Yes, Cancel", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelDialog = false }) {
+                    Text("Keep Registration", color = BrandBlue, fontWeight = FontWeight.Bold)
+                }
+            }
+        )
     }
 
     Column(
@@ -172,11 +276,26 @@ fun PlayerTournamentDetailsScreen(
 
                 if (t.formato?.lowercase() == "liga") {
                     TournamentDetailsStandingsCard(classificacao = classificacao)
-                    Spacer(modifier = Modifier.height(22.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                 } else if (t.formato?.lowercase() == "eliminatorias" || t.formato?.lowercase() == "knockout") {
                     TournamentBracketCard(jogos = jogosEliminatorias)
-                    Spacer(modifier = Modifier.height(22.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                 }
+
+                if (isInscrito && souCapitao) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = { showCancelDialog = true },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.dp, Color(0xFFE53935)),
+                        colors = ButtonDefaults.outlinedButtonColors(containerColor = SoftRed, contentColor = Color(0xFFE53935))
+                    ) {
+                        Text("CANCEL REGISTRATION", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(22.dp))
             }
         } else {
             Box(

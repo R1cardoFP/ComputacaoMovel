@@ -274,6 +274,24 @@ class TorneioRepository {
                 .insert(novoTorneio)
         }
     }
+
+    suspend fun cancelarInscricaoEquipa(idTorneio: Long, idEquipa: Long): Result<Unit> {
+        return runCatching {
+            val linhasApagadas = client.from("torneio_equipa")
+                .delete {
+                    select()
+                    filter {
+                        eq("id_torneio", idTorneio)
+                        eq("id_equipa", idEquipa)
+                    }
+                }
+                .decodeList<TorneioEquipaDB>()
+
+            if (linhasApagadas.isEmpty()) {
+                throw Exception("Could not find the registration to cancel.")
+            }
+        }
+    }
 }
 
 @Serializable

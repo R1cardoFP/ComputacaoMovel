@@ -264,13 +264,12 @@ fun PlayerTournamentManagementScreen(
                     torneiosFiltrados.forEach { torneio ->
 
                         val isAlreadyRegistered = equipasInscritasMap[torneio.id] == true
-                        val estadoAberto = torneio.estado?.lowercase() == "aberto"
+                        // Correção da leitura do estado
+                        val estadoAberto = torneio.estado?.trim()?.equals("aberto", ignoreCase = true) == true
 
                         val tagEstado = if (estadoAberto) "OPEN" else (torneio.estado?.uppercase() ?: "LIVE")
                         val corEstado = if (estadoAberto) BrandGreen else TournamentManagementDanger
 
-                        // Lógica do Botão Principal:
-                        // Se já está inscrito, mostra "REGISTERED". Se não, depende de estar "aberto"
                         val btnTexto = when {
                             isAlreadyRegistered -> "ALREADY REGISTERED"
                             estadoAberto -> "REGISTER NOW"
@@ -1131,9 +1130,9 @@ private fun TournamentManagementMessageCard(
     }
 }
 
-// --- FUNÇÕES DE CORRESPONDÊNCIA SEGURA PARA FILTRAGEM ---
+// --- FUNÇÕES DE FILTRAGEM CORRIGIDAS ---
 fun torneioCorrespondeModalidade(filtro: String?, idModalidade: Int?): Boolean {
-    if (filtro.isNullOrBlank()) return true
+    if (filtro.isNullOrBlank() || filtro.equals("All", ignoreCase = true)) return true
     return when (filtro) {
         "Football" -> idModalidade == 1
         "Basketball" -> idModalidade == 2
@@ -1143,7 +1142,7 @@ fun torneioCorrespondeModalidade(filtro: String?, idModalidade: Int?): Boolean {
 }
 
 fun torneioCorrespondeFormato(filtro: String?, formato: String?): Boolean {
-    if (filtro.isNullOrBlank()) return true
+    if (filtro.isNullOrBlank() || filtro.equals("All", ignoreCase = true)) return true
     val f = formato?.lowercase() ?: ""
     return when (filtro) {
         "League" -> f.contains("liga") || f.contains("league")
@@ -1154,7 +1153,7 @@ fun torneioCorrespondeFormato(filtro: String?, formato: String?): Boolean {
 }
 
 fun torneioCorrespondeEstado(filtro: String?, estado: String?): Boolean {
-    if (filtro.isNullOrBlank()) return true
+    if (filtro.isNullOrBlank() || filtro.equals("All", ignoreCase = true)) return true
     val e = estado?.lowercase() ?: ""
     return when (filtro) {
         "Upcoming" -> e.contains("breve") || e.contains("pendente") || e.contains("upcoming")
@@ -1167,7 +1166,7 @@ fun torneioCorrespondeEstado(filtro: String?, estado: String?): Boolean {
 
 fun torneioCorrespondeRegiao(selectedRegion: String?, cityOrRegion: String, local: String?): Boolean {
     val localNormalizado = local.orEmpty().lowercase()
-    val regiaoOk = selectedRegion.isNullOrBlank() || localNormalizado.contains(selectedRegion.lowercase())
+    val regiaoOk = selectedRegion.isNullOrBlank() || selectedRegion.equals("All", ignoreCase = true) || localNormalizado.contains(selectedRegion.lowercase())
     val pesquisaRegiaoOk = cityOrRegion.isBlank() || localNormalizado.contains(cityOrRegion.lowercase())
     return regiaoOk && pesquisaRegiaoOk
 }

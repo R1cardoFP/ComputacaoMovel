@@ -1,5 +1,9 @@
 package com.example.trabalhocm.ui.screens.player
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,15 +25,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +56,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trabalhocm.R
@@ -56,6 +68,7 @@ import com.example.trabalhocm.ui.theme.BrandGreen
 import com.example.trabalhocm.ui.theme.BrandWhite
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -85,6 +98,7 @@ fun PlayerTournamentRegistrationScreen(
 
     var isLoading by remember { mutableStateOf(true) }
     var isSubmitting by remember { mutableStateOf(false) }
+    var isSuccess by remember { mutableStateOf(false) } // NOVO: Controla a mensagem de sucesso!
     var errorMessage by remember { mutableStateOf("") }
 
     var torneio by remember { mutableStateOf<TorneioRegDTO?>(null) }
@@ -94,6 +108,13 @@ fun PlayerTournamentRegistrationScreen(
     var souCapitao by remember { mutableStateOf(false) }
 
     var selectedPayment by remember { mutableStateOf("Revolut") }
+
+    // Variáveis de estado para a simulação de pagamento
+    var cardNumber by remember { mutableStateOf("") }
+    var cardExpiry by remember { mutableStateOf("") }
+    var cardCvv by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
+    var phonePrefix by remember { mutableStateOf("🇵🇹 +351") }
 
     LaunchedEffect(idTorneio) {
         if (idTorneio == 0L) {
@@ -121,7 +142,6 @@ fun PlayerTournamentRegistrationScreen(
             // 3. Descobrir a equipa do utilizador logado PARA ESTA MODALIDADE
             val currentUserId = SupabaseClient.client.auth.currentUserOrNull()?.id
             if (currentUserId != null && t?.idModalidade != null) {
-                // Procura todas as equipas a que o user pertence
                 val memberRows = SupabaseClient.client.from("membro_equipa").select {
                     filter { eq("id_utilizador", currentUserId); eq("estado_convite", "aceite") }
                 }.decodeList<MembroEquipaSimplesRegDTO>()
@@ -129,7 +149,6 @@ fun PlayerTournamentRegistrationScreen(
                 val idsEquipasUser = memberRows.mapNotNull { it.idEquipa }
 
                 if (idsEquipasUser.isNotEmpty()) {
-                    // Filtra na BD as equipas que pertencem à mesma modalidade do torneio
                     val equipasDesporto = SupabaseClient.client.from("equipa").select {
                         filter {
                             isIn("id", idsEquipasUser)
@@ -141,7 +160,6 @@ fun PlayerTournamentRegistrationScreen(
 
                     if (equipaValida != null) {
                         minhaEquipa = equipaValida
-                        // Verifica se ele é capitão DESTA equipa em específico
                         val membership = memberRows.find { it.idEquipa == equipaValida.id }
                         souCapitao = membership?.papel?.lowercase() == "capitao"
                     }
@@ -164,29 +182,14 @@ fun PlayerTournamentRegistrationScreen(
 
         when {
             isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = BrandGreen)
                 }
             }
 
             errorMessage.isNotBlank() -> {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    RegistrationFeedbackCard(
-                        title = "Não foi possível carregar a inscrição",
-                        message = errorMessage,
-                        isError = true
-                    )
+                Box(modifier = Modifier.weight(1f).fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                    RegistrationFeedbackCard(title = "Não foi possível carregar a inscrição", message = errorMessage, isError = true)
                 }
             }
 
@@ -201,21 +204,12 @@ fun PlayerTournamentRegistrationScreen(
                         val isFree = (info.custo ?: 0.0) <= 0.0
 
                         RegistrationTournamentHeaderCard(torneio = info)
-
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        RegistrationProgressCard(
-                            inscritos = equipasInscritas,
-                            maxEquipas = info.maxEquipas ?: 16
-                        )
-
+                        RegistrationProgressCard(inscritos = equipasInscritas, maxEquipas = info.maxEquipas ?: 16)
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        RegistrationTeamSelectionCard(
-                            equipa = minhaEquipa,
-                            isCapitao = souCapitao
-                        )
-
+                        RegistrationTeamSelectionCard(equipa = minhaEquipa, isCapitao = souCapitao)
                         Spacer(modifier = Modifier.height(14.dp))
 
                         if (!isFree) {
@@ -224,31 +218,54 @@ fun PlayerTournamentRegistrationScreen(
                                 onPaymentSelected = { selectedPayment = it }
                             )
                             Spacer(modifier = Modifier.height(14.dp))
+
+                            // AQUI ESTÁ O NOVO BLOCO ANIMADO DE INTRODUÇÃO DE DADOS
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = expandVertically(animationSpec = tween(300)),
+                                exit = shrinkVertically(animationSpec = tween(300))
+                            ) {
+                                RegistrationPaymentDetailsInputCard(
+                                    selectedPayment = selectedPayment,
+                                    cardNumber = cardNumber, onCardNumberChange = { cardNumber = it },
+                                    cardExpiry = cardExpiry, onCardExpiryChange = { cardExpiry = it },
+                                    cardCvv = cardCvv, onCardCvvChange = { cardCvv = it },
+                                    phoneNumber = phoneNumber, onPhoneNumberChange = { phoneNumber = it },
+                                    phonePrefix = phonePrefix, onPhonePrefixChange = { phonePrefix = it }
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(14.dp))
                         }
 
                         val paymentText = if (isFree) "None (Free Entry)"
                         else if (selectedPayment == "MB Way") "MB Way"
                         else "$selectedPayment / Card"
 
-                        RegistrationSummaryCard(
-                            payment = paymentText,
-                            equipaNome = minhaEquipa?.nome ?: "None",
-                            entryFee = info.custo ?: 0.0
-                        )
-
+                        RegistrationSummaryCard(payment = paymentText, equipaNome = minhaEquipa?.nome ?: "None", entryFee = info.custo ?: 0.0)
                         Spacer(modifier = Modifier.height(18.dp))
 
                         val maxEquipasInt = info.maxEquipas ?: 16
                         val isCheio = equipasInscritas >= maxEquipasInt
-                        val podeInscrever = minhaEquipa != null && souCapitao && !isSubmitting && !isCheio
+
+                        // Validação para saber se os dados simulados foram preenchidos
+                        val isPaymentDataValid = isFree || when(selectedPayment) {
+                            "MB Way" -> phoneNumber.isNotBlank()
+                            "Apple Pay" -> true // Apple Pay não precisa de inputs textuais
+                            else -> cardNumber.isNotBlank() && cardExpiry.isNotBlank() && cardCvv.isNotBlank()
+                        }
+
+                        val podeInscrever = minhaEquipa != null && souCapitao && !isSubmitting && !isCheio && isPaymentDataValid && !isSuccess
 
                         Button(
                             onClick = {
                                 if (podeInscrever) {
                                     scope.launch {
                                         isSubmitting = true
-                                        errorMessage = "" // Limpa erros antigos
+                                        errorMessage = ""
                                         try {
+                                            // Pequeno delay apenas para "simular" o processamento do pagamento
+                                            if (!isFree) delay(1200)
+
                                             SupabaseClient.client.from("torneio_equipa").insert(
                                                 TorneioEquipaInsertDTO(
                                                     idTorneio = info.id,
@@ -258,19 +275,23 @@ fun PlayerTournamentRegistrationScreen(
                                                     mensagem = "Pedido de inscrição pendente."
                                                 )
                                             )
+
+                                            // Atualiza a UI para Sucesso e dá 1.5s para o utilizador ler
+                                            isSubmitting = false
+                                            isSuccess = true
+                                            delay(1500)
+
                                             onSubmitClick()
                                         } catch (e: Exception) {
                                             e.printStackTrace()
                                             errorMessage = "Erro na Base de Dados: ${e.message}"
+                                            isSubmitting = false
                                         }
-                                        isSubmitting = false
                                     }
                                 }
                             },
-                            enabled = podeInscrever,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(58.dp),
+                            enabled = podeInscrever || isSuccess,
+                            modifier = Modifier.fillMaxWidth().height(58.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = BrandGreen,
@@ -280,10 +301,13 @@ fun PlayerTournamentRegistrationScreen(
                             )
                         ) {
                             if (isSubmitting) {
-                                CircularProgressIndicator(
-                                    color = BrandWhite,
-                                    modifier = Modifier.size(22.dp),
-                                    strokeWidth = 2.dp
+                                CircularProgressIndicator(color = BrandWhite, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+                            } else if (isSuccess) {
+                                Text(
+                                    text = if (isFree) "REGISTRATION COMPLETED ✓" else "TRANSFER SUCCESSFUL ✓",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.8.sp
                                 )
                             } else {
                                 Text(
@@ -291,6 +315,7 @@ fun PlayerTournamentRegistrationScreen(
                                         isCheio -> "TOURNAMENT FULL"
                                         minhaEquipa == null -> "NO COMPATIBLE TEAM"
                                         !souCapitao -> "ONLY CAPTAINS CAN REGISTER"
+                                        !isPaymentDataValid -> "FILL PAYMENT DETAILS"
                                         else -> "SUBMIT REGISTRATION  →"
                                     },
                                     fontSize = 13.sp,
@@ -304,22 +329,12 @@ fun PlayerTournamentRegistrationScreen(
 
                         OutlinedButton(
                             onClick = onBackClick,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(1.dp, BorderLine),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = CardBg,
-                                contentColor = BrandBlue
-                            )
+                            colors = ButtonDefaults.outlinedButtonColors(containerColor = CardBg, contentColor = BrandBlue)
                         ) {
-                            Text(
-                                text = "BACK",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.8.sp
-                            )
+                            Text("BACK", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp)
                         }
 
                         Spacer(modifier = Modifier.height(22.dp))
@@ -338,6 +353,151 @@ fun PlayerTournamentRegistrationScreen(
         )
     }
 }
+
+// --- NOVO CARTÃO DE INTRODUÇÃO DE DADOS DE PAGAMENTO ---
+@Composable
+fun RegistrationPaymentDetailsInputCard(
+    selectedPayment: String,
+    cardNumber: String, onCardNumberChange: (String) -> Unit,
+    cardExpiry: String, onCardExpiryChange: (String) -> Unit,
+    cardCvv: String, onCardCvvChange: (String) -> Unit,
+    phoneNumber: String, onPhoneNumberChange: (String) -> Unit,
+    phonePrefix: String, onPhonePrefixChange: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = "PAYMENT DETAILS",
+                color = BrandBlue,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+
+            when (selectedPayment) {
+                "MB Way" -> {
+                    Text("Phone Number", color = TextMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        // Dropdown do prefixo simulado
+                        var expanded by remember { mutableStateOf(false) }
+                        val prefixes = listOf("🇵🇹 +351", "🇪🇸 +34", "🇫🇷 +33", "🇬🇧 +44")
+
+                        Box {
+                            Row(
+                                modifier = Modifier
+                                    .height(54.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(InputBg)
+                                    .clickable { expanded = true }
+                                    .padding(horizontal = 14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = phonePrefix, color = BrandBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("▾", color = BrandBlue, fontSize = 18.sp)
+                            }
+                            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                                prefixes.forEach { prefix ->
+                                    DropdownMenuItem(
+                                        text = { Text(prefix, fontWeight = FontWeight.Medium) },
+                                        onClick = { onPhonePrefixChange(prefix); expanded = false }
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        // Input do número
+                        TextField(
+                            value = phoneNumber,
+                            onValueChange = { if(it.length <= 9) onPhoneNumberChange(it) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
+                                focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            placeholder = { Text("912 345 678", color = Color(0xFFA6AFBD)) },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f).height(54.dp),
+                            singleLine = true
+                        )
+                    }
+                }
+
+                "Apple Pay" -> {
+                    Box(modifier = Modifier.fillMaxWidth().height(60.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black), contentAlignment = Alignment.Center) {
+                        Text(" Pay (Double click side button)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    }
+                }
+
+                else -> { // Revolut ou Credit Card
+                    Text("Card Number", color = TextMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    TextField(
+                        value = cardNumber,
+                        onValueChange = { if(it.length <= 16) onCardNumberChange(it) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
+                            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = { Text("0000 0000 0000 0000", color = Color(0xFFA6AFBD)) },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(54.dp),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Expiry", color = TextMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            TextField(
+                                value = cardExpiry,
+                                onValueChange = { if(it.length <= 5) onCardExpiryChange(it) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
+                                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                placeholder = { Text("MM/YY", color = Color(0xFFA6AFBD)) },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().height(54.dp),
+                                singleLine = true
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("CVV", color = TextMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            TextField(
+                                value = cardCvv,
+                                onValueChange = { if(it.length <= 3) onCardCvvChange(it) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
+                                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                placeholder = { Text("123", color = Color(0xFFA6AFBD)) },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().height(54.dp),
+                                singleLine = true
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun RegistrationTopBar(onBackClick: () -> Unit) {
@@ -950,7 +1110,7 @@ data class TorneioRegDTO(
     val local: String? = null,
     @SerialName("data_inicio") val dataInicio: String? = null,
     val formato: String? = null,
-    val custo: Double? = null,
+    @SerialName("taxa_inscricao") val custo: Double? = null,
     val premio: Double? = null,
     @SerialName("id_modalidade") val idModalidade: Int? = null,
     val estado: String? = null,
